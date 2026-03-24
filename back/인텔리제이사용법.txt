@@ -1,0 +1,96 @@
+==============================================
+         IntelliJ IDEA 사용법
+==============================================
+
+[ 1. 프로젝트 열기 ]
+
+1) IntelliJ 실행
+2) Open 클릭
+3) 백엔드 프로젝트 폴더 선택 (build.gradle 있는 폴더)
+4) OK → Trust Project 클릭
+5) 우측 하단에 Gradle 로딩 완료될 때까지 대기
+
+
+----------------------------------------------
+
+[ 2. 처음 설정 (최초 1회) ]
+
+1) application.yml 열기
+   src/main/resources/application.yml
+
+2) DB 정보 입력
+   username: 실제 오라클 계정
+   password: 실제 오라클 비밀번호
+
+3) JDK 설정 확인
+   File → Project Structure → SDK → Java 21 선택
+
+
+----------------------------------------------
+
+[ 3. 서버 실행 방법 ]
+
+1) 우측 상단 초록색 ▶ 버튼 클릭
+   또는
+   src/main/java/com/example/back/com.example.back.BackApplication.java
+   → 파일 열고 좌측 초록색 ▶ 클릭
+
+2) 하단 콘솔에 아래 메시지 뜨면 성공
+   Started com.example.back.BackApplication in X seconds
+
+3) 서버 주소 : http://localhost:8080
+
+
+----------------------------------------------
+
+[ 4. 서버 종료 방법 ]
+
+하단 콘솔 좌측 빨간 ■ 버튼 클릭
+
+
+----------------------------------------------
+
+[ 5. 패키지(폴더) 생성 방법 ]
+
+com.example.back 우클릭
+→ New → Package
+→ com.example.back.원하는폴더명 입력
+ex) com.example.back.controller
+
+
+----------------------------------------------
+
+[ 6. 파일 생성 방법 ]
+
+해당 패키지 우클릭
+→ New → Java Class
+→ 파일명 입력 (개발규칙.txt 참고)
+
+
+----------------------------------------------
+
+[ 7. 자주 쓰는 단축키 ]
+
+Ctrl + S          : 저장
+Ctrl + Alt + L    : 코드 자동 정렬 (꼭 쓰기!)
+Ctrl + /          : 한 줄 주석
+Ctrl + Shift + /  : 블록 주석
+Shift + F10       : 서버 실행
+Ctrl + Click      : 해당 클래스/메서드 정의로 이동
+Alt + Insert      : getter/setter/생성자 자동 생성
+
+
+----------------------------------------------
+
+[ 8. 오류 해결 방법 ]
+
+빨간 줄 뜰 때
+→ Alt + Enter 누르면 자동 수정 제안
+
+import 안 될 때
+→ Alt + Enter → Import 선택
+
+Gradle 의존성 추가 후
+→ 우측 Gradle 탭 → 새로고침 버튼 클릭
+
+==============================================

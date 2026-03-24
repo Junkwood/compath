@@ -1,0 +1,76 @@
+==============================================
+              백엔드 개발 규칙
+==============================================
+
+[ 패키지 구조 ]
+
+com.example.back
+├── config          → 설정 파일 (WebConfig 등)
+├── controller      → API 엔드포인트
+├── service         → 비즈니스 로직
+├── mapper          → MyBatis 매퍼 인터페이스
+├── dto             → 요청/응답 데이터 객체
+└── entity          → DB 테이블 매핑 객체
+
+
+----------------------------------------------
+
+[ 파일 명명 규칙 ]
+
+Controller  : 기능명 + Controller   ex) TaskController.java
+Service     : 기능명 + Service      ex) TaskService.java
+Mapper      : 기능명 + Mapper       ex) TaskMapper.java
+DTO         : 기능명 + Dto          ex) TaskDto.java
+Entity      : 기능명 (단수형)        ex) Task.java
+
+
+----------------------------------------------
+
+[ 메서드 명명 규칙 ]
+
+조회 : get    + 범위 + 대상   ex) getAllTasks, getByIdTask
+등록 : add    + 대상          ex) addTask
+삭제 : remove + 범위 + 대상   ex) removeByIdTask
+수정 : modify + 범위 + 대상   ex) modifyByIdTask
+
+
+----------------------------------------------
+
+[ API URL 규칙 ]
+
+GET    /api/tasks          전체 조회
+GET    /api/tasks/{id}     단건 조회
+POST   /api/tasks          등록
+PUT    /api/tasks/{id}     수정
+DELETE /api/tasks/{id}     삭제
+
+
+----------------------------------------------
+
+[ SQL 작성 규칙 (MyBatis XML) ]
+
+- SQL 명령어는 모두 대문자
+- 줄바꿈으로 가독성 확보
+- mapper id는 카멜케이스
+
+ex)
+<select id="getAllTasks" resultType="TaskDto">
+    SELECT task_id
+         , title
+         , status
+         , create_date
+      FROM task
+     ORDER BY task_id
+</select>
+
+
+----------------------------------------------
+
+[ 공통 규칙 ]
+
+- 변수명        : 카멜케이스    ex) taskList, userId
+- 상수명        : 대문자+언더바  ex) MAX_COUNT
+- 코드 저장 후  : 반드시 Ctrl + Alt + L 로 정렬
+- 커밋 전       : 서버 정상 실행 확인 후 푸시
+
+==============================================
