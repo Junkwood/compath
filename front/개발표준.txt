@@ -1,0 +1,38 @@
+==============================================
+              ComPath 개발 표준
+==============================================
+
+----------------------------------------------
+
+[ 프론트엔드 - Vue 3 ]
+
+7. 파일 위치 규칙
+   최상위 페이지      → src/pages/페이지명.vue            ex) Dashboard.vue
+   프로젝트 하위 페이지 → src/pages/project/페이지명.vue  ex) ProjectTasks.vue
+   공통 컴포넌트      → src/components/컴포넌트명.vue      ex) DataTable.vue
+
+8. 파일 명명 규칙
+   Vue 파일 (pages/components) : 첫글자 대문자 카멜케이스  ex) ProjectTasks.vue
+   JS 파일 (utils 등)          : 소문자 카멜케이스          ex) dateUtils.js
+
+9. 변수명 규칙
+   - 카멜케이스 사용  ex) projectList, taskCount
+
+10. 라우터 등록 규칙 (router.js)
+    - path : 사이드바 링크와 동일하게 맞출 것
+    - name : 카멜케이스
+    - 새 페이지 추가 시 router.js 맨 아래 주석 위치에 추가
+
+    ex)
+    {
+      path: '/project/tasks',
+      name: 'projectTasks',
+      component: () => import('./pages/project/ProjectTasks.vue'),
+    }
+
+11. API 호출 규칙
+    - axios 사용
+    - 메서드명은 백엔드 서비스 메서드명과 동일하게 맞출 것
+      ex) getAllTasks(), addTask(), removeByIdTask()
+
+==============================================
