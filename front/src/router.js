@@ -27,13 +27,15 @@ const router = createRouter({
     //   name: 'projectTasks',
     //   component: () => import('./pages/project/ProjectTasks.vue'),
     // },
-  ],
-
-  routes: [
     {
       path: "/",
       name: "dashboard",
       component: () => import("./pages/Dashboard.vue"),
+    },
+    {
+      path:"/login",
+      name: "login",
+      component: () => import("./pages/Login.vue"),
     },
   ],
 });

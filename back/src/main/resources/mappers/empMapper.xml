@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.emp.mapper.EmpMapperSJW">
+    <sql id="user">
+        USER_ID,
+        USER_NAME,
+        EMAIL,
+        PASSWORD,
+        common(IS_ACTIVE) as IS_ACTIVE,
+        CREATED_AT,
+        UPDATED_AT,
+        EDITOR_USER_ID,
+        common(USER_TYPE) as USER_TYPE
+    </sql>
+    <select id="findAll">
+        SELECT
+        <include refid="user"/>
+        FROM users
+    </select>
+    <select id="findById">
+        SELECT
+        <include refid="user"/>
+        FROM users
+        WHERE user_id = #{id}
+    </select>
+</mapper>
