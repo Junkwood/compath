@@ -32,11 +32,11 @@
 
 1) 우측 상단 초록색 ▶ 버튼 클릭
    또는
-   src/main/java/com/example/back/com.example.back.BackApplication.java
+   src/main/java/com/example/com.example.BackApplication.java
    → 파일 열고 좌측 초록색 ▶ 클릭
 
 2) 하단 콘솔에 아래 메시지 뜨면 성공
-   Started com.example.back.BackApplication in X seconds
+   Started com.example.BackApplication in X seconds
 
 3) 서버 주소 : http://localhost:8080
 
