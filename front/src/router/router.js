@@ -1,5 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
-
+import bulletinRoutes from "./bulletin.js";
+import empRoutes from "./emp.js";
+import groupRoutes from "./group.js";
+import meetingRoutes from "./meeting.js";
+import milstoneRoutes from "./milstone.js";
+import projectRoutes from "./project.js";
+import reportRoutes from "./report.js";
+import roleRoutes from "./role.js";
+import taskRoutes from "./task.js";
 /**
  * 라우터 등록 규칙
  * - path      : 사이드바 링크와 동일하게 맞출 것
@@ -30,13 +38,18 @@ const router = createRouter({
     {
       path: "/",
       name: "dashboard",
-      component: () => import("./pages/Dashboard.vue"),
+      component: () => import("../pages/Dashboard.vue"),
     },
-    {
-      path:"/login",
-      name: "login",
-      component: () => import("./pages/Login.vue"),
-    },
+
+    ...bulletinRoutes,
+    ...empRoutes,
+    ...groupRoutes,
+    ...meetingRoutes,
+    ...milstoneRoutes,
+    ...projectRoutes,
+    ...reportRoutes,
+    ...roleRoutes,
+    ...taskRoutes,
   ],
 });
 
