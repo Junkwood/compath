@@ -1,7 +1,7 @@
-package com.example.dajung.controller;
+package com.example.project.controller;
 
-import com.example.dajung.entity.TestEntity;
-import com.example.dajung.service.TestService;
+import com.example.project.entity.TestEntity;
+import com.example.project.service.TestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
