@@ -1,6 +1,6 @@
-package com.example.dajung.mapper;
+package com.example.project.mapper;
 
-import com.example.dajung.entity.TestEntity;
+import com.example.project.entity.TestEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

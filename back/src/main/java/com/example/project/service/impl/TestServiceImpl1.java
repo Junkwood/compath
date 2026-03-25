@@ -1,8 +1,8 @@
-package com.example.dajung.service.impl;
+package com.example.project.service.impl;
 
-import com.example.dajung.entity.TestEntity;
-import com.example.dajung.mapper.TestMapper1;
-import com.example.dajung.service.TestService;
+import com.example.project.entity.TestEntity;
+import com.example.project.mapper.TestMapper1;
+import com.example.project.service.TestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
