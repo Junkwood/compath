@@ -12,7 +12,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 
 @Configuration
 @EnableWebSecurity
-class WebSecurityConfig {
+class WebSecurityConfig {/*
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -51,6 +51,6 @@ class WebSecurityConfig {
 //		UserDetails user = User.withUsername("user").password(password).roles("USER").build();
 //		UserDetails admin = User.withUsername("admin").password(password).roles("ADMIN").build();
 //		return new InMemoryUserDetailsManager(user,admin);
-//	}
+//	}*/
 
 }
