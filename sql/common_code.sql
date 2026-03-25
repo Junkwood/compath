@@ -162,6 +162,17 @@ VALUES ('F1', '0F', '진행중', 'O1');
 INSERT INTO common_code (code_value, group_value, code_name, is_active)
 VALUES ('F2', '0F', '완료', 'O1');
 
+UPDATE common_code
+SET code_name = '진행중'
+WHERE code_name = '완료';
+
+COMMIT;
+
+INSERT INTO common_code (code_value, group_value, code_name, is_active)
+VALUES ('F5', '0F', '개발완료', 'O1');
+
+
+
 COMMIT;
 
 SELECT * FROM COMMON_CODE ORDER BY code_value;

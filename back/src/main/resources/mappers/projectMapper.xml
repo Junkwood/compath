@@ -6,6 +6,12 @@
         FROM PROJECTS
     </select>
 
+    <!-- 업무 조회_메인대쉬보드 -->
+    <select id="getAllTaskForMain" resultType="ProjectDTOJDJ">
+        SELECT *
+        FROM PROJECTS
+    </select>
+
     <!-- 프로젝트 생성 -->
     <insert id="registerProject">
         INSERT INTO PROJECTS (
