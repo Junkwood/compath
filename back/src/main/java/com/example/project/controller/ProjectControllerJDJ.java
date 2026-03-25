@@ -1,11 +1,9 @@
 package com.example.project.controller;
 
-import com.example.project.service.ProjectServiceJDJ;
-import org.springframework.ui.Model;
 import com.example.project.dto.ProjectDTOJDJ;
+import com.example.project.service.ProjectServiceJDJ;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
