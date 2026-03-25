@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.task.mapper.TaskMapperJJW">
+
+    <insert id="insert" parameterType="TaskReqDtoJJW">
+    <selectKey keyProperty="taskId" resultType="int" order="BEFORE">
+        SELECT task_seq.NEXTVAL FROM dual
+    </selectKey>
+        INSERT INTO tasks (
+        task_id,
+        project_id,
+        parent_task_id,
+        milestone_id,
+        task_type_id,
+        task_status_id,
+        title,
+        content,
+        assignee_user_id,
+        priority_code,
+        est_start_date,
+        est_end_date,
+        estimated_hours,
+        progress_rate,
+        created_at
+        ) VALUES (
+        #{taskId},
+        #{projectId},
+        #{parentTaskId},
+        #{milestoneId},
+        #{taskTypeId},
+        1,
+        #{title},
+        #{content},
+        #{assigneeUserId},
+        #{priorityCode},
+        #{estStartDate},
+        #{estEndDate},
+        #{estimatedHours},
+        #{progressRate},
+        sysdate
+        )
+    </insert>
+</mapper>
