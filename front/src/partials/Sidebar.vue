@@ -42,21 +42,13 @@
         </button>
         <!-- Logo -->
         <router-link class="block" to="/">
-          <div class="flex items-center gap-2">
-            <!-- ComPath 로고 아이콘 -->
-            <svg
-              class="fill-violet-500"
-              xmlns="http://www.w3.org/2000/svg"
-              width="32"
-              height="32"
-              viewBox="0 0 32 32"
-            >
-              <path
-                d="M16 2a14 14 0 1 0 0 28A14 14 0 0 0 16 2Zm0 4a10 10 0 0 1 9.95 9H16V6Zm-2 0v9H6.05A10 10 0 0 1 14 6Zm-7.95 11H14v9A10 10 0 0 1 6.05 17Zm9.95 9v-9h7.95A10 10 0 0 1 16 26Z"
-              />
-            </svg>
+          <div class="flex items-center justify-center gap-0">
+            <img
+              src="/src/images/comPath.png"
+              class="w-20 h-auto object-contain shrink-0"
+            />
             <span
-              class="text-sm font-bold text-gray-800 dark:text-gray-100 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+              class="text-2xl font-bold text-gray-800 dark:text-gray-100 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
             >
               ComPath
             </span>
