@@ -5,9 +5,9 @@
 <mapper namespace="com.example.task.mapper.TaskMapperJJW">
 
     <insert id="insert" parameterType="TaskReqDtoJJW">
-    <selectKey keyProperty="taskId" resultType="int" order="BEFORE">
-        SELECT task_seq.NEXTVAL FROM dual
-    </selectKey>
+        <selectKey keyProperty="taskId" resultType="int" order="BEFORE">
+            SELECT task_seq.NEXTVAL FROM dual
+        </selectKey>
         INSERT INTO tasks (
         task_id,
         project_id,
@@ -42,4 +42,38 @@
         sysdate
         )
     </insert>
+
+    <!-- 프로젝트 목록 조회 -->
+    <select id="getProjectList" resultType="com.example.task.dto.ProjectDtoJJW">
+        SELECT project_id, project_name
+        FROM projects
+        WHERE status = 'F1'
+    </select>
+
+    <!-- 담당자(유저) 목록 조회 -->
+    <select id="getUserList" resultType="com.example.task.dto.UserDtoJJW">
+        SELECT user_id, user_name
+        FROM users
+        WHERE is_active = 'O1'
+    </select>
+
+    <!-- 업무유형 목록 조회 -->
+    <select id="getTaskType" resultType="com.example.task.dto.TaskTypeDtoJJW">
+        SELECT task_type_id, type_name
+        FROM task_types
+        WHERE is_active = 'O1'
+    </select>
+
+    <!-- 업무상태 목록 조회 -->
+    <select id="getTaskStatus" resultType="com.example.task.dto.TaskStatusDtoJJW">
+        SELECT task_status_id, status_name
+        FROM task_statuses
+        WHERE is_active = 'O1'
+    </select>
+
+    <!-- 마일스톤 목록 조회 -->
+    <select id="getMilestone" resultType="com.example.task.dto.MilestoneDtoJJW">
+        SELECT milestone_id, milestone_name
+        FROM milestones
+    </select>
 </mapper>

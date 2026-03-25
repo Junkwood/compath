@@ -1,12 +1,13 @@
 package com.example.task.controller;
 
+import com.example.project.dto.ProjectDTOJDJ;
+import com.example.task.dto.ProjectDtoJJW;
 import com.example.task.dto.TaskReqDtoJJW;
 import com.example.task.service.TaskServiceJJW;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,5 +22,13 @@ public class TaskControllerJJW {
      taskServiceJJW.insert(dto);
      return dto;
     }
+
+    //프로젝트 조회
+    @ResponseBody
+    @GetMapping("/projectList")
+    public List<ProjectDtoJJW> list(){
+        return  taskServiceJJW.getProjectList();
+    }
+
 
 }

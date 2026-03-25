@@ -20,7 +20,7 @@
           </h1>
 
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-            <!-- ① 프로젝트명 / 하위 프로젝트명 -->
+            <!--프로젝트명 / 하위 프로젝트명 -->
             <div class="grid grid-cols-2 gap-6 mb-6">
               <div>
                 <label class="block text-sm font-medium mb-1"
@@ -50,7 +50,7 @@
               </div>
             </div>
 
-            <!-- ② 업무유형 / ④ 담당자 -->
+            <!--업무유형 / 담당자 -->
             <div class="grid grid-cols-2 gap-6 mb-6">
               <div>
                 <label class="block text-sm font-medium mb-1"
@@ -81,7 +81,7 @@
               </div>
             </div>
 
-            <!-- ③ 업무명 -->
+            <!--  업무명 -->
             <div class="mb-6">
               <label class="block text-sm font-medium mb-1"
                 >업무 명 <span class="text-red-500">*</span></label
@@ -93,7 +93,7 @@
               />
             </div>
 
-            <!-- ⑤ 프로젝트 설명 -->
+            <!-- 프로젝트 설명 -->
             <div class="mb-6">
               <label class="block text-sm font-medium mb-1"
                 >프로젝트 설명</label
@@ -106,7 +106,7 @@
               <button class="btn-outline mt-2">파일 선택</button>
             </div>
 
-            <!-- ⑥ 업무상태 / ⑦ 우선순위 / ⑧ 마일스톤 -->
+            <!-- 업무상태 / 우선순위 / 마일스톤 -->
             <div class="grid grid-cols-3 gap-6 mb-6">
               <div>
                 <label class="block text-sm font-medium mb-1"
@@ -147,7 +147,7 @@
               </div>
             </div>
 
-            <!-- ⑨ 예정시작일 / ⑩ 예정종료일 / ⑪ 추정시간 -->
+            <!--  예정시작일 / 예정종료일 / 추정시간 -->
             <div class="grid grid-cols-3 gap-6 mb-8">
               <div>
                 <label class="block text-sm font-medium mb-1"
