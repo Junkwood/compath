@@ -68,9 +68,13 @@
                 <div class="flex gap-2">
                   <select v-model="form.taskType" class="input flex-1">
                     <option value="">업무 유형을 선택하세요</option>
-                    <option value="개발">개발</option>
-                    <option value="기획">기획</option>
-                    <option value="디자인">디자인</option>
+                    <option
+                      v-for="item in taskTypeList"
+                      :key="item.taskTypeId"
+                      :value="item.taskTypeId"
+                    >
+                      {{ item.typeName }}
+                    </option>
                   </select>
                   <button class="btn-outline">확인</button>
                 </div>
@@ -136,10 +140,14 @@
                     @change="onPriorityChange"
                     class="input flex-1"
                   >
-                    <option value="">선택</option>
-                    <option value="상">상</option>
-                    <option value="중">중</option>
-                    <option value="하">하</option>
+                    <option value="">우선순위를 선택하세요</option>
+                    <option
+                      v-for="item in priorityList"
+                      :key="item.codeValue"
+                      :value="item.codeValue"
+                    >
+                      {{ item.codeName }}
+                    </option>
                   </select>
                   <button class="btn-outline">선택</button>
                 </div>
@@ -210,7 +218,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import Sidebar from "../partials/Sidebar.vue";
@@ -219,6 +227,32 @@ import ProjectSelectModal from "../components/SelectModal.vue";
 
 const router = useRouter();
 const sidebarOpen = ref(false);
+
+// 공통 코드 리스트를 담을 변수들
+const taskTypeList = ref([]); // 업무 유형
+const priorityList = ref([]); // 우선순위
+const statusList = ref([]); // 업무 상태
+
+// 화면이 열릴 때 API 호출
+onMounted(async () => {
+  try {
+    // 1. 업무 유형 리스트 가져오기
+    const typeRes = await axios.get("http://localhost:8080/api/taskType");
+    taskTypeList.value = typeRes.data;
+
+    // 2. 우선순위 리스트 가져오기
+    const priorityRes = await axios.get(
+      "http://localhost:8080/api/code?groupValue=0H&groupValue=0G",
+      // {
+      //   groupValue: ["0H", "0S"],
+      // },
+    );
+    priorityList.value = priorityRes.data.c0H; //우선순위
+    statusList.value = priorityRes.data.c0G; //업무 상태
+  } catch (e) {
+    console.error("공통 코드를 불러오는데 실패했습니다.", e);
+  }
+});
 
 const initialForm = {
   projectName: "",
@@ -249,21 +283,19 @@ const openProjectModal = async () => {
   }
 };
 
-const onPriorityChange = (e) => {
-  const val = e.target.value;
+// 우선순위 변경 시 로직
+const onPriorityChange = () => {
+  const val = form.value.priority;
   const today = new Date();
-  if (val === "상") today.setDate(today.getDate() + 3);
-  else if (val === "중") today.setDate(today.getDate() + 7);
-  else today.setDate(today.getDate() + 14);
-  form.value.endDate = today.toISOString().split("T")[0];
-};
 
-const calcEstTime = () => {
-  if (form.value.startDate && form.value.endDate) {
-    const diff = new Date(form.value.endDate) - new Date(form.value.startDate);
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    form.value.estTime = `${days * 8}시간`;
-  }
+  // DB에서 넘어오는 코드값
+  if (val.includes("상") || val === "H1") today.setDate(today.getDate() + 3);
+  else if (val.includes("중") || val === "H2")
+    today.setDate(today.getDate() + 7);
+  else today.setDate(today.getDate() + 14);
+
+  form.value.endDate = today.toISOString().split("T")[0];
+  calcEstTime();
 };
 
 const submitForm = async () => {
