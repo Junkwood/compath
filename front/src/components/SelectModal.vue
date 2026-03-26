@@ -2,13 +2,15 @@
   <VueFinalModal
     v-model="modalOpenModel"
     class="flex items-center justify-center"
-    content-class="bg-white rounded-lg shadow-xl w-96 p-5 border border-gray-200"
+    content-class="bg-white rounded-xl shadow-xl w-96 p-5 border border-gray-200"
+    teleport-to="body"
+    :z-index="9999"
   >
-    <div class="flex justify-between items-center mb-4 border-b pb-2">
-      <span class="font-bold text-gray-700">{{ title }}</span>
+    <div class="flex justify-between items-center mb-4 border-b pb-3">
+      <span class="font-semibold text-gray-700 text-sm">{{ title }}</span>
       <button
         @click="modalOpenModel = false"
-        class="text-gray-400 hover:text-black"
+        class="text-gray-400 hover:text-gray-700 text-lg leading-none transition-colors"
       >
         ✕
       </button>
@@ -20,9 +22,9 @@
           v-for="item in pagedList"
           :key="item.id || item.codeValue"
           @click="selectItem(item)"
-          class="p-3 hover:bg-[#F5F5F5] cursor-pointer border-b last:border-none transition-colors rounded-md"
+          class="px-3 py-2.5 hover:bg-slate-50 cursor-pointer border-b last:border-none transition-colors rounded-lg"
         >
-          <span class="text-sm text-gray-800">{{
+          <span class="text-sm text-gray-700">{{
             item.name || item.codeName
           }}</span>
         </li>
@@ -38,12 +40,12 @@
 
     <div
       v-if="totalPages > 1"
-      class="flex justify-center items-center gap-2 mt-5"
+      class="flex justify-center items-center gap-1 mt-4 pt-3 border-t"
     >
       <button
         @click="page--"
         :disabled="page === 1"
-        class="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-20 transition-opacity"
+        class="w-8 h-8 rounded-lg hover:bg-gray-100 disabled:opacity-20 transition-all text-gray-500 text-sm"
       >
         ＜
       </button>
@@ -53,9 +55,9 @@
         :key="n"
         @click="page = n"
         :class="[
-          'px-3 py-1 rounded text-sm font-medium transition-all',
+          'w-8 h-8 rounded-lg text-sm font-medium transition-all',
           page === n
-            ? 'bg-gray-800 text-white'
+            ? 'bg-[#1e3a5f] text-white'
             : 'hover:bg-gray-100 text-gray-500',
         ]"
       >
@@ -65,7 +67,7 @@
       <button
         @click="page++"
         :disabled="page === totalPages"
-        class="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-20 transition-opacity"
+        class="w-8 h-8 rounded-lg hover:bg-gray-100 disabled:opacity-20 transition-all text-gray-500 text-sm"
       >
         ＞
       </button>
@@ -85,13 +87,11 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "select"]);
 
-// 1. v-model 양방향
 const modalOpenModel = computed({
   get: () => props.modelValue,
   set: (val) => emit("update:modelValue", val),
 });
 
-// 2. 페이지네이션 로직
 const page = ref(1);
 const perPage = 5;
 
@@ -109,7 +109,6 @@ const pagedList = computed(() => {
   return props.items.slice(start, start + perPage);
 });
 
-// 3. 부모에게 값 전달
 const selectItem = (item) => {
   const displayName = item.name || item.codeName;
   emit("select", { name: displayName, value: item.id || item.codeValue });

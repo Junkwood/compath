@@ -1,6 +1,7 @@
 package com.example.task.controller;
 
-import com.example.project.dto.ProjectDTOJDJ;
+import com.example.milestone.dto.MilestoneDtoJJW;
+import com.example.project.dto.ProjectDtoJJW;
 import com.example.task.dto.*;
 import com.example.task.service.TaskServiceJJW;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,12 @@ public class TaskControllerJJW {
         return  taskServiceJJW.getProjectList();
     }
 
+    //프로젝트 상세 조회
+    @ResponseBody
+    @GetMapping("/projectDetail/{projectId}")
+    public ProjectDtoJJW projectDetail(@PathVariable("projectId") Integer projectId) {
+        return taskServiceJJW.getProjectDetail(projectId);
+    }
     //업무 상태 조회
     @ResponseBody
     @GetMapping("/taskStatus")
@@ -52,9 +59,9 @@ public class TaskControllerJJW {
 
     //마일스톤 조회
     @ResponseBody
-    @GetMapping("taskMileStone")
-    public  List<MilestoneDtoJJW> list4(){
-        return  taskServiceJJW.getMilestone();
+    @GetMapping("/taskMileStone")
+    public  List<MilestoneDtoJJW> list4(@RequestParam("projectId") Integer projectId){
+        return taskServiceJJW.getMilestone(projectId);
     }
 
 

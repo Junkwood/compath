@@ -18,7 +18,7 @@ public class TaskReqDtoJJW {
     Integer editorUserId;
     Integer taskId;
     Integer parentTaskId;
-    String projectId;
+    Integer projectId;
     Integer milestoneId;
     Integer taskTypeId;
     Integer taskStatusId;
