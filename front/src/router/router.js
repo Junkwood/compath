@@ -7,8 +7,8 @@ import milstoneRoutes from "./milstone.js";
 import projectRoutes from "./project.js";
 import reportRoutes from "./report.js";
 import roleRoutes from "./role.js";
-import taskRoutes from "./task.js";
 import taskRoutes1 from "./taskJJW.js";
+import taskRoutes from "./taskKJH.js";
 /**
  * 라우터 등록 규칙
  * - path      : 사이드바 링크와 동일하게 맞출 것

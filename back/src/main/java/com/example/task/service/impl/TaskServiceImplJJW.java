@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 @Service
-public class TaskServiceImpl implements TaskServiceJJW {
+public class TaskServiceImplJJW implements TaskServiceJJW {
 
     final TaskMapperJJW taskMapperJJW;
 
@@ -44,6 +44,6 @@ public class TaskServiceImpl implements TaskServiceJJW {
 
     @Override
     public List<MilestoneDtoJJW> getMilestone() {
-        return taskMapperJJW.getMileStone();
+        return taskMapperJJW.getMilestone();
     }
 }

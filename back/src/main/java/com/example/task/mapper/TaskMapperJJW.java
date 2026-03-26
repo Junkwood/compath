@@ -17,5 +17,5 @@ public interface TaskMapperJJW {
     //업무 상태 조회
     List<TaskStatusDtoJJW> getTaskStatus();
     //마일스톤 선택용
-    List<MilestoneDtoJJW> getMileStone();
+    List<MilestoneDtoJJW> getMilestone();
 }
