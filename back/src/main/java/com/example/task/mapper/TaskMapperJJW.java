@@ -3,6 +3,7 @@ package com.example.task.mapper;
 import com.example.milestone.dto.MilestoneDtoJJW;
 import com.example.project.dto.ProjectDtoJJW;
 import com.example.task.dto.*;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,5 +22,5 @@ public interface TaskMapperJJW {
     //업무 상태 조회
     List<TaskStatusDtoJJW> getTaskStatus();
     //마일스톤 선택용
-    List<MilestoneDtoJJW> getMilestone();
+    List<MilestoneDtoJJW> getMilestone(@Param("projectId") Integer projectId);
 }
