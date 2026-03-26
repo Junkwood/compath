@@ -9,6 +9,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class TaskReqDtoJJW {
+    //업무생성
     Date createdAt;
     Date updatedAt;
     Date estStartDate;
