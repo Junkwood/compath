@@ -1,6 +1,6 @@
 const taskRoutes = [
   {
-    path: "/task/list/:id",
+    path: "/tasklist/:id",
     name: "taskList",
     component: () => import("../pages/task/TaskListKJH.vue"),
   },

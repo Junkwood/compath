@@ -274,6 +274,7 @@
                       >
                         <span
                           class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                          @click="goTaskList"
                           >업무 목록</span
                         >
                       </a>
@@ -532,6 +533,12 @@
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import SidebarLinkGroup from "./SidebarLinkGroup.vue";
+
+const router = useRouter();
+
+const goTaskList = () => {
+  router.push({ name: "taskList", params: { id: "PJT-001" } });
+};
 
 export default {
   name: "Sidebar",
