@@ -51,20 +51,16 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-// 1. Spring Security core 및 web (인증 객체 및 핸들러 인터페이스용)
-    //implementation 'org.springframework.boot:spring-boot-starter-security'
+    // 1. Spring Security core 및 web (인증 객체 및 핸들러 인터페이스용)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // 2. Servlet API (HttpServletRequest, HttpServletResponse 사용을 위해 필수)
     // Spring Boot 3.x 이상은 별도 추가 없이 starter-web에 포함되어 있으나,
     // 만약 컴파일 에러가 난다면 아래를 확인하세요.
-    //implementation 'org.springframework.boot:spring-boot-starter-web'
-
-    // 3. Lombok ( @Slf4j 어노테이션 사용을 위해 필수 )
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
     // 테스트 환경에서도 시큐리티 기능을 쓰려면 추가
-    //testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {

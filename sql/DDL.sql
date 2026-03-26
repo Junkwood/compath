@@ -50,7 +50,7 @@ CREATE TABLE project_member_roles (
 CREATE TABLE milestone_mapping (
 	milestone_mapping_id	number			NOT NULL,
 	milestone_id		number			NOT NULL,
-	project_id		varchar(50)		NOT NULL,
+	project_id		number		NOT NULL,
 	relation		varchar(2)		NULL
 );
 
@@ -85,8 +85,9 @@ CREATE TABLE group_members (
 );
 
 CREATE TABLE projects (
-	project_id		varchar(50)		NOT NULL,
-	parent_project_id	varchar(50)		NULL,
+	project_id		number		NOT NULL,
+	identifier		varchar(100) NULL,
+	parent_project_id	number		NULL,
 	project_name		varchar(100)	NULL,
 	description		clob			NULL,
 	start_date		date			NULL,
@@ -117,7 +118,7 @@ CREATE TABLE groups (
 
 CREATE TABLE meeting_logs (
 	meeting_log_id		number		NOT NULL,
-	project_id		varchar(50)		NOT NULL,
+	project_id		number		NOT NULL,
 	title			varchar(200)		NULL,
 	meeting_type_code	varchar(2)		NULL,
 	meeting_date		timestamp		NULL,
@@ -137,7 +138,7 @@ CREATE TABLE meeting_logs (
 CREATE TABLE tasks (
 	task_id			number		NOT NULL,
 	parent_task_id		number		NULL,
-	project_id		varchar(50)		NOT NULL,
+	project_id		number		NOT NULL,
 	milestone_id		number		NOT NULL,
 	task_type_id		number		NOT NULL,
 	task_status_id		number		NOT NULL,
@@ -213,7 +214,7 @@ CREATE TABLE role_permissions (
 
 CREATE TABLE memos (
 	memo_id	number		NOT NULL,
-	project_id	varchar(50)		NOT NULL,
+	project_id	number		NOT NULL,
 	user_id	number		NULL,
 	memo_content	clob		NULL,
 	created_at	timestamp		NULL
@@ -221,7 +222,7 @@ CREATE TABLE memos (
 
 CREATE TABLE documents (
 	document_id	number		NOT NULL,
-	project_id	varchar(50)		NOT NULL,
+	project_id	number		NOT NULL,
 	title	varchar(100)		NULL,
 	content	clob		NULL,
 	is_pinned	varchar(2)		NULL,
@@ -299,7 +300,7 @@ CREATE TABLE document_comments (
 
 CREATE TABLE notices (
 	notice_id			number		NOT NULL,
-	project_id			varchar(50)		NOT NULL,
+	project_id			number		NOT NULL,
 	title				varchar(100)		NULL,
 	content				clob		NULL,
 	is_pinned			varchar(2)		NULL,

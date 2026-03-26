@@ -1,8 +1,12 @@
 const empRoutes = [
   {
-    path: "/",
-    name: "dashboard",
-    component: () => import("../pages/Dashboard.vue"),
-  },
+    path: "/login",
+    name: "login",
+    component: () => import("../pages/login.vue"),
+  },{
+  path: "/admin/emp",
+    name: "emp",
+    component: () => import("../emp/emp.vue"),
+  }
 ];
 export default empRoutes;

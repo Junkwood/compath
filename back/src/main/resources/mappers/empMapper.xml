@@ -5,14 +5,14 @@
 <mapper namespace="com.example.emp.mapper.EmpMapperSJW">
     <sql id="user">
         USER_ID,
-        USER_NAME,
+        USER_NAME as NAME,
         EMAIL,
         PASSWORD,
-        common(IS_ACTIVE) as IS_ACTIVE,
+        active(IS_ACTIVE) as IS_ACTIVE,
         CREATED_AT,
         UPDATED_AT,
         EDITOR_USER_ID,
-        common(USER_TYPE) as USER_TYPE
+        role(USER_TYPE) as USER_TYPE
     </sql>
     <select id="findAll">
         SELECT
