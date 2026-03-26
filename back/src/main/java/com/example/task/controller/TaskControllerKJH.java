@@ -17,7 +17,7 @@ public class TaskControllerKJH {
     private final TaskServiceKJH service;
 
     // 목록 조회
-    @GetMapping("/tasks/{id}")
+    @GetMapping("/api/tasks/{id}")
     public List<TaskListDTOKJH> getAllTasks(@PathVariable String id){
         return service.getAllTasks(id, id);
     }
