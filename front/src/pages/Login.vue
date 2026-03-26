@@ -180,6 +180,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from "axios";
+import {useAuthStore} from "../stores/auth";
 
 const router = useRouter()
 
@@ -226,11 +227,11 @@ async function handleSubmit() {
 
   try {
     // TODO: 실제 로그인 API 연결
-    await axios.post('/api/login', {
-      email: form.id,
+    const response = await axios.post('/api/login', {
+      userId: form.id,
       password: form.password,
     })
-
+    useAuthStore().login(response.data)
     // 로그인 성공 시 대시보드로 이동
     await router.push('/')
   } catch (err) {

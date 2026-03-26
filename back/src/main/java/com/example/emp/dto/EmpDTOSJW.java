@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmpDTOSJW {
-    private String currentTime;
-    private String message;
-    private int statusCode;
+    private Integer userId;
+    private String userName;
+    private String email;
+    private String isActive;
+    private String userType;
 }

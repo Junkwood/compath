@@ -12,7 +12,7 @@
         CREATED_AT,
         UPDATED_AT,
         EDITOR_USER_ID,
-        common(USER_TYPE) as USER_TYPE
+        role(USER_TYPE) as USER_TYPE
     </sql>
     <select id="findAll">
         SELECT
