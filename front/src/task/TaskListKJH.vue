@@ -36,6 +36,7 @@
                 <select
                   class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                   v-model="selectedName"
+                  @change="changeName()"
                 >
                   <option value="전체">전체</option>
                   <option :value="title" v-for="title in titleList">
@@ -289,9 +290,9 @@ let selectedStart = ref();
 let selectedEnd = ref();
 
 // 필터링 조건들
+let id = route.params.id;
 
 onBeforeMount(async () => {
-  let id = route.params.id;
   console.log("프로젝트 번호", id);
 
   // 프로젝트 이름 조회
@@ -372,6 +373,19 @@ const changeDateType = (day) => {
   return realDay;
 };
 
-// 검색버튼
-// const changeList = computed(() => {});
+// 업무명 필터링
+const changeName = async () => {
+  console.log(selectedName.value);
+  if (selectedName.value != "전체") {
+    taskList.value.forEach((li) => {
+      if (li.title == selectedName.value) {
+        selectedList.value.push(li);
+      }
+    });
+  } else {
+    selectedList.value = (await axios.get("/api/tasks/" + id)).data;
+  }
+  taskList.value = selectedList.value;
+  selectedList.value = [];
+};
 </script>
