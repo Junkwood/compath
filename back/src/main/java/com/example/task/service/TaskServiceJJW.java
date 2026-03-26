@@ -1,5 +1,7 @@
 package com.example.task.service;
 
+import com.example.milestone.dto.MilestoneDtoJJW;
+import com.example.project.dto.ProjectDtoJJW;
 import com.example.task.dto.*;
 
 import java.util.List;
@@ -14,8 +16,10 @@ public interface TaskServiceJJW {
     List<UserDtoJJW> getUserList();
     List<TaskTypeDtoJJW> getTaskType();
     List<TaskStatusDtoJJW> getTaskStatus();
-    List<MilestoneDtoJJW> getMilestone();
+    List<MilestoneDtoJJW> getMilestone(Integer projectId);
 
+    //프로젝트 상세 조회
+    ProjectDtoJJW getProjectDetail(Integer projectId);
 
 
 }

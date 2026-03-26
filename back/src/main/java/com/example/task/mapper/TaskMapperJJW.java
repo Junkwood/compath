@@ -1,5 +1,7 @@
 package com.example.task.mapper;
 
+import com.example.milestone.dto.MilestoneDtoJJW;
+import com.example.project.dto.ProjectDtoJJW;
 import com.example.task.dto.*;
 
 import java.util.List;
@@ -10,6 +12,8 @@ public interface TaskMapperJJW {
     void insert(TaskReqDtoJJW vo);
     //프로젝트 조회
     List<ProjectDtoJJW> getProjectList();
+    //프로젝트 상세 조회
+    ProjectDtoJJW getProjectDetail(Integer projectId);
     //담당자 조회
     List<UserDtoJJW> getUserList();
     //업무 유형 조회

@@ -1,5 +1,7 @@
 package com.example.task.service.impl;
 
+import com.example.milestone.dto.MilestoneDtoJJW;
+import com.example.project.dto.ProjectDtoJJW;
 import com.example.task.dto.*;
 import com.example.task.mapper.TaskMapperJJW;
 import com.example.task.service.TaskServiceJJW;
@@ -43,7 +45,14 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     }
 
     @Override
-    public List<MilestoneDtoJJW> getMilestone() {
+    public List<MilestoneDtoJJW> getMilestone(Integer projectId) {
         return taskMapperJJW.getMilestone();
     }
+
+    @Override
+    public ProjectDtoJJW getProjectDetail(Integer projectId) {
+        return taskMapperJJW.getProjectDetail(projectId);
+    }
+
+
 }
