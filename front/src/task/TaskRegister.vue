@@ -32,9 +32,18 @@
                     disabled
                     class="input flex-1"
                   />
-                  <button class="btn-outline">선택</button>
+                  <button @click="openProjectModal">선택</button>
                 </div>
               </div>
+              <ProjectSelectModal
+                v-model="projectModal"
+                :items="projectList"
+                @select="
+                  (val) => {
+                    form.projectName = val;
+                  }
+                "
+              />
               <div>
                 <label class="block text-sm font-medium mb-1"
                   >하위 프로젝트 명</label
@@ -206,26 +215,39 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import ProjectSelectModal from "../components/SelectModal.vue";
 
 const router = useRouter();
 const sidebarOpen = ref(false);
 
 const initialForm = {
-  projectName: "삼성라이온즈 베리즈몰 구축",
+  projectName: "",
   subProjectName: "",
   taskType: "",
   taskName: "",
   assignee: "",
   description: "",
-  status: "시작 전",
+  status: "",
   priority: "",
-  milestone: "1.0",
+  milestone: "",
   startDate: "",
   endDate: "",
-  estTime: "5시간",
+  estTime: "",
 };
 
 const form = ref({ ...initialForm });
+const projectModal = ref(false);
+const projectList = ref([]);
+
+const openProjectModal = async () => {
+  try {
+    const res = await axios.get("/api/projectList");
+    projectList.value = res.data;
+    projectModal.value = true;
+  } catch (e) {
+    alert("프로젝트 목록을 불러오는데 실패했습니다.");
+  }
+};
 
 const onPriorityChange = (e) => {
   const val = e.target.value;

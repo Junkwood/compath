@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.common.code.mapper.CommonCodeMapper">
+    <select id="selectCodeListByGroup" parameterType="String" resultType="com.example.common.code.service.CommonCodeVO">
+        SELECT
+        CODE_VALUE    AS "codeValue",
+        GROUP_VALUE   AS "groupValue",
+        CODE_NAME     AS "codeName",
+        IS_ACTIVE     AS "isActive"
+        FROM COMMON_CODE
+        WHERE GROUP_VALUE = #{groupValue}
+        AND IS_ACTIVE = 'O1'
+        ORDER BY CODE_VALUE ASC
+    </select>
+
+</mapper>

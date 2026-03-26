@@ -1,8 +1,7 @@
 package com.example.task.controller;
 
 import com.example.project.dto.ProjectDTOJDJ;
-import com.example.task.dto.ProjectDtoJJW;
-import com.example.task.dto.TaskReqDtoJJW;
+import com.example.task.dto.*;
 import com.example.task.service.TaskServiceJJW;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +27,34 @@ public class TaskControllerJJW {
     @GetMapping("/projectList")
     public List<ProjectDtoJJW> list(){
         return  taskServiceJJW.getProjectList();
+    }
+
+    //업무 상태 조회
+    @ResponseBody
+    @GetMapping("/taskStatus")
+    public  List<TaskStatusDtoJJW> list1(){
+        return  taskServiceJJW.getTaskStatus();
+    }
+
+    //업무 유형 조회
+    @ResponseBody
+    @GetMapping("/taskType")
+    public List<TaskTypeDtoJJW> list2(){
+        return  taskServiceJJW.getTaskType();
+    }
+
+    //담당자 조회
+    @ResponseBody
+    @GetMapping("/taskUser")
+    public List<UserDtoJJW> list3(){
+        return  taskServiceJJW.getUserList();
+    }
+
+    //마일스톤 조회
+    @ResponseBody
+    @GetMapping("taskMileStone")
+    public  List<MilestoneDtoJJW> list4(){
+        return  taskServiceJJW.getMilestone();
     }
 
 

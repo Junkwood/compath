@@ -54,7 +54,7 @@
     <select id="getUserList" resultType="com.example.task.dto.UserDtoJJW">
         SELECT user_id, user_name
         FROM users
-        WHERE is_active = 'O1'
+        WHERE is_active = 'O1' AND user_type = 'M2'
     </select>
 
     <!-- 업무유형 목록 조회 -->
