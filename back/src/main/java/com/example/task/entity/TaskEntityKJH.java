@@ -40,4 +40,7 @@ public class TaskEntityKJH {
 
     // projects
     private String projectName;
+
+    // commonCode
+    private String codeName;
 }

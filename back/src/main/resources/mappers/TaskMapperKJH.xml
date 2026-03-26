@@ -29,6 +29,7 @@
         editor_user_id
     </sql>
 
+<!--    업무목록-->
     <select id="getAllTasks" >
         SELECT t.task_id,
                t.parent_task_id,
@@ -39,8 +40,10 @@
                t.content,
                t.assignee_user_id,
                t.priority_code,
+               c.code_name,
                t.progress_rate,
                t.start_date,
+               t.due_date,
                p.project_name,
                t2.type_name,
                t3.status_name
@@ -48,6 +51,14 @@
         JOIN projects p ON t.project_id = p.project_id
         JOIN task_types t2 ON t.task_type_id = t2.task_type_id
         JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
+        JOIN common_code c ON t.priority_code = c.code_value
         WHERE t.project_id = #{id} OR p.parent_project_id = #{pid}
+    </select>
+
+<!--    프로젝트 이름-->
+    <select id="getProjectName">
+        SELECT project_name
+        FROM projects
+        WHERE project_id = #{id}
     </select>
 </mapper>

@@ -24,14 +24,16 @@ public class TaskListDTOKJH {
     private String priorityCode;
     private Integer progressRate;
     private Date startDate;
+    private Date dueDate;
     private String projectName;
     private String typeName;
     private String statusName;
+    private String codeName;
 
     public static TaskListDTOKJH fromTaskEntity(TaskEntityKJH task) {
         return new TaskListDTOKJH(task.getTaskId(), task.getParentTaskId(), task.getMilestoneId(), task.getTaskTypeId(),
                                   task.getTaskStatusId(), task.getTitle(), task.getContent(), task.getAssigneeUserId(),
-                                  task.getPriorityCode(), task.getProgressRate(), task.getStartDate(), task.getProjectName(),
-                                  task.getTypeName(), task.getStatusName());
+                                  task.getPriorityCode(), task.getProgressRate(), task.getStartDate(), task.getDueDate(), task.getProjectName(),
+                                  task.getTypeName(), task.getStatusName(), task.getCodeName());
     }
 }

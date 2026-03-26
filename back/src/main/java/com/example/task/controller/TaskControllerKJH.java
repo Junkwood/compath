@@ -21,4 +21,10 @@ public class TaskControllerKJH {
     public List<TaskListDTOKJH> getAllTasks(@PathVariable String id){
         return service.getAllTasks(id, id);
     }
+
+    // 프로젝트 이름 조회
+    @GetMapping("/api/tasks/projectname/{id}")
+    public TaskListDTOKJH getProjectName(@PathVariable Integer id){
+        return service.getProjectName(id);
+    }
 }

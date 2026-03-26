@@ -22,4 +22,10 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
 
         return list.stream().map(TaskListDTOKJH::fromTaskEntity).collect(Collectors.toList());
     }
+
+    @Override
+    public TaskListDTOKJH getProjectName(Integer id) {
+
+        return mapper.getProjectName(id);
+    }
 }
