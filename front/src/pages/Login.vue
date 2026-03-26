@@ -50,24 +50,12 @@
           <!-- 모바일 로고 -->
           <div class="flex items-center gap-2 mb-8 md:hidden">
             <div
-              class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center"
+              class="w-15 h-10 rounded-lg flex items-center justify-center"
             >
-              <svg
-                class="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
+              <img src="../images/comPath.png" alt="ComPath">
             </div>
             <span class="text-slate-800 dark:text-white font-semibold text-lg"
-              >Plana</span
+              >ComPath</span
             >
           </div>
 
@@ -267,6 +255,7 @@
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { useAuthStore } from "../stores/auth";
 
 const router = useRouter();
 
@@ -313,11 +302,11 @@ async function handleSubmit() {
 
   try {
     // TODO: 실제 로그인 API 연결
-    await axios.post("/api/login", {
-      email: form.id,
+    const response = await axios.post("/api/login", {
+      userId: form.id,
       password: form.password,
     });
-
+    useAuthStore().login(response.data);
     // 로그인 성공 시 대시보드로 이동
     await router.push("/");
   } catch (err) {

@@ -1,5 +1,6 @@
 package com.example.emp.service.impl;
 
+import com.example.emp.dto.EmpDTOSJW;
 import com.example.emp.entity.EmpVOSJW;
 import com.example.emp.mapper.EmpMapperSJW;
 import com.example.emp.service.EmpServiceSJW;
@@ -14,7 +15,7 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
     private final EmpMapperSJW empMapperSJW;
 
     @Override
-    public List<EmpVOSJW> findAll() {
+    public List<EmpDTOSJW> findAll() {
         return empMapperSJW.findAll();
     }
 

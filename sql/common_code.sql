@@ -58,7 +58,6 @@ INSERT INTO common_code VALUES ('C2', '0C', '프로젝트 그룹', 'O1');
 ------------------------------------------------------------
 INSERT INTO common_code VALUES ('D1', '0D', '작성중', 'O1');
 INSERT INTO common_code VALUES ('D2', '0D', '완료', 'O1');
-INSERT INTO common_code VALUES ('D3', '0D', '반려', 'O1');
 
 ------------------------------------------------------------
 -- 5. 마일스톤 상태 코드 (0E)
@@ -161,6 +160,19 @@ VALUES ('F1', '0F', '진행중', 'O1');
 
 INSERT INTO common_code (code_value, group_value, code_name, is_active)
 VALUES ('F2', '0F', '완료', 'O1');
+
+UPDATE common_code
+SET code_name = '진행중'
+WHERE code_name = '완료';
+
+COMMIT;
+
+SELECT * FROM common_code;
+
+INSERT INTO common_code (code_value, group_value, code_name, is_active)
+VALUES ('F5', '0F', '개발완료', 'O1');
+
+
 
 COMMIT;
 
