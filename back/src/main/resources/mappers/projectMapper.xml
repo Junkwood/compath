@@ -1,15 +1,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.project.mapper.ProjectMapperJDJ">
     <!-- 프로젝트 전체조회 -->
-    <select id="getAllProject" resultType="ProjectDTOJDJ">
-        SELECT *
-        FROM PROJECTS
-    </select>
-
-    <!-- 업무 조회_메인대쉬보드 -->
-    <select id="getAllTaskForMain" resultType="ProjectDTOJDJ">
-        SELECT *
-        FROM PROJECTS
+    <select id="getAllProject" resultType="ProjectListDTO">
+        SELECT
+            P.PROJECT_ID,
+            P.PROJECT_NAME,
+            P.END_DATE,
+            P.PM_USER_ID,
+            P.PL_USER_ID,
+            AVG(NVL(T.PROGRESS_RATE,0)) AS PROGRESS_RATE
+        FROM PROJECTS P JOIN TASKS T
+        ON P.PROJECT_ID = T.PROJECT_ID
+        GROUP BY
+            P.PROJECT_ID,
+            P.PROJECT_NAME,
+            P.END_DATE,
+            P.PM_USER_ID,
+            P.PL_USER_ID
+        ORDER BY P.PROJECT_ID
     </select>
 
     <!-- 프로젝트 생성 -->

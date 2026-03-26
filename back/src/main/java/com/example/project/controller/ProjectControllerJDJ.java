@@ -1,7 +1,7 @@
 package com.example.project.controller;
 
 
-import com.example.project.dto.ProjectDTOJDJ;
+import com.example.project.dto.ProjectListDTO;
 import com.example.project.service.ProjectServiceJDJ;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +19,13 @@ public class ProjectControllerJDJ {
     //프로젝트 전체목록 조회
     @ResponseBody
     @GetMapping("/api/ProjectList")
-    public List<ProjectDTOJDJ> list() {
+    public List<ProjectListDTO> list() {
         return projectServiceJDJ.getAllProject();
     }
 
     //프로젝트 생성
     @PostMapping("/api/ProjectRegister")
-    public ProjectDTOJDJ registerProject(@RequestBody ProjectDTOJDJ dto){
+    public ProjectListDTO registerProject(@RequestBody ProjectListDTO dto){
         projectServiceJDJ.registerProject(dto);
         return dto;
     }
