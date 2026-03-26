@@ -257,7 +257,7 @@
                   </router-link>
 
                   <router-link
-                    to="/project/tasks"
+                    :to="{ name: 'taskList', params: { id: 'PJT-001' } }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
