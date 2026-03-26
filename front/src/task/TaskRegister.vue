@@ -300,10 +300,21 @@ onMounted(async () => {
       axios.get("/api/taskType"),
       axios.get("/api/code", { params: { groupValue: ["0H", "0G"] } }),
     ]);
-
     taskTypeList.value = typeRes.data;
     priorityList.value = priorityRes.data.c0H;
-    statusList.value = priorityRes.data.c0G;
+    // statusList.value = priorityRes.data.c0G;
+    statusList.value = priorityRes.data.c0G.filter(
+      (status) =>
+        status.codeName === "시작 전" || status.codeName === "진행 중",
+    );
+
+    // 기본값 시작 전으로 고정
+    const defaultStatus = statusList.value.find(
+      (s) => s.codeName === "시작 전",
+    );
+    if (defaultStatus) {
+      form.value.status = defaultStatus.codeValue;
+    }
   } catch (e) {
     console.error("데이터를 불러오는 중 에러 발생:", e);
   }
