@@ -3,21 +3,26 @@
     <!-- 프로젝트 전체조회 -->
     <select id="getAllProject" resultType="ProjectListDTO">
         SELECT
-            P.PROJECT_ID,
-            P.PROJECT_NAME,
-            P.END_DATE,
-            P.PM_USER_ID,
-            P.PL_USER_ID,
-            AVG(NVL(T.PROGRESS_RATE,0)) AS PROGRESS_RATE
-        FROM PROJECTS P JOIN TASKS T
-        ON P.PROJECT_ID = T.PROJECT_ID
+            P2.PROJECT_ID AS projectId,
+            P2.PROJECT_NAME AS parentProjectName,
+            P2.END_DATE AS endDate,
+            P2.PM_USER_ID AS pmUserId,
+            P2.PL_USER_ID AS plUserId,
+            ROUND(AVG(NVL(T.PROGRESS_RATE, 0)), 0) AS progressRate
+        FROM PROJECTS P2
+        LEFT JOIN PROJECTS P
+            ON P.PARENT_PROJECT_ID = P2.PROJECT_ID
+        LEFT JOIN TASKS T
+            ON P.PROJECT_ID = T.PROJECT_ID
+        WHERE P2.PARENT_PROJECT_ID IS NULL
         GROUP BY
-            P.PROJECT_ID,
-            P.PROJECT_NAME,
-            P.END_DATE,
-            P.PM_USER_ID,
-            P.PL_USER_ID
-        ORDER BY P.PROJECT_ID
+            P2.PROJECT_ID,
+            P2.PROJECT_NAME,
+            P2.END_DATE,
+            P2.PM_USER_ID,
+            P2.PL_USER_ID
+        ORDER BY
+            P2.PROJECT_ID
     </select>
 
     <!-- 프로젝트 생성 -->

@@ -65,13 +65,16 @@
                   background
                 />
               </div>
-
+             
               <div class="new-project-btn-wrap">
                 <el-button class="new-project-btn" @click="handleCreateProject">
                   + &nbsp; 새 프로젝트 생성
                 </el-button>
               </div>
+             
             </div>
+
+     
 
             <!-- 우측 카드 묶음 -->
             <div class="side-col">
@@ -129,28 +132,29 @@
             </div>
 
             <el-table
+              v-loading="loadingProjects"
               :data="pagedProjectData"
               style="width: 100%"
               :header-cell-style="headerStyle"
               :cell-style="cellStyle"
             >
-              <el-table-column prop="projectName" label="프로젝트명" min-width="180" />
+              <el-table-column prop="parentProjectName" label="프로젝트명" min-width="180" />
               <el-table-column label="진척도" min-width="200">
                 <template #default="{ row }">
                   <div class="progress-wrap">
                     <el-progress
-                      :percentage="row.progress"
+                      :percentage="row.progressRate"
                       :stroke-width="8"
                       :show-text="false"
                       color="#2563eb"
                       style="flex: 1"
                     />
-                    <span class="progress-text">{{ row.progress }}%</span>
+                    <span class="progress-text">{{ row.progressRate }}%</span>
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column prop="deadline" label="마감일" width="130" align="center" />
-              <el-table-column prop="manager"  label="관리자" width="110" align="center" />
+              <el-table-column prop="endDate" label="마감일" width="130" align="center" />
+              <el-table-column prop="pmUserId"  label="관리자" width="110" align="center" />
             </el-table>
 
             <div class="pagination-wrap">
@@ -169,14 +173,22 @@
 
     </div>
   </div>
+
+<ProjectCreateModal v-model="createProjectModalOpen" />
+
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios';
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import ProjectCreateModal from '../project/ProjectCreateModal.vue' 
 
 const sidebarOpen = ref(false)
+
+// ── 모달 열림 ─────────────────────────────────────
+const createProjectModalOpen = ref(false)
 
 // ── 토글 ──────────────────────────────────────────
 const myTaskOnly    = ref(true)
@@ -186,7 +198,7 @@ const myProjectOnly = ref(true)
 const workPage        = ref(1)
 const workPageSize    = 5
 const projectPage     = ref(1)
-const projectPageSize = 6
+const projectPageSize = 5
 
 // ── 더미 데이터 (백엔드 연결 시 onMounted에서 API 호출로 교체) ──
 const myTasks = ref({ inProgress: 5, done: 10, rejected: 3, deadline: 1 })
@@ -219,16 +231,39 @@ const workProjects = ref([
   { no: 8, projectName: '테스트 프로젝트 B',          new: 2, inProgress: 6, devDone: 4, rejected: 2, done: 1, total: 15 },
 ])
 
-const projectList = ref([
-  { projectName: 'MES 스마트 팩토리 구축',    progress: 75, deadline: '2026-06-30', manager: '장다정' },
-  { projectName: 'ComPath 협업툴 구축',        progress: 70, deadline: '2026-06-30', manager: '엄어징징' },
-  { projectName: '발달장애인 지원 프로그램',    progress: 75, deadline: '2026-06-30', manager: '서정우' },
-  { projectName: '삼성라이온즈 베리즈샵 구축', progress: 75, deadline: '2026-06-30', manager: '김예담' },
-  { projectName: '도로로와 타마마 프로젝트',   progress: 75, deadline: '2026-06-30', manager: '김택텍' },
-  { projectName: '파일섬 프로젝트',            progress: 75, deadline: '2026-06-30', manager: '장다정' },
-  { projectName: '테스트 프로젝트 A',          progress: 50, deadline: '2026-09-30', manager: '서정우' },
-  { projectName: '테스트 프로젝트 B',          progress: 30, deadline: '2026-12-31', manager: '김예담' },
-])
+const loadingProjects=ref(false);
+const projectError = ref('');
+const projectList = ref([]);
+
+const fetchProjectList = async()=>{
+  loadingProjects.value = true
+  projectError.value = ''
+
+  try{
+  const res = await axios.get('/api/ProjectList')
+  console.log(res.data);
+  projectList.value=res.data;
+  } catch(err) {
+    console.error('프로젝트 목록 조회 실패:', err)
+    projectError.value = '프로젝트 목록 조회 실패'
+
+    if (err.response) {
+      console.error('status:', err.response.status)
+      console.error('data:', err.response.data)
+    } else if (err.request) {
+      console.error('요청은 갔는데 응답이 없음')
+    } else {
+      console.error('axios 설정 오류')
+    }
+  } finally {
+    loadingProjects.value = false
+  }
+  
+}
+
+onMounted(()=>{
+  fetchProjectList()
+})
 
 // ── 페이징된 데이터 ────────────────────────────────
 const pagedWorkData = computed(() => {
@@ -256,9 +291,9 @@ const cellStyle = () => ({
 })
 
 // ── 이벤트 ────────────────────────────────────────
+//버튼 클릭시 모달 창 열기
 const handleCreateProject = () => {
-  // TODO: router.push('/project/create') 또는 모달 오픈
-  console.log('새 프로젝트 생성')
+  createProjectModalOpen.value = true
 }
 </script>
 
