@@ -63,6 +63,55 @@ INSERT INTO projects (
 );
 
 ------------------------------------------------------------
+-- 2. 상위 프로젝트 4개 더 추가
+-- project_id = NUMBER
+-- identifier = 기존 PJT-xxx 문자열
+------------------------------------------------------------
+
+INSERT INTO projects (
+    project_id, identifier, parent_project_id, project_name, description,
+    start_date, end_date, status, is_public,
+    created_at, updated_at, created_by, pm_user_id, pl_user_id, editor_user_id
+) VALUES (
+    3, 'PJT-003', NULL, '파일섬 프로젝트', '최상위 프로젝트 3',
+    DATE '2026-03-26', DATE '2026-05-31', 'F1', 'P1',
+    SYSTIMESTAMP, SYSTIMESTAMP, NULL, NULL, NULL, NULL
+);
+
+INSERT INTO projects (
+    project_id, identifier, parent_project_id, project_name, description,
+    start_date, end_date, status, is_public,
+    created_at, updated_at, created_by, pm_user_id, pl_user_id, editor_user_id
+) VALUES (
+    4, 'PJT-004', NULL, '친환경플랫폼 비그린', '최상위 프로젝트 4',
+    DATE '2025-02-01', DATE '2026-07-31', 'F1', 'P1',
+    SYSTIMESTAMP, SYSTIMESTAMP, NULL, NULL, NULL, NULL
+);
+
+INSERT INTO projects (
+    project_id, identifier, parent_project_id, project_name, description,
+    start_date, end_date, status, is_public,
+    created_at, updated_at, created_by, pm_user_id, pl_user_id, editor_user_id
+) VALUES (
+    5, 'PJT-005', NULL, '향교 웹사이트 구축', '최상위 프로젝트 5',
+    DATE '2026-05-01', DATE '2027-12-15', 'F1', 'P1',
+    SYSTIMESTAMP, SYSTIMESTAMP, NULL, NULL, NULL, NULL
+);
+
+INSERT INTO projects (
+    project_id, identifier, parent_project_id, project_name, description,
+    start_date, end_date, status, is_public,
+    created_at, updated_at, created_by, pm_user_id, pl_user_id, editor_user_id
+) VALUES (
+    6, 'PJT-006', NULL, '예담직업전문학교', '최상위 프로젝트 6',
+    DATE '2026-05-01', DATE '2027-12-15', 'F1', 'P1',
+    SYSTIMESTAMP, SYSTIMESTAMP, NULL, NULL, NULL, NULL
+);
+
+SELECT * FROM projects;
+COMMIT;
+
+------------------------------------------------------------
 -- 2. 마일스톤 6개
 ------------------------------------------------------------
 
