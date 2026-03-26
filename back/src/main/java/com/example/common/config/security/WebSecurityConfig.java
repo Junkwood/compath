@@ -49,12 +49,12 @@ class WebSecurityConfig {
 		return new CustomLoginSuccessHandler();
 	}
 
-	@Bean
-    UserDetailsService userDetailsService(PasswordEncoder encoder) {
-		String password = encoder.encode("1234");
-		UserDetails user = User.withUsername("user").password(password).roles("USER").build();
-		UserDetails admin = User.withUsername("admin").password(password).roles("ADMIN").build();
-		return new InMemoryUserDetailsManager(user,admin);
-	}
+//	@Bean
+//    UserDetailsService userDetailsService(PasswordEncoder encoder) {
+//		String password = encoder.encode("1234");
+//		UserDetails user = User.withUsername("user").password(password).roles("USER").build();
+//		UserDetails admin = User.withUsername("admin").password(password).roles("ADMIN").build();
+//		return new InMemoryUserDetailsManager(user,admin);
+//	}
 
 }

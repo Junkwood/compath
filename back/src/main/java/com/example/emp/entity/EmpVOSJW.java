@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public class EmpVOSJW implements UserDetails {
     private Integer userId;
-    private String userName;
+    private String name;
     private String email;
     private String password;
     private String isActive;

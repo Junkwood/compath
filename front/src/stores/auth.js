@@ -1,13 +1,14 @@
 import {defineStore} from 'pinia';
 
+
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         token: localStorage.getItem("token")||null,
         user: JSON.parse(localStorage.getItem('user')) || null, // 새로고침 시 로컬스토리지에서 복구
     }),
     getters: {
-        isLoggedIn: state => {!!state.user},
-        isAdmin: state => state.user?.role === 'ROLE_ADMIN',
+        isLoggedIn: state => !!state.user,
+        isAdmin: state => state.user?.userType === 'ADMIN',
         userName: state => state.user?.name || '',
     },
     actions: {

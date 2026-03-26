@@ -1,5 +1,6 @@
 package com.example.back;
 
+import com.example.emp.dto.EmpDTOSJW;
 import com.example.emp.entity.EmpVOSJW;
 import com.example.emp.mapper.EmpMapperSJW;
 import org.junit.jupiter.api.Test;
@@ -12,14 +13,14 @@ import java.util.List;
 public class EmpTest {
     @Autowired
     EmpMapperSJW empMapperSJW;
-    //@Test
+    @Test
     public void empList(){
-        List<EmpVOSJW> list = empMapperSJW.findAll();
-        for(EmpVOSJW e:list){
+        List<EmpDTOSJW> list = empMapperSJW.findAll();
+        for(EmpDTOSJW e:list){
             System.out.println(e);
         }
     }
-    @Test
+    //@Test
     public void empInfo(){
             System.out.println(empMapperSJW.findById(1001));
     }

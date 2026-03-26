@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EmpDTOSJW {
     private Integer userId;
-    private String userName;
+    private String name;
     private String email;
     private String isActive;
     private String userType;
