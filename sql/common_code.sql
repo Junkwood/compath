@@ -177,3 +177,4 @@ VALUES ('F5', '0F', '개발완료', 'O1');
 COMMIT;
 
 SELECT * FROM COMMON_CODE ORDER BY code_value;
+
