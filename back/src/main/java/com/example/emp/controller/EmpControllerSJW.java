@@ -14,28 +14,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EmpControllerSJW {
     private final EmpServiceSJW empService;
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
 
     @GetMapping("/api/emp/list")
-    public List<EmpDTOSJW> findAll() {
-        return empService.findAll();
+    public List<EmpDTOSJW> getAll() {
+        return empService.getAll();
     }
     @GetMapping("/api/emp/info/{id}")
-    public EmpVOSJW findById(@PathVariable Integer id) {
-        return empService.findById(id);
+    public EmpVOSJW getById(@PathVariable Integer id) {
+        return empService.getById(id);
+    }
+    @GetMapping("/api/emp/status/{id}")
+    public String modifyStatusById(@PathVariable Integer id) {
+        return empService.modifyStatusById(id);
+    }
+    @PostMapping("/api/emp")
+    public Integer register(@RequestBody EmpVOSJW emp) {
+    return empService.registerEmp(emp);
     }
     @PostMapping("/api/login")
     public EmpVOSJW login(@RequestBody EmpVOSJW emp) {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
-        Integer id = emp.getUserId();
-        String password = emp.getPassword();
-        EmpVOSJW result = empService.findById(id);
-
-        if(encoder.matches(password, result.getPassword())) {
-            result.setPassword(null);
-            return result;
-        }
-        else  {
-            return null;
-        }
+        return  empService.login(emp);
     }
 }

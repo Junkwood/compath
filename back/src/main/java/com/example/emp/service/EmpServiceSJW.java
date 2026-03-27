@@ -6,6 +6,9 @@ import com.example.emp.entity.EmpVOSJW;
 import java.util.List;
 
 public interface EmpServiceSJW {
-    List<EmpDTOSJW> findAll();
-    EmpVOSJW findById(Integer id);
+    List<EmpDTOSJW> getAll();
+    EmpVOSJW getById(Integer id);
+    String modifyStatusById(Integer id);
+    Integer registerEmp(EmpVOSJW emp);
+    EmpVOSJW login(EmpVOSJW emp);
 }
