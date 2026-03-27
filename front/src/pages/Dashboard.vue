@@ -37,30 +37,26 @@
               </div>
 
               <el-table
-                :data="pagedWorkData"
+                :data="pagedTaskData"
                 style="width: 100%"
                 :header-cell-style="headerStyle"
                 :cell-style="cellStyle"
               >
                 <el-table-column prop="no"          label="번호"    width="70"  align="center" />
                 <el-table-column prop="projectName" label="프로젝트" min-width="160" />
-                <el-table-column prop="new"         label="신규"    width="70"  align="center" />
+                <el-table-column prop="created"     label="신규"    width="70"  align="center" />
                 <el-table-column prop="inProgress"  label="진행"    width="70"  align="center" />
                 <el-table-column prop="devDone"     label="개발완료" width="90"  align="center" />
                 <el-table-column prop="rejected"    label="반려"    width="70"  align="center" />
                 <el-table-column prop="done"        label="종료"    width="70"  align="center" />
-                <el-table-column prop="total"       label="합계"    width="70"  align="center">
-                  <template #default="{ row }">
-                    <span class="total-cell">{{ row.total }}</span>
-                  </template>
-                </el-table-column>
+                <el-table-column prop="totalSum"    label="합계"    width="70"  align="center" />
               </el-table>
 
               <div class="pagination-wrap">
                 <el-pagination
                   v-model:current-page="workPage"
                   :page-size="workPageSize"
-                  :total="workProjects.length"
+                  :total="taskProjects.length"
                   layout="prev, pager, next"
                   background
                 />
@@ -137,6 +133,7 @@
               style="width: 100%"
               :header-cell-style="headerStyle"
               :cell-style="cellStyle"
+              @row-click="goProjectDashboard"
             >
               <el-table-column prop="parentProjectName" label="프로젝트명" min-width="180" />
               <el-table-column label="진척도" min-width="200">
@@ -180,6 +177,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios';
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -220,16 +218,37 @@ const newsList = [
   { label: '업무 생성',   count: 2, color: '#9ca3af' },
 ]
 
-const workProjects = ref([
-  { no: 1, projectName: 'MES 스마트 팩토리 구축',    new: 5, inProgress: 5, devDone: 6, rejected: 1, done: 1, total: 18 },
-  { no: 2, projectName: 'ComPath 협업툴 구축',        new: 5, inProgress: 5, devDone: 6, rejected: 1, done: 1, total: 18 },
-  { no: 3, projectName: '발달장애인 지원 프로그램',    new: 5, inProgress: 5, devDone: 6, rejected: 1, done: 1, total: 18 },
-  { no: 4, projectName: '삼성라이온즈 베리즈샵 구축', new: 5, inProgress: 5, devDone: 6, rejected: 1, done: 1, total: 18 },
-  { no: 5, projectName: '도로로와 타마마 프로젝트',   new: 5, inProgress: 5, devDone: 6, rejected: 1, done: 1, total: 18 },
-  { no: 6, projectName: '파일섬 프로젝트',            new: 5, inProgress: 5, devDone: 6, rejected: 1, done: 1, total: 18 },
-  { no: 7, projectName: '테스트 프로젝트 A',          new: 3, inProgress: 4, devDone: 5, rejected: 0, done: 2, total: 14 },
-  { no: 8, projectName: '테스트 프로젝트 B',          new: 2, inProgress: 6, devDone: 4, rejected: 2, done: 1, total: 15 },
-])
+const router = useRouter();
+
+const taskProjects = ref([]); //workPrpjects
+const loadingTasks=ref(false);
+const taskError = ref('');
+
+const fetchTaskList = async()=>{
+  loadingTasks.value=true;
+  taskError.value=''
+
+try {
+    const res = await axios.get('/api/TaskListDash')
+    console.log(res.data);
+    taskProjects.value=res.data
+} catch (err) {
+    console.error('업무 목록 조회 실패:', err)
+    projectError.value='업무 목록 조회 실패'
+
+    if (err.response) {
+      console.error('status:', err.response.status)
+      console.error('data:', err.response.data)
+    } else if (err.request) {
+      console.error('요청은 갔는데 응답이 없음')
+    } else {
+      console.error('axios 설정 오류')
+    }
+  } finally {
+    loadingTasks.value = false
+  }
+};
+
 
 const loadingProjects=ref(false);
 const projectError = ref('');
@@ -263,12 +282,18 @@ const fetchProjectList = async()=>{
 
 onMounted(()=>{
   fetchProjectList()
+  fetchTaskList()
 })
 
 // ── 페이징된 데이터 ────────────────────────────────
-const pagedWorkData = computed(() => {
+const pagedTaskData = computed(() => {
   const s = (workPage.value - 1) * workPageSize
-  return workProjects.value.slice(s, s + workPageSize)
+  return taskProjects
+    .value.slice(s, s + workPageSize)
+    .map((item,index) => ({
+      ...item,
+      no : s + index + 1
+    }))
 })
 
 const pagedProjectData = computed(() => {
@@ -294,6 +319,14 @@ const cellStyle = () => ({
 //버튼 클릭시 모달 창 열기
 const handleCreateProject = () => {
   createProjectModalOpen.value = true
+}
+
+// ── 행클릭 이벤트──────────────────────────────────
+const goProjectDashboard = (row) =>{
+  router.push({
+    name:'projectDash',
+    params: { projectId: row.projectId}
+  })
 }
 </script>
 

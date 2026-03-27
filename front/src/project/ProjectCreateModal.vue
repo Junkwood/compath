@@ -25,15 +25,15 @@
           <div class="pl-field">
             <span class="pl-label">총괄PL</span>
             <el-select
-              v-model="form.pmUserId"
+              v-model="form.plUserId"
               placeholder="선택"
               style="width: 140px"
             >
               <el-option
                 v-for="user in plOptions"
-                :key="user.value"
-                :label="user.label"
-                :value="user.value"
+                :key="user.userId"
+                :label="user.userName"
+                :value="user.userId"
               />
             </el-select>
           </div>
@@ -109,7 +109,8 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import axios from 'axios'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -121,29 +122,30 @@ const visible = computed({
   set: (v) => emit('update:modelValue', v),
 })
 
-import { computed } from 'vue'
 
 // ── PL 옵션 (백엔드 연결 시 API로 교체) ──
-const plOptions = ref([
-  { label: '김희발', value: 'user1' },
-  { label: '박희발', value: 'user2' },
-  { label: '강희발', value: 'user3' },
-  { label: '강희발2', value: 'user4' },
-  { label: '오희발', value: 'user5' },
-])
+const plOptions = ref([]);
+
+const fetchPlList = async()=>{
+  const res = await axios.get('/api/ProjectPlList')
+  console.log(res.data);
+  plOptions.value=res.data;
+}
+
 
 const formRef   = ref(null)
 const submitting = ref(false)
 
+//폼의 초기값
 const defaultForm = () => ({
   projectName: '',
   projectCode: '',
-  pmUserId:    '',
-  startDate:   '',
-  endDate:     '',
+  plUserId: null,
+  startDate: '',
+  endDate: '',
   description: '',
   useMilestone: true,
-  isPublic:     true,
+  isPublic: true,
 })
 
 const form = reactive(defaultForm())
@@ -151,6 +153,8 @@ const form = reactive(defaultForm())
 const rules = {
   projectName: [{ required: true, message: '프로젝트 명을 입력하세요', trigger: 'blur' }],
   projectCode: [{ required: true, message: '프로젝트 식별자를 입력하세요', trigger: 'blur' }],
+  userId: [{ required: true, message: '총괄PL을 선택하세요', trigger: 'blur' }],
+
 }
 
 const handleClose = () => {
@@ -168,17 +172,31 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
-    // TODO: axios.post('/api/projects', form)
-    console.log('등록 데이터:', { ...form })
-    emit('submitted', { ...form })
+    const payload = {
+      projectName: form.projectName,
+      identifier: form.projectCode,
+      plUserId: form.plUserId,
+      startDate: form.startDate,
+      endDate: form.endDate,
+      description: form.description,
+      useMilestone: form.useMilestone ? 'O1' : 'O2',
+      isPublic: form.isPublic ? 'O1' : 'O2',
+    }
+
+    await axios.post('/api/ProjectRegister', payload)
     visible.value = false
     handleReset()
+    emit('submitted')
   } catch (err) {
     console.error('프로젝트 등록 실패:', err)
   } finally {
     submitting.value = false
   }
 }
+
+onMounted(() => {
+  fetchPlList()
+})
 </script>
 
 <style scoped>

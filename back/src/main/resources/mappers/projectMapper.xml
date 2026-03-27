@@ -27,38 +27,64 @@
 
     <!-- 프로젝트 생성 -->
     <insert id="registerProject">
+        <selectKey keyProperty="projectId" resultType="int" order="BEFORE">
+            SELECT project_seq.NEXTVAL FROM dual
+        </selectKey>
         INSERT INTO PROJECTS (
-        PROJECT_ID,
-        PARENT_PROJECT_ID,
-        PROJECT_NAME,
-        DESCRIPTION,
-        START_DATE,
-        END_DATE,
-        STATUS,
-        IS_PUBLIC,
-        CREATED_AT,
-        UPDATED_AT,
-        CREATED_BY,
-        PM_USER_ID,
-        PL_USER_ID,
-        EDITOR_USER_ID
+            PROJECT_ID,
+            PARENT_PROJECT_ID,
+            PROJECT_NAME,
+            DESCRIPTION,
+            START_DATE,
+            END_DATE,
+            STATUS,
+            IS_PUBLIC,
+            CREATED_AT,
+            UPDATED_AT,
+            CREATED_BY,
+            PM_USER_ID,
+            PL_USER_ID,
+            EDITOR_USER_ID,
+            USE_MILESTONE
         ) VALUES (
-        #{projectId},
-        #{parentProjectId},
-        #{projectName},
-        #{description},
-        #{startDate},
-        #{endDate},
-        #{status},
-        #{isPublic},
-        #{createdAt},
-        #{updatedAt},
-        #{createdBy},
-        #{pmUserId},
-        #{plUserId},
-        #{editorUserId}
+            #{projectId},
+            NULL,
+            #{projectName},
+            #{description},
+            #{startDate},
+            #{endDate},
+            1,
+            #{isPublic},
+            sysdate,
+            NULL,
+            #{createdBy},
+            #{pmUserId},
+            #{plUserId},
+            NULL,
+            #{useMilestone}
         )
     </insert>
 
+    <!--프로젝트 생성시 총괄PL 리스트 불러오기 -->
+    <select id="getPlList" resultType="ProjectUserDtoJDJ">
+        SELECT
+            U.USER_ID,
+            U.USER_NAME
+        FROM USERS U
+        JOIN GROUP_MEMBERS GM
+            ON GM.USER_ID = U.USER_ID
+        WHERE GM.GROUP_ID = 6 AND U.is_active = 'O1' AND U.user_type = 'M2'
+    </select>
+
+    <!--  프로젝트 단건조회  -->
+    <select id="getSingleProject" resultType="ProjectSingleDtoJDJ">
+        SELECT
+            PROJECT_ID,
+            PROJECT_NAME,
+            START_DATE,
+            END_DATE
+        FROM PROJECTS
+        WHERE PROJECT_ID=#{projectId}
+    </select>
 
 </mapper>

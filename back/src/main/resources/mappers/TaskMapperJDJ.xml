@@ -3,9 +3,30 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.task.mapper.TaskMapperJDJ">
-<!--    <select id="getTaskListDash" resultType="TaskListDashDto">-->
-<!--        SELECT *-->
-<!--        FROM TASKS-->
-<!--    </select>-->
+    <select id="getTaskListDash" resultType="TaskListDashDtoJDJ">
+        SELECT
+            RP.PROJECT_ID,
+            RP.PROJECT_NAME,
+            SUM(CASE WHEN TS.STATUS_NAME = '시작 전' THEN 1 ELSE 0 END) AS created,
+            SUM(CASE WHEN TS.STATUS_NAME = '진행중' THEN 1 ELSE 0 END) AS inProgress,
+            SUM(CASE WHEN TS.STATUS_NAME = '개발완료' THEN 1 ELSE 0 END) AS devDone,
+            SUM(CASE WHEN TS.STATUS_NAME = '반려' THEN 1 ELSE 0 END) AS rejected,
+            SUM(CASE WHEN TS.STATUS_NAME = '종료' THEN 1 ELSE 0 END) AS done,
+            COUNT(T.TASK_ID) AS totalSum
+        FROM PROJECTS RP
+        LEFT JOIN PROJECTS CP
+            ON CP.PARENT_PROJECT_ID = RP.PROJECT_ID
+            OR CP.PROJECT_ID = RP.PROJECT_ID
+        LEFT JOIN TASKS T
+            ON T.PROJECT_ID = CP.PROJECT_ID
+        LEFT JOIN TASK_STATUSES TS
+            ON T.TASK_STATUS_ID = TS.TASK_STATUS_ID
+        WHERE RP.PARENT_PROJECT_ID IS NULL
+        GROUP BY
+            RP.PROJECT_ID,
+            RP.PROJECT_NAME
+        ORDER BY
+            RP.PROJECT_ID
+    </select>
 
 </mapper>

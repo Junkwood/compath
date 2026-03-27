@@ -233,7 +233,7 @@
               <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
                 <ul class="pl-8 mt-1" :class="!parentLink.expanded && 'hidden'">
                   <router-link
-                    to="/project/dashboard"
+                    to="/project/ProjectDashboard.vue"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >

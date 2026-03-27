@@ -1,6 +1,9 @@
 package com.example.project.service.impl;
 
+import com.example.project.dto.ProjectCreateDtoJDJ;
+import com.example.project.dto.ProjectSingleDtoJDJ;
 import com.example.project.dto.ProjectListDto;
+import com.example.project.dto.ProjectUserDtoJDJ;
 import com.example.project.mapper.ProjectMapperJDJ;
 import com.example.project.service.ProjectServiceJDJ;
 import jakarta.transaction.Transactional;
@@ -23,9 +26,20 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
     }
 
     //프로젝트 생성
-
     @Override
-    public int registerProject(ProjectListDto dto) {
-        return projectMapperJDJ.registerProject(dto);
+    public void registerProject(ProjectCreateDtoJDJ dto) {
+        projectMapperJDJ.registerProject(dto);
+    }
+
+    //프로젝트 생성시 총괄PL 리스트 불러오기
+    @Override
+    public List<ProjectUserDtoJDJ> getPlList() {
+        return projectMapperJDJ.getPlList();
+    }
+
+    //프로젝트 단건조회
+    @Override
+    public ProjectSingleDtoJDJ getSingleProject(int projectId) {
+        return projectMapperJDJ.getSingleProject(projectId);
     }
 }

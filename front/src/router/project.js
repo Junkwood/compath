@@ -6,9 +6,10 @@ const projectRoutes = [
   },
 
   {
-    path: "/project/ProjectCreateModal.vue",
-    name: "projectCreateModal",
-    component: () => import("../project/ProjectCreateModal.vue"),
+    path: "/project/dashboard/:projectId",
+    name: "projectDash",
+    component: () => import("../project/ProjectDashboard.vue"),
+    props: true,
   },
 ];
 export default projectRoutes;
