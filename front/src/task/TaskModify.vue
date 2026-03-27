@@ -16,7 +16,7 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            업무 생성
+            업무 수정
           </h1>
 
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
@@ -100,6 +100,34 @@
                 "
               />
             </div>
+            <!--진척도-->
+            <div class="grid grid-cols-2 gap-6 mb-8">
+              <div>
+                <label class="block text-sm font-medium mb-1">진척도 (%)</label>
+                <input
+                  type="number"
+                  v-model="form.progressRate"
+                  min="0"
+                  max="100"
+                  class="input w-full"
+                  placeholder="0"
+                />
+              </div>
+              <!--소요시간-->
+              <div>
+                <label class="block text-sm font-medium mb-1">소요 시간</label>
+                <input
+                  type="text"
+                  v-model="form.actualHours"
+                  class="input w-full bg-blue-50 cursor-not-allowed"
+                  placeholder="진행중 변경 시 자동 계산"
+                  readonly
+                />
+                <p class="text-[11px] text-blue-400 mt-1">
+                  * 진행 중으로 변경 시 자동 계산됩니다.
+                </p>
+              </div>
+            </div>
 
             <!-- 업무명 -->
             <div class="mb-6">
@@ -134,7 +162,7 @@
                     <option
                       v-for="item in statusList"
                       :key="item.codeValue"
-                      :value="item.codeValue"
+                      :value="Number(item.codeValue.replace('G', ''))"
                     >
                       {{ item.codeName }}
                     </option>
@@ -194,12 +222,10 @@
               />
             </div>
 
-            <!-- 예정시작일 / 예정종료일 / 추정시간 -->
+            <!-- 시작일 / 종료일 / 추정시간 -->
             <div class="grid grid-cols-3 gap-6 mb-8">
               <div>
-                <label class="block text-sm font-medium mb-1"
-                  >예정 시작 일</label
-                >
+                <label class="block text-sm font-medium mb-1">시작 일</label>
                 <input
                   type="date"
                   v-model="form.startDate"
@@ -208,9 +234,7 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1"
-                  >예정 종료일</label
-                >
+                <label class="block text-sm font-medium mb-1">종료일</label>
                 <input
                   type="date"
                   v-model="form.endDate"
@@ -225,7 +249,6 @@
                 <label class="block text-sm font-medium mb-1">추정 시간</label>
                 <div class="flex gap-2">
                   <input v-model="form.estTime" class="input flex-1" />
-                  <button class="btn-confirm">확인</button>
                 </div>
               </div>
             </div>
@@ -235,9 +258,7 @@
               <button @click="goBack" class="btn-navy">← 목록으로</button>
               <div class="flex gap-2">
                 <button @click="resetForm" class="btn-red">초기화</button>
-                <button @click="submitForm" class="btn-green">
-                  프로젝트 등록
-                </button>
+                <button @click="submitForm" class="btn-green">수정 완료</button>
               </div>
             </div>
           </div>
@@ -248,7 +269,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useRoute } from "vue-router";
 import axios from "axios";
@@ -267,42 +288,47 @@ const statusList = ref([]);
 const milestoneList = ref([]);
 
 onMounted(async () => {
-  const pId = route.query.projectId;
+  const taskId = route.query.taskId;
+  let pId = route.query.projectId;
+
   try {
-    if (pId) {
-      const res = await axios.get(`/api/projectDetail/${pId}`);
-      const d = res.data;
-
-      // 프로젝트 정보
-      form.value.projectName = d.displayProjectName;
-      form.value.subProjectName = d.displaySubProjectName;
-      form.value.projectId = d.parentProjectId || d.projectId;
-      form.value.subProjectId = d.parentProjectId ? d.projectId : null;
-
-      await fetchMilestones(form.value.subProjectId || form.value.projectId);
-    }
-
-    // 공통 코드
     const [typeRes, codeRes] = await Promise.all([
       axios.get("/api/taskType"),
       axios.get("/api/code", { params: { groupValue: ["0H", "0G"] } }),
     ]);
-
     taskTypeList.value = typeRes.data;
     priorityList.value = codeRes.data.c0H;
     statusList.value = codeRes.data.c0G;
 
-    statusList.value = codeRes.data.c0G.filter(
-      (status) => status.codeName === "시작 전" || status.codeName === "진행중",
-    );
+    if (taskId) {
+      const res = await axios.get(`/api/task/${taskId}`);
+      const d = res.data;
 
-    // 초기값 세팅
-    if (statusList.value?.length > 0)
-      form.value.taskStatusId = statusList.value[0].codeValue;
-    if (taskTypeList.value?.length > 0)
-      form.value.taskTypeId = taskTypeList.value[0].taskTypeId;
+      form.value = {
+        ...form.value,
+        ...d,
+        startDate: d.startDate ? d.startDate.split("T")[0] : "",
+        endDate: d.dueDate ? d.dueDate.split("T")[0] : "",
+        estTime: d.estimatedHours ? `${d.estimatedHours}시간` : "",
+        assigneeName: d.assigneeName || "",
+        taskStatusId: d.taskStatusId,
+        taskTypeId: d.taskTypeId ?? "",
+      };
+
+      if (!pId) pId = d.projectId;
+    }
+
+    if (pId) {
+      const res = await axios.get(`/api/projectDetail/${pId}`);
+      const d = res.data;
+      form.value.projectName = d.displayProjectName;
+      form.value.subProjectName = d.displaySubProjectName;
+      form.value.projectId = d.parentProjectId || d.projectId;
+      form.value.subProjectId = d.parentProjectId ? d.projectId : null;
+      await fetchMilestones(form.value.subProjectId || form.value.projectId);
+    }
   } catch (e) {
-    console.error("초기 로드 실패:", e);
+    console.error("초기 데이터 로드 실패:", e);
   }
 });
 const initialForm = {
@@ -349,8 +375,6 @@ const fetchMilestones = async (pId) => {
       params: { projectId: pId },
     });
 
-    console.log("받아온 마일스톤 데이터:", res.data);
-
     milestoneList.value = res.data.map((m) => ({
       name: m.milestoneName,
       value: m.milestoneId,
@@ -389,11 +413,39 @@ const calcEstTime = () => {
     form.value.estTime = `${days * 8}시간`;
   }
 };
+
+watch(
+  () => form.value.taskStatusId,
+  (newVal) => {
+    if (newVal === 2) {
+      // 진행중
+      if (form.value.startDate && form.value.endDate) {
+        const diff =
+          new Date(form.value.endDate) - new Date(form.value.startDate);
+        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        form.value.actualHours = `${days * 8}시간`;
+      } else {
+        const today = new Date().toISOString().split("T")[0];
+        const start = form.value.startDate || today;
+        const end = form.value.endDate || today;
+        const diff = new Date(end) - new Date(start);
+        const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+        form.value.actualHours = `${days * 8}시간`;
+      }
+    } else {
+      form.value.actualHours = "";
+    }
+  },
+);
+
 //등록
+// 업무 수정 제출
 const submitForm = async () => {
   try {
+    const taskId = route.query.taskId;
     const postData = {
       ...form.value,
+      taskId: Number(taskId),
       projectId: Number(form.value.projectId),
       subProjectId: form.value.subProjectId
         ? Number(form.value.subProjectId)
@@ -401,25 +453,26 @@ const submitForm = async () => {
       milestoneId: form.value.milestoneId
         ? Number(form.value.milestoneId)
         : null,
-      taskTypeId: Number(form.value.taskTypeId),
       taskStatusId: Number(
         String(form.value.taskStatusId).replace(/[^0-9]/g, ""),
       ),
       assigneeUserId: form.value.assigneeUserId
         ? Number(form.value.assigneeUserId)
         : null,
-      estimatedHours: parseInt(form.value.estTime) || 0,
-      estStartDate: form.value.startDate,
-      estEndDate: form.value.endDate,
+
+      // 날짜 데이터
       startDate: form.value.startDate,
       dueDate: form.value.endDate,
     };
+    const res = await axios.put(`/api/task/${taskId}`, postData);
 
-    await axios.post("/api/tasks", postData);
-    alert("등록 완료!");
+    form.value = { ...form.value, ...res.data };
+
+    alert("수정이 완료되었습니다!");
     router.push("/tasks");
   } catch (e) {
-    alert("등록에 실패했습니다. 입력값을 확인해 주세요.");
+    console.error(e);
+    alert("수정에 실패했습니다. 입력값을 확인해 주세요.");
   }
 };
 const resetForm = () => {

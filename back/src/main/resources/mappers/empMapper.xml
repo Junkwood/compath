@@ -3,6 +3,20 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.emp.mapper.EmpMapperSJW">
+    <resultMap id="EmpResultMap" type="com.example.emp.entity.EmpVOSJW">
+        <!-- PK(아이디)는 id 태그로 반드시 명시해야 MyBatis가 중복을 제거함 -->
+        <id property="userId" column="user_id" />
+        <result property="name" column="user_name" />
+        <result property="email" column="email" />
+        <result property="userType" column="user_type" />
+        <result property="isActive" column="is_active" />
+
+        <!-- group_name 컬럼으로 나온 여러 줄의 결과를 groupList라는 배열로 묶기 -->
+        <collection property="groupList" ofType="string">
+            <result column="group_name" />
+        </collection>
+    </resultMap>
+
     <sql id="user">
         USER_ID,
         USER_NAME as NAME,
@@ -14,15 +28,42 @@
         EDITOR_USER_ID,
         role(USER_TYPE) as USER_TYPE
     </sql>
-    <select id="findAll">
+    <select id="getAll" resultMap="EmpResultMap">
         SELECT
-        <include refid="user"/>
-        FROM users
+        u.user_id,
+        u.user_name,
+        u.email,
+        role(u.user_type) as user_type,
+        active(u.is_active) as is_active,
+        g.group_name
+        FROM users u
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id
+        LEFT JOIN groups g ON gm.group_id = g.group_id
     </select>
-    <select id="findById">
+    <select id="getById">
         SELECT
         <include refid="user"/>
         FROM users
         WHERE user_id = #{id}
     </select>
+    <select id="modifyStatusById" statementType="CALLABLE" parameterType="map">
+        { CALL change_status(
+        #{emp_id, mode=IN, jdbcType=VARCHAR},
+        #{changed_status, mode=OUT, jdbcType=VARCHAR}
+        )}
+    </select>
+    <insert id="registerEmp" parameterType="com.example.emp.entity.EmpVOSJW">
+        <selectKey keyProperty="userId" resultType="int" order="BEFORE">
+            SELECT emp_seq.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO users (user_id, user_name, email, password, is_active, user_type)
+        VALUES (#{userId}, #{name}, #{email}, #{password}, #{isActive}, #{userType})
+    </insert>
+    <insert id="insertGroupMember">
+        <selectKey keyProperty="groupMemberId" resultType="int" order="BEFORE">
+            SELECT group_members_seq.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO group_members (group_member_id,user_id, group_id)
+        VALUES (#{groupMemberId},#{userId}, #{groupId})
+    </insert>
 </mapper>

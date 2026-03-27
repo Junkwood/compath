@@ -22,6 +22,8 @@
         priority_code,
         est_start_date,
         est_end_date,
+        start_date,
+        due_date,
         estimated_hours,
         progress_rate,
         created_at
@@ -31,18 +33,60 @@
         #{parentTaskId},
         #{milestoneId},
         #{taskTypeId},
-        1,
+        #{taskStatusId},
         #{title},
         #{content},
         #{assigneeUserId},
         #{priorityCode},
         #{estStartDate},
         #{estEndDate},
+        #{startDate},
+        #{dueDate},
         #{estimatedHours},
         #{progressRate},
         sysdate
-        )
-    </insert>
+        )    </insert>
+    <!--업무 수정-->
+    <update id="updateTask" parameterType="TaskReqDtoJJW">
+        UPDATE tasks
+        SET title = #{title},
+        content = #{content},
+        task_status_id = #{taskStatusId},
+        priority_code = #{priorityCode},
+        assignee_user_id = #{assigneeUserId},
+        progress_rate = #{progressRate},
+        actual_hours = #{actualHours},
+        start_date = #{startDate},
+        due_date = #{dueDate},
+        updated_at = SYSDATE,
+        editor_user_id = #{editorUserId}
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 업무 상세 조회-->
+    <select id="getTaskById" resultType="com.example.task.dto.TaskReqDtoJJW">
+        SELECT
+        t.task_id as taskId,
+        t.project_id as projectId,
+        t.task_type_id as taskTypeId,
+        t.title,
+        t.content,
+        t.assignee_user_id as assigneeUserId,
+        u.user_name as assigneeName,
+        t.task_status_id as taskStatusId,
+        t.priority_code as priorityCode,
+        t.milestone_id as milestoneId,
+        t.start_date as startDate,
+        t.due_date as dueDate,
+        t.actual_hours as actualHours,
+        t.progress_rate as progressRate,
+        t.est_start_date as estStartDate,
+        t.est_end_date as estEndDate,
+        t.estimated_hours  as estimatedHours
+        FROM tasks t
+        LEFT JOIN users u ON t.assignee_user_id = u.user_id
+        WHERE t.task_id = #{taskId}
+    </select>
 
     <!-- 프로젝트 목록 조회 -->
     <select id="getProjectList" resultType="com.example.project.dto.ProjectDtoJJW">
@@ -75,8 +119,8 @@
     <!-- 마일스톤 목록 조회 -->
     <select id="getMilestone" resultType="com.example.milestone.dto.MilestoneDtoJJW">
         SELECT
-        m.milestone_id,
-        m.milestone_name
+        m.milestone_id AS milestoneId,
+        m.milestone_name AS milestoneName
         FROM milestones m
         JOIN milestone_mapping mm ON m.milestone_id = mm.milestone_id
         WHERE mm.project_id = #{projectId}

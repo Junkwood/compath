@@ -19,6 +19,8 @@ public class EmpVOSJW implements UserDetails {
     private Date updatedAt;
     private Integer editorUserId;
     private String userType;
+    private Integer groupId;
+    private List<String> groupList;
     //시큐리티에서 권한 체크
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
