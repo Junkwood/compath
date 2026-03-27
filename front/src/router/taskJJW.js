@@ -10,5 +10,11 @@ const taskRoutes1 = [
     name: "taskRegister",
     component: () => import("../task/TaskRegister.vue"),
   },
+
+  {
+    path: "/taskModify",
+    name: "taskModify",
+    component: () => import("../task/TaskModify.vue"),
+  },
 ];
 export default taskRoutes1;

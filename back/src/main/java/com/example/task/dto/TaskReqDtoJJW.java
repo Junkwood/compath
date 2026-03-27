@@ -25,12 +25,13 @@ public class TaskReqDtoJJW {
     String title;
     String content;
     Integer assigneeUserId;
-    String priorityCode;
-    String progressRate;
+    Integer progressRate;
     Date startDate;
     Date dueDate;
-    String estimatedHours;
+    Integer estimatedHours;
     String actualHours;
     String isDeleted;
     Integer createdBy;
+    String priorityCode;
+    String assigneeName;
 }

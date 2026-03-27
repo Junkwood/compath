@@ -9,7 +9,7 @@ import reportRoutes from "./report.js";
 import roleRoutes from "./role.js";
 import taskRoutes1 from "./taskJJW.js";
 import taskRoutes from "./taskKJH.js";
-import {useAuthStore} from "../stores/auth.js";
+import { useAuthStore } from "../stores/auth.js";
 /**
  * 라우터 등록 규칙
  * - path      : 사이드바 링크와 동일하게 맞출 것
@@ -57,13 +57,13 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if(to.path!=='/login' && !useAuthStore().user){
-    next('/login');
-  }else if(to.path.startsWith('/admin') && !useAuthStore().isAdmin){
-    next('/');
-  }else{
+  if (to.path !== "/login" && !useAuthStore().user) {
+    next("/login");
+  } else if (to.path.startsWith("/admin") && !useAuthStore().isAdmin) {
+    next("/");
+  } else {
     next();
   }
-})
+});
 
 export default router;
