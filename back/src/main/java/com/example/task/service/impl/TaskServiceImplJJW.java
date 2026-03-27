@@ -46,7 +46,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
 
     @Override
     public List<MilestoneDtoJJW> getMilestone(Integer projectId) {
-        return taskMapperJJW.getMilestone();
+        return taskMapperJJW.getMilestone(projectId);
     }
 
     @Override

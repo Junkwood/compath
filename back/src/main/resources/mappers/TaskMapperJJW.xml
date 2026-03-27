@@ -75,8 +75,8 @@
     <!-- 마일스톤 목록 조회 -->
     <select id="getMilestone" resultType="com.example.milestone.dto.MilestoneDtoJJW">
         SELECT
-        m.milestone_id,
-        m.milestone_name
+        m.milestone_id AS milestoneId,
+        m.milestone_name AS milestoneName
         FROM milestones m
         JOIN milestone_mapping mm ON m.milestone_id = mm.milestone_id
         WHERE mm.project_id = #{projectId}
