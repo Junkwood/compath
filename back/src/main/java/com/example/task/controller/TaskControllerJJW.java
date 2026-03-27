@@ -16,11 +16,27 @@ public class TaskControllerJJW {
 
     final TaskServiceJJW taskServiceJJW;
 
-    //기본 업무 등록
+    //상위 업무 등록
     @PostMapping("/tasks")
     public TaskReqDtoJJW registerTasks(@RequestBody TaskReqDtoJJW dto){
      taskServiceJJW.insert(dto);
      return dto;
+    }
+
+    //상위 업무 수정
+    @PutMapping("/task/{taskId}")
+    public TaskReqDtoJJW updateTasks(@PathVariable("taskId") Integer taskId,
+                           @RequestBody TaskReqDtoJJW dto) {
+        dto.setTaskId(taskId);
+        taskServiceJJW.updateTask(dto);
+        return taskServiceJJW.getTaskById(taskId);
+    }
+
+    //업무 상세 조회
+    @ResponseBody
+    @GetMapping("/task/{taskId}")
+    public TaskReqDtoJJW getTaskById(@PathVariable("taskId")Integer taskId){
+        return  taskServiceJJW.getTaskById(taskId);
     }
 
     //프로젝트 조회

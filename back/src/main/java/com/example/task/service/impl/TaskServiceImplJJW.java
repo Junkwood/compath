@@ -7,8 +7,10 @@ import com.example.task.mapper.TaskMapperJJW;
 import com.example.task.service.TaskServiceJJW;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -22,6 +24,30 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     @Override
     public void insert(TaskReqDtoJJW dto) {
         taskMapperJJW.insert(dto);
+    }
+
+    @Override
+    public int updateTask(TaskReqDtoJJW dto) {
+        // 시작일 자동 세팅
+        if (dto.getTaskStatusId() != null && dto.getTaskStatusId() == 2) {
+            if (dto.getStartDate() == null) {
+                dto.setStartDate(new Date());
+            }
+        }
+        //소요 시간 자동 계산
+        if (dto.getStartDate() != null && dto.getDueDate() != null) {
+            long diff = dto.getDueDate().getTime() - dto.getStartDate().getTime();
+            long diffDays = (diff / (1000 * 60 * 60 * 24)) + 1;
+
+            dto.setActualHours(String.valueOf(diffDays * 8));
+        }
+        return taskMapperJJW.updateTask(dto);
+    }
+
+    //업무 상세조회(수정 페이지에 뿌릴려고)
+    @Override
+    public TaskReqDtoJJW getTaskById(Integer taskId) {
+        return taskMapperJJW.getTaskById(taskId);
     }
 
     @Override
