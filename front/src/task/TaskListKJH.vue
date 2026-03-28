@@ -12,15 +12,26 @@
       />
 
       <div
-        class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl m-2"
+        class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl m-8"
       >
         <header
           class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60"
         >
           <h2 class="font-semibold text-gray-800 dark:text-gray-100">
-            {{ name }}
+            {{ name
+            }}<span>({{ projectStartDate }} ~ {{ projectendDate }})</span>
           </h2>
         </header>
+        <div class="grid grid-cols-12 gap-4">
+          <div class="col-start-1 col-end-3 mx-5">
+            <h3>프로젝트 전체 업무 목록</h3>
+          </div>
+          <div class="col col-end-14 mx-5">
+            <el-button class="new-project-btn" @click="goResister()">
+              + &nbsp; 업무 생성
+            </el-button>
+          </div>
+        </div>
 
         <div
           class="w-full max-w-full mb-2 bg-neutral-primary-soft p-3 border border-default rounded-base shadow-xs"
@@ -35,8 +46,7 @@
                 >
                 <select
                   class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                  v-model="selectedName"
-                  @change="changeName()"
+                  v-model="filteredList.title"
                 >
                   <option value="전체">전체</option>
                   <option :value="title" v-for="title in titleList">
@@ -52,7 +62,7 @@
                 >
                 <select
                   class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                  v-model="selectedId"
+                  v-model="filteredList.user"
                 >
                   <option value="전체">전체</option>
                   <option :value="userId" v-for="userId in assigneeUserIdList">
@@ -68,11 +78,11 @@
                 >
                 <select
                   class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                  v-model="selectedStatus"
+                  v-model="filteredList.type"
                 >
                   <option value="전체">전체</option>
-                  <option :value="status" v-for="status in statusList">
-                    {{ status }}
+                  <option :value="type" v-for="type in taskTypeList">
+                    {{ type }}
                   </option>
                 </select>
               </div>
@@ -84,11 +94,11 @@
                 >
                 <select
                   class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                  v-model="selectedType"
+                  v-model="filteredList.status"
                 >
                   <option value="전체">전체</option>
-                  <option :value="type" v-for="type in taskTypeList">
-                    {{ type }}
+                  <option :value="status" v-for="status in statusList">
+                    {{ status }}
                   </option>
                 </select>
               </div>
@@ -101,7 +111,7 @@
                   >시작일</label
                 >
                 <input
-                  v-model="selectedStart"
+                  v-model="filteredList.start"
                   type="date"
                   class="input w-full"
                 />
@@ -112,7 +122,11 @@
                   class="block mb-2.5 text-sm font-medium text-heading"
                   >종료일</label
                 >
-                <input v-model="selectedEnd" type="date" class="input w-full" />
+                <input
+                  v-model="filteredList.end"
+                  type="date"
+                  class="input w-full"
+                />
               </div>
               <div>
                 <label
@@ -122,7 +136,7 @@
                 >
                 <select
                   class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                  v-model="selectedpriority"
+                  v-model="filteredList.priority"
                 >
                   <option value="전체">전체</option>
                   <option :value="priority" v-for="priority in priorityList">
@@ -134,11 +148,11 @@
                 <label
                   for="password"
                   class="block mb-2.5 text-sm font-medium text-heading"
-                  >하위 프로젝트명</label
+                  >프로젝트명</label
                 >
                 <select
                   class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 bm-2 shadow-xs placeholder:text-body"
-                  v-model="selectedSmall"
+                  v-model="filteredList.small"
                 >
                   <option value="전체">전체</option>
                   <option :value="small" v-for="small in smallProjectList">
@@ -147,19 +161,19 @@
                 </select>
               </div>
             </div>
-            <div class="flex flex-row-reverse">
-              <button
-                type="button"
-                class="text-white bg-blue-500 box-border border border-transparent hover:bg-brand-strong"
-                @click="changeList"
-              >
+            <div class="flex flex-row-reverse gap-2 mt-2">
+              <button type="button" @click="filteringList()" class="btn-navy">
                 검색
               </button>
+              <button @click="resetForm" class="btn-red">초기화</button>
             </div>
           </form>
         </div>
 
-        <div class="mt-3">
+        <div>
+          <div class="flex flex-row-reverse">
+            <span class="member-role-badge">총 {{ listLength }}건 </span>
+          </div>
           <!-- Table -->
           <div class="overflow-x-auto">
             <table class="table-auto w-full dark:text-gray-300">
@@ -168,32 +182,8 @@
                 class="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs"
               >
                 <tr>
-                  <th class="p-2">
-                    <div class="font-semibold text-center">업무명</div>
-                  </th>
-                  <th class="p-2">
-                    <div class="font-semibold text-center">담당자</div>
-                  </th>
-                  <th class="p-2">
-                    <div class="font-semibold text-center">업무상태</div>
-                  </th>
-                  <th class="p-2">
-                    <div class="font-semibold text-center">업무유형</div>
-                  </th>
-                  <th class="p-2">
-                    <div class="font-semibold text-center">우선순위</div>
-                  </th>
-                  <th class="p-2">
-                    <div class="font-semibold text-center">진척도</div>
-                  </th>
-                  <th class="p-2">
-                    <div class="font-semibold text-center">시작일</div>
-                  </th>
-                  <th class="p-2">
-                    <div class="font-semibold text-center">종료일</div>
-                  </th>
-                  <th class="p-2">
-                    <div class="font-semibold text-center">프로젝트명</div>
+                  <th class="p-2" v-for="th in thList">
+                    <div class="font-semibold text-center">{{ th }}</div>
                   </th>
                 </tr>
               </thead>
@@ -202,7 +192,7 @@
                 class="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60"
               >
                 <!-- Row -->
-                <tr v-for="task in taskList">
+                <tr v-for="task in filterList">
                   <td class="p-2">
                     <div class="font-semibold text-center">
                       {{ task.title }}
@@ -210,7 +200,7 @@
                   </td>
                   <td class="p-2">
                     <div class="font-semibold text-center">
-                      {{ task.assigneeUserId }}
+                      {{ task.userName }}
                     </div>
                   </td>
                   <td class="p-2">
@@ -229,8 +219,17 @@
                     </div>
                   </td>
                   <td class="p-2">
-                    <div class="font-semibold text-center">
-                      {{ task.progressRate }}
+                    <div class="progress-wrap">
+                      <el-progress
+                        :percentage="task.progressRate"
+                        :stroke-width="8"
+                        :show-text="false"
+                        color="#2563eb"
+                        style="flex: 1"
+                      />
+                      <span class="progress-text"
+                        >{{ task.progressRate }}%</span
+                      >
                     </div>
                   </td>
                   <td class="p-2">
@@ -253,6 +252,18 @@
             </table>
           </div>
         </div>
+        <div class="pagination-wrap">
+          <el-pagination
+            v-model:current-page="workPage"
+            :current-page="nowPage"
+            :page-size="listNum"
+            :total="workPageSize"
+            :hide-on-single-page="real"
+            @current-change="handleCurrentChange"
+            layout="prev, pager, next"
+            background
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -260,18 +271,25 @@
 
 <script setup>
 import { onBeforeMount, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import { usetaskKJHStore } from "../stores/taksKJH";
+import { el } from "element-plus/es/locale/index.mjs";
 
 const sidebarOpen = ref(false);
+const taskStore = usetaskKJHStore();
 
 const route = useRoute();
+const router = useRouter();
 
 let taskList = ref(); // 업무 목록
+const filterList = ref([]);
 let name = ref(); // 프로젝트명
+let projectStartDate = ref(); // 프로젝트 날짜
+let projectendDate = ref(); // 프로젝트 날짜
 let titleList = ref([]); // 업무명 목록
 let assigneeUserIdList = ref([]); // 담당자 목록
 let statusList = ref([]); // 업무 상태 목록
@@ -279,15 +297,36 @@ let taskTypeList = ref([]); // 업무 유형 목록
 let priorityList = ref([]); // 우선순위 목록
 let smallProjectList = ref([]); // 하위프로젝트 목록
 
-let selectedList = ref([]);
-let selectedId = ref("전체");
-let selectedName = ref("전체");
-let selectedSmall = ref("전체");
-let selectedStatus = ref("전체");
-let selectedType = ref("전체");
-let selectedpriority = ref("전체");
-let selectedStart = ref();
-let selectedEnd = ref();
+let thList = ref([
+  "업무명",
+  "담당자",
+  "업무상태",
+  "업무유형",
+  "우선순위",
+  "진척도",
+  "시작일",
+  "종료일",
+  "프로젝트명",
+]);
+
+let filteredList = ref({
+  title: "전체",
+  user: "전체",
+  type: "전체",
+  status: "전체",
+  start: null,
+  end: null,
+  priority: "전체",
+  small: "전체",
+});
+
+const workPage = ref(1);
+const listNum = ref(10);
+const workPageSize = ref(0);
+const real = ref(true);
+const nowPage = ref(1);
+
+let listLength = ref();
 
 // 필터링 조건들
 let id = route.params.id;
@@ -296,13 +335,18 @@ onBeforeMount(async () => {
   console.log("프로젝트 번호", id);
 
   // 프로젝트 이름 조회
-  name.value = (
-    await axios.get("/api/tasks/projectname/" + id)
-  ).data.projectName;
-  console.log("프로젝트명 ", name);
+  await taskStore.getProjectName(id);
+
+  name.value = taskStore.projectName.projectName;
+  projectStartDate.value = changeDateType(taskStore.projectName.startDate);
+  projectendDate.value = changeDateType(taskStore.projectName.startDate);
+  console.log("프로젝트명 ", name.value);
 
   // 전체 목록 조회
-  taskList.value = (await axios.get("/api/tasks/" + id)).data;
+  await taskStore.getAllTask(id);
+
+  taskList.value = taskStore.taskAllList;
+
   for (let i = 0; i < taskList.value.length; i++) {
     // 날짜 형식 변경
     taskList.value[i].startDate = changeDateType(taskList.value[i].startDate);
@@ -317,15 +361,13 @@ onBeforeMount(async () => {
     }
 
     // 담당자명
-    if (taskList.value[i].assigneeUserId != null) {
+    if (taskList.value[i].userName != null) {
       if (assigneeUserIdList.value.length < 1) {
-        assigneeUserIdList.value.push(taskList.value[i].assigneeUserId);
+        assigneeUserIdList.value.push(taskList.value[i].userName);
       } else if (
-        assigneeUserIdList.value.indexOf(
-          taskList.value[i].assigneeUserIdList,
-        ) == -1
+        assigneeUserIdList.value.indexOf(taskList.value[i].userName) == -1
       ) {
-        assigneeUserIdList.value.push(taskList.value[i].assigneeUserId);
+        assigneeUserIdList.value.push(taskList.value[i].userName);
       }
     }
 
@@ -364,28 +406,243 @@ onBeforeMount(async () => {
     }
   }
   console.log("업무 목록", taskList.value);
+
+  listLength.value = taskList.value.length;
+
+  await paging(taskList);
 });
 
 // 날짜 변경 함수
 const changeDateType = (day) => {
   let date = new Date(day);
-  let realDay = `${date.getFullYear(day)}-${date.getMonth(day) + 1}-${date.getDate(day)}`;
-  return realDay;
+
+  if (date.getMonth() < 9) {
+    let realDay = `${date.getFullYear()}-0${date.getMonth() + 1}-${date.getDate()}`;
+    return realDay;
+  } else {
+    let realDay = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    return realDay;
+  }
 };
 
 // 업무명 필터링
-const changeName = async () => {
-  console.log(selectedName.value);
-  if (selectedName.value != "전체") {
-    taskList.value.forEach((li) => {
-      if (li.title == selectedName.value) {
-        selectedList.value.push(li);
-      }
+let filterFinishList = ref([]);
+
+const filteringList = () => {
+  console.log(taskList.value);
+
+  filterFinishList.value = taskList.value;
+
+  console.log(filterList.value);
+
+  // 업무명
+  if (filteredList.value.title != "전체") {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
+      return li.title === filteredList.value.title;
     });
-  } else {
-    selectedList.value = (await axios.get("/api/tasks/" + id)).data;
   }
-  taskList.value = selectedList.value;
-  selectedList.value = [];
+
+  // 담당자
+  if (filteredList.value.user != "전체") {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
+      return li.userName === filteredList.value.user;
+    });
+  }
+
+  // 업무유형
+  if (filteredList.value.type != "전체") {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
+      return li.typeName === filteredList.value.type;
+    });
+  }
+
+  // 업무상태
+  if (filteredList.value.status != "전체") {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
+      return li.statusName === filteredList.value.status;
+    });
+  }
+
+  // 우선순위
+  if (filteredList.value.priority != "전체") {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
+      return li.codeName === filteredList.value.priority;
+    });
+  }
+
+  // 프로젝트 명
+  if (filteredList.value.small != "전체") {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
+      return li.projectName === filteredList.value.small;
+    });
+  }
+
+  // 시작일
+  if (filteredList.value.start != null && filteredList.value.end == null) {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
+      return li.startDate >= filteredList.value.start;
+    });
+  } else if (
+    filteredList.value.start != null &&
+    filteredList.value.end != null
+  ) {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
+      return (
+        li.startDate >= filteredList.value.start &&
+        li.dueDate <= filteredList.value.end
+      );
+    });
+  } else if (
+    filteredList.value.start == null &&
+    filteredList.value.end != null
+  ) {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
+      return li.dueDate <= filteredList.value.end;
+    });
+  }
+
+  console.log(filterFinishList.value);
+
+  listLength.value = filterFinishList.value.length;
+  // 페이지 네이션
+  paging(filterFinishList);
+};
+
+// 페이지네이션
+const handleCurrentChange = (val) => {
+  let selectedList = ref([]);
+  let answer = ref([]);
+  if (filterFinishList.value.length > 0) {
+    answer.value = filterFinishList.value;
+    listLength.value = filterFinishList.value.length;
+  } else {
+    answer.value = taskList.value;
+    listLength.value = taskList.value.length;
+  }
+  if (val > 1) {
+    let startNum = (val - 1) * listNum.value;
+    let endNum = val * listNum.value;
+    for (let i = startNum; i < endNum; i++) {
+      if (answer.value[i] == null) {
+        break;
+      }
+      selectedList.value.push(answer.value[i]);
+    }
+    filterList.value = selectedList.value;
+    console.log(filterList.value);
+  } else {
+    for (let i = 0; i < listNum.value; i++) {
+      console.log(answer.value[i]);
+      selectedList.value.push(answer.value[i]);
+    }
+    filterList.value = selectedList.value;
+  }
+};
+
+const paging = (a) => {
+  let paginglist = ref([]);
+  for (let i = 0; i < listNum.value; i++) {
+    if (a.value[i] == null) {
+      break;
+    }
+    paginglist.value.push(a.value[i]);
+  }
+  workPageSize.value = a.value.length;
+
+  console.log(paginglist.value);
+
+  filterList.value = paginglist.value;
+  // 페이지 네이션
+
+  if (workPageSize.value / listNum > 1) {
+    real.value = false;
+  }
+};
+
+// 업무생성 버튼
+const goResister = () => {
+  router.push({ name: "taskRegister" });
 };
 </script>
+<style scoped>
+/* 하단 버튼 */
+.btn-navy {
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #1e3a5f;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
+  letter-spacing: 0.01em;
+}
+.btn-navy:hover {
+  background: #162d4a;
+  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-red {
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #dc2626;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+  letter-spacing: 0.01em;
+}
+.btn-red:hover {
+  background: #b91c1c;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+  transform: translateY(-1px);
+}
+/* ── 프로젝트 목록 ── */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563eb;
+  min-width: 32px;
+}
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+  border-top: 1px solid #f0f0f0;
+}
+.new-project-btn {
+  background: #c7d9f5;
+  border: none;
+  color: #1a1a2e;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 8px;
+  height: 40px;
+}
+.new-project-btn:hover {
+  background: #a8c4ef;
+}
+.member-role-badge {
+  font-size: 15px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  letter-spacing: 0.03em;
+  margin-right: 15px;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+</style>
