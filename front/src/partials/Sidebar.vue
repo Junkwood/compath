@@ -498,53 +498,57 @@
                   </router-link>
                 </ul>
               </div>
-            </SidebarLinkGroup >
+            </SidebarLinkGroup>
             <SidebarLinkGroup
-                v-if="auth.isAdmin"
-                v-slot="parentLink"
-                :activeCondition="currentRoute.fullPath.includes('/admin/')"
+              v-if="auth.isAdmin"
+              v-slot="parentLink"
+              :activeCondition="currentRoute.fullPath.includes('/admin/')"
             >
               <a
-                  class="block text-gray-800 dark:text-gray-100 truncate transition"
-                  :class="
-      currentRoute.fullPath.includes('/admin/')
-        ? ''
-        : 'hover:text-gray-900 dark:hover:text-white'
-    "
-                  href="#0"
-                  @click.prevent="
-      parentLink.handleClick();
-      sidebarExpanded = true;
-    "
+                class="block text-gray-800 dark:text-gray-100 truncate transition"
+                :class="
+                  currentRoute.fullPath.includes('/admin/')
+                    ? ''
+                    : 'hover:text-gray-900 dark:hover:text-white'
+                "
+                href="#0"
+                @click.prevent="
+                  parentLink.handleClick();
+                  sidebarExpanded = true;
+                "
               >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <!-- 설정(톱니바퀴) 아이콘 -->
                     <svg
-                        class="shrink-0 fill-current"
-                        :class="
-            currentRoute.fullPath.includes('/admin/')
-              ? 'text-violet-500'
-              : 'text-gray-400 dark:text-gray-500'
-          "
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
+                      class="shrink-0 fill-current"
+                      :class="
+                        currentRoute.fullPath.includes('/admin/')
+                          ? 'text-violet-500'
+                          : 'text-gray-400 dark:text-gray-500'
+                      "
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
                     >
-                      <path d="M14.3.3L5 9.6 1.7 6.3c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l4 4c.2.2.4.3.7.3.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0z" />
+                      <path
+                        d="M14.3.3L5 9.6 1.7 6.3c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l4 4c.2.2.4.3.7.3.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0z"
+                      />
                       <!-- 좀 더 톱니바퀴스러운 아이콘을 원하시면 svg path를 변경하세요 -->
                     </svg>
-                    <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-          설정 (관리자)
-        </span>
+                    <span
+                      class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                    >
+                      설정 (관리자)
+                    </span>
                   </div>
                   <!-- 화살표 -->
                   <div class="flex shrink-0 ml-2">
                     <svg
-                        class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500"
-                        :class="parentLink.expanded && 'rotate-180'"
-                        viewBox="0 0 12 12"
+                      class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500"
+                      :class="parentLink.expanded && 'rotate-180'"
+                      viewBox="0 0 12 12"
                     >
                       <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
                     </svg>
@@ -556,43 +560,76 @@
               <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
                 <ul class="pl-8 mt-1" :class="!parentLink.expanded && 'hidden'">
                   <!-- 계정 -->
-                  <router-link to="/admin/emp" custom v-slot="{ href, navigate, isExactActive }">
+                  <router-link
+                    to="/admin/emp"
+                    custom
+                    v-slot="{ href, navigate, isExactActive }"
+                  >
                     <li class="mb-1 last:mb-0">
                       <a
-                          class="block transition truncate"
-                          :class="isExactActive ? 'text-violet-500' : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                          :href="href"
-                          @click="navigate"
+                        class="block transition truncate"
+                        :class="
+                          isExactActive
+                            ? 'text-violet-500'
+                            : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        "
+                        :href="href"
+                        @click="navigate"
                       >
-                        <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">계정</span>
+                        <span
+                          class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                          >계정</span
+                        >
                       </a>
                     </li>
                   </router-link>
 
                   <!-- 그룹 -->
-                  <router-link to="/admin/group" custom v-slot="{ href, navigate, isExactActive }">
+                  <router-link
+                    to="/admin/group"
+                    custom
+                    v-slot="{ href, navigate, isExactActive }"
+                  >
                     <li class="mb-1 last:mb-0">
                       <a
-                          class="block transition truncate"
-                          :class="isExactActive ? 'text-violet-500' : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                          :href="href"
-                          @click="navigate"
+                        class="block transition truncate"
+                        :class="
+                          isExactActive
+                            ? 'text-violet-500'
+                            : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        "
+                        :href="href"
+                        @click="navigate"
                       >
-                        <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">그룹</span>
+                        <span
+                          class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                          >그룹</span
+                        >
                       </a>
                     </li>
                   </router-link>
 
                   <!-- 역할 -->
-                  <router-link to="/admin/role" custom v-slot="{ href, navigate, isExactActive }">
+                  <router-link
+                    to="/admin/role"
+                    custom
+                    v-slot="{ href, navigate, isExactActive }"
+                  >
                     <li class="mb-1 last:mb-0">
                       <a
-                          class="block transition truncate"
-                          :class="isExactActive ? 'text-violet-500' : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                          :href="href"
-                          @click="navigate"
+                        class="block transition truncate"
+                        :class="
+                          isExactActive
+                            ? 'text-violet-500'
+                            : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        "
+                        :href="href"
+                        @click="navigate"
                       >
-                        <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">역할</span>
+                        <span
+                          class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                          >역할</span
+                        >
                       </a>
                     </li>
                   </router-link>
@@ -600,21 +637,27 @@
                   <!-- 업무 (커스텀 토글 방식 - SidebarLinkGroup 제거) -->
                   <li class="mb-1 last:mb-0">
                     <a
-                        class="block transition w-full"
-                        :class="currentRoute.fullPath.includes('/admin/task/') ? 'text-violet-500' : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                        href="#0"
-                        @click.prevent="taskExpanded = !taskExpanded"
+                      class="block transition w-full"
+                      :class="
+                        currentRoute.fullPath.includes('/admin/task/')
+                          ? 'text-violet-500'
+                          : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                      "
+                      href="#0"
+                      @click.prevent="taskExpanded = !taskExpanded"
                     >
                       <div class="flex items-center justify-between">
                         <!-- 텍스트 영역: 이제 '역할', '그룹'과 완벽히 같은 라인에 섭니다 -->
-                        <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200 truncate">
-        업무
-      </span>
+                        <span
+                          class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200 truncate"
+                        >
+                          업무
+                        </span>
                         <!-- 화살표 영역 -->
                         <svg
-                            class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 transition-transform duration-200"
-                            :class="taskExpanded ? 'rotate-180' : ''"
-                            viewBox="0 0 12 12"
+                          class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 transition-transform duration-200"
+                          :class="taskExpanded ? 'rotate-180' : ''"
+                          viewBox="0 0 12 12"
                         >
                           <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
                         </svg>
@@ -624,19 +667,51 @@
                     <!-- 2뎁스 서브 메뉴 (업무상태, 업무유형) -->
                     <ul class="pl-4 mt-1" :class="!taskExpanded && 'hidden'">
                       <!-- 업무상태 -->
-                      <router-link to="/admin/task/status" custom v-slot="{ href, navigate, isExactActive }">
+                      <router-link
+                        to="/admin/task/status"
+                        custom
+                        v-slot="{ href, navigate, isExactActive }"
+                      >
                         <li class="mb-1 last:mb-0">
-                          <a class="block transition truncate" :class="isExactActive ? 'text-violet-500' : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" :href="href" @click="navigate">
-                            <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">- 업무 상태</span>
+                          <a
+                            class="block transition truncate"
+                            :class="
+                              isExactActive
+                                ? 'text-violet-500'
+                                : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            "
+                            :href="href"
+                            @click="navigate"
+                          >
+                            <span
+                              class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                              >- 업무 상태</span
+                            >
                           </a>
                         </li>
                       </router-link>
 
                       <!-- 업무유형 -->
-                      <router-link to="/admin/task/type" custom v-slot="{ href, navigate, isExactActive }">
+                      <router-link
+                        to="/admin/task/type"
+                        custom
+                        v-slot="{ href, navigate, isExactActive }"
+                      >
                         <li class="mb-1 last:mb-0">
-                          <a class="block transition truncate" :class="isExactActive ? 'text-violet-500' : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" :href="href" @click="navigate">
-                            <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">- 업무 유형</span>
+                          <a
+                            class="block transition truncate"
+                            :class="
+                              isExactActive
+                                ? 'text-violet-500'
+                                : 'text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            "
+                            :href="href"
+                            @click="navigate"
+                          >
+                            <span
+                              class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                              >- 업무 유형</span
+                            >
                           </a>
                         </li>
                       </router-link>
@@ -646,7 +721,6 @@
               </div>
             </SidebarLinkGroup>
           </ul>
-
         </div>
       </div>
 
@@ -680,8 +754,7 @@
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import SidebarLinkGroup from "./SidebarLinkGroup.vue";
-import {useAuthStore} from "../stores/auth";
-
+import { useAuthStore } from "../stores/auth";
 
 const router = useRouter();
 
@@ -704,7 +777,7 @@ export default {
     );
 
     const currentRoute = useRouter().currentRoute.value;
-    const taskExpanded = ref(currentRoute.fullPath.includes('/admin/task/'));
+    const taskExpanded = ref(currentRoute.fullPath.includes("/admin/task/"));
     const clickHandler = ({ target }) => {
       if (!sidebar.value || !trigger.value) return;
       if (
@@ -740,7 +813,14 @@ export default {
       }
     });
 
-    return { trigger, sidebar, sidebarExpanded, currentRoute, auth, taskExpanded};
+    return {
+      trigger,
+      sidebar,
+      sidebarExpanded,
+      currentRoute,
+      auth,
+      taskExpanded,
+    };
   },
 };
 </script>
