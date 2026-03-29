@@ -14,10 +14,7 @@
       <div class="col-span-full xl:col-span-8 mx-8 mt-3 mb-0">
         <header class="pt-4 border-b border-gray-100 dark:border-gray-700/60">
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            [{{ name }}]
-            <span class="text-base">
-              {{ projectStartDate }} ~ {{ projectendDate }}</span
-            >
+            설정 <span class="text-base"> [{{ name }}]</span>
           </h1>
         </header>
       </div>
@@ -25,20 +22,12 @@
         <div
           class="text-lg font-bold text-gray-800 dark:text-gray-100 col-start-1 col-end-4"
         >
-          <h2>프로젝트 전체 업무 목록</h2>
-        </div>
-        <div class="col col-end-14">
-          <el-button class="new-project-btn" @click="goResister()">
-            + &nbsp; 업무 생성
-          </el-button>
+          <h2>기본 설정</h2>
         </div>
       </div>
       <div
         class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mx-8 mb-0 p-4"
       >
-        <!-- <div
-          class="w-full max-w-full bg-neutral-primary-soft p-3 border border-default rounded-base shadow-xs"
-        > -->
         <form action="#">
           <div class="grid grid-cols-4 gap-4">
             <div class="mb-4">
@@ -268,6 +257,39 @@
               </tr>
             </tbody>
           </table>
+          <el-table
+            :data="pagedTaskData"
+            style="width: 100%"
+            :header-cell-style="headerStyle"
+            :cell-style="cellStyle"
+          >
+            <el-table-column prop="no" label="번호" width="70" align="center" />
+            <el-table-column prop="projectName" label="이름" width="80" />
+            <el-table-column
+              prop="created"
+              label="사번"
+              width="70"
+              align="center"
+            />
+            <el-table-column
+              prop="inProgress"
+              label="이메일"
+              width="70"
+              align="center"
+            />
+            <el-table-column
+              prop="devDone"
+              label="역할"
+              width="90"
+              align="center"
+            />
+            <el-table-column
+              prop="rejected"
+              label="삭제"
+              width="70"
+              align="center"
+            />
+          </el-table>
           <div class="pagination-wrap" v-if="workPageSize / listNum > 1">
             <el-pagination
               v-model:current-page="workPage"
