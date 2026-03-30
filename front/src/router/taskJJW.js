@@ -12,7 +12,7 @@ const taskRoutes1 = [
   },
 
   {
-    path: "/taskModify",
+    path: "/taskModify/:taskId",
     name: "taskModify",
     component: () => import("../task/TaskModify.vue"),
   },

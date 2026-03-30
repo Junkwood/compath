@@ -1,59 +1,46 @@
 <template>
   <div class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
-
-    <!-- Content area -->
     <div
       class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
     >
-      <!-- Header -->
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
-
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
             업무 수정
           </h1>
-
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-            <!-- 프로젝트명 / 하위 프로젝트명 -->
             <div class="grid grid-cols-2 gap-6 mb-6">
               <div>
-                <label class="block text-sm font-medium mb-1">
-                  프로젝트 명 <span class="text-red-500">*</span>
-                </label>
-                <div class="flex gap-2">
-                  <input
-                    v-model="form.projectName"
-                    disabled
-                    class="input flex-1"
-                  />
-                </div>
+                <label class="block text-sm font-medium mb-1"
+                  >프로젝트 명 <span class="text-red-500">*</span></label
+                >
+                <input
+                  v-model="form.projectName"
+                  disabled
+                  class="input w-full"
+                />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1"
                   >하위 프로젝트 명</label
                 >
-                <div class="flex gap-2">
-                  <input
-                    v-model="form.subProjectName"
-                    disabled
-                    class="input flex-1"
-                  />
-                </div>
+                <input
+                  v-model="form.subProjectName"
+                  disabled
+                  class="input w-full"
+                />
               </div>
             </div>
-
-            <!-- 업무유형 / 담당자 -->
             <div class="grid grid-cols-2 gap-6 mb-6">
               <div>
-                <label class="block text-sm font-medium mb-1">
-                  업무 유형 <span class="text-red-500">*</span>
-                </label>
+                <label class="block text-sm font-medium mb-1"
+                  >업무 유형 <span class="text-red-500">*</span></label
+                >
                 <div class="flex gap-2">
                   <select v-model="form.taskTypeId" class="input flex-1">
                     <option value="">업무 유형을 선택하세요</option>
@@ -87,61 +74,57 @@
                   </button>
                 </div>
               </div>
-
               <ProjectSelectModal
                 v-model="userModal"
                 title="담당자 선택"
                 :items="userList"
-                @select="
-                  (val) => {
-                    form.assigneeName = val.name;
-                    form.assigneeUserId = val.value;
-                  }
-                "
+                @select="selectUser"
               />
             </div>
-            <!--진척도-->
-            <div class="grid grid-cols-2 gap-6 mb-8">
+            <div class="grid grid-cols-2 gap-6 mb-6">
               <div>
                 <label class="block text-sm font-medium mb-1">진척도 (%)</label>
-                <input
-                  type="number"
+                <select
                   v-model="form.progressRate"
-                  min="0"
-                  max="100"
-                  class="input w-full"
-                  placeholder="0"
-                />
+                  class="select w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none p-2"
+                >
+                  <option
+                    v-for="rate in [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
+                    :key="rate"
+                    :value="rate"
+                  >
+                    {{ rate }}%
+                  </option>
+                </select>
               </div>
-              <!--소요시간-->
-              <div>
-                <label class="block text-sm font-medium mb-1">소요 시간</label>
+              <div
+                v-if="[3, 6].includes(Number(form.taskStatusId))"
+                class="mt-4 p-3 bg-blue-50 rounded-lg"
+              >
+                <label class="block text-sm font-medium mb-1 text-blue-700"
+                  >소요 시간</label
+                >
                 <input
                   type="text"
-                  v-model="form.actualHours"
-                  class="input w-full bg-blue-50 cursor-not-allowed"
-                  placeholder="진행중 변경 시 자동 계산"
-                  readonly
+                  v-model="actualHours"
+                  class="input w-full border-blue-300 bg-white"
+                  placeholder="업무가 완료되어 시간이 계산되었습니다"
                 />
-                <p class="text-[11px] text-blue-400 mt-1">
-                  * 진행 중으로 변경 시 자동 계산됩니다.
+                <p class="text-[11px] text-blue-500 mt-1">
+                  * 개발 완료 시 자동 계산되며, 필요시 직접 수정 가능합니다.
                 </p>
               </div>
             </div>
-
-            <!-- 업무명 -->
             <div class="mb-6">
-              <label class="block text-sm font-medium mb-1">
-                업무 명 <span class="text-red-500">*</span>
-              </label>
+              <label class="block text-sm font-medium mb-1"
+                >업무 명 <span class="text-red-500">*</span></label
+              >
               <input
                 v-model="form.title"
                 placeholder="업무 제목을 적으세요"
                 class="input w-full"
               />
             </div>
-
-            <!-- 프로젝트 설명 -->
             <div class="mb-6">
               <label class="block text-sm font-medium mb-1"
                 >프로젝트 설명</label
@@ -149,13 +132,11 @@
               <textarea v-model="form.content" rows="5" class="input w-full" />
               <button class="btn-select mt-2">파일 선택</button>
             </div>
-
-            <!-- 업무상태 / 우선순위 / 마일스톤 -->
             <div class="grid grid-cols-3 gap-6 mb-6">
               <div>
-                <label class="block text-sm font-medium mb-1">
-                  업무 상태 <span class="text-red-500">*</span>
-                </label>
+                <label class="block text-sm font-medium mb-1"
+                  >업무 상태 <span class="text-red-500">*</span></label
+                >
                 <div class="flex gap-2">
                   <select v-model="form.taskStatusId" class="input flex-1">
                     <option value="">업무 상태를 선택하세요</option>
@@ -171,9 +152,9 @@
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">
-                  우선순위 <span class="text-red-500">*</span>
-                </label>
+                <label class="block text-sm font-medium mb-1"
+                  >우선순위 <span class="text-red-500">*</span></label
+                >
                 <div class="flex gap-2">
                   <select
                     v-model="form.priorityCode"
@@ -196,33 +177,23 @@
                 </p>
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1"
+                <label class="block text-sam font-medium mb-1"
                   >마일스톤 <span class="text-red-500">*</span></label
                 >
-                <div class="flex gap-2">
-                  <input
-                    v-model="form.milestone"
-                    disabled
-                    class="input flex-1 bg-gray-100"
-                    placeholder="자동 선택됨"
-                  />
-                </div>
+                <input
+                  v-model="form.milestone"
+                  disabled
+                  class="input w-full bg-gray-100"
+                  placeholder="자동 선택됨"
+                />
               </div>
-
               <ProjectSelectModal
                 v-model="milestoneModal"
                 title="마일스톤 선택"
                 :items="milestoneList"
-                @select="
-                  (val) => {
-                    form.milestone = val.name;
-                    form.milestoneId = val.value;
-                  }
-                "
+                @select="selectMilestone"
               />
             </div>
-
-            <!-- 시작일 / 종료일 / 추정시간 -->
             <div class="grid grid-cols-3 gap-6 mb-8">
               <div>
                 <label class="block text-sm font-medium mb-1">시작 일</label>
@@ -237,28 +208,35 @@
                 <label class="block text-sm font-medium mb-1">종료일</label>
                 <input
                   type="date"
-                  v-model="form.endDate"
+                  v-model="form.dueDate"
                   @change="calcEstTime"
                   class="input w-full"
                 />
-                <p class="text-xs text-gray-400 mt-1">
-                  시작일과 종료일이 입력되면 자동 계산 됩니다.
-                </p>
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">추정 시간</label>
-                <div class="flex gap-2">
-                  <input v-model="form.estTime" class="input flex-1" />
+                <div>
+                  <label class="block text-sm font-medium mb-1"
+                    >추정 시간</label
+                  >
+                  <input
+                    v-model="form.estTime"
+                    :disabled="
+                      !!form.taskId ||
+                      (form.estTime && form.estTime !== '0시간')
+                    "
+                    class="input w-full bg-gray-100 disabled:cursor-not-allowed"
+                    placeholder="날짜 선택 시 자동 계산"
+                  />
                 </div>
               </div>
             </div>
-
-            <!-- 하단 버튼 -->
             <div class="flex justify-between">
               <button @click="goBack" class="btn-navy">← 목록으로</button>
               <div class="flex gap-2">
                 <button @click="resetForm" class="btn-red">초기화</button>
-                <button @click="submitForm" class="btn-green">수정 완료</button>
+                <button @click="handleSubmit" class="btn-green">
+                  수정 완료
+                </button>
               </div>
             </div>
           </div>
@@ -269,233 +247,59 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
-import { useRoute } from "vue-router";
-import axios from "axios";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { storeToRefs } from "pinia";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectSelectModal from "../components/SelectModal.vue";
+import { useTaskStore } from "../stores/useTaskStore";
 
 const router = useRouter();
 const route = useRoute();
 const sidebarOpen = ref(false);
+const store = useTaskStore();
 
-const taskTypeList = ref([]);
-const priorityList = ref([]);
-const statusList = ref([]);
-
-const milestoneList = ref([]);
+const {
+  form,
+  taskTypeList,
+  priorityList,
+  statusList,
+  milestoneList,
+  userList,
+  userModal,
+  milestoneModal,
+  actualHours,
+} = storeToRefs(store);
+const {
+  openUserModal,
+  selectUser,
+  selectMilestone,
+  onPriorityChange,
+  calcEstTime,
+  resetForm,
+} = store;
 
 onMounted(async () => {
-  const taskId = route.query.taskId;
-  let pId = route.query.projectId;
-
-  try {
-    const [typeRes, codeRes] = await Promise.all([
-      axios.get("/api/taskType"),
-      axios.get("/api/code", { params: { groupValue: ["0H", "0G"] } }),
-    ]);
-    taskTypeList.value = typeRes.data;
-    priorityList.value = codeRes.data.c0H;
-    statusList.value = codeRes.data.c0G;
-
-    if (taskId) {
-      const res = await axios.get(`/api/task/${taskId}`);
-      const d = res.data;
-
-      form.value = {
-        ...form.value,
-        ...d,
-        startDate: d.startDate ? d.startDate.split("T")[0] : "",
-        endDate: d.dueDate ? d.dueDate.split("T")[0] : "",
-        estTime: d.estimatedHours ? `${d.estimatedHours}시간` : "",
-        assigneeName: d.assigneeName || "",
-        taskStatusId: d.taskStatusId,
-        taskTypeId: d.taskTypeId ?? "",
-      };
-
-      if (!pId) pId = d.projectId;
-    }
-
-    if (pId) {
-      const res = await axios.get(`/api/projectDetail/${pId}`);
-      const d = res.data;
-      form.value.projectName = d.displayProjectName;
-      form.value.subProjectName = d.displaySubProjectName;
-      form.value.projectId = d.parentProjectId || d.projectId;
-      form.value.subProjectId = d.parentProjectId ? d.projectId : null;
-      await fetchMilestones(form.value.subProjectId || form.value.projectId);
-    }
-  } catch (e) {
-    console.error("초기 데이터 로드 실패:", e);
-  }
+  await store.initEdit(route.params.taskId);
 });
-const initialForm = {
-  projectId: "",
-  subProjectId: "",
-  projectName: "",
-  subProjectName: "",
-  taskTypeId: "",
-  title: "",
-  assigneeUserId: "",
-  content: "",
-  taskStatusId: "",
-  priorityCode: "",
-  milestoneId: "",
-  startDate: "",
-  endDate: "",
-  estTime: "",
-};
-const form = ref({ ...initialForm });
-const userModal = ref(false);
-const userList = ref([]);
 
-// 담당자 목록 불러오기
-const openUserModal = async () => {
+const handleSubmit = async () => {
   try {
-    const res = await axios.get("/api/taskUser");
-    userList.value = res.data.map((user) => ({
-      ...user,
-      name: user.userName,
-      id: user.userId,
-    }));
+    const success = await store.updateTask(route.params.taskId);
 
-    userModal.value = true;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-// 마일스톤 목록 불러오기 함수 (독립적으로 분리)
-const fetchMilestones = async (pId) => {
-  if (!pId) return;
-  try {
-    const res = await axios.get("/api/taskMileStone", {
-      params: { projectId: pId },
-    });
-
-    milestoneList.value = res.data.map((m) => ({
-      name: m.milestoneName,
-      value: m.milestoneId,
-    }));
-
-    // 데이터가 있다면 첫 번째 마일스톤을 기본값으로 세팅
-    if (milestoneList.value.length > 0) {
-      form.value.milestone = milestoneList.value[0].name;
-      form.value.milestoneId = milestoneList.value[0].value;
-    } else {
-      // 데이터가 없을 경우 초기화
-      form.value.milestone = "등록된 마일스톤 없음";
-      form.value.milestoneId = "";
-    }
-  } catch (e) {
-    console.error("마일스톤 로드 실패:", e);
-  }
-};
-
-//우선순위
-const onPriorityChange = () => {
-  const val = form.value.priorityCode;
-  const today = new Date();
-  if (val.includes("상") || val === "H1") today.setDate(today.getDate() + 3);
-  else if (val.includes("중") || val === "H2")
-    today.setDate(today.getDate() + 7);
-  else today.setDate(today.getDate() + 14);
-  form.value.endDate = today.toISOString().split("T")[0];
-  calcEstTime();
-};
-//예상 시간 계산
-const calcEstTime = () => {
-  if (form.value.startDate && form.value.endDate) {
-    const diff = new Date(form.value.endDate) - new Date(form.value.startDate);
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    form.value.estTime = `${days * 8}시간`;
-  }
-};
-
-watch(
-  () => form.value.taskStatusId,
-  (newVal) => {
-    if (newVal === 2) {
-      // 진행중
-      if (form.value.startDate && form.value.endDate) {
-        const diff =
-          new Date(form.value.endDate) - new Date(form.value.startDate);
-        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-        form.value.actualHours = `${days * 8}시간`;
-      } else {
-        const today = new Date().toISOString().split("T")[0];
-        const start = form.value.startDate || today;
-        const end = form.value.endDate || today;
-        const diff = new Date(end) - new Date(start);
-        const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
-        form.value.actualHours = `${days * 8}시간`;
-      }
-    } else {
-      form.value.actualHours = "";
-    }
-  },
-);
-
-//등록
-// 업무 수정 제출
-const submitForm = async () => {
-  try {
-    const taskId = route.query.taskId;
-    const postData = {
-      ...form.value,
-      taskId: Number(taskId),
-      projectId: Number(form.value.projectId),
-      subProjectId: form.value.subProjectId
-        ? Number(form.value.subProjectId)
-        : null,
-      milestoneId: form.value.milestoneId
-        ? Number(form.value.milestoneId)
-        : null,
-      taskStatusId: Number(
-        String(form.value.taskStatusId).replace(/[^0-9]/g, ""),
-      ),
-      assigneeUserId: form.value.assigneeUserId
-        ? Number(form.value.assigneeUserId)
-        : null,
-
-      // 날짜 데이터
-      startDate: form.value.startDate,
-      dueDate: form.value.endDate,
-    };
-    const res = await axios.put(`/api/task/${taskId}`, postData);
-
-    form.value = { ...form.value, ...res.data };
-
+    if (success === false) return;
     alert("수정이 완료되었습니다!");
     router.push("/tasks");
-  } catch (e) {
-    console.error(e);
+  } catch {
     alert("수정에 실패했습니다. 입력값을 확인해 주세요.");
   }
-};
-const resetForm = () => {
-  const savedProjectInfo = {
-    //유지할 정보 보관
-    projectId: form.value.projectId,
-    subProjectId: form.value.subProjectId,
-    projectName: form.value.projectName,
-    subProjectName: form.value.subProjectName,
-  };
-  form.value = { ...initialForm };
-  //유지할 정보 복원
-  form.value.projectId = savedProjectInfo.projectId;
-  form.value.subProjectId = savedProjectInfo.subProjectId;
-  form.value.projectName = savedProjectInfo.projectName;
-  form.value.subProjectName = savedProjectInfo.subProjectName;
 };
 
 const goBack = () => router.back();
 </script>
 
 <style scoped>
-/* 인풋 전체 라운드 */
 :deep(.input) {
   border-radius: 10px !important;
   border: 1px solid #e2e8f0 !important;
@@ -513,7 +317,7 @@ const goBack = () => router.back();
 }
 :deep(.input:disabled) {
   background: #f1f5f9 !important;
-  color: #94a3b8 !important;
+  color: #475569 !important;
 }
 :deep(select.input) {
   border-radius: 10px !important;
@@ -524,12 +328,6 @@ const goBack = () => router.back();
 :deep(textarea.input) {
   border-radius: 10px !important;
 }
-:deep(.input:disabled) {
-  background: #f1f5f9 !important;
-  color: #475569 !important; /* #94a3b8 → #475569 으로 변경! */
-}
-
-/* 선택 버튼 */
 .btn-select {
   height: 38px;
   padding: 0 16px;
@@ -549,8 +347,6 @@ const goBack = () => router.back();
   border-color: #94a3b8;
   color: #1e293b;
 }
-
-/* 확인 버튼 */
 .btn-confirm {
   height: 38px;
   padding: 0 16px;
@@ -568,8 +364,6 @@ const goBack = () => router.back();
   background: #e2e8f0;
   color: #1e293b;
 }
-
-/* 하단 버튼 */
 .btn-navy {
   height: 38px;
   padding: 0 20px;
@@ -582,14 +376,12 @@ const goBack = () => router.back();
   color: #fff;
   transition: all 0.2s;
   box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
-  letter-spacing: 0.01em;
 }
 .btn-navy:hover {
   background: #162d4a;
   box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
   transform: translateY(-1px);
 }
-
 .btn-red {
   height: 38px;
   padding: 0 20px;
@@ -602,14 +394,12 @@ const goBack = () => router.back();
   color: #fff;
   transition: all 0.2s;
   box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
-  letter-spacing: 0.01em;
 }
 .btn-red:hover {
   background: #b91c1c;
   box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
   transform: translateY(-1px);
 }
-
 .btn-green {
   height: 38px;
   padding: 0 20px;
@@ -622,7 +412,6 @@ const goBack = () => router.back();
   color: #fff;
   transition: all 0.2s;
   box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
-  letter-spacing: 0.01em;
 }
 .btn-green:hover {
   background: #60aee2;

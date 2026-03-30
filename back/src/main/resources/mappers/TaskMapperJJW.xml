@@ -97,7 +97,9 @@
 
     <!-- 담당자(유저) 목록 조회 -->
     <select id="getUserList" resultType="com.example.task.dto.UserDtoJJW">
-        SELECT user_id, user_name
+        SELECT
+        user_id AS userId,
+        user_name AS userName
         FROM users
         WHERE is_active = 'O1' AND user_type = 'M2'
     </select>
@@ -122,8 +124,7 @@
         m.milestone_id AS milestoneId,
         m.milestone_name AS milestoneName
         FROM milestones m
-        JOIN milestone_mapping mm ON m.milestone_id = mm.milestone_id
-        WHERE mm.project_id = #{projectId}
+        WHERE m.project_id = #{projectId}
     </select>
 
     <!-- 프로젝트 상세 조회-->
