@@ -59,7 +59,9 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.path !== "/login" && !useAuthStore().user) {
+  if (to.path == "/resetPassword") {
+    next();
+  } else if (to.path !== "/login" && !useAuthStore().user) {
     next("/login");
   } else if (to.path.startsWith("/admin") && !useAuthStore().isAdmin) {
     next("/");

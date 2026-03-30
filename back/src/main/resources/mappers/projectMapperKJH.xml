@@ -4,24 +4,45 @@
     <!--  프로젝트 단건조회  -->
     <select id="getSingleProject" resultType="ProjectSingleDtoKJH">
         SELECT
-            project_id,
-            identifier,
-            parent_project_id,
-            project_name,
-            description,
-            start_date,
-            end_date,
-            status,
-            is_public,
-            created_at,
-            updated_at,
-            created_by,
-            pm_user_id,
-            pl_user_id,
-            editor_user_id,
-            use_milestone
-        FROM projects
+            p.project_id,
+            p.identifier,
+            p.parent_project_id,
+            p.project_name,
+            p.description,
+            p.start_date,
+            p.end_date,
+            c1.code_name AS status,
+            c2.code_name AS is_public,
+            p.created_at,
+            p.updated_at,
+            p.created_by,
+            u1.user_name AS pm_user_id,
+            u2.user_name AS pl_user_id,
+            p.editor_user_id,
+            c3.code_name AS use_milestone
+        FROM projects p
+        JOIN common_code c1 ON p.status = c1.code_value
+        JOIN common_code c2 ON p.is_public = c2.code_value
+        JOIN common_code c3 ON p.use_milestone = c3.code_value
+        JOIN users u1 ON p.pm_user_id = u1.user_id
+        JOIN users u2 ON p.pl_user_id = u2.user_id
         WHERE project_id=#{projectId}
     </select>
+
+<!--    프로젝트 수정-->
+    <insert id="modifyProject">
+        UPDATE projects
+        SET project_name = #{projectName},
+            identifier = #{identifier},
+            description = #{description},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            is_public = #{isPublic},
+            updated_at = SYSDATE,
+            pl_user_id = #{plUserId},
+            use_milestone = #{useMilestone}
+        WHERE project_id = #{projectId}
+    </insert>
+
 
 </mapper>

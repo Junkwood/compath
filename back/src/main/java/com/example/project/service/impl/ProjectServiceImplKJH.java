@@ -22,4 +22,9 @@ public class ProjectServiceImplKJH implements ProjectServiceKJH {
     public ProjectSingleDtoKJH getSingleProject(int projectId) {
         return mapper.getSingleProject(projectId);
     }
+
+    @Override
+    public int modifyProject(ProjectModifyDtoKJH dto) {
+        return mapper.modifyProject(dto);
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.emp.mapper;
 
+import com.example.emp.dto.AccountDTOSJW;
 import com.example.emp.dto.EmpDTOSJW;
 import com.example.emp.entity.EmpVOSJW;
 import org.apache.ibatis.annotations.Mapper;
@@ -14,5 +15,12 @@ public interface EmpMapperSJW {
     EmpVOSJW getById(Integer id);
     void modifyStatusById(Map<String,Object> id);
     Integer registerEmp(EmpVOSJW emp);
-    void insertGroupMember(@Param("userId") Integer userId, @Param("groupId") Integer groupId);
+    void insertGroupMember(@Param("userId") Integer userId, @Param("groupId") Integer groupId,@Param("isPrimary") String isPrimary);
+    Integer modifyEmpById(EmpVOSJW emp);
+    void deactivateGroupMember(@Param("userId") Integer userId, @Param("groupId") Integer groupId);
+    List<Integer> selectActiveGroupIds(Integer userId);
+    void updateGroupMemberPrimary(@Param("userId") Integer userId, @Param("groupId") Integer groupId,@Param("isPrimary") String isPrimary);
+    void insertEmailAuth(AccountDTOSJW account);
+    Integer verifyAuthCode(Integer emailId,Integer emailNo);
+    void cleanUpOldCodes(Integer emailId);
 }

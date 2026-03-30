@@ -26,128 +26,198 @@
         </div>
       </div>
       <div
-        class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mx-8 mb-0 p-4"
+        class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mx-8 mb-0 p-6"
       >
-        <div
-          class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl m-8 mt-4"
-        >
-          <!-- 예정시작일 / 예정종료일 / 추정시간 -->
-          <div class="grid grid-cols-3 gap-6 mb-8">
-            <div class="flex flex-row gap-10">
-              <label class="block text-base font-medium mb-1"
-                >프로젝트 명</label
-              >
-              <span>{{ name }}</span>
-            </div>
-            <div class="flex flex-row gap-10">
-              <label class="block text-sm font-medium mb-1">시작일</label>
-              <span>{{ name }}</span>
-            </div>
-            <div class="flex flex-row gap-10">
-              <label class="block text-sm font-medium mb-1">종료일</label>
-              <span>{{ name }}</span>
-            </div>
+        <!-- 예정시작일 / 예정종료일 / 추정시간 -->
+        <div class="grid grid-cols-3 gap-6 mb-8">
+          <div class="flex flex-row gap-10">
+            <label class="block text-base font-semibold mb-1"
+              >프로젝트 이름</label
+            >
+            <span>{{ projectInfo.projectName }}</span>
           </div>
-
-          <!-- 예정시작일 / 예정종료일 / 추정시간 -->
-          <div class="grid grid-cols-3 gap-6 mb-8">
-            <div>
-              <label class="block text-sm font-medium mb-1">식별자</label>
-              <input type="date" class="input w-full" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">PM</label>
-              <input type="date" class="input w-full" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">총괄 PL</label>
-              <div class="flex gap-2">
-                <input class="input flex-1" />
-              </div>
-            </div>
+          <div class="flex flex-row gap-10">
+            <label class="block text-base font-semibold mb-1">시작일</label>
+            <span>{{ projectInfo.startDate }}</span>
           </div>
-          <div class="mb-6">
-            <label class="block text-sm font-medium mb-1">프로젝트 설명</label>
-            <textarea rows="5" class="input w-full" />
-          </div>
-          <div class="grid grid-cols-2 gap-6 mb-8">
-            <div>
-              <label class="block text-sm font-medium mb-1">마일스톤</label>
-              <input type="date" class="input w-full" />
-            </div>
-          </div>
-          <div class="grid grid-cols-1 gap-6 mb-8">
-            <label class="block text-sm font-medium mb-1">공개 프로젝트</label>
-            <input type="date" class="input w-full" />
+          <div class="flex flex-row gap-10">
+            <label class="block text-base font-semibold mb-1">종료일</label>
+            <span>{{ projectInfo.endDate }}</span>
           </div>
         </div>
-        <div
-          class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl m-8 mt-4"
-        >
-          <!-- Table -->
 
-          <el-table
-            :data="pagedTaskData"
-            style="width: 100%"
-            :header-cell-style="headerStyle"
-            :cell-style="cellStyle"
+        <!-- 예정시작일 / 예정종료일 / 추정시간 -->
+        <div class="grid grid-cols-3 gap-6 mb-8">
+          <div class="flex flex-row gap-10">
+            <label class="block text-base font-semibold mb-1 ml-11"
+              >식별자</label
+            >
+            <span>{{ projectInfo.identifier }}</span>
+          </div>
+          <div class="flex flex-row gap-10">
+            <label class="block text-base font-semibold mb-1 ml-5">PM</label>
+            <span>{{ projectInfo.pmUserId }}</span>
+          </div>
+          <div class="flex flex-row gap-10">
+            <label class="block text-base font-semibold mb-1">총괄 PL</label>
+            <span>{{ projectInfo.plUserId }}</span>
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="block text-base font-semibold mb-1"
+            >프로젝트 설명</label
           >
-            <el-table-column prop="no" label="번호" width="70" align="center" />
-            <el-table-column prop="projectName" label="이름" width="80" />
-            <el-table-column
-              prop="created"
-              label="사번"
-              width="70"
-              align="center"
-            />
-            <el-table-column
-              prop="inProgress"
-              label="이메일"
-              width="70"
-              align="center"
-            />
-            <el-table-column
-              prop="devDone"
-              label="역할"
-              width="90"
-              align="center"
-            />
-            <el-table-column label="삭제">
-              <template #default="scope">
-                <el-button
-                  size="small"
-                  type="danger"
-                  @click="handleDelete(scope.$index, scope.row)"
-                >
-                  Delete
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+          <textarea
+            rows="5"
+            class="input w-full"
+            :value="projectInfo.description"
+            disabled
+          />
         </div>
+        <div class="flex flex-row mb-8">
+          <div class="flex flex-row gap-10">
+            <label class="block text-base font-semibold mb-1 ml-8"
+              >마일스톤</label
+            >
+            <span>{{ projectInfo.useMilestone }}</span>
+          </div>
+        </div>
+        <div class="flex flex-row justify-between">
+          <div class="flex flex-row gap-10">
+            <label class="block text-base font-semibold mb-1"
+              >공개 프로젝트</label
+            >
+            <span>{{ projectInfo.isPublic }}</span>
+          </div>
+          <div>
+            <button @click="openModfyModal" class="btn-green">수정</button>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-row justify-between gap-4 mx-8 mt-4">
+        <div
+          class="text-lg font-bold text-gray-800 dark:text-gray-100 col-start-1 col-end-4 pt-3"
+        >
+          <h2>구성원</h2>
+        </div>
+        <div>
+          <button
+            @click="submitForm"
+            class="btn bg-violet-500 hover:bg-violet-600 text-white"
+          >
+            구성원 추가
+          </button>
+        </div>
+      </div>
+      <div class="card main-col mx-8 mt-4">
+        <!-- Table -->
+
+        <el-table
+          :data="pagedTaskData"
+          style="width: 100%"
+          :header-cell-style="headerStyle"
+          :cell-style="cellStyle"
+        >
+          <el-table-column prop="no" label="번호" width="70" align="center" />
+          <el-table-column prop="projectName" label="이름" width="80" />
+          <el-table-column
+            prop="created"
+            label="사번"
+            width="70"
+            align="center"
+          />
+          <el-table-column
+            prop="inProgress"
+            label="이메일"
+            width="70"
+            align="center"
+          />
+          <el-table-column
+            prop="devDone"
+            label="역할"
+            width="90"
+            align="center"
+          />
+          <el-table-column label="삭제">
+            <template #default="scope">
+              <el-button
+                size="small"
+                type="danger"
+                @click="handleDelete(scope.$index, scope.row)"
+              >
+                Delete
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
     </div>
   </div>
+
+  <ProjectModifyModal
+    v-model="ModifyProjectModalOpen"
+    :originInfo="projectInfo"
+    @handle-cancel="closeModifyMdoal"
+    @modify-Info="modifyProject"
+  />
 </template>
 
 <script setup>
 import { onBeforeMount, ref } from "vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
+import { useProjectKJHStore } from "../stores/projectKJH";
 import { useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import ProjectModifyModal from "./ProjectModifyModal.vue";
 
 const route = useRoute();
 const taskStore = usetaskKJHStore();
+const projectStore = useProjectKJHStore();
 
-const name = ref();
+const name = ref(); // 프로젝트 이름
+const projectInfo = ref({
+  createdAt: null,
+  createdBy: null,
+  description: null,
+  editorUserId: null,
+  endDate: null,
+  identifier: null,
+  isPublic: null,
+  parentProjectId: null,
+  plUserId: null,
+  pmUserId: null,
+  projectId: null,
+  projectName: null,
+  startDate: null,
+  status: null,
+  updatedAt: null,
+  useMilestone: null,
+});
 const id = route.params.id;
 
+const ModifyProjectModalOpen = ref(false);
+
 onBeforeMount(async () => {
-  // 프로젝트 이름 조회
+  // 프로젝트명
   await taskStore.getProjectName(id);
   name.value = taskStore.projectName.projectName;
+
+  // 프로젝트 정보
+  await projectStore.getProjectInfo(id);
+  projectInfo.value = projectStore.projectInfo;
+  console.log("프로젝트 정보: ", projectInfo.value);
 });
+
+// 수정버튼
+const openModfyModal = () => {
+  ModifyProjectModalOpen.value = true;
+};
+
+// 모달 취소버튼
+const closeModifyMdoal = () => {
+  ModifyProjectModalOpen.value = false;
+};
 </script>
 <style scoped>
 /* 인풋 전체 라운드 */
@@ -182,5 +252,45 @@ onBeforeMount(async () => {
 :deep(.input:disabled) {
   background: #f1f5f9 !important;
   color: #475569 !important; /* #94a3b8 → #475569 으로 변경! */
+}
+
+/* 수정버튼 */
+.btn-green {
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #1882c9;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+  letter-spacing: 0.01em;
+}
+.btn-green:hover {
+  background: #60aee2;
+  box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
+  transform: translateY(-1px);
+}
+/* ── 카드 공통 ── */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a1a2e;
 }
 </style>
