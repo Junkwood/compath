@@ -1,0 +1,27 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.project.mapper.ProjectMapperKJH">
+
+    <!--  프로젝트 단건조회  -->
+    <select id="getSingleProject" resultType="ProjectSingleDtoKJH">
+        SELECT
+            project_id,
+            identifier,
+            parent_project_id,
+            project_name,
+            description,
+            start_date,
+            end_date,
+            status,
+            is_public,
+            created_at,
+            updated_at,
+            created_by,
+            pm_user_id,
+            pl_user_id,
+            editor_user_id,
+            use_milestone
+        FROM projects
+        WHERE project_id=#{projectId}
+    </select>
+
+</mapper>
