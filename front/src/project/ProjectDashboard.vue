@@ -256,7 +256,7 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Sidebar from '../partials/Sidebar.vue'
 import Header from '../partials/Header.vue'
 import axios from 'axios'
@@ -266,7 +266,7 @@ import { useAuthStore } from '../stores/auth'
 const authStore = useAuthStore()
 
 const route = useRoute();
-const routerUse = useRouter();
+const router = useRouter();
 const sidebarOpen = ref(false);
 
 // ── 업무 현황 (하드코딩) ────────────────────────────
