@@ -49,10 +49,8 @@
         <div class="w-full max-w-sm">
           <!-- 모바일 로고 -->
           <div class="flex items-center gap-2 mb-8 md:hidden">
-            <div
-              class="w-15 h-10 rounded-lg flex items-center justify-center"
-            >
-              <img src="../images/comPath.png" alt="ComPath">
+            <div class="w-15 h-10 rounded-lg flex items-center justify-center">
+              <img src="../images/comPath.png" alt="ComPath" />
             </div>
             <span class="text-slate-800 dark:text-white font-semibold text-lg"
               >ComPath</span
@@ -125,12 +123,12 @@
                 >
                   비밀번호
                 </label>
-                <a
-                  href="#"
+                <router-link
+                  to="/resetPassword"
                   class="text-xs text-indigo-500 hover:text-indigo-600 font-medium"
                 >
                   비밀번호 재설정
-                </a>
+                </router-link>
               </div>
               <div class="relative">
                 <input

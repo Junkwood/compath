@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     v-model="visible"
-    title="새 계정 추가"
+    :title="isEditMode ? '계정 수정' : '새 계정 추가'"
     width="560px"
     :close-on-click-modal="false"
     @close="handleClose"
@@ -42,16 +42,16 @@
             >
               <el-option
                 v-for="group in plOptions"
-                :key="group.groupId"
+                :key="group.groupId.toString()"
                 :label="group.groupName"
-                :value="group.groupId"
+                :value="group.groupId.toString()"
               />
             </el-select>
           </div>
         </div>
       </el-form-item>
 
-      <!-- 공개 여부 -->
+      <!-- 관리자 계정 여부 -->
       <el-form-item label="관리자 계정 여부">
         <div class="switch-row">
           <el-switch
@@ -81,7 +81,7 @@
             :loading="submitting"
             @click="handleSubmit"
           >
-            계정 생성
+            {{ isEditMode ? "수정 완료" : "계정 생성" }}
           </el-button>
         </div>
       </div>
@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed, watch, nextTick } from "vue";
 import { useGroupStore } from "../stores/group";
 import { useEmpStore } from "../stores/emp";
 const groupStore = useGroupStore();
@@ -98,17 +98,46 @@ const empStore = useEmpStore();
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
+  editData: { type: Object, default: null },
 });
+const isEditMode = computed(() => !!props.editData);
 const emit = defineEmits(["update:modelValue", "submitted"]);
+watch(
+  () => props.modelValue,
+  (isOpen) => {
+    if (isOpen) {
+      if (isEditMode.value) {
+        // ⭐ 수정 모드: 데이터 덮어쓰기 & 비밀번호 필수 해제
+        Object.assign(form, {
+          userId: props.editData.userId,
+          name: props.editData.name,
+          email: props.editData.email,
+          userType: props.editData.userType,
+          groupId: props.editData.groupId?.toString() || "",
+          password: "",
+          passwordc: "",
+        });
+        rules.password[0].required = false; // 필수 아님!
+        rules.passwordc[0].required = false; // 필수 아님!
+      } else {
+        // ⭐ 생성 모드: 데이터 초기화 & 비밀번호 필수로 복구
+        Object.assign(form, defaultForm());
+        rules.password[0].required = true;
+        rules.passwordc[0].required = true;
+      }
 
+      // 모달이 열리면서 발생한 쓸데없는 에러 메시지 찌꺼기 즉시 청소
+      nextTick(() => {
+        formRef.value?.clearValidate();
+      });
+    }
+  },
+);
 const visible = computed({
   get: () => props.modelValue,
   set: (v) => emit("update:modelValue", v),
 });
 
-import { computed } from "vue";
-
-// ── PL 옵션 (백엔드 연결 시 API로 교체) ──
 const plOptions = computed(() => groupStore.activeGroupList);
 
 const formRef = ref(null);
@@ -122,22 +151,43 @@ const defaultForm = () => ({
   passwordc: "",
   userType: "USER",
   groupId: "",
+  groupIds: null,
+  primaryGroupId: "",
 });
 
 const form = reactive(defaultForm());
-// 비밀번호 확인을 위한 커스텀 검증 함수
+// 비밀번호 확인 검증 함수
 const validatePasswordConfirm = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("비밀번호를 다시 한 번 입력해주세요."));
-  } else if (value !== form.password) {
-    // 폼에 입력된 원본 비밀번호와 비교
-    callback(new Error("비밀번호가 일치하지 않습니다!"));
-  } else {
-    callback(); // 성공 시 빈 콜백 호출
+  const pass1 = form.password || ""; // 원본 비밀번호 (null 방지)
+  const pass2 = value || ""; // 확인 비밀번호 (null 방지)
+
+  // 1. 수정 모드인데 둘 다 안 건드렸다? -> 무사 통과
+  if (isEditMode.value && pass1 === "" && pass2 === "") {
+    return callback();
   }
+
+  // 2. 위에 비밀번호는 쳤는데, 아래(확인)를 안 쳤다? -> 에러
+  if (pass1 !== "" && pass2 === "") {
+    return callback(new Error("비밀번호를 다시 한 번 입력해주세요."));
+  }
+
+  // 3. 둘 다 쳤는데 값이 다르다? -> 에러
+  if (pass1 !== pass2) {
+    return callback(new Error("비밀번호가 일치하지 않습니다!"));
+  }
+
+  // 다 통과하면 성공
+  callback();
 };
-const rules = {
-  email: [{ required: true, message: "이메일을 입력하세요", trigger: "blur" }],
+const rules = reactive({
+  email: [
+    { required: true, message: "이메일을 입력하세요", trigger: "blur" },
+    {
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: "올바른 이메일 형식이 아닙니다. (예: user@compath.com)",
+      trigger: "blur", // 포커스를 잃을 때 검사
+    },
+  ],
   name: [
     {
       required: true,
@@ -145,13 +195,24 @@ const rules = {
       trigger: "blur",
     },
   ],
+  // 비밀번호 룰
   password: [
-    { required: true, message: "비밀번호를 입력하세요", trigger: "blur" },
+    {
+      required: !isEditMode.value, // 신규 생성(!isEditMode)일 때만 true(필수)
+      message: "비밀번호를 입력하세요",
+      trigger: "blur",
+    },
   ],
+
+  // 비밀번호 확인 룰
   passwordc: [
-    { required: true, validator: validatePasswordConfirm, trigger: "blur" },
+    {
+      required: !isEditMode.value, // 신규 생성일 때만 필수
+      validator: validatePasswordConfirm,
+      trigger: "blur",
+    },
   ],
-};
+});
 
 const handleClose = () => {
   visible.value = false;
@@ -168,8 +229,16 @@ const handleSubmit = async () => {
 
   submitting.value = true;
   try {
-    await empStore.registerEmp(form);
-    console.log("등록 데이터:", { ...form });
+    if (isEditMode.value) {
+      form.groupIds = [...form.groupId];
+      form.primaryGroupId = form.groupId;
+      console.log(form);
+      await empStore.updateEmp(form);
+      console.log("등록 데이터:", { ...form });
+    } else {
+      await empStore.registerEmp(form);
+      console.log("등록 데이터:", { ...form });
+    }
     emit("submitted", { ...form });
     visible.value = false;
     handleReset();

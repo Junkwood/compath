@@ -7,18 +7,14 @@ export const useEmpStore = defineStore("emp", {
   }),
   getters: {},
   actions: {
-    login(userData, token = null) {
-      this.user = userData;
-      this.token = token;
-      localStorage.setItem("user", JSON.stringify(userData));
-      if (token) {
-        localStorage.setItem("token", token);
-      }
-    },
     async getEmpList() {
       await axios.get("/api/emp/list").then((response) => {
         this.empList = response.data;
       });
+    },
+    async getEmp(id) {
+      const response = await axios.get(`/api/emp/info/${id}`);
+      return response.data;
     },
     async chageStatus(id) {
       const response = await axios.get(`/api/emp/status/${id}`);
@@ -27,6 +23,14 @@ export const useEmpStore = defineStore("emp", {
     async registerEmp(data) {
       const response = await axios.post("/api/emp", data);
       return response;
+    },
+    async updateEmp(data) {
+      const response = await axios.put("/api/emp", data);
+      if (response) {
+        console.log("업뎃 성공", data);
+      } else {
+        console.error("업뎃 실패", data);
+      }
     },
   },
 });

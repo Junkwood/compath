@@ -9,5 +9,10 @@ const empRoutes = [
     name: "emp",
     component: () => import("../emp/EmpList.vue"),
   },
+  {
+    path: "/resetPassword",
+    component: () => import("../pages/ResetPassword.vue"),
+    meta: { requiresAuth: false },
+  },
 ];
 export default empRoutes;

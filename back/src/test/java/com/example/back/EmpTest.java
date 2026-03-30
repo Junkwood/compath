@@ -38,4 +38,10 @@ public class EmpTest {
             System.out.println(e);
         }
     }
+    @Test
+    public void randomNum(){
+        Integer randval =(int) (Math.random()*1000000);
+        String result = String.format("%06d",(int)Math.floor(randval));
+        System.out.println(result);
+    }
 }

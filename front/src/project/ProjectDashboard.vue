@@ -4,7 +4,9 @@
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <!-- Content area -->
-    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+    >
       <!-- Site header -->
       <Header
         :sidebarOpen="sidebarOpen"
@@ -13,16 +15,21 @@
 
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-
           <!-- 페이지 타이틀 + 프로젝트명 + 기간 -->
           <div class="mb-6 proj-title-row">
             <div class="proj-title-left">
-              <h2 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
+              <h2
+                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
+              >
                 프로젝트 대시보드
               </h2>
               <div class="proj-name-row">
-                <span class="proj-name">【 {{projectInfo.projectName}} 】</span>
-                <span class="proj-period">{{projectInfo.startDate}} - {{projectInfo.endDate}}</span>
+                <span class="proj-name"
+                  >【 {{ projectInfo.projectName }} 】</span
+                >
+                <span class="proj-period"
+                  >{{ projectInfo.startDate }} - {{ projectInfo.endDate }}</span
+                >
               </div>
             </div>
 
@@ -35,10 +42,8 @@
 
           <!-- ────────── 상단: 업무현황 + 프로젝트 구성원 ────────── -->
           <div class="proj-top mb-5">
-
             <!-- 좌측: 업무 현황 + 공지사항 + 하위 프로젝트 -->
             <div class="proj-left-col">
-
               <!-- 업무 현황 -->
               <div class="card mb-5">
                 <div class="card-header">
@@ -47,22 +52,47 @@
                     업무 목록 보기
                   </el-button>
                 </div>
-             <div class="task-table-wrap">
-              <el-table
-                :data="taskSummaryData"
-                class="task-status-table"
-                style="width: 100%"
-                :header-cell-style="taskHeaderStyle"
-                :cell-style="taskCellStyle"
-              >
-                <el-table-column prop="type" label="유형" min-width="90" />
-                <el-table-column prop="total" label="전체" min-width="70" align="center" />
-                <el-table-column prop="inProgress" label="진행중" min-width="80" align="center" />
-                <el-table-column prop="done" label="완료" min-width="70" align="center" />
-                <el-table-column prop="rejected" label="반려" min-width="70" align="center" />
-                <el-table-column prop="totalSum" label="합계" min-width="70" align="center" />
-              </el-table>
-            </div>
+                <div class="task-table-wrap">
+                  <el-table
+                    :data="taskSummaryData"
+                    class="task-status-table"
+                    style="width: 100%"
+                    :header-cell-style="taskHeaderStyle"
+                    :cell-style="taskCellStyle"
+                  >
+                    <el-table-column prop="type" label="유형" min-width="90" />
+                    <el-table-column
+                      prop="total"
+                      label="전체"
+                      min-width="70"
+                      align="center"
+                    />
+                    <el-table-column
+                      prop="inProgress"
+                      label="진행중"
+                      min-width="80"
+                      align="center"
+                    />
+                    <el-table-column
+                      prop="done"
+                      label="완료"
+                      min-width="70"
+                      align="center"
+                    />
+                    <el-table-column
+                      prop="rejected"
+                      label="반려"
+                      min-width="70"
+                      align="center"
+                    />
+                    <el-table-column
+                      prop="totalSum"
+                      label="합계"
+                      min-width="70"
+                      align="center"
+                    />
+                  </el-table>
+                </div>
               </div>
 
               <!-- 공지사항 -->
@@ -143,7 +173,6 @@
             </div>
             <!-- 우측: 프로젝트 구성원 + 나의 메모 -->
             <div class="proj-right-col">
-
               <!-- 프로젝트 구성원 -->
               <div class="card mb-5">
                 <div class="card-header">
@@ -155,7 +184,10 @@
                     :key="member.name"
                     class="member-item"
                   >
-                    <div class="member-avatar" :style="{ backgroundColor: member.avatarColor }">
+                    <div
+                      class="member-avatar"
+                      :style="{ backgroundColor: member.avatarColor }"
+                    >
                       {{ member.name.charAt(0) }}
                     </div>
                     <div class="member-info">
@@ -166,7 +198,9 @@
                     </div>
                   </div>
                   <div class="member-empty-row">
-                    <span class="member-empty-text">구성원이 아직 지정되지 않았습니다.</span>
+                    <span class="member-empty-text"
+                      >구성원이 아직 지정되지 않았습니다.</span
+                    >
                   </div>
                 </div>
               </div>
@@ -206,10 +240,8 @@
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
-
         </div>
       </main>
     </div>
@@ -233,36 +265,90 @@ import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
 
-const route = useRoute()
-const sidebarOpen = ref(false)
+const route = useRoute();
+const routerUse = useRouter();
+const sidebarOpen = ref(false);
 
 // ── 업무 현황 (하드코딩) ────────────────────────────
 const taskSummaryData = ref([
-  { type: '개발',  total: 13, inProgress: 9, done: 0, rejected: 1, totalSum: 23 },
-  { type: '기획',  total: 13, inProgress: 9, done: 0, rejected: 1, totalSum: 23 },
-  { type: '업무',  total: 18, inProgress: 4, done: 1, rejected: 0, totalSum: 23 },
-  { type: '기타',  total: 5,  inProgress: 4, done: 1, rejected: 0, totalSum: 10 },
-  { type: '다스트', total: 5,  inProgress: 0, done: 0, rejected: 0, totalSum: 2  },
-])
+  {
+    type: "개발",
+    total: 13,
+    inProgress: 9,
+    done: 0,
+    rejected: 1,
+    totalSum: 23,
+  },
+  {
+    type: "기획",
+    total: 13,
+    inProgress: 9,
+    done: 0,
+    rejected: 1,
+    totalSum: 23,
+  },
+  {
+    type: "업무",
+    total: 18,
+    inProgress: 4,
+    done: 1,
+    rejected: 0,
+    totalSum: 23,
+  },
+  { type: "기타", total: 5, inProgress: 4, done: 1, rejected: 0, totalSum: 10 },
+  {
+    type: "다스트",
+    total: 5,
+    inProgress: 0,
+    done: 0,
+    rejected: 0,
+    totalSum: 2,
+  },
+]);
 
 // ── 공지사항 (하드코딩) ──────────────────────────────
 const noticeList = ref([
-  { id: 1, title: '서비스 현황성 적용 안내',    date: '2026-03-19', isNew: true  },
-  { id: 2, title: '서비스 현황성 적용 안내',    date: '2026-06-18', isNew: false },
-  { id: 3, title: '공지사항 등록 및 수정 안내', date: '2026-06-18', isNew: false },
-  { id: 4, title: '공지사항 등록 및 수정 안내', date: '2026-06-18', isNew: false },
-])
+  { id: 1, title: "서비스 현황성 적용 안내", date: "2026-03-19", isNew: true },
+  { id: 2, title: "서비스 현황성 적용 안내", date: "2026-06-18", isNew: false },
+  {
+    id: 3,
+    title: "공지사항 등록 및 수정 안내",
+    date: "2026-06-18",
+    isNew: false,
+  },
+  {
+    id: 4,
+    title: "공지사항 등록 및 수정 안내",
+    date: "2026-06-18",
+    isNew: false,
+  },
+]);
 
 
 // ── 프로젝트 구성원 (하드코딩) ───────────────────────
 const projectMembers = ref([
-  { name: '김관리', role: 'PM',   roleClass: 'role-pm',   avatarColor: '#3b82f6' },
-  { name: '이카엘', role: 'PL',   roleClass: 'role-pl',   avatarColor: '#8b5cf6' },
-  { name: '개발1팀', role: '팀원',  roleClass: 'role-dev',  avatarColor: '#10b981' },
-  { name: '최지우',  role: '개발자', roleClass: 'role-dev',  avatarColor: '#f59e0b' },
-  { name: '최지우',  role: 'QA',   roleClass: 'role-qa',   avatarColor: '#ef4444' },
-  { name: '김관리',  role: '관리자', roleClass: 'role-mgr',  avatarColor: '#6366f1' },
-])
+  { name: "김관리", role: "PM", roleClass: "role-pm", avatarColor: "#3b82f6" },
+  { name: "이카엘", role: "PL", roleClass: "role-pl", avatarColor: "#8b5cf6" },
+  {
+    name: "개발1팀",
+    role: "팀원",
+    roleClass: "role-dev",
+    avatarColor: "#10b981",
+  },
+  {
+    name: "최지우",
+    role: "개발자",
+    roleClass: "role-dev",
+    avatarColor: "#f59e0b",
+  },
+  { name: "최지우", role: "QA", roleClass: "role-qa", avatarColor: "#ef4444" },
+  {
+    name: "김관리",
+    role: "관리자",
+    roleClass: "role-mgr",
+    avatarColor: "#6366f1",
+  },
+]);
 
 // ── 나의 메모 ──────────────────────────────────
 const memoList = ref([])
@@ -288,20 +374,20 @@ const getMemoColorClass = (index) => {
 
 const projectInfo = ref({
   projectId: null,
-  projecttName : '',
-  startDate : '',
-  endDate : '',
-})
+  projecttName: "",
+  startDate: "",
+  endDate: "",
+});
 
-const fetchProjectDetail = async()=>{
+const fetchProjectDetail = async () => {
   try {
-    const projectId = route.params.projectId
-    const res = await axios.get(`/api/ProjectDetail/${projectId}`)
-    projectInfo.value = res.data
+    const projectId = route.params.projectId;
+    const res = await axios.get(`/api/ProjectDetail/${projectId}`);
+    projectInfo.value = res.data;
   } catch (err) {
-    console.error('프로젝트 상세 조회 실패:', err)
+    console.error("프로젝트 상세 조회 실패:", err);
   }
-}
+};
 
 // ── 하위 프로젝트 ──────────────────────────────
 const subProjects = ref([])
@@ -545,7 +631,7 @@ const subCellStyle = () => ({
   color: #374151;
 }
 .notice-title::before {
-  content: '·';
+  content: "·";
   color: #94a3b8;
   margin-right: 6px;
 }
@@ -695,11 +781,26 @@ const subCellStyle = () => ({
   border-radius: 99px;
   letter-spacing: 0.03em;
 }
-.role-pm  { background: #dbeafe; color: #1d4ed8; }
-.role-pl  { background: #ede9fe; color: #6d28d9; }
-.role-dev { background: #d1fae5; color: #065f46; }
-.role-qa  { background: #fee2e2; color: #b91c1c; }
-.role-mgr { background: #e0e7ff; color: #3730a3; }
+.role-pm {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.role-pl {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+.role-dev {
+  background: #d1fae5;
+  color: #065f46;
+}
+.role-qa {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.role-mgr {
+  background: #e0e7ff;
+  color: #3730a3;
+}
 
 .member-empty-row {
   padding-top: 4px;
