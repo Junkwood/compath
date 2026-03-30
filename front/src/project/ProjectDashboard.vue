@@ -121,37 +121,56 @@
               <!-- 하위 프로젝트 -->
               <div class="card">
                 <div class="card-header">
-                  <span class="card-title">하위 프로젝트</span>
+                  <span class="card-title">하위 프로젝트 목록</span>
                   <el-button class="add-sub-btn" @click="handleAddSubProject">
                     + 하위 프로젝트 생성
                   </el-button>
                 </div>
-                <div class="sub-project-body">
-                  <div
-                    v-for="sub in subProjects"
-                    :key="sub.id"
-                    class="sub-project-group"
-                  >
-                    <div class="sub-project-name">{{ sub.name }}</div>
-                    <div class="sub-project-stage">{{ sub.stage }}</div>
+            <div class="sub-project-body">
+              <template v-if="pagedMilestones.length > 0">
+                <div class="sub-project-group">
+                  <div class="sub-project-stage-title">
+                    마일스톤 
+                    {{ currentMilestone?.milestoneName }}
+                  </div>
+
+                  <div class="sub-project-table-wrap">
                     <el-table
-                      :data="sub.tasks"
+                      :data="currentMilestone.projects"
+                      class="sub-project-table"
                       style="width: 100%"
                       :show-header="false"
                       :cell-style="subCellStyle"
                     >
-                      <el-table-column prop="name" min-width="180" />
-                      <el-table-column label="PL" width="120" align="right">
+                      <el-table-column prop="projectName" min-width="220" />
+                      <el-table-column label="PL" width="140" align="right">
                         <template #default="{ row }">
-                          <span class="sub-pl">PL {{ row.pl }}</span>
+                          <span class="sub-pl">PL {{ row.userName }}</span>
                         </template>
                       </el-table-column>
                     </el-table>
                   </div>
+
+                  <div class="pagination-wrap" v-if="pagedMilestones.length > 1">
+                    <el-pagination
+                      v-model:current-page="milestonePage"
+                      :page-size="1"
+                      :total="pagedMilestones.length"
+                      layout="prev, pager, next"
+                      background
+                    />
+                  </div>
+
                 </div>
+              </template>
+
+              <div v-else class="sub-empty">
+                하위 프로젝트가 없습니다.
               </div>
             </div>
 
+            </div>
+            </div>
             <!-- 우측: 프로젝트 구성원 + 나의 메모 -->
             <div class="proj-right-col">
               <!-- 프로젝트 구성원 -->
@@ -195,23 +214,29 @@
                   </el-button>
                 </div>
                 <div class="memo-body">
+                  <template v-if="memoList.length > 0" >
                   <div
-                    v-for="memo in memoList"
+                    v-for="(memo, index) in memoList"
                     :key="memo.id"
                     class="memo-card"
-                    :class="memo.colorClass"
+                    :class="getMemoColorClass(index)"
                   >
                     <div class="memo-content">
-                      <div class="memo-date">{{ memo.date }}</div>
-                      <div class="memo-text">{{ memo.text }}</div>
+                      <div class="memo-date">{{ memo.createdAt }}</div>
+                      <div class="memo-text">{{ memo.memoContent}}</div>
                     </div>
                     <el-button
                       class="memo-del-btn"
-                      @click="handleDeleteMemo(memo.id)"
+                      @click="handleDeleteMemo(memo.memoId)"
                       text
                     >
                       ✕
                     </el-button>
+                  </div>
+                  </template>
+
+                  <div v-else class="memo-empty">
+                    등록된 메모가 없습니다.
                   </div>
                 </div>
               </div>
@@ -221,15 +246,24 @@
       </main>
     </div>
   </div>
+
+<ProjectMemoModal
+  v-model="memoModalVisible"
+  @submitted="handleMemoSubmitted"
+/>
+
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import Sidebar from "../partials/Sidebar.vue";
-import Header from "../partials/Header.vue";
-import axios from "axios";
-import router from "../router/router";
+import { onMounted, ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import Sidebar from '../partials/Sidebar.vue'
+import Header from '../partials/Header.vue'
+import axios from 'axios'
+import ProjectMemoModal from '../project/ProjectMemoModal.vue'
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
 
 const route = useRoute();
 const routerUse = useRouter();
@@ -290,21 +324,6 @@ const noticeList = ref([
   },
 ]);
 
-// ── 하위 프로젝트 (하드코딩) ─────────────────────────
-const subProjects = ref([
-  {
-    id: 1,
-    name: "마일스톤 01",
-    stage: "1차 개발완료",
-    tasks: [
-      { name: "마일스톤 분석 및 산출물", pl: "김피팀" },
-      { name: "화면 설계", pl: "윤피팀" },
-      { name: "로그인 기능 구현", pl: "김피팀" },
-      { name: "메인 대시보드 구현", pl: "김피팀" },
-      { name: "자유게시판 구현", pl: "박피팀" },
-    ],
-  },
-]);
 
 // ── 프로젝트 구성원 (하드코딩) ───────────────────────
 const projectMembers = ref([
@@ -331,35 +350,27 @@ const projectMembers = ref([
   },
 ]);
 
-// ── 나의 메모 (하드코딩) ─────────────────────────────
-const memoList = ref([
-  {
-    id: 1,
-    date: "2026.03.19 1PM",
-    text: "클라이언트 미팅 소회의실 1",
-    colorClass: "memo-blue",
-  },
-  {
-    id: 2,
-    date: "",
-    text: "파일섬 프로젝트\n요구사항 명세서 업로드",
-    colorClass: "memo-green",
-  },
-  {
-    id: 3,
-    date: "",
-    text: "베고프다\n내일 점심 머릭지 > <",
-    colorClass: "memo-pink",
-  },
-]);
+// ── 나의 메모 ──────────────────────────────────
+const memoList = ref([])
 
-// ── 테이블 공통 스타일 ─────────────────────────────
-const subCellStyle = () => ({
-  fontSize: "13px",
-  color: "#374151",
-  borderBottom: "1px solid #f8fafc",
-  padding: "6px 12px",
-});
+const fetchMemoList= async() => {
+  try{
+    const projectId = route.params.projectId
+    const userId = authStore.user?.userId
+    const res = await axios.get(`/api/MemoList/${projectId}`,{
+      params:{ userId }
+    })
+    memoList.value = res.data
+    } catch(err){
+      console.error('메모 목록 조회 실패 :', err)
+    }
+}
+
+const getMemoColorClass = (index) => {
+  const colorClasses = ['memo-blue', 'memo-yellow', 'memo-pink']
+  return colorClasses[index % colorClasses.length]
+}
+
 
 const projectInfo = ref({
   projectId: null,
@@ -378,31 +389,103 @@ const fetchProjectDetail = async () => {
   }
 };
 
-// ── 이벤트 핸들러 ────────────────────────────────────
-const handleProjectSetting = () => {
-  /* TODO: 설정 페이지 이동 */
-  const projectId = route.params.projectId;
-  routerUse.push({ name: "projectSetting", params: { id: projectId } });
-};
-const handleViewTasks = () => {
-  /* TODO: 업무 목록 페이지 이동 */
-};
-const handleNoticeClick = (item) => {
-  /* TODO: 공지사항 상세 */
-};
-const handleAddSubProject = () => {
-  /* TODO: 하위 프로젝트 생성 모달 */
-};
-const handleAddMemo = () => {
-  /* TODO: 메모 추가 모달 */
-};
-const handleDeleteMemo = (id) => {
-  memoList.value = memoList.value.filter((m) => m.id !== id);
-};
+// ── 하위 프로젝트 ──────────────────────────────
+const subProjects = ref([])
+const milestonePage = ref(1)
 
-onMounted(() => {
+const fetchSubProject = async()=>{
+    try{
+      const projectId = route.params.projectId
+      const res = await axios.get(`/api/ProjectSubDetail/${projectId}`)
+      subProjects.value = res.data
+      milestonePage.value=1
+    } catch(err){
+      console.error('하위프로젝트 조회 실패:', err)
+    }
+}
+
+//milestoneID 기준 그루핑
+const pagedMilestones = computed(() => {
+  const map = new Map()
+
+  subProjects.value.forEach((item) => {
+    const key = item.milestoneId
+
+    if (!map.has(key)) {
+      map.set(key, {
+        milestoneId: item.milestoneId,
+        milestoneName: item.milestoneName,
+        projects: []
+      })
+    }
+
+    map.get(key).projects.push({
+      projectId: item.projectId,
+      projectName: item.projectName,
+      userName: item.userName
+    })
+  })
+
+  return Array.from(map.values())
+})
+
+const currentMilestone = computed(() => {
+  return pagedMilestones.value[milestonePage.value - 1] || null
+})
+
+const memoModalVisible = ref(false)
+
+// ── 이벤트 핸들러 ────────────────────────────────────
+const handleProjectSetting  = () => { /* TODO: 설정 페이지 이동 */ }
+const handleViewTasks       = () => { /* TODO: 업무 목록 페이지 이동 */ }
+const handleNoticeClick     = (item) => { /* TODO: 공지사항 상세 */ }
+const handleAddSubProject   = () => { /* TODO: 하위 프로젝트 생성 모달 */ }
+const handleAddMemo = () => {
+  memoModalVisible.value = true
+}
+const handleDeleteMemo = (id) => {
+  memoList.value = memoList.value.filter(m => m.id !== id)
+}
+
+const handleMemoSubmitted = async (payload) => {
+  try{
+    const projectId = route.params.projectId
+    const userId = authStore.user?.userId
+
+    if(!userId) {
+      console.warn('로그인 사용자 정보가 없습니다.')
+      return
+    }
+
+    await axios.post(`/api/MemoRegister`,{
+      projectId,
+      userId,
+      memoContent:payload.text
+    })
+
+    await fetchMemoList()
+  } catch (err) {
+    console.error('메모 등록에 실패:', err)
+  }
+}
+
+
+onMounted(()=>{
   fetchProjectDetail();
-});
+  fetchSubProject();
+  fetchMemoList();
+})
+
+
+// ── 테이블 공통 스타일 ─────────────────────────────
+const subCellStyle = () => ({
+  fontSize: '13px',
+  color: '#374151',
+  borderBottom: '1px solid #dcdfe6',
+  padding: '7px 12px',
+  height: '36px'
+})
+
 </script>
 
 <style scoped>
@@ -569,10 +652,11 @@ onMounted(() => {
 /* ────────────────────────────────────────────
    하위 프로젝트
 ──────────────────────────────────────────── */
+/* 하위 프로젝트 */
 .add-sub-btn {
   background: #c7d9f5;
   border: none;
-  color: #1a1a2e;
+  color: #000000;
   font-size: 13px;
   font-weight: 500;
   border-radius: 8px;
@@ -582,26 +666,75 @@ onMounted(() => {
 .add-sub-btn:hover {
   background: #a8c4ef;
 }
+
 .sub-project-body {
-  padding: 0 0 8px;
+  padding: 12px 16px 0;
 }
+
 .sub-project-group {
-  padding: 10px 20px 0;
+  /* border: 1px solid #6b7280; */
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
 }
-.sub-project-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 2px;
+
+.sub-project-stage-title {
+  padding: 10px 14px 6px;
+  font-size: 16px;
+  line-height: 1.35;
+  color: #000000;
+  white-space: pre-line;
 }
-.sub-project-stage {
+
+.sub-project-table-wrap {
+  max-height: 216px;   /* 6행 정도 */
+  overflow-y: auto;
+  /* border-top: 1px solid #6b7280; */
+}
+
+.sub-project-table :deep(.el-table) {
+  border: none !important;
   font-size: 12px;
-  color: #2563eb;
-  margin-bottom: 6px;
 }
+
+.sub-project-table :deep(.el-table__inner-wrapper::before),
+.sub-project-table :deep(.el-table::before) {
+  display: none;
+}
+
+.sub-project-table :deep(td.el-table__cell) {
+  padding: 0 !important;
+  height: 36px;
+  /* border-bottom: 1px solid #6b7280 !important; */
+}
+
+.sub-project-table :deep(.cell) {
+  padding: 0 12px !important;
+  line-height: 36px;
+  color: #111827;
+}
+
+.sub-project-table :deep(tr:last-child td.el-table__cell) {
+  border-bottom: none !important;
+}
+
 .sub-pl {
   font-size: 12px;
-  color: #64748b;
+  color: #111827;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.sub-empty {
+  padding: 24px 0;
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
 }
 
 /* ────────────────────────────────────────────
@@ -712,15 +845,10 @@ onMounted(() => {
   justify-content: space-between;
   gap: 8px;
 }
-.memo-blue {
-  background: #dbeafe;
-}
-.memo-green {
-  background: #d1fae5;
-}
-.memo-pink {
-  background: #fce7f3;
-}
+.memo-blue  { background: #dbeafe; }
+.memo-green { background: #d1fae5; }
+.memo-pink  { background: #fce7f3; }
+.memo-yellow { background: #fdffd1; }
 
 .memo-content {
   flex: 1;

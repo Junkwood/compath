@@ -1,0 +1,37 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.memo.mapper.MemoMapper">
+    <!--메모 등록-->
+    <insert id="registerMemo">
+        <selectKey keyProperty="memoId" resultType="int" order="BEFORE">
+            SELECT memo_seq.NEXTVAL from dual
+        </selectKey>
+        INSERT INTO MEMOS(
+            MEMO_ID,
+            PROJECT_ID,
+            USER_ID,
+            MEMO_CONTENT,
+            CREATED_AT,
+            IS_DELETED
+        ) VALUES(
+            #{memoId},
+            #{projectId},
+            #{userId},
+            #{memoContent},
+            sysdate,
+            'Q1'
+        )
+
+    </insert>
+
+    <!--메모리스트 불러오기-->
+    <select id="getMemoList" resultType="MemoListDto">
+        SELECT
+            MEMO_ID,
+            MEMO_CONTENT,
+            CREATED_AT
+        FROM MEMOS
+        WHERE USER_ID=#{userId}
+            AND PROJECT_ID=#{projectId}
+            AND IS_DELETED='Q1'
+    </select>
+</mapper>
