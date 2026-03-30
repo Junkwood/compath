@@ -267,7 +267,7 @@ const statusList = ref([]);
 const milestoneList = ref([]);
 
 onMounted(async () => {
-  const pId = route.query.projectId;
+  const pId = route.params.projectId || route.query.projectId;
   try {
     if (pId) {
       const res = await axios.get(`/api/projectDetail/${pId}`);

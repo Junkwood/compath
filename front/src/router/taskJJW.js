@@ -6,7 +6,7 @@ const taskRoutes1 = [
   },
 
   {
-    path: "/task/TaskRegister",
+    path: "/task/TaskRegister/:projectId",
     name: "taskRegister",
     component: () => import("../task/TaskRegister.vue"),
   },

@@ -433,7 +433,7 @@ onBeforeMount(async () => {
 });
 
 // 날짜 변경 함수
-const changeDateType = day => {
+const changeDateType = (day) => {
   let date = new Date(day);
 
   if (date.getMonth() < 9) {
@@ -463,56 +463,56 @@ const filteringList = () => {
 
   // 업무명
   if (filteredList.value.title != "전체") {
-    filterFinishList.value = filterFinishList.value.filter(li => {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
       return li.title === filteredList.value.title;
     });
   }
 
   // 담당자
   if (filteredList.value.user != "전체") {
-    filterFinishList.value = filterFinishList.value.filter(li => {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
       return li.userName === filteredList.value.user;
     });
   }
 
   // 업무유형
   if (filteredList.value.type != "전체") {
-    filterFinishList.value = filterFinishList.value.filter(li => {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
       return li.typeName === filteredList.value.type;
     });
   }
 
   // 업무상태
   if (filteredList.value.status != "전체") {
-    filterFinishList.value = filterFinishList.value.filter(li => {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
       return li.statusName === filteredList.value.status;
     });
   }
 
   // 우선순위
   if (filteredList.value.priority != "전체") {
-    filterFinishList.value = filterFinishList.value.filter(li => {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
       return li.codeName === filteredList.value.priority;
     });
   }
 
   // 프로젝트 명
   if (filteredList.value.small != "전체") {
-    filterFinishList.value = filterFinishList.value.filter(li => {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
       return li.projectName === filteredList.value.small;
     });
   }
 
   // 시작일
   if (filteredList.value.start != null && filteredList.value.end == null) {
-    filterFinishList.value = filterFinishList.value.filter(li => {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
       return li.startDate >= filteredList.value.start;
     });
   } else if (
     filteredList.value.start != null &&
     filteredList.value.end != null
   ) {
-    filterFinishList.value = filterFinishList.value.filter(li => {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
       return (
         li.startDate >= filteredList.value.start &&
         li.dueDate <= filteredList.value.end
@@ -522,7 +522,7 @@ const filteringList = () => {
     filteredList.value.start == null &&
     filteredList.value.end != null
   ) {
-    filterFinishList.value = filterFinishList.value.filter(li => {
+    filterFinishList.value = filterFinishList.value.filter((li) => {
       return li.dueDate <= filteredList.value.end;
     });
   }
@@ -535,7 +535,7 @@ const filteringList = () => {
 };
 
 // 페이지네이션
-const handleCurrentChange = val => {
+const handleCurrentChange = (val) => {
   let selectedList = ref([]);
   let answer = ref([]);
   if (filterFinishList.value.length > 0) {
@@ -565,7 +565,7 @@ const handleCurrentChange = val => {
   }
 };
 
-const paging = a => {
+const paging = (a) => {
   let paginglist = ref([]);
   for (let i = 0; i < listNum.value; i++) {
     if (a.value[i] == null) {
@@ -587,7 +587,10 @@ const paging = a => {
 
 // 업무생성 버튼
 const goResister = () => {
-  router.push({ name: "taskRegister" });
+  router.push({
+    name: "taskRegister",
+    params: { projectId: id },
+  });
 };
 
 // 초기화 버튼
