@@ -11,5 +11,7 @@ public interface ProjectMapperKJH {
     //프로젝트 개별 상세조회
     public ProjectSingleDtoKJH getSingleProject(int projectId);
 
+    //프로젝트 정보 수정
+    public int modifyProject(ProjectModifyDtoKJH dto);
 }
 

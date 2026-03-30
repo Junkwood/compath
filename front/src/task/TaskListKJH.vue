@@ -289,7 +289,6 @@
 <script setup>
 import { onBeforeMount, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "axios";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -346,8 +345,7 @@ const nowPage = ref(1);
 let listLength = ref();
 
 // 필터링 조건들
-//let id = route.params.id;
-const id = route.params.projectId;
+let id = route.params.id;
 
 onBeforeMount(async () => {
   console.log("프로젝트 번호", id);
@@ -587,10 +585,7 @@ const paging = (a) => {
 
 // 업무생성 버튼
 const goResister = () => {
-  router.push({
-    name: "taskRegister",
-    params: { projectId: id },
-  });
+  router.push({ name: "taskRegister" });
 };
 
 // 초기화 버튼
