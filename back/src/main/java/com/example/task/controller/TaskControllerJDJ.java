@@ -17,6 +17,7 @@ public class TaskControllerJDJ {
 
     final TaskServiceJDJ taskServiceJDJ;
 
+    //프로젝트 개별 대쉬보드
     @ResponseBody
     @GetMapping("/TaskListDash")
     public List<TaskListDashDtoJDJ> list(){

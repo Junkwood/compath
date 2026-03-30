@@ -233,7 +233,8 @@
               <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
                 <ul class="pl-8 mt-1" :class="!parentLink.expanded && 'hidden'">
                   <router-link
-                    to="/project/ProjectDashboard.vue"
+                    v-if="currentProjectId"
+                    :to="{ name: 'projectDash', params: { projectId: currentProjectId } }"                    
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -257,7 +258,8 @@
                   </router-link>
 
                   <router-link
-                    :to="{ name: 'taskList', params: { id: '1' } }"
+                    v-if="currentProjectId"
+                    :to="{ name: 'taskList', params: { projectId: currentProjectId } }"                    
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -751,8 +753,8 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, watch } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, onUnmounted, watch, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import SidebarLinkGroup from "./SidebarLinkGroup.vue";
 import { useAuthStore } from "../stores/auth";
 
@@ -768,6 +770,9 @@ export default {
   components: { SidebarLinkGroup },
   setup(props, { emit }) {
     const auth = useAuthStore();
+    const router = useRouter();
+    const route = useRoute();
+
     const trigger = ref(null);
     const sidebar = ref(null);
 
@@ -776,8 +781,16 @@ export default {
       storedSidebarExpanded === null ? false : storedSidebarExpanded === "true",
     );
 
-    const currentRoute = useRouter().currentRoute.value;
+    const currentRoute = route;
     const taskExpanded = ref(currentRoute.fullPath.includes("/admin/task/"));
+  
+    const currentProjectId = computed(() => route.params.projectId);
+
+    const goTaskList = () => {
+      if (!currentProjectId.value) return;
+      router.push({ name: "taskList", params: { projectId: currentProjectId.value } });
+    };
+
     const clickHandler = ({ target }) => {
       if (!sidebar.value || !trigger.value) return;
       if (
@@ -820,6 +833,8 @@ export default {
       currentRoute,
       auth,
       taskExpanded,
+      currentProjectId,
+      goTaskList,
     };
   },
 };
