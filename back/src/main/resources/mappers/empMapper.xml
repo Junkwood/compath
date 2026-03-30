@@ -45,6 +45,7 @@
         SELECT
         u.user_id,
         u.user_name as name,
+        u.password,
         u.email,
         role(u.user_type) as user_type,
         active(u.is_active) as is_active,
