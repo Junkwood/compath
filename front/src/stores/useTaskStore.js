@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export const useTaskStore = defineStore("task", () => {
   //  공통 코드 목록
@@ -9,6 +10,7 @@ export const useTaskStore = defineStore("task", () => {
   const statusList = ref([]);
   const milestoneList = ref([]);
   const userList = ref([]);
+  const rejectReason = ref("");
 
   // 마일스톤 존재 여부
   const hasMilestone = computed(() => milestoneList.value.length > 0);
@@ -225,7 +227,6 @@ export const useTaskStore = defineStore("task", () => {
     () => form.value.taskStatusId,
     (newVal, oldVal) => {
       if (!oldVal) return;
-
       const status = Number(newVal);
       const isFinished = [3, 6].includes(status);
 
@@ -326,14 +327,19 @@ export const useTaskStore = defineStore("task", () => {
   const updateTask = async (taskId) => {
     const status = Number(form.value.taskStatusId);
 
-    if ([3, 6].includes(status)) {
-      if (
-        !confirm(
-          "업무를 '종료' 상태로 저장하시겠습니까?\n저장 후에는 진행 상태나 소요 시간을 임의로 변경할 수 없습니다.",
-        )
-      ) {
-        return false;
-      }
+    if ([6].includes(status)) {
+      const result = await Swal.fire({
+        title: "업무를 종료하시겠습니까?",
+        text: "종료 후에는 상태나 소요 시간을 변경할 수 없습니다.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "네, 저장합니다!",
+        cancelButtonText: "취소",
+      });
+
+      if (!result.isConfirmed) return false; // 취소 시 중단
     }
 
     validateForm();
