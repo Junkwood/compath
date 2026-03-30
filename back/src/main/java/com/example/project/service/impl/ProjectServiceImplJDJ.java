@@ -1,9 +1,6 @@
 package com.example.project.service.impl;
 
-import com.example.project.dto.ProjectCreateDtoJDJ;
-import com.example.project.dto.ProjectSingleDtoJDJ;
-import com.example.project.dto.ProjectListDto;
-import com.example.project.dto.ProjectUserDtoJDJ;
+import com.example.project.dto.*;
 import com.example.project.mapper.ProjectMapperJDJ;
 import com.example.project.service.ProjectServiceJDJ;
 import jakarta.transaction.Transactional;
@@ -37,9 +34,18 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
         return projectMapperJDJ.getPlList();
     }
 
+    //프로젝트 개별 대쉬보드-----------------------------------------------
     //프로젝트 단건조회
     @Override
     public ProjectSingleDtoJDJ getSingleProject(int projectId) {
         return projectMapperJDJ.getSingleProject(projectId);
     }
+
+    //하위프로젝트 목록 조회
+    @Override
+    public List<ProjectSubListDtoJDJ> getSubpList(int parentProjectId) {
+        return projectMapperJDJ.getSubpList(parentProjectId);
+    }
+
+
 }

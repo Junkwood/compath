@@ -1,9 +1,6 @@
 package com.example.project.service;
 
-import com.example.project.dto.ProjectCreateDtoJDJ;
-import com.example.project.dto.ProjectSingleDtoJDJ;
-import com.example.project.dto.ProjectListDto;
-import com.example.project.dto.ProjectUserDtoJDJ;
+import com.example.project.dto.*;
 
 import java.util.List;
 
@@ -21,5 +18,7 @@ public interface ProjectServiceJDJ {
     //프로젝트 단건조회
     public ProjectSingleDtoJDJ getSingleProject(int projectId);
 
+    //하위프로젝트 목록 조회
+    public List<ProjectSubListDtoJDJ> getSubpList(int parentProjectId);
 
 }

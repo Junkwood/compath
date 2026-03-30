@@ -1,10 +1,7 @@
 package com.example.project.controller;
 
 
-import com.example.project.dto.ProjectCreateDtoJDJ;
-import com.example.project.dto.ProjectSingleDtoJDJ;
-import com.example.project.dto.ProjectListDto;
-import com.example.project.dto.ProjectUserDtoJDJ;
+import com.example.project.dto.*;
 import com.example.project.service.ProjectServiceJDJ;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -38,10 +35,18 @@ public class ProjectControllerJDJ {
         return projectServiceJDJ.getPlList();
     }
 
+    //프로젝트 개별 대쉬보드-----------------------------------------------
     //프로젝트 개별 상세조회
-    //프로젝트 개별 대쉬보드
     @GetMapping("/ProjectDetail/{projectId}")
     public ProjectSingleDtoJDJ pdlist(@PathVariable Integer projectId){
         return projectServiceJDJ.getSingleProject(projectId);
     }
-}
+
+    //하위프로젝트 목록 조회
+    @GetMapping("/ProjectSubDetail/{parentProjectId}")
+    public List<ProjectSubListDtoJDJ> subplist(@PathVariable Integer parentProjectId){
+            return projectServiceJDJ.getSubpList(parentProjectId);
+        }
+    }
+
+

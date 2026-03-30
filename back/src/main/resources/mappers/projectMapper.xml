@@ -87,4 +87,23 @@
         WHERE PROJECT_ID=#{projectId}
     </select>
 
+    <!-- 하위프로젝트 목록 조회 -->
+    <select id="getSubpList" resultType="ProjectSubListDtoJDJ">
+        SELECT
+            P.PROJECT_ID,
+            P.PROJECT_NAME,
+            P.SUB_PL_USER_ID,
+            M.MILESTONE_ID,
+            M.MILESTONE_NAME,
+            U.USER_NAME
+        FROM PROJECTS P
+        JOIN MILESTONE_MAPPING MM
+            ON P.PROJECT_ID = MM.PROJECT_ID
+        JOIN MILESTONES M
+            ON MM.MILESTONE_ID = M.MILESTONE_ID
+        LEFT JOIN USERS U
+            ON U.USER_ID=P.SUB_PL_USER_ID
+        WHERE P.PARENT_PROJECT_ID=#{parentProjectId}
+        ORDER BY M.MILESTONE_ID
+    </select>
 </mapper>

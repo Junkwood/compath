@@ -1,9 +1,6 @@
 package com.example.project.mapper;
 
-import com.example.project.dto.ProjectCreateDtoJDJ;
-import com.example.project.dto.ProjectSingleDtoJDJ;
-import com.example.project.dto.ProjectListDto;
-import com.example.project.dto.ProjectUserDtoJDJ;
+import com.example.project.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -22,6 +19,9 @@ public interface ProjectMapperJDJ {
 
     //프로젝트 개별 상세조회
     public ProjectSingleDtoJDJ getSingleProject(int projectId);
+
+    //하위프로젝트 목록 조회
+    public List<ProjectSubListDtoJDJ> getSubpList(int parentProjectId);
 
 }
 
