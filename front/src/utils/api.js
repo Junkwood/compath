@@ -1,7 +1,49 @@
 import axios from "axios";
+import router from "../router"; // 라우터 파일 경로에 맞게 수정
+import { useAuthStore } from "../stores/auth"; // 스토어 파일 경로에 맞게 수정
 
+// 1. 커스텀 Axios 인스턴스 생성
 const api = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: "http://localhost:8080/api", // 백엔드 기본 URL (env 변수로 빼는 것 추천!)
+  // timeout: 10000, // 10초 이상 응답 없으면 에러
+  withCredentials: true, // ⭐️ 세션 쿠키를 백엔드와 주고받으려면 무조건 true!
 });
 
+// 2. 요청(Request) 인터셉터 (옵션: JWT 토큰 등을 보낼 때 사용)
+api.interceptors.request.use(
+  (config) => {
+    // 토큰이 있다면 여기서 헤더에 쏙 넣어줄 수 있습니다.
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
+
+// 3. 응답(Response) 인터셉터 (⭐ 401 자동 로그아웃의 핵심!)
+api.interceptors.response.use(
+  (response) => {
+    // 정상 응답(2xx)은 그대로 통과
+    return response;
+  },
+  (error) => {
+    // 백엔드에서 에러를 뱉었을 때
+    if (error.response) {
+      const status = error.response.status;
+
+      if (status === 401) {
+        // 🚨 반드시 에러가 발생한 이 '시점(함수 내부)'에서 스토어를 호출해야 합니다!
+        const authStore = useAuthStore();
+
+        alert("세션이 만료되었거나 로그인이 필요합니다.");
+
+        authStore.logout(); // 피니아 데이터 초기화
+        router.push("/login"); // 로그인 화면으로 강제 이동
+      }
+    }
+
+    // 컴포넌트 쪽으로 에러를 넘겨줌 (컴포넌트의 catch 블록이 실행되도록)
+    return Promise.reject(error);
+  },
+);
+
+// 4. 세팅이 끝난 api 객체를 내보냄
 export default api;

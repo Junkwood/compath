@@ -37,14 +37,22 @@
         active(u.is_active) as is_active,
         g.group_name
         FROM users u
-        LEFT JOIN group_members gm ON u.user_id = gm.user_id
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1'
         LEFT JOIN groups g ON gm.group_id = g.group_id
+        ORDER BY u.user_id desc
     </select>
     <select id="getById">
         SELECT
-        <include refid="user"/>
-        FROM users
-        WHERE user_id = #{id}
+        u.user_id,
+        u.user_name as name,
+        u.email,
+        role(u.user_type) as user_type,
+        active(u.is_active) as is_active,
+        g.group_id
+        FROM users u
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active='O1'
+        LEFT JOIN groups g ON gm.group_id = g.group_id and g.group_type='C1' AND g.is_active='O1'
+        WHERE u.user_id=#{id}
     </select>
     <select id="modifyStatusById" statementType="CALLABLE" parameterType="map">
         { CALL change_status(
@@ -63,7 +71,63 @@
         <selectKey keyProperty="groupMemberId" resultType="int" order="BEFORE">
             SELECT group_members_seq.NEXTVAL FROM DUAL
         </selectKey>
-        INSERT INTO group_members (group_member_id,user_id, group_id)
-        VALUES (#{groupMemberId},#{userId}, #{groupId})
+        INSERT INTO group_members (group_member_id,user_id, group_id, is_primary)
+        VALUES (#{groupMemberId},#{userId}, #{groupId}, #{isPrimary})
     </insert>
+    <update id="modifyEmpById" parameterType="com.example.emp.entity.EmpVOSJW">
+        UPDATE users
+        <set>
+            <if test="name != null and name != ''">user_name = #{name},</if>
+            <if test="email != null and email != ''">email = #{email},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="userType != null and userType != ''">user_type = role(#{userType}),</if>
+            <if test="isActive != null and isActive != ''">is_active = #{isActive},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+    <!-- 현재 활성화된 그룹 ID 목록만 쏙 빼오기 -->
+    <select id="selectActiveGroupIds" resultType="int">
+        SELECT group_id
+        FROM group_members
+        WHERE user_id = #{userId} AND is_active = 'O1'
+    </select>
+
+    <!-- 특정 그룹만 딱 찝어서 비활성화(O2) -->
+    <update id="deactivateGroupMember">
+        UPDATE group_members
+        SET is_active = 'O2', is_primary = 'N'
+        WHERE user_id = #{userId} AND group_id = #{groupId} AND is_active = 'O1'
+    </update>
+
+    <!-- 유지되는 그룹은 가입일은 냅두고 대표 여부(is_primary)만 혹시 몰라 업데이트 -->
+    <update id="updateGroupMemberPrimary">
+        UPDATE group_members
+        SET is_primary = #{isPrimary}
+        WHERE user_id = #{userId} AND group_id = #{groupId} AND is_active = 'O1'
+    </update>
+
+    <insert id="insertEmailAuth" parameterType="com.example.emp.dto.AccountDTOSJW">
+        <!-- INSERT 실행 전에 시퀀스 번호를 먼저 따와서 VO의 emailId에 담아줌 -->
+        <selectKey keyProperty="emailId" resultType="int" order="BEFORE">
+            SELECT email_seq.NEXTVAL FROM DUAL
+        </selectKey>
+
+        INSERT INTO "email" ("email_id", "email_no", "created_at")
+        VALUES (#{emailId}, #{emailNo}, SYSDATE)
+    </insert>
+    <select id="verifyAuthCode" resultType="int">
+        SELECT COUNT(*)
+        FROM "email"
+        WHERE "email_id" = #{emailId}
+        AND "email_no" = #{emailNo}
+        <![CDATA[
+      AND "created_at" >= SYSDATE - (3 / 24 / 60)
+      ]]>
+    </select>
+    <delete id="cleanUpOldCodes">
+        DELETE FROM "email"
+        WHERE "email_id" = #{emailId} <!-- 이번에 쓴 거 지우기 -->
+        <![CDATA[
+        OR "created_at" < SYSDATE - (3 / 24 / 60)]]><!-- 덤으로 3분 지난 쓰레기들 싹 다 청소 -->
+    </delete>
 </mapper>

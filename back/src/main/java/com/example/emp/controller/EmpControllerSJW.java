@@ -1,13 +1,17 @@
 package com.example.emp.controller;
 
+import com.example.emp.dto.AccountDTOSJW;
 import com.example.emp.dto.EmpDTOSJW;
 import com.example.emp.entity.EmpVOSJW;
 import com.example.emp.service.EmpServiceSJW;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -35,5 +39,19 @@ public class EmpControllerSJW {
     @PostMapping("/api/login")
     public EmpVOSJW login(@RequestBody EmpVOSJW emp) {
         return  empService.login(emp);
+    }
+    @PutMapping("/api/emp")
+    public Boolean update(@RequestBody EmpVOSJW emp) {
+        return  empService.modifyEmpById(emp);
+    }
+    @PostMapping("/api/email/sendCode")
+    public ResponseEntity<Map<String, Object>> sendEmail(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        Integer emailId = empService.sendEmail(email);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("emailId", emailId);
+        response.put("message", "인증번호가 발송되었습니다.");
+        return ResponseEntity.ok(response);
     }
 }

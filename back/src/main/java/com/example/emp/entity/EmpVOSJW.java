@@ -21,6 +21,8 @@ public class EmpVOSJW implements UserDetails {
     private String userType;
     private Integer groupId;
     private List<String> groupList;
+    private List<Integer> groupIds;
+    private Integer primaryGroupId;
     //시큐리티에서 권한 체크
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
