@@ -239,6 +239,7 @@
                           <!-- 수정 버튼 -->
                           <button
                             class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 rounded-full"
+                            @click="updateUserModal(account.userId)"
                           >
                             <span class="sr-only">Edit</span>
                             <svg
@@ -262,7 +263,7 @@
       </main>
     </div>
   </div>
-  <EmpCreateModal v-model="CreateEmpOpen" />
+  <EmpCreateModal v-model="CreateEmpOpen" :edit-data="selectedEmp" />
 </template>
 
 <script>
@@ -280,7 +281,9 @@ export default {
   },
   setup() {
     const CreateEmpOpen = ref(false);
+    const selectedEmp = ref(null);
     const handleCtreateEmp = () => {
+      selectedEmp.value = null;
       CreateEmpOpen.value = true;
     };
     const sidebarOpen = ref(false);
@@ -298,6 +301,12 @@ export default {
         await empStore.getEmpList();
       }
     };
+    const updateUserModal = async (userId) => {
+      const account = await empStore.getEmp(userId);
+      console.log(account);
+      selectedEmp.value = { ...account };
+      CreateEmpOpen.value = true;
+    };
     return {
       accounts,
       sidebarOpen,
@@ -305,6 +314,8 @@ export default {
       handleToggle,
       handleCtreateEmp,
       CreateEmpOpen,
+      selectedEmp,
+      updateUserModal,
     };
   },
 };
