@@ -39,6 +39,7 @@ public class ProjectControllerJDJ {
     }
 
     //프로젝트 개별 상세조회
+    //프로젝트 개별 대쉬보드
     @GetMapping("/ProjectDetail/{projectId}")
     public ProjectSingleDtoJDJ pdlist(@PathVariable Integer projectId){
         return projectServiceJDJ.getSingleProject(projectId);

@@ -346,7 +346,8 @@ const nowPage = ref(1);
 let listLength = ref();
 
 // 필터링 조건들
-let id = route.params.id;
+//let id = route.params.id;
+const id = route.params.projectId;
 
 onBeforeMount(async () => {
   console.log("프로젝트 번호", id);
