@@ -4,6 +4,7 @@ import axios from "axios";
 export const useProjectKJHStore = defineStore("projectKJH", {
   state: () => ({
     projectInfo: {},
+    modifiedInfo: {},
   }),
   getters: {},
   actions: {
@@ -16,10 +17,16 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     async modifyProject(payload) {
       console.log(payload);
       try {
-        let result = await axios //
-          .put("/api/projects/info/" + payload.projectId, payload);
+        let id = payload.projectId;
 
-        console.log(result);
+        console.log("수정 프로젝트 번호", id);
+
+        let result = await axios //
+          .put("/api/projects/info/" + id, payload);
+
+        if (result.status == 200) {
+          this.modifiedInfo = result.data;
+        }
       } catch (err) {
         console.error("프로젝트 등록 실패:", err);
       }
