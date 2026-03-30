@@ -151,6 +151,7 @@ watch(
     form.startDate = data.startDate;
     form.endDate = data.endDate;
     form.description = data.description;
+    form.projectId = data.projectId;
   },
 );
 
@@ -207,6 +208,7 @@ const visible = computed({
 
 const handleSubmit = async () => {
   const payload = {
+    projectId: form.projectId,
     projectName: form.projectName,
     identifier: form.identifier,
     plUserId: form.plUserId,
