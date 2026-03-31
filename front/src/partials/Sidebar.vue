@@ -234,7 +234,10 @@
                 <ul class="pl-8 mt-1" :class="!parentLink.expanded && 'hidden'">
                   <router-link
                     v-if="currentProjectId"
-                    :to="{ name: 'projectDash', params: { projectId: currentProjectId } }"                    
+                    :to="{
+                      name: 'projectDash',
+                      params: { projectId: currentProjectId },
+                    }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -259,7 +262,10 @@
 
                   <router-link
                     v-if="currentProjectId"
-                    :to="{ name: 'taskList', params: { projectId: currentProjectId } }"                    
+                    :to="{
+                      name: 'taskList',
+                      params: { projectId: currentProjectId },
+                    }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -783,12 +789,15 @@ export default {
 
     const currentRoute = route;
     const taskExpanded = ref(currentRoute.fullPath.includes("/admin/task/"));
-  
+
     const currentProjectId = computed(() => route.params.projectId);
 
     const goTaskList = () => {
       if (!currentProjectId.value) return;
-      router.push({ name: "taskList", params: { projectId: currentProjectId.value } });
+      router.push({
+        name: "taskList",
+        params: { projectId: currentProjectId.value },
+      });
     };
 
     const clickHandler = ({ target }) => {

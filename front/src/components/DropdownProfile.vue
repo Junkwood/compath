@@ -118,6 +118,12 @@ export default {
       dropdownOpen.value = false;
       router.push("/login");
     };
+    const handleClose = () => {
+      const keepLogin = localStorage.getItem("keepLogin");
+      if (!keepLogin) {
+        authStore.logout();
+      }
+    };
     onMounted(() => {
       if (!auth.isLoggedIn) {
         logout();
@@ -128,11 +134,13 @@ export default {
       }
       document.addEventListener("click", clickHandler);
       document.addEventListener("keydown", keyHandler);
+      window.addEventListener("beforeunload", handleClose);
     });
 
     onUnmounted(() => {
       document.removeEventListener("click", clickHandler);
       document.removeEventListener("keydown", keyHandler);
+      window.removeEventListener("beforeunload", handleClose);
     });
 
     return {

@@ -1,7 +1,6 @@
 package com.example.group.entity;
 
 import lombok.Data;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Date;
 
@@ -15,5 +14,6 @@ public class GroupVOSJW {
     Integer createdBy;
     Date createdAt;
     Date updatedAt;
-    Number editorUserId;
+    Integer editorUserId;
+    Integer memberCount;
 }

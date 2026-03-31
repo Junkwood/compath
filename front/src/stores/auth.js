@@ -1,31 +1,39 @@
-import {defineStore} from 'pinia';
+import { defineStore } from "pinia";
 
+export const useAuthStore = defineStore("auth", {
+  state: () => ({
+    user: (() => {
+      try {
+        const saved = localStorage.getItem("user");
+        return saved && saved !== "undefined" ? JSON.parse(saved) : null;
+      } catch {
+        localStorage.removeItem("user"); // 깨진 데이터 자동 정리
+        return null;
+      }
+    })(),
+  }),
+  getters: {
+    isLoggedIn: (state) => !!state.user,
+    isAdmin: (state) => state.user?.userType === "ADMIN",
+    userName: (state) => state.user?.name || "",
+  },
+  actions: {
+    login(userData, remember = false) {
+      this.user = userData;
+      localStorage.setItem("user", JSON.stringify(userData));
 
-export const useAuthStore = defineStore('auth', {
-    state: () => ({
-        token: localStorage.getItem("token")||null,
-        user: JSON.parse(localStorage.getItem('user')) || null, // 새로고침 시 로컬스토리지에서 복구
-    }),
-    getters: {
-        isLoggedIn: state => !!state.user,
-        isAdmin: state => state.user?.userType === 'ADMIN',
-        userName: state => state.user?.name || '',
+      if (remember) {
+        localStorage.setItem("keepLogin", "true");
+      } else {
+        localStorage.removeItem("keepLogin");
+        sessionStorage.setItem("alive", "true");
+      }
     },
-    actions: {
-        login(userData,token = null){
-            this.user=userData;;
-            this.token=token;
-            localStorage.setItem('user',JSON.stringify(userData));
-            if(token){
-                localStorage.setItem('token',token);
-            }
-        },
-        logout(){
-            this.user=null;
-            this.token=null;
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-
-        }
-    }
-})
+    logout() {
+      this.user = null;
+      localStorage.removeItem("user");
+      localStorage.removeItem("keepLogin");
+      sessionStorage.removeItem("alive");
+    },
+  },
+});

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.group.mapper.GroupMapperSJW">
+
+    <sql id="group">
+        GROUP_ID,
+        GROUP_NAME,
+        GROUP_TYPE,
+        DESCRIPTION,
+        active(IS_ACTIVE) as is_active,
+        CREATED_BY,
+        UPDATED_AT,
+        CREATED_AT,
+        EDITOR_USER_ID
+    </sql>
+    <select id="getAll">
+        SELECT
+        g.group_id,
+        g.group_name,
+        common(g.group_type) as group_type,
+        g.description,
+        active(g.is_active) as is_active,
+        COUNT(gm.user_id) AS member_count  -- 추가
+        FROM groups g
+        LEFT JOIN group_members gm
+        ON g.group_id = gm.group_id
+        AND gm.is_active = 'O1'             -- 활성 멤버만 집계
+        GROUP BY         g.group_id,
+        g.group_name,
+        common(g.group_type),
+        g.description,
+        active(g.is_active)
+        ORDER BY g.group_id desc
+    </select>
+    <select id="getById">
+        SELECT
+        <include refid="group"/>
+        FROM groups
+        WHERE group_id = #{id}
+    </select>
+    <select id="getAllGroupForEmpRegister">
+        SELECT
+        group_id,group_name,description,active(is_active)
+        FROM groups
+        WHERE group_type='C1' AND is_active='O1'
+    </select>
+    <update id="modifyGroupById" parameterType="com.example.group.entity.GroupVOSJW">
+        UPDATE groups
+        <set>
+            <if test="groupName != null and groupName != ''">group_name = #{groupName},</if>
+            <if test="groupType != null and groupType != ''">group_type = #{groupType},</if>
+            <if test="description != null and description != ''">description = #{description},</if>
+            <if test="isActive != null and isActive != ''">is_acitive = (#{isActive},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+</mapper>

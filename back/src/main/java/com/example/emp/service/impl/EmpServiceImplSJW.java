@@ -8,7 +8,6 @@ import com.example.emp.service.EmpServiceSJW;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -58,7 +57,6 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
         }else{
             emp.setUserType("M2");
         }
-        emp.setIsActive("O1");
         empMapper.registerEmp(emp);
         empMapper.insertGroupMember(emp.getUserId(), emp.getGroupId(),"Y");
         return emp.getUserId();
@@ -139,7 +137,12 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
     }
 
     @Override
-    public Integer sendEmail(String toEmail) {
+    public Integer sendEmail(String toEmail, Integer userId) {
+        // 먼저 해당 사번이 존재하는지 확인
+        EmpVOSJW emp = empMapper.getById(userId);
+        if(emp == null) {
+            return 0;
+        }
         // 1. 완벽해진 6자리 난수 생성 로직!
         int randval = (int) (Math.random() * 1000000);
         String authCode = String.format("%06d", randval);
@@ -164,6 +167,16 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
 
         // 5. 프론트엔드에게 돌려줄 고유 ID 리턴!
         return vo.getEmailId();
+    }
+
+    @Override
+    public Boolean verifyCode(Integer code, Integer emailId) {
+        Integer result = empMapper.verifyAuthCode(code,emailId);
+        if(result > 0 ){
+            empMapper.cleanUpOldCodes(emailId);
+            return true;
+        }
+        return false;
     }
 
 }

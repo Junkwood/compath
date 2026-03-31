@@ -66,7 +66,7 @@
             SELECT emp_seq.NEXTVAL FROM DUAL
         </selectKey>
         INSERT INTO users (user_id, user_name, email, password, is_active, user_type)
-        VALUES (#{userId}, #{name}, #{email}, #{password}, #{isActive}, #{userType})
+        VALUES (#{userId}, #{name}, #{email}, #{password}, 'O1', #{userType})
     </insert>
     <insert id="insertGroupMember">
         <selectKey keyProperty="groupMemberId" resultType="int" order="BEFORE">
@@ -113,22 +113,22 @@
             SELECT email_seq.NEXTVAL FROM DUAL
         </selectKey>
 
-        INSERT INTO "email" ("email_id", "email_no", "created_at")
+        INSERT INTO email (email_id, email_no, created_at)
         VALUES (#{emailId}, #{emailNo}, SYSDATE)
     </insert>
     <select id="verifyAuthCode" resultType="int">
         SELECT COUNT(*)
-        FROM "email"
-        WHERE "email_id" = #{emailId}
-        AND "email_no" = #{emailNo}
+        FROM email
+        WHERE email_id = #{emailId}
+        AND email_no = #{code}
         <![CDATA[
-      AND "created_at" >= SYSDATE - (3 / 24 / 60)
+      AND created_at >= SYSDATE - (3 / 24 / 60)
       ]]>
     </select>
     <delete id="cleanUpOldCodes">
-        DELETE FROM "email"
-        WHERE "email_id" = #{emailId} <!-- 이번에 쓴 거 지우기 -->
+        DELETE FROM email
+        WHERE email_id = #{emailId} <!-- 이번에 쓴 거 지우기 -->
         <![CDATA[
-        OR "created_at" < SYSDATE - (3 / 24 / 60)]]><!-- 덤으로 3분 지난 쓰레기들 싹 다 청소 -->
+        OR created_at < SYSDATE - (3 / 24 / 60)]]><!-- 덤으로 3분 지난 쓰레기들 싹 다 청소 -->
     </delete>
 </mapper>
