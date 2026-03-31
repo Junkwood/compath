@@ -106,4 +106,9 @@
         WHERE P.PARENT_PROJECT_ID=#{parentProjectId}
         ORDER BY M.MILESTONE_ID
     </select>
+
+    <!-- 하위프로젝트 생성 -->
+    <insert id="registerSubProject">
+
+    </insert>
 </mapper>

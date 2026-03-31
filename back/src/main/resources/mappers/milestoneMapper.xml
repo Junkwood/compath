@@ -1,0 +1,41 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.milestone.mapper.MilestoneMapper">
+    <select id="getMilestoneListByPid" resultType="MilestoneDto">
+        SELECT
+            M.MILESTONE_ID,
+            M.MILESTONE_NAME,
+            M.DUE_DATE,
+            M.PROJECT_ID,
+            M.DESCRIPTION,
+            M.STATUS,
+            COUNT(T.TASK_ID) AS TOTAL_TASKS,
+
+            SUM(CASE WHEN T.TASK_STATUS_ID=5 THEN 1
+                     ELSE 0
+                END) AS COMPLETED_TASKS,
+
+            SUM(CASE WHEN T.TASK_STATUS_ID=1 THEN 1
+                     WHEN T.TASK_STATUS_ID=2 THEN 1
+                     ELSE 0
+                END) AS INPROGRESS_TASKS,
+
+            CASE
+                WHEN COUNT(T.TASK_ID) = 0 THEN 0
+                ELSE ROUND(AVG(NVL(T.PROGRESS_RATE,0)))
+            END AS PROGRESS_RATE
+
+        FROM MILESTONES M
+        LEFT JOIN TASKS T
+            ON M.MILESTONE_ID = T.MILESTONE_ID
+        WHERE M.PROJECT_ID = #{projectId}
+            AND M.STATUS = 'E1'
+        GROUP BY
+            M.MILESTONE_ID,
+            M.MILESTONE_NAME,
+            M.DUE_DATE,
+            M.PROJECT_ID,
+            M.DESCRIPTION,
+            M.STATUS
+        ORDER BY M.MILESTONE_ID
+    </select>
+</mapper>

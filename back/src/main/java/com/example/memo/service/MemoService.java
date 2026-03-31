@@ -12,5 +12,9 @@ public interface MemoService {
     //메모리스트 불러오기
     List<MemoListDto> getMemoList(int userId, int projectId);
 
+    //메모 삭제 (상태값 Q2로 변경)
+    void updateStatByMemoId(MemoCreateDto dto);
 
+    //작성한 메모 수정하기
+    void updateMemoContent(MemoCreateDto dto);
 }

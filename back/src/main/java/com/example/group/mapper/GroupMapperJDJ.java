@@ -7,5 +7,5 @@ import java.util.List;
 
 @Mapper
 public interface GroupMapperJDJ {
-    List<GroupMemListDtoJDJ> getGroupMemList();
+    List<GroupMemListDtoJDJ> getGroupMemList(int projectId);
 }

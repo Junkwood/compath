@@ -21,4 +21,6 @@ public interface ProjectServiceJDJ {
     //하위프로젝트 목록 조회
     public List<ProjectSubListDtoJDJ> getSubpList(int parentProjectId);
 
+    //하위프로젝트 생성
+    void registerSubProject(ProjectSubCreateDtoJDJ dto);
 }

@@ -47,6 +47,14 @@ public class ProjectControllerJDJ {
     public List<ProjectSubListDtoJDJ> subplist(@PathVariable Integer parentProjectId){
             return projectServiceJDJ.getSubpList(parentProjectId);
         }
+      
+    //하위프로젝트 생성
+    @PostMapping("/ProjectSubRegister")
+    public ProjectSubCreateDtoJDJ registerSubProject(@RequestBody ProjectSubCreateDtoJDJ dto){
+        projectServiceJDJ.registerSubProject(dto);
+        return dto;
+    }
+
     }
 
 

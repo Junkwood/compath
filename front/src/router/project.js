@@ -16,5 +16,10 @@ const projectRoutes = [
     name: "projectMemo",
     component: () => import("../project/ProjectMemoModal.vue"),
   },
+  {
+    path: "/project/milestone/:projectId",
+    name: "milestoneDashboard",
+    component: () => import("../milestone/MilestoneDashboard.vue"),
+  },
 ];
 export default projectRoutes;

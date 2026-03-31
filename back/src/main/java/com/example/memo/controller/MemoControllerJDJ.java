@@ -29,4 +29,17 @@ public class MemoControllerJDJ {
         return memoService.getMemoList(userId, projectId);
     }
 
+    //메모 삭제 (상태값 Q2로 변경)
+    @PostMapping("/MemoStatUpdate")
+    public MemoCreateDto updateStatByMemoId(@RequestBody MemoCreateDto dto){
+        memoService.updateStatByMemoId(dto);
+        return dto;
+    }
+
+    //작성한 메모 수정하기
+    @PostMapping("/MemoContentUpdate")
+    public MemoCreateDto updateMemoContent(@RequestBody MemoCreateDto dto){
+        memoService.updateMemoContent(dto);
+        return dto;
+    }
 }

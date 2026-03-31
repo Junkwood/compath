@@ -17,4 +17,10 @@ public interface MemoMapper {
             @Param("userId") int userId,
             @Param("projectId") int projectId
     );
+
+    //메모 삭제 (상태값 Q2로 변경)
+    int updateStatByMemoId(MemoCreateDto dto);
+
+    //작성한 메모 수정하기
+    int updateMemoContent(MemoCreateDto dto);
 }

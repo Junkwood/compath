@@ -1,0 +1,17 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.group.mapper.GroupMapperJDJ">
+    <select id="getGroupMemList" resultType="GroupMemListDtoJDJ">
+        SELECT
+            U.USER_NAME,
+            G.GROUP_NAME
+        FROM USERS U
+        JOIN PROJECT_MEMBERS PM
+            ON U.USER_ID = PM.USER_ID
+        JOIN GROUP_MEMBERS GM
+            ON GM.USER_ID = U.USER_ID
+        JOIN GROUPS G
+            ON G.GROUP_ID = GM.GROUP_ID
+        WHERE PM.PROJECT_ID = #{projectId}
+    </select>
+
+</mapper>

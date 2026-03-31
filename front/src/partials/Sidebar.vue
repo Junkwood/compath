@@ -482,7 +482,8 @@
                   </router-link>
 
                   <router-link
-                    to="/project/milestone"
+                    v-if="currentProjectId"
+                    :to="{ name: 'milestoneDashboard', params: { projectId: currentProjectId } }"                    
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
