@@ -2,9 +2,23 @@ SELECT * FROM tab;
 
 SELECT * FROM users;
 
-SELECT * FROM tasks;
 
-DELETE FROM tasks WHERE task_id = '10082';
+
+SELECT * FROM tasks;
+SELECT * FROM task_rejections;
+
+CREATE SEQUENCE task_rejection_seq
+    START WITH 1
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+
+
+SELECT column_name FROM USER_TAB_COLUMNS 
+WHERE TABLE_NAME = 'TASK_REJECTIONS';
+
+DELETE FROM tasks WHERE task_id = '10108';
 
 SELECT * FROM task_types;
 SELECT * FROM projects;

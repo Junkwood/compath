@@ -19,7 +19,7 @@ public interface TaskMapperJJW {
     TaskReqDtoJJW getTaskById(Integer taskId);
 
     //사유등록
-    void insert (TaskRejectDtoJJW re);
+    void insert1 (TaskRejectDtoJJW re);
 
     //프로젝트 조회
     List<ProjectDtoJJW> getProjectList();
