@@ -34,7 +34,7 @@
         <el-checkbox
           v-model="group.Allcheck"
           :indeterminate="isIndeterminate"
-          @change="handleCheckAllChange(group.groupId, e)"
+          @change="handleCheckAllChange(group.groupId)"
         >
           <el-icon> <User /></el-icon>{{ group.groupName }}
         </el-checkbox>
@@ -57,6 +57,7 @@
     </div>
     <!-- 역할부여 -->
 
+    <div class="h-64"></div>
     <div>
       <el-checkbox-group
         v-model="checkList"
@@ -127,6 +128,11 @@ watch(
 
 const isIndeterminate = ref(false);
 const handleCheckAllChange = (val) => {
+
+  console.log(val);
+
+  if()
+
   groupData.value[val - 1].members.forEach((gr) => {
     if (groupData.value[val - 1].Allcheck) {
       groupData.value[val - 1].checkedusers.push(gr);
@@ -144,10 +150,9 @@ const handleCheckedCitiesChange = (value, group) => {
     let groupLen = groupData.value[id - 1].members.length;
     if (len == groupLen) {
       groupData.value[id - 1].Allcheck = true;
-    } else {
-      groupData.value[id - 1].Allcheck = false;
     }
   } else {
+    let id = group.groupId;
     groupData.value[id - 1].Allcheck = false;
   }
 };
@@ -247,5 +252,24 @@ const handleCheckedCitiesChange = (value, group) => {
 
 .input-with-select .el-input-group__prepend {
   background-color: var(--el-fill-color-blank);
+}
+
+.infinite-list {
+  height: 300px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.infinite-list .infinite-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  background: var(--el-color-primary-light-9);
+  margin: 10px;
+  color: var(--el-color-primary);
+}
+.infinite-list .infinite-list-item + .list-item {
+  margin-top: 10px;
 }
 </style>
