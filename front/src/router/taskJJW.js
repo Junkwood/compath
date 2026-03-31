@@ -16,5 +16,10 @@ const taskRoutes1 = [
     name: "taskModify",
     component: () => import("../task/TaskModify.vue"),
   },
+  {
+    path: "/task/gantt/:projectId",
+    name: "GanttView",
+    component: () => import("../report/GanttView.vue"),
+  },
 ];
 export default taskRoutes1;
