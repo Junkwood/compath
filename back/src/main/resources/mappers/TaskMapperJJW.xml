@@ -49,7 +49,7 @@
     </insert>
 
     <!--반려 사유 모달 저장-->
-    <insert id="insert" parameterType="TaskRejectDtoJJW">
+    <insert id="insert1" parameterType="TaskRejectDtoJJW">
         INSERT INTO task_rejections (
         task_rejection_id,
         task_id,
