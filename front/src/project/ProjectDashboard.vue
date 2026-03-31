@@ -126,50 +126,49 @@
                     + 하위 프로젝트 생성
                   </el-button>
                 </div>
-            <div class="sub-project-body">
-              <template v-if="pagedMilestones.length > 0">
-                <div class="sub-project-group">
-                  <div class="sub-project-stage-title">
-                    마일스톤 
-                    {{ currentMilestone?.milestoneName }}
-                  </div>
+                <div class="sub-project-body">
+                  <template v-if="pagedMilestones.length > 0">
+                    <div class="sub-project-group">
+                      <div class="sub-project-stage-title">
+                        마일스톤
+                        {{ currentMilestone?.milestoneName }}
+                      </div>
 
-                  <div class="sub-project-table-wrap">
-                    <el-table
-                      :data="currentMilestone.projects"
-                      class="sub-project-table"
-                      style="width: 100%"
-                      :show-header="false"
-                      :cell-style="subCellStyle"
-                    >
-                      <el-table-column prop="projectName" min-width="220" />
-                      <el-table-column label="PL" width="140" align="right">
-                        <template #default="{ row }">
-                          <span class="sub-pl">PL {{ row.userName }}</span>
-                        </template>
-                      </el-table-column>
-                    </el-table>
-                  </div>
+                      <div class="sub-project-table-wrap">
+                        <el-table
+                          :data="currentMilestone.projects"
+                          class="sub-project-table"
+                          style="width: 100%"
+                          :show-header="false"
+                          :cell-style="subCellStyle"
+                        >
+                          <el-table-column prop="projectName" min-width="220" />
+                          <el-table-column label="PL" width="140" align="right">
+                            <template #default="{ row }">
+                              <span class="sub-pl">PL {{ row.userName }}</span>
+                            </template>
+                          </el-table-column>
+                        </el-table>
+                      </div>
 
-                  <div class="pagination-wrap" v-if="pagedMilestones.length > 1">
-                    <el-pagination
-                      v-model:current-page="milestonePage"
-                      :page-size="1"
-                      :total="pagedMilestones.length"
-                      layout="prev, pager, next"
-                      background
-                    />
-                  </div>
+                      <div
+                        class="pagination-wrap"
+                        v-if="pagedMilestones.length > 1"
+                      >
+                        <el-pagination
+                          v-model:current-page="milestonePage"
+                          :page-size="1"
+                          :total="pagedMilestones.length"
+                          layout="prev, pager, next"
+                          background
+                        />
+                      </div>
+                    </div>
+                  </template>
 
+                  <div v-else class="sub-empty">하위 프로젝트가 없습니다.</div>
                 </div>
-              </template>
-
-              <div v-else class="sub-empty">
-                하위 프로젝트가 없습니다.
               </div>
-            </div>
-
-            </div>
             </div>
             <!-- 우측: 프로젝트 구성원 + 나의 메모 -->
             <div class="proj-right-col">
@@ -214,30 +213,28 @@
                   </el-button>
                 </div>
                 <div class="memo-body">
-                  <template v-if="memoList.length > 0" >
-                  <div
-                    v-for="(memo, index) in memoList"
-                    :key="memo.id"
-                    class="memo-card"
-                    :class="getMemoColorClass(index)"
-                  >
-                    <div class="memo-content">
-                      <div class="memo-date">{{ memo.createdAt }}</div>
-                      <div class="memo-text">{{ memo.memoContent}}</div>
-                    </div>
-                    <el-button
-                      class="memo-del-btn"
-                      @click="handleDeleteMemo(memo.memoId)"
-                      text
+                  <template v-if="memoList.length > 0">
+                    <div
+                      v-for="(memo, index) in memoList"
+                      :key="memo.id"
+                      class="memo-card"
+                      :class="getMemoColorClass(index)"
                     >
-                      ✕
-                    </el-button>
-                  </div>
+                      <div class="memo-content">
+                        <div class="memo-date">{{ memo.createdAt }}</div>
+                        <div class="memo-text">{{ memo.memoContent }}</div>
+                      </div>
+                      <el-button
+                        class="memo-del-btn"
+                        @click="handleDeleteMemo(memo.memoId)"
+                        text
+                      >
+                        ✕
+                      </el-button>
+                    </div>
                   </template>
 
-                  <div v-else class="memo-empty">
-                    등록된 메모가 없습니다.
-                  </div>
+                  <div v-else class="memo-empty">등록된 메모가 없습니다.</div>
                 </div>
               </div>
             </div>
@@ -247,23 +244,22 @@
     </div>
   </div>
 
-<ProjectMemoModal
-  v-model="memoModalVisible"
-  @submitted="handleMemoSubmitted"
-/>
-
+  <ProjectMemoModal
+    v-model="memoModalVisible"
+    @submitted="handleMemoSubmitted"
+  />
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import Sidebar from '../partials/Sidebar.vue'
-import Header from '../partials/Header.vue'
-import axios from 'axios'
-import ProjectMemoModal from '../project/ProjectMemoModal.vue'
-import { useAuthStore } from '../stores/auth'
+import { onMounted, ref, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import Sidebar from "../partials/Sidebar.vue";
+import Header from "../partials/Header.vue";
+import axios from "axios";
+import ProjectMemoModal from "../project/ProjectMemoModal.vue";
+import { useAuthStore } from "../stores/auth";
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -324,7 +320,6 @@ const noticeList = ref([
   },
 ]);
 
-
 // ── 프로젝트 구성원 (하드코딩) ───────────────────────
 const projectMembers = ref([
   { name: "김관리", role: "PM", roleClass: "role-pm", avatarColor: "#3b82f6" },
@@ -351,26 +346,25 @@ const projectMembers = ref([
 ]);
 
 // ── 나의 메모 ──────────────────────────────────
-const memoList = ref([])
+const memoList = ref([]);
 
-const fetchMemoList= async() => {
-  try{
-    const projectId = route.params.projectId
-    const userId = authStore.user?.userId
-    const res = await axios.get(`/api/MemoList/${projectId}`,{
-      params:{ userId }
-    })
-    memoList.value = res.data
-    } catch(err){
-      console.error('메모 목록 조회 실패 :', err)
-    }
-}
+const fetchMemoList = async () => {
+  try {
+    const projectId = route.params.projectId;
+    const userId = authStore.user?.userId;
+    const res = await axios.get(`/api/MemoList/${projectId}`, {
+      params: { userId },
+    });
+    memoList.value = res.data;
+  } catch (err) {
+    console.error("메모 목록 조회 실패 :", err);
+  }
+};
 
 const getMemoColorClass = (index) => {
-  const colorClasses = ['memo-blue', 'memo-yellow', 'memo-pink']
-  return colorClasses[index % colorClasses.length]
-}
-
+  const colorClasses = ["memo-blue", "memo-yellow", "memo-pink"];
+  return colorClasses[index % colorClasses.length];
+};
 
 const projectInfo = ref({
   projectId: null,
@@ -390,102 +384,111 @@ const fetchProjectDetail = async () => {
 };
 
 // ── 하위 프로젝트 ──────────────────────────────
-const subProjects = ref([])
-const milestonePage = ref(1)
+const subProjects = ref([]);
+const milestonePage = ref(1);
 
-const fetchSubProject = async()=>{
-    try{
-      const projectId = route.params.projectId
-      const res = await axios.get(`/api/ProjectSubDetail/${projectId}`)
-      subProjects.value = res.data
-      milestonePage.value=1
-    } catch(err){
-      console.error('하위프로젝트 조회 실패:', err)
-    }
-}
+const fetchSubProject = async () => {
+  try {
+    const projectId = route.params.projectId;
+    const res = await axios.get(`/api/ProjectSubDetail/${projectId}`);
+    subProjects.value = res.data;
+    milestonePage.value = 1;
+  } catch (err) {
+    console.error("하위프로젝트 조회 실패:", err);
+  }
+};
 
 //milestoneID 기준 그루핑
 const pagedMilestones = computed(() => {
-  const map = new Map()
+  const map = new Map();
 
   subProjects.value.forEach((item) => {
-    const key = item.milestoneId
+    const key = item.milestoneId;
 
     if (!map.has(key)) {
       map.set(key, {
         milestoneId: item.milestoneId,
         milestoneName: item.milestoneName,
-        projects: []
-      })
+        projects: [],
+      });
     }
 
     map.get(key).projects.push({
       projectId: item.projectId,
       projectName: item.projectName,
-      userName: item.userName
-    })
-  })
+      userName: item.userName,
+    });
+  });
 
-  return Array.from(map.values())
-})
+  return Array.from(map.values());
+});
 
 const currentMilestone = computed(() => {
-  return pagedMilestones.value[milestonePage.value - 1] || null
-})
+  return pagedMilestones.value[milestonePage.value - 1] || null;
+});
 
-const memoModalVisible = ref(false)
+const memoModalVisible = ref(false);
 
 // ── 이벤트 핸들러 ────────────────────────────────────
-const handleProjectSetting  = () => { /* TODO: 설정 페이지 이동 */ }
-const handleViewTasks       = () => { /* TODO: 업무 목록 페이지 이동 */ }
-const handleNoticeClick     = (item) => { /* TODO: 공지사항 상세 */ }
-const handleAddSubProject   = () => { /* TODO: 하위 프로젝트 생성 모달 */ }
+const handleProjectSetting = () => {
+  /* TODO: 설정 페이지 이동 */
+  router.push({
+    name: "projectSetting",
+    params: { id: route.params.projectId },
+  });
+};
+const handleViewTasks = () => {
+  /* TODO: 업무 목록 페이지 이동 */
+};
+const handleNoticeClick = (item) => {
+  /* TODO: 공지사항 상세 */
+};
+const handleAddSubProject = () => {
+  /* TODO: 하위 프로젝트 생성 모달 */
+};
 const handleAddMemo = () => {
-  memoModalVisible.value = true
-}
+  memoModalVisible.value = true;
+};
 const handleDeleteMemo = (id) => {
-  memoList.value = memoList.value.filter(m => m.id !== id)
-}
+  memoList.value = memoList.value.filter((m) => m.id !== id);
+};
 
 const handleMemoSubmitted = async (payload) => {
-  try{
-    const projectId = route.params.projectId
-    const userId = authStore.user?.userId
+  try {
+    const projectId = route.params.projectId;
+    const userId = authStore.user?.userId;
 
-    if(!userId) {
-      console.warn('로그인 사용자 정보가 없습니다.')
-      return
+    if (!userId) {
+      console.warn("로그인 사용자 정보가 없습니다.");
+      return;
     }
 
-    await axios.post(`/api/MemoRegister`,{
+    await axios.post(`/api/MemoRegister`, {
       projectId,
       userId,
-      memoContent:payload.text
-    })
+      memoContent: payload.text,
+    });
 
-    await fetchMemoList()
+    await fetchMemoList();
   } catch (err) {
-    console.error('메모 등록에 실패:', err)
+    console.error("메모 등록에 실패:", err);
   }
-}
+};
 
-
-onMounted(()=>{
+onMounted(() => {
   fetchProjectDetail();
   fetchSubProject();
   fetchMemoList();
-})
-
+});
 
 // ── 테이블 공통 스타일 ─────────────────────────────
 const subCellStyle = () => ({
-  fontSize: '13px',
-  color: '#374151',
-  borderBottom: '1px solid #dcdfe6',
-  padding: '7px 12px',
-  height: '36px'
-})
-
+  fontSize: "13px",
+  color: "#374151",
+  borderBottom: "1px solid #dcdfe6",
+  padding: "7px 12px",
+  height: "36px",
+});
 </script>
 
 <style scoped>
@@ -687,7 +690,7 @@ const subCellStyle = () => ({
 }
 
 .sub-project-table-wrap {
-  max-height: 216px;   /* 6행 정도 */
+  max-height: 216px; /* 6행 정도 */
   overflow-y: auto;
   /* border-top: 1px solid #6b7280; */
 }
@@ -845,10 +848,18 @@ const subCellStyle = () => ({
   justify-content: space-between;
   gap: 8px;
 }
-.memo-blue  { background: #dbeafe; }
-.memo-green { background: #d1fae5; }
-.memo-pink  { background: #fce7f3; }
-.memo-yellow { background: #fdffd1; }
+.memo-blue {
+  background: #dbeafe;
+}
+.memo-green {
+  background: #d1fae5;
+}
+.memo-pink {
+  background: #fce7f3;
+}
+.memo-yellow {
+  background: #fdffd1;
+}
 
 .memo-content {
   flex: 1;

@@ -24,9 +24,11 @@ public class ProjectControllerKJH {
 
     //프로젝트 수정
     @PutMapping("/projects/info/{projectId}")
-    public int modifyProject(@PathVariable("projectId") Integer projectId,
+    public ProjectSingleDtoKJH modifyProject(@PathVariable("projectId") Integer projectId,
                              @RequestBody ProjectModifyDtoKJH dto) {
         dto.setProjectId(projectId);
-        return service.modifyProject(dto);
+        Integer result = service.modifyProject(dto);
+
+        return service.getSingleProject(projectId);
     }
 }

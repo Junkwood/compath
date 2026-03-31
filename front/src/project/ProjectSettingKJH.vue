@@ -102,7 +102,7 @@
         </div>
         <div>
           <button
-            @click="submitForm"
+            @click="openMemberModal"
             class="btn bg-violet-500 hover:bg-violet-600 text-white"
           >
             구성원 추가
@@ -160,6 +160,7 @@
     @handle-cancel="closeModifyMdoal"
     @modify-Info="modifyProject"
   />
+  <ProjectMemberModal v-model="MemberModalOpen" :originInfo="projectInfo" />
 </template>
 
 <script setup>
@@ -170,6 +171,7 @@ import { useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectModifyModal from "./ProjectModifyModal.vue";
+import ProjectMemberModal from "./ProjectMemberModal.vue";
 
 const route = useRoute();
 const taskStore = usetaskKJHStore();
@@ -196,7 +198,8 @@ const projectInfo = ref({
 });
 const id = route.params.id;
 
-const ModifyProjectModalOpen = ref(false);
+const ModifyProjectModalOpen = ref(false); // 수정 모달
+const MemberModalOpen = ref(false); // 구성원 추가 모달
 
 onBeforeMount(async () => {
   // 프로젝트명
@@ -217,6 +220,34 @@ const openModfyModal = () => {
 // 모달 취소버튼
 const closeModifyMdoal = () => {
   ModifyProjectModalOpen.value = false;
+};
+
+// 모달창 수정 버튼
+const modifyProject = async (form) => {
+  const payload = {
+    projectId: form.projectId,
+    projectName: form.projectName,
+    identifier: form.identifier,
+    plUserId: form.plUserId,
+    startDate: form.startDate,
+    endDate: form.endDate,
+    description: form.description,
+    useMilestone: form.useMilestone ? "O1" : "O2",
+    isPublic: form.isPublic ? "P1" : "P2",
+  };
+
+  console.log("전송데이터", payload);
+
+  await projectStore.modifyProject(payload);
+
+  projectInfo.value = projectStore.modifiedInfo;
+  ModifyProjectModalOpen.value = false;
+};
+
+// 구성원 추가 버튼
+const openMemberModal = () => {
+  console.log("ddddd");
+  MemberModalOpen.value = true;
 };
 </script>
 <style scoped>
