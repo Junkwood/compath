@@ -1,3 +1,48 @@
+<template>
+  <div class="flex h-screen overflow-hidden">
+    <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+    >
+      <Header
+        :sidebarOpen="sidebarOpen"
+        @toggle-sidebar="sidebarOpen = !sidebarOpen"
+      />
+      <main class="grow">
+        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+          <!-- 페이지 헤더 -->
+          <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              간트 차트
+            </h1>
+            <div class="flex items-center gap-3">
+              <!-- 뷰 전환 버튼 -->
+              <div class="view-toggle">
+                <button
+                  v-for="v in viewOptions"
+                  :key="v.value"
+                  :class="['toggle-btn', activeView === v.value && 'active']"
+                  @click="changeView(v.value)"
+                >
+                  {{ v.label }}
+                </button>
+              </div>
+              <button @click="goBack" class="btn-navy">← 목록으로</button>
+            </div>
+          </div>
+
+          <!-- 간트 차트 -->
+          <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden"
+          >
+            <div ref="ganttContainer" class="gantt-wrapper" />
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
@@ -40,17 +85,18 @@ const initGantt = async () => {
 
   // 두 API 동시 호출
   const [taskRes, projectRes] = await Promise.all([
-    fetch("/task/gantt"),
-    fetch("/projectList"),
+    fetch("/api/task/gantt"),
+    fetch("/api/projectList"),
   ]);
   const rawTasks = await taskRes.json();
   const rawProjects = await projectRes.json();
 
+  // 프로젝트 id → name 맵
   const projectNameMap = new Map(
     rawProjects.map((p) => [String(p.projectId), p.projectName]),
   );
 
-  // 프로젝트별
+  // 프로젝트별로 그룹핑
   const projectMap = new Map();
   rawTasks.forEach((task) => {
     const pid = String(task.projectId);
@@ -158,3 +204,78 @@ onBeforeUnmount(() => {
   if (ganttInstance) ganttInstance.destroy();
 });
 </script>
+
+<style scoped>
+.gantt-wrapper {
+  height: calc(100vh - 180px);
+  min-height: 400px;
+}
+
+/* 뷰 전환 토글 */
+.view-toggle {
+  display: flex;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.toggle-btn {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggle-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+.toggle-btn.active {
+  background: #fff;
+  color: #1e293b;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+/* Bryntum 오버라이드 */
+:deep(.b-toolbar) {
+  display: none !important;
+}
+:deep(.b-gantt) {
+  font-family: inherit;
+  font-size: 13px !important;
+}
+:deep(.b-grid-header) {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+:deep(.b-grid-cell) {
+  font-size: 12px !important;
+}
+:deep(.b-grid-row:hover .b-grid-cell) {
+  background: #f1f5f9 !important;
+}
+:deep(.b-gantt-task) {
+  border-radius: 6px !important;
+  font-size: 11px !important;
+}
+:deep(.b-tree-cell-value) {
+  font-size: 12px !important;
+}
+:deep(.b-sch-header-timeaxis-cell) {
+  font-size: 12px !important;
+}
+:deep(.b-sch-current-time) {
+  border-left: 2px solid #f97316 !important;
+}
+</style>
