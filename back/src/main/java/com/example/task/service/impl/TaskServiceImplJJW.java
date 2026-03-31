@@ -53,7 +53,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     //반려 사유 모달 등록
     @Override
     public void insert(TaskRejectDtoJJW re) {
-        taskMapperJJW.insert(re);
+        taskMapperJJW.insert1(re);
     }
 
     @Override
