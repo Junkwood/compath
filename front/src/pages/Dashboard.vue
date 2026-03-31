@@ -292,7 +292,7 @@ const pagedTaskData = computed(() => {
     .value.slice(s, s + workPageSize)
     .map((item,index) => ({
       ...item,
-      no : s + index + 1
+      no : s + index + 1 //번호 칼럼 없다면 no 빼도 됨
     }))
 })
 
