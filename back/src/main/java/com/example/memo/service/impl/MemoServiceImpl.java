@@ -29,5 +29,16 @@ public class MemoServiceImpl implements MemoService {
         return memoMapper.getMemoList(userId, projectId);
     }
 
+    //메모 삭제 (상태값 Q2로 변경)
+    @Override
+    public void updateStatByMemoId(MemoCreateDto dto) {
+        memoMapper.updateStatByMemoId(dto);
+    }
+
+    //작성한 메모 수정하기
+    @Override
+    public void updateMemoContent(MemoCreateDto dto) {
+        memoMapper.updateMemoContent(dto);
+    }
 
 }

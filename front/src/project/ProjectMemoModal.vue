@@ -1,14 +1,18 @@
 <template>
-  <el-dialog
-    v-model="visible"
-    title="메모 작성"
-    width="560px"
-    :close-on-click-modal="false"
-    :append-to-body="true"
-    @close="handleClose"
-  >
+    <el-dialog
+      v-model="visible"
+      :title="isEditMode ? '메모 수정' : '메모 작성'"
+      width="560px"
+      :close-on-click-modal="false"
+      :append-to-body="true"
+      @close="handleClose"
+    >
     <div class="memo-subtitle">
-      프로젝트 대시보드에 표시될 메모를 작성하세요.
+      {{
+        isEditMode
+          ? '프로젝트 대시보드에 표시될 메모를 수정하세요.'
+          : '프로젝트 대시보드에 표시될 메모를 작성하세요.'
+      }}
     </div>
 
     <div class="memo-body">
@@ -27,17 +31,27 @@
     <template #footer>
       <div class="memo-footer">
         <el-button class="cancel-btn" @click="handleClose">취소</el-button>
-        <el-button class="save-btn" @click="saveMemo">등록</el-button>
+        <el-button class="save-btn" @click="saveMemo">
+          {{ isEditMode ? '수정' : '등록' }}
+        </el-button>
       </div>
     </template>
   </el-dialog>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch} from 'vue'
 
 const props = defineProps({
   modelValue: {
+    type: Boolean,
+    default: false
+  },
+  initialMemoText:{
+    type:String,
+    default:''
+  },
+  isEditMode:{
     type: Boolean,
     default: false
   }
@@ -51,6 +65,16 @@ const visible = computed({
 })
 
 const memoText = ref('')
+
+watch(
+  ()=>[props.modelValue, props.initialMemoText],
+  ([isOpen, text]) =>{
+    if(isOpen) {
+      memoText.value = text || ''
+    }
+  },
+  { immediate : true}
+)
 
 const handleClose = () => {
   visible.value = false

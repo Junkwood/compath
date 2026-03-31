@@ -177,29 +177,31 @@
                 <div class="card-header">
                   <span class="card-title">프로젝트 구성원</span>
                 </div>
+
                 <div class="member-body">
-                  <div
-                    v-for="member in projectMembers"
-                    :key="member.name"
-                    class="member-item"
-                  >
+                  <template v-if="projectMembers.length > 0">
                     <div
-                      class="member-avatar"
-                      :style="{ backgroundColor: member.avatarColor }"
+                      v-for="member in projectMembers"
+                      :key="member.userId"
+                      class="member-item"
                     >
-                      {{ member.name.charAt(0) }}
+                      <div
+                        class="member-avatar"
+                        :style="{ backgroundColor: getAvatarColor(member.groupName) }"
+                      >
+                        {{ member.userName?.charAt(0) }}
+                      </div>
+                      <div class="member-info">
+                        <span class="member-name">{{ member.userName }}</span>
+                        <span class="member-role-badge" :class="getRoleClass(member.groupName)">
+                          {{ member.groupName }}
+                        </span>
+                      </div>
                     </div>
-                    <div class="member-info">
-                      <span class="member-name">{{ member.name }}</span>
-                      <span class="member-role-badge" :class="member.roleClass">
-                        {{ member.role }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="member-empty-row">
-                    <span class="member-empty-text"
-                      >구성원이 아직 지정되지 않았습니다.</span
-                    >
+                  </template>
+
+                  <div v-else class="member-empty-row">
+                    <span class="member-empty-text">구성원이 아직 지정되지 않았습니다.</span>
                   </div>
                 </div>
               </div>
@@ -216,9 +218,10 @@
                   <template v-if="memoList.length > 0">
                     <div
                       v-for="(memo, index) in memoList"
-                      :key="memo.id"
+                      :key="memo.memoId"
                       class="memo-card"
                       :class="getMemoColorClass(index)"
+                      @dblclick="handleEditMemo(memo)"
                     >
                       <div class="memo-content">
                         <div class="memo-date">{{ memo.createdAt }}</div>
@@ -246,6 +249,8 @@
 
   <ProjectMemoModal
     v-model="memoModalVisible"
+    :initialMemoText="editingMemoText"
+    :isEditMode="isMemoEditMode"
     @submitted="handleMemoSubmitted"
   />
 </template>
@@ -253,14 +258,15 @@
 <script setup>
 import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import Swal from "sweetalert2";
+import axios from "axios";
+
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
-import axios from "axios";
 import ProjectMemoModal from "../project/ProjectMemoModal.vue";
 import { useAuthStore } from "../stores/auth";
 
 const authStore = useAuthStore();
-
 const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(false);
@@ -291,7 +297,14 @@ const taskSummaryData = ref([
     rejected: 0,
     totalSum: 23,
   },
-  { type: "기타", total: 5, inProgress: 4, done: 1, rejected: 0, totalSum: 10 },
+  {
+    type: "기타",
+    total: 5,
+    inProgress: 4,
+    done: 1,
+    rejected: 0,
+    totalSum: 10,
+  },
   {
     type: "다스트",
     total: 5,
@@ -320,41 +333,42 @@ const noticeList = ref([
   },
 ]);
 
-// ── 프로젝트 구성원 (하드코딩) ───────────────────────
-const projectMembers = ref([
-  { name: "김관리", role: "PM", roleClass: "role-pm", avatarColor: "#3b82f6" },
-  { name: "이카엘", role: "PL", roleClass: "role-pl", avatarColor: "#8b5cf6" },
-  {
-    name: "개발1팀",
-    role: "팀원",
-    roleClass: "role-dev",
-    avatarColor: "#10b981",
-  },
-  {
-    name: "최지우",
-    role: "개발자",
-    roleClass: "role-dev",
-    avatarColor: "#f59e0b",
-  },
-  { name: "최지우", role: "QA", roleClass: "role-qa", avatarColor: "#ef4444" },
-  {
-    name: "김관리",
-    role: "관리자",
-    roleClass: "role-mgr",
-    avatarColor: "#6366f1",
-  },
-]);
+// ── 프로젝트 구성원 ──────────────────────────────
+const projectMembers = ref([]);
+
+const fetchPmemList = async () => {
+  try {
+    const projectId = route.params.projectId;
+    const res = await axios.get(`/api/GroupMemList/${projectId}`);
+    projectMembers.value = res.data;
+  } catch (err) {
+    console.error("구성원 목록 조회 실패:", err);
+  }
+};
 
 // ── 나의 메모 ──────────────────────────────────
 const memoList = ref([]);
+const memoModalVisible = ref(false);
+const isMemoEditMode = ref(false);
+const editingMemoId = ref(null);
+const editingMemoText = ref("");
+
+const handleEditMemo = (memo) => {
+  isMemoEditMode.value = true;
+  editingMemoId.value = memo.memoId;
+  editingMemoText.value = memo.memoContent;
+  memoModalVisible.value = true;
+};
 
 const fetchMemoList = async () => {
   try {
     const projectId = route.params.projectId;
     const userId = authStore.user?.userId;
+
     const res = await axios.get(`/api/MemoList/${projectId}`, {
       params: { userId },
     });
+
     memoList.value = res.data;
   } catch (err) {
     console.error("메모 목록 조회 실패 :", err);
@@ -362,13 +376,90 @@ const fetchMemoList = async () => {
 };
 
 const getMemoColorClass = (index) => {
-  const colorClasses = ["memo-blue", "memo-yellow", "memo-pink"];
+  const colorClasses = ["memo-blue", "memo-yellow", "memo-pink", "memo-green"];
   return colorClasses[index % colorClasses.length];
 };
 
+const handleDeleteMemo = async (memoId) => {
+  const result = await Swal.fire({
+    title: "메모를 삭제할까요?",
+    text: "삭제된 메모는 목록에서 보이지 않습니다.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "삭제",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    const userId = authStore.user?.userId;
+
+    await axios.post("/api/MemoStatUpdate", {
+      memoId,
+      userId,
+    });
+
+    await fetchMemoList();
+
+    await Swal.fire({
+      title: "삭제되었습니다.",
+      icon: "success",
+      confirmButtonText: "확인",
+    });
+  } catch (err) {
+    console.error("메모 삭제 불가:", err);
+
+    await Swal.fire({
+      title: "삭제 실패",
+      text: "메모 삭제 중 오류가 발생했습니다.",
+      icon: "error",
+      confirmButtonText: "확인",
+    });
+  }
+};
+
+const handleMemoSubmitted = async (payload) => {
+  try {
+    const projectId = route.params.projectId;
+    const userId = authStore.user?.userId;
+
+    if (!userId) {
+      console.warn("로그인 사용자 정보가 없습니다.");
+      return;
+    }
+
+    if (isMemoEditMode.value) {
+      await axios.post("/api/MemoContentUpdate", {
+        memoId: editingMemoId.value,
+        projectId,
+        userId,
+        memoContent: payload.text,
+      });
+    } else {
+      await axios.post("/api/MemoRegister", {
+        projectId,
+        userId,
+        memoContent: payload.text,
+      });
+    }
+
+    memoModalVisible.value = false;
+    isMemoEditMode.value = false;
+    editingMemoId.value = null;
+    editingMemoText.value = "";
+
+    await fetchMemoList();
+  } catch (err) {
+    console.error("메모 저장 실패:", err);
+  }
+};
+
+// ── 프로젝트 정보 ──────────────────────────────
 const projectInfo = ref({
   projectId: null,
-  projecttName: "",
+  projectName: "",
   startDate: "",
   endDate: "",
 });
@@ -398,7 +489,6 @@ const fetchSubProject = async () => {
   }
 };
 
-//milestoneID 기준 그루핑
 const pagedMilestones = computed(() => {
   const map = new Map();
 
@@ -423,71 +513,61 @@ const pagedMilestones = computed(() => {
   return Array.from(map.values());
 });
 
-const currentMilestone = computed(() => {
-  return pagedMilestones.value[milestonePage.value - 1] || null;
-});
+const currentMilestone = computed(
+  () => pagedMilestones.value[milestonePage.value - 1] || null
+);
 
-const memoModalVisible = ref(false);
-
-// ── 이벤트 핸들러 ────────────────────────────────────
+// ── 이벤트 핸들러 ──────────────────────────────
 const handleProjectSetting = () => {
-  /* TODO: 설정 페이지 이동 */
   router.push({
     name: "projectSetting",
     params: { id: route.params.projectId },
   });
 };
-const handleViewTasks = () => {
-  /* TODO: 업무 목록 페이지 이동 */
-};
-const handleNoticeClick = (item) => {
-  /* TODO: 공지사항 상세 */
-};
-const handleAddSubProject = () => {
-  /* TODO: 하위 프로젝트 생성 모달 */
-};
+
+const handleViewTasks = () => {};
+const handleNoticeClick = () => {};
+const handleAddSubProject = () => {};
+
 const handleAddMemo = () => {
+  isMemoEditMode.value = false;
+  editingMemoId.value = null;
+  editingMemoText.value = "";
   memoModalVisible.value = true;
 };
-const handleDeleteMemo = (id) => {
-  memoList.value = memoList.value.filter((m) => m.id !== id);
-};
 
-const handleMemoSubmitted = async (payload) => {
-  try {
-    const projectId = route.params.projectId;
-    const userId = authStore.user?.userId;
-
-    if (!userId) {
-      console.warn("로그인 사용자 정보가 없습니다.");
-      return;
-    }
-
-    await axios.post(`/api/MemoRegister`, {
-      projectId,
-      userId,
-      memoContent: payload.text,
-    });
-
-    await fetchMemoList();
-  } catch (err) {
-    console.error("메모 등록에 실패:", err);
-  }
-};
-
-onMounted(() => {
-  fetchProjectDetail();
-  fetchSubProject();
-  fetchMemoList();
-});
-
-// ── 테이블 공통 스타일 ─────────────────────────────
+// ── 스타일용 함수 ──────────────────────────────
 const subCellStyle = () => ({
   fontSize: "13px",
   color: "#374151",
   borderBottom: "1px solid #dcdfe6",
   padding: "7px 12px",
   height: "36px",
+});
+
+const getRoleClass = (groupName) => {
+  if (!groupName) return "role-dev";
+  if (groupName.includes("PM")) return "role-pm";
+  if (groupName.includes("PL")) return "role-pl";
+  if (groupName.includes("QA")) return "role-qa";
+  if (groupName.includes("관리")) return "role-mgr";
+  return "role-dev";
+};
+
+const getAvatarColor = (groupName) => {
+  if (!groupName) return "#10b981";
+  if (groupName.includes("PM")) return "#3b82f6";
+  if (groupName.includes("PL")) return "#8b5cf6";
+  if (groupName.includes("QA")) return "#ef4444";
+  if (groupName.includes("관리")) return "#6366f1";
+  return "#10b981";
+};
+
+onMounted(() => {
+  fetchProjectDetail();
+  fetchSubProject();
+  fetchMemoList();
+  fetchPmemList();
 });
 </script>
 
@@ -502,26 +582,31 @@ const subCellStyle = () => ({
   flex-wrap: wrap;
   gap: 12px;
 }
+
 .proj-title-left {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
+
 .proj-name-row {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
+
 .proj-name {
   font-size: 18px;
   font-weight: 700;
   color: #1a1a2e;
 }
+
 .proj-period {
   font-size: 13px;
   color: #64748b;
 }
+
 .setting-btn {
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
@@ -532,6 +617,7 @@ const subCellStyle = () => ({
   height: 36px;
   padding: 0 14px;
 }
+
 .setting-btn:hover {
   background: #e2e8f0;
 }
@@ -546,12 +632,14 @@ const subCellStyle = () => ({
   align-items: start;
   min-width: 0;
 }
+
 .proj-left-col {
   display: flex;
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
 }
+
 .proj-right-col {
   display: flex;
   flex-direction: column;
@@ -560,7 +648,7 @@ const subCellStyle = () => ({
 }
 
 /* ────────────────────────────────────────────
-   카드 공통 (Main Dashboard와 동일)
+   카드 공통
 ──────────────────────────────────────────── */
 .card {
   background: #fff;
@@ -568,6 +656,7 @@ const subCellStyle = () => ({
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
+
 .card-header {
   padding: 14px 20px;
   border-bottom: 1px solid #f0f0f0;
@@ -575,6 +664,7 @@ const subCellStyle = () => ({
   align-items: center;
   justify-content: space-between;
 }
+
 .card-title {
   font-weight: 600;
   font-size: 14px;
@@ -594,6 +684,7 @@ const subCellStyle = () => ({
   height: 32px;
   padding: 0 12px;
 }
+
 .view-task-btn:hover {
   background: #a8c4ef;
 }
@@ -604,11 +695,13 @@ const subCellStyle = () => ({
 .notice-body {
   padding: 8px 0;
 }
+
 .notice-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
+
 .notice-item {
   display: flex;
   align-items: center;
@@ -618,26 +711,32 @@ const subCellStyle = () => ({
   transition: background 0.15s;
   border-bottom: 1px solid #f8fafc;
 }
+
 .notice-item:last-child {
   border-bottom: none;
 }
+
 .notice-item:hover {
   background: #f0f7ff;
 }
+
 .notice-left {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .notice-title {
   font-size: 13px;
   color: #374151;
 }
+
 .notice-title::before {
   content: "·";
   color: #94a3b8;
   margin-right: 6px;
 }
+
 .notice-badge {
   background: #ef4444;
   color: #fff;
@@ -647,6 +746,7 @@ const subCellStyle = () => ({
   border-radius: 4px;
   letter-spacing: 0.03em;
 }
+
 .notice-date {
   font-size: 12px;
   color: #94a3b8;
@@ -655,17 +755,17 @@ const subCellStyle = () => ({
 /* ────────────────────────────────────────────
    하위 프로젝트
 ──────────────────────────────────────────── */
-/* 하위 프로젝트 */
 .add-sub-btn {
   background: #c7d9f5;
   border: none;
-  color: #000000;
+  color: #000;
   font-size: 13px;
   font-weight: 500;
   border-radius: 8px;
   height: 32px;
   padding: 0 12px;
 }
+
 .add-sub-btn:hover {
   background: #a8c4ef;
 }
@@ -675,7 +775,6 @@ const subCellStyle = () => ({
 }
 
 .sub-project-group {
-  /* border: 1px solid #6b7280; */
   border-radius: 14px;
   background: #fff;
   overflow: hidden;
@@ -685,14 +784,13 @@ const subCellStyle = () => ({
   padding: 10px 14px 6px;
   font-size: 16px;
   line-height: 1.35;
-  color: #000000;
+  color: #000;
   white-space: pre-line;
 }
 
 .sub-project-table-wrap {
-  max-height: 216px; /* 6행 정도 */
+  max-height: 216px;
   overflow-y: auto;
-  /* border-top: 1px solid #6b7280; */
 }
 
 .sub-project-table :deep(.el-table) {
@@ -708,7 +806,6 @@ const subCellStyle = () => ({
 .sub-project-table :deep(td.el-table__cell) {
   padding: 0 !important;
   height: 36px;
-  /* border-bottom: 1px solid #6b7280 !important; */
 }
 
 .sub-project-table :deep(.cell) {
@@ -744,74 +841,101 @@ const subCellStyle = () => ({
    프로젝트 구성원
 ──────────────────────────────────────────── */
 .member-body {
-  padding: 12px 16px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
+
 .member-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  /* padding: 10px 12px; */
 }
+
 .member-avatar {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   flex-shrink: 0;
 }
+
 .member-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
   flex: 1;
+  min-width: 0;
 }
+
 .member-name {
   font-size: 13px;
-  color: #374151;
-  font-weight: 500;
-}
-.member-role-badge {
-  font-size: 11px;
+  color: #000000;
   font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 99px;
-  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+.member-role-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
 .role-pm {
   background: #dbeafe;
   color: #1d4ed8;
+  border-color: #bfdbfe;
 }
+
 .role-pl {
   background: #ede9fe;
   color: #6d28d9;
+  border-color: #ddd6fe;
 }
+
 .role-dev {
   background: #d1fae5;
   color: #065f46;
+  border-color: #a7f3d0;
 }
+
 .role-qa {
   background: #fee2e2;
   color: #b91c1c;
+  border-color: #fecaca;
 }
+
 .role-mgr {
   background: #e0e7ff;
   color: #3730a3;
+  border-color: #c7d2fe;
 }
 
 .member-empty-row {
-  padding-top: 4px;
-  border-top: 1px solid #f0f0f0;
+  padding: 18px 12px;
+  text-align: center;
+  border: 1px dashed #dbe2ea;
+  border-radius: 12px;
+  background: #fafcff;
 }
+
 .member-empty-text {
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
 /* ────────────────────────────────────────────
@@ -821,158 +945,183 @@ const subCellStyle = () => ({
   background: #3b82f6;
   color: #fff;
   border: none;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   font-size: 18px;
+  font-weight: 600;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   line-height: 1;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+  transition: background 0.2s, transform 0.2s;
 }
+
 .memo-add-btn:hover {
   background: #2563eb;
+  transform: translateY(-1px);
 }
+
 .memo-body {
-  padding: 12px 16px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
+
 .memo-card {
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 5px;
+  padding: 14px 14px 12px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  /* box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); */
+  /* transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s; */
+  cursor: pointer;
 }
+
 .memo-blue {
-  background: #dbeafe;
+  background: linear-gradient(180deg, #eff6ff 0%, #e0ecff 100%);
 }
-.memo-green {
-  background: #d1fae5;
-}
-.memo-pink {
-  background: #fce7f3;
-}
+
 .memo-yellow {
-  background: #fdffd1;
+  background: linear-gradient(180deg, #fffce8 0%, #fff6c7 100%);
+}
+
+.memo-pink {
+  background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%);
+}
+
+.memo-green {
+  background: linear-gradient(180deg, #f3f0ff 0%, #e9e2ff 100%);
 }
 
 .memo-content {
   flex: 1;
+  min-width: 0;
 }
+
 .memo-date {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
   font-size: 11px;
+  font-weight: 600;
   color: #64748b;
-  margin-bottom: 4px;
 }
+
 .memo-text {
   font-size: 13px;
-  color: #374151;
+  color: #334155;
   white-space: pre-line;
-  line-height: 1.5;
+  line-height: 1.6;
+  word-break: break-word;
 }
+
 .memo-del-btn {
-  font-size: 13px;
+  font-size: 14px;
   color: #94a3b8;
   padding: 0;
   min-height: auto;
-  height: auto;
+  height: 24px;
+  width: 24px;
   flex-shrink: 0;
+  border-radius: 50%;
+  transition: background 0.18s, color 0.18s;
 }
+
 .memo-del-btn:hover {
   color: #ef4444;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.memo-empty {
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+  border: 1px dashed #dbe2ea;
+  border-radius: 12px;
+  background: #fafcff;
 }
 
 /* ────────────────────────────────────────────
-   ElementPlus 오버라이드 (Main Dashboard와 동일)
+   Element Plus 공통
 ──────────────────────────────────────────── */
 :deep(.el-table) {
   --el-table-border-color: #f1f5f9;
   --el-table-header-bg-color: #f8fafc;
 }
+
 :deep(.el-table__row:hover > td) {
   background: #f0f7ff !important;
 }
 
-/* ────────────────────────────────────────────
-   테이블 오버플로우 처리 (반응형 핵심)
-──────────────────────────────────────────── */
-.table-scroll-wrap {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-:deep(.el-table) {
-  overflow-x: auto;
-}
 :deep(.el-table .el-table__inner-wrapper) {
   min-width: 0;
 }
 
 /* ────────────────────────────────────────────
-   반응형 — 태블릿 (≤ 1024px)
+   반응형
 ──────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .proj-top {
     grid-template-columns: 1fr;
   }
+
   .proj-right-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
-  /* mb-5 클래스가 붙은 카드 margin 제거 (grid가 gap으로 처리) */
+
   .proj-right-col .card {
     margin-bottom: 0 !important;
   }
 }
 
-/* ────────────────────────────────────────────
-   반응형 — 모바일 (≤ 768px)
-──────────────────────────────────────────── */
 @media (max-width: 768px) {
-  /* 타이틀 행 세로 정렬 */
   .proj-title-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
+
   .proj-name-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
   }
+
   .proj-name {
     font-size: 15px;
   }
 
-  /* 우측 컬럼 1단 */
   .proj-right-col {
     grid-template-columns: 1fr;
   }
 
-  /* 공지사항 날짜 숨김 */
   .notice-date {
     display: none;
   }
 
-  /* 설정 버튼 전체 폭 */
   .setting-btn {
     width: 100%;
     justify-content: center;
   }
 
-  /* 카드 헤더 wrap 처리 */
   .card-header {
     flex-wrap: wrap;
     gap: 8px;
   }
 
-  /* 버튼들 폭 조정 */
   .view-task-btn,
   .add-sub-btn {
     font-size: 12px;
@@ -980,55 +1129,22 @@ const subCellStyle = () => ({
   }
 }
 
-/* ────────────────────────────────────────────
-   반응형 — 소형 모바일 (≤ 480px)
-──────────────────────────────────────────── */
 @media (max-width: 480px) {
   .proj-name {
     font-size: 13px;
     word-break: keep-all;
   }
+
   .member-role-badge {
     display: none;
   }
+
   .sub-pl {
     font-size: 11px;
   }
+
   .memo-body {
     padding: 10px 12px;
   }
-}
-
-.table-scroll-wrap {
-  padding: 0 10px 10px 10px;
-}
-
-.table-scroll-wrap :deep(.el-table) {
-  border: 1px solid #d9d9d9;
-  border-radius: 0;
-  font-size: 12px;
-}
-
-.table-scroll-wrap :deep(.el-table th.el-table__cell) {
-  background: #f3f4f6 !important;
-  padding: 6px 0;
-}
-
-.table-scroll-wrap :deep(.el-table td.el-table__cell) {
-  padding: 6px 8px;
-}
-
-.table-scroll-wrap :deep(.el-table .cell) {
-  line-height: 1.2;
-}
-
-.table-scroll-wrap :deep(.el-table__inner-wrapper::before) {
-  display: none;
-}
-
-.table-scroll-wrap :deep(.el-table--border::after),
-.table-scroll-wrap :deep(.el-table--group::after),
-.table-scroll-wrap :deep(.el-table::before) {
-  display: none;
 }
 </style>

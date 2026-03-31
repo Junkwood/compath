@@ -3,7 +3,6 @@ import bulletinRoutes from "./bulletin.js";
 import empRoutes from "./emp.js";
 import groupRoutes from "./group.js";
 import meetingRoutes from "./meeting.js";
-import milstoneRoutes from "./milstone.js";
 import projectRoutes from "./project.js";
 import reportRoutes from "./report.js";
 import roleRoutes from "./role.js";
@@ -48,7 +47,6 @@ const router = createRouter({
     ...empRoutes,
     ...groupRoutes,
     ...meetingRoutes,
-    ...milstoneRoutes,
     ...projectRoutes,
     ...reportRoutes,
     ...roleRoutes,

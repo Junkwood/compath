@@ -1,6 +1,10 @@
 package com.example.group.dto;
 
-public class GroupMemListDtoJDJ {
+import lombok.Data;
 
+@Data
+public class GroupMemListDtoJDJ {
+    private String userName;
+    private String groupName;
 
 }

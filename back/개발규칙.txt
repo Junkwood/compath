@@ -33,7 +33,6 @@ Entity      : 기능명 (단수형)        ex) Task.java
 삭제 : remove + 범위 + 대상   ex) removeByIdTask
 수정 : modify + 범위 + 대상   ex) modifyByIdTask
 
-
 ----------------------------------------------
 
 [ API URL 규칙 ]

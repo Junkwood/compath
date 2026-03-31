@@ -47,5 +47,12 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
         return projectMapperJDJ.getSubpList(parentProjectId);
     }
 
+    //하위프로젝트 생성
+    @Override
+    public void registerSubProject(ProjectSubCreateDtoJDJ dto) {
+        projectMapperJDJ.registerSubProject(dto);
+    }
+
+
 
 }

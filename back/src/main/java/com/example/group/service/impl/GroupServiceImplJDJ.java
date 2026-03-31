@@ -15,7 +15,7 @@ public class GroupServiceImplJDJ implements GroupServiceJDJ {
     private final GroupMapperJDJ groupMapperJDJ;
 
     @Override
-    public List<GroupMemListDtoJDJ> getGroupMemList() {
-        return groupMapperJDJ.getGroupMemList();
+    public List<GroupMemListDtoJDJ> getGroupMemList(int projectId) {
+        return groupMapperJDJ.getGroupMemList(projectId);
     }
 }

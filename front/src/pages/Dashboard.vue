@@ -466,6 +466,9 @@ const goProjectDashboard = (row) =>{
   color: #2563eb;
   min-width: 32px;
 }
+:deep(.el-table__body-wrapper .el-table__row) {
+  cursor: pointer;
+}
 
 /* ── ElementPlus 오버라이드 ── */
 :deep(.el-table) {

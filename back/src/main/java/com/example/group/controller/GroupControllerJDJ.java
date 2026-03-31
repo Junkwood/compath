@@ -3,10 +3,7 @@ package com.example.group.controller;
 import com.example.group.dto.GroupMemListDtoJDJ;
 import com.example.group.service.GroupServiceJDJ;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,8 +14,8 @@ public class GroupControllerJDJ {
 
     final GroupServiceJDJ groupServiceJDJ;
 
-    @GetMapping("/GroupMemList")
-    public List<GroupMemListDtoJDJ> gmlist(){
-        return groupServiceJDJ.getGroupMemList();
+    @GetMapping("/GroupMemList/{projectId}")
+    public List<GroupMemListDtoJDJ> gmlist(@PathVariable Integer projectId){
+        return groupServiceJDJ.getGroupMemList(projectId);
     }
 }
