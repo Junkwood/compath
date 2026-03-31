@@ -16,7 +16,9 @@
             p.created_at,
             p.updated_at,
             p.created_by,
+            u1.user_id AS pm_user_num,
             u1.user_name AS pm_user_id,
+            u2.user_id AS pl_user_num,
             u2.user_name AS pl_user_id,
             p.editor_user_id,
             c3.code_name AS use_milestone

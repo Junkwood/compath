@@ -5,6 +5,9 @@ export const useProjectKJHStore = defineStore("projectKJH", {
   state: () => ({
     projectInfo: {},
     modifiedInfo: {},
+    userInfo: {},
+    groupList: [],
+    groupMem: [],
   }),
   getters: {},
   actions: {
@@ -30,6 +33,30 @@ export const useProjectKJHStore = defineStore("projectKJH", {
       } catch (err) {
         console.error("프로젝트 등록 실패:", err);
       }
+    },
+
+    // 멤버 정보
+    async getUsersById(id) {
+      let result = await axios //
+        .get("/api/emp/info/" + id);
+
+      this.userInfo = result.data;
+    },
+
+    // 그룹 정보
+    async getAllGroups() {
+      let result = await axios //
+        .get("/api/group/list");
+
+      this.groupList = result.data;
+    },
+
+    // 그룹 멤버 조회
+    async getAllGroupMem(id) {
+      let result = await axios //
+        .get("/api/group/members/" + id);
+
+      this.groupMem = result.data;
     },
   },
 });

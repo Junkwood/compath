@@ -1,108 +1,78 @@
 <template>
   <el-dialog
     v-model="visible"
-    title="프로젝트 수정"
-    width="560px"
+    title="구성원 추가"
+    width="1000"
+    height="100"
     :close-on-click-modal="false"
     @close="handleClose"
   >
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="rules"
-      label-width="120px"
-      label-position="left"
-    >
-      <!-- 프로젝트 명 -->
-      <el-form-item label="프로젝트 명" prop="projectName">
-        <el-input v-model="form.projectName" placeholder="" />
-      </el-form-item>
+    <!-- 검색창 -->
+    <div class="mt-4 mb-3">
+      <el-input
+        v-model="input3"
+        style="max-width: 600px"
+        placeholder="Please input"
+        class="input-with-select"
+      >
+        <template #prepend>
+          <el-select v-model="select" placeholder="Select" style="width: 115px">
+            <el-option label="Restaurant" value="1" />
+            <el-option label="Order No." value="2" />
+            <el-option label="Tel" value="3" />
+          </el-select>
+        </template>
+        <template #append>
+          <el-button :icon="Search" />
+        </template>
+      </el-input>
+    </div>
+    <!-- 구성원목록 -->
 
-      <!-- 프로젝트 식별자 + 총괄PL -->
-      <el-form-item label="프로젝트 식별자" prop="identifier">
-        <div class="row-fields">
-          <el-input v-model="form.identifier" placeholder="" style="flex: 1" />
-          <div class="pl-field">
-            <span class="pl-label">총괄PL</span>
-            <el-select
-              v-model="form.plUserId"
-              placeholder="선택"
-              style="width: 140px"
+    <div class="flex flex-row gap-5 mb-3">
+      <div v-for="group in groupData">
+        <el-checkbox
+          v-model="group.Allcheck"
+          :indeterminate="isIndeterminate"
+          @change="handleCheckAllChange(group.groupId, e)"
+        >
+          <el-icon> <User /></el-icon>{{ group.groupName }}
+        </el-checkbox>
+        <el-checkbox-group
+          v-model="group.checkedusers"
+          @change="(val) => handleCheckedCitiesChange(val, group)"
+        >
+          <div class="flex flex-col">
+            <el-checkbox
+              v-for="mem in group.members"
+              :key="mem"
+              :label="mem"
+              :value="mem"
             >
-              <el-option
-                v-for="user in plOptions"
-                :key="user.userId"
-                :label="user.userName"
-                :value="user.userId"
-              />
-            </el-select>
+              {{ mem.userName }}
+            </el-checkbox>
           </div>
-        </div>
-      </el-form-item>
+        </el-checkbox-group>
+      </div>
+    </div>
+    <!-- 역할부여 -->
 
-      <!-- 프로젝트 기간 -->
-      <el-form-item label="프로젝트 기간" prop="startDate">
-        <div class="date-row">
-          <el-date-picker
-            v-model="form.startDate"
-            type="date"
-            placeholder="시작일"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="flex: 1"
-          />
-          <span class="date-sep">~</span>
-          <el-date-picker
-            v-model="form.endDate"
-            type="date"
-            placeholder="종료일"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="flex: 1"
-          />
-        </div>
-      </el-form-item>
-
-      <!-- 프로젝트 설명 -->
-      <el-form-item label="프로젝트 설명">
-        <el-input
-          v-model="form.description"
-          type="textarea"
-          :rows="3"
-          placeholder=""
-        />
-      </el-form-item>
-
-      <!-- 마일스톤 사용 여부 -->
-      <el-form-item label="마일스톤 사용 여부">
-        <div class="switch-row">
-          <el-switch v-model="form.useMilestone" />
-          <span class="switch-desc">마일스톤 기능을 사용하시겠습니까?</span>
-        </div>
-      </el-form-item>
-
-      <!-- 공개 여부 -->
-      <el-form-item label="공개 여부">
-        <div class="switch-row">
-          <el-switch v-model="form.isPublic" />
-          <span class="switch-desc">
-            모든 사용자에게 공개<br />
-            <span class="switch-sub"
-              >공개된 프로젝트는 누구나 조회할 수 있습니다.</span
-            >
-          </span>
-        </div>
-      </el-form-item>
-    </el-form>
+    <div>
+      <el-checkbox-group
+        v-model="checkList"
+        :options="options"
+        :props="props"
+      />
+    </div>
 
     <!-- 푸터 버튼 -->
     <template #footer>
       <div class="modal-footer">
         <div class="footer-right">
-          <el-button class="btn-submit" @click="$emit('modifyInfo', form)">
-            수정
+          <el-button class="btn-submit" @click="$emit('memberInsert')">
+            추가
           </el-button>
-          <el-button class="btn-cancel" @click="$emit('handleCancel')"
+          <el-button class="btn-cancel" @click="$emit('memberCancel')"
             >취소</el-button
           >
         </div>
@@ -112,105 +82,75 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  onMounted,
-  defineProps,
-  reactive,
-  watch,
-  computed,
-  defineEmits,
-} from "vue";
-import axios from "axios";
+import { ref, defineProps, watch, reactive } from "vue";
+import { Search } from "@element-plus/icons-vue";
+import { User } from "@element-plus/icons-vue";
 import { useProjectKJHStore } from "../stores/projectKJH";
 
 const projectStore = useProjectKJHStore();
 
-const props = defineProps({
-  originInfo: { type: Object },
+const prop = defineProps({
+  groupList: { type: Array },
 });
 
-const emit = defineEmits(["update:modelValue", "submitted"]);
+const input3 = ref("");
+const select = ref("");
+
+const checkList = ref(["Value selected and disabled", "Value A"]);
+const props = { label: "name", value: "id", disabled: "unable" };
+const options = [];
+
+const groupData = ref([]);
 
 watch(
-  () => props.originInfo,
+  () => prop.groupList,
   (newVal) => {
-    console.log("변경전: ", newVal);
+    console.log(newVal);
 
-    const data = { ...newVal };
+    const data = [...newVal];
 
-    plOptions.value.forEach((pl) => {
-      if (data.plUserId == pl.userName) {
-        data.plUserId = pl.userId;
-      }
+    data.forEach(async (li) => {
+      console.log(li);
+      let list = { name: li.groupName, id: li.groupId };
+      options.push(list);
+
+      await projectStore.getAllGroupMem(li.groupId);
+      groupData.value[li.groupId - 1] = {
+        groupId: li.groupId,
+        groupName: li.groupName,
+        members: projectStore.groupMem,
+        checkedusers: [],
+      };
     });
-
-    form.isPublic = newVal.isPublic !== "비활성" ? true : false;
-    form.useMilestone = newVal.useMilestone !== "비활성" ? true : false;
-    form.projectName = data.projectName;
-    form.identifier = data.identifier;
-    form.plUserId = data.plUserId;
-    form.startDate = data.startDate;
-    form.endDate = data.endDate;
-    form.description = data.description;
-    form.projectId = data.projectId;
   },
 );
 
-// ── PL 옵션 (백엔드 연결 시 API로 교체) ──
-const plOptions = ref([]);
-
-const fetchPlList = async () => {
-  const res = await axios.get("/api/ProjectPlList");
-  console.log(res.data);
-  plOptions.value = res.data;
+const isIndeterminate = ref(false);
+const handleCheckAllChange = (val) => {
+  groupData.value[val - 1].members.forEach((gr) => {
+    if (groupData.value[val - 1].Allcheck) {
+      groupData.value[val - 1].checkedusers.push(gr);
+    } else {
+      groupData.value[val - 1].checkedusers = [];
+    }
+  });
 };
+const handleCheckedCitiesChange = (value, group) => {
+  console.log(group);
 
-const form = reactive({
-  createdAt: "",
-  createdBy: "",
-  description: "",
-  editorUserId: "",
-  endDate: "",
-  identifier: "",
-  isPublic: "",
-  parentProjectId: "",
-  plUserId: "",
-  pmUserId: "",
-  projectId: "",
-  projectName: "",
-  startDate: "",
-  status: "",
-  updatedAt: "",
-  useMilestone: "",
-});
-
-const rules = {
-  projectName: [
-    { required: true, message: "프로젝트 명을 입력하세요", trigger: "blur" },
-  ],
-  identifier: [
-    {
-      required: true,
-      message: "프로젝트 식별자를 입력하세요",
-      trigger: "blur",
-    },
-  ],
-  userId: [{ required: true, message: "총괄PL을 선택하세요", trigger: "blur" }],
+  if (value.length > 0) {
+    let id = value[0].groupId;
+    let len = groupData.value[id - 1].checkedusers.length;
+    let groupLen = groupData.value[id - 1].members.length;
+    if (len == groupLen) {
+      groupData.value[id - 1].Allcheck = true;
+    } else {
+      groupData.value[id - 1].Allcheck = false;
+    }
+  } else {
+    groupData.value[id - 1].Allcheck = false;
+  }
 };
-
-const handleClose = () => {
-  visible.value = false;
-};
-
-const visible = computed({
-  get: () => props.modelValue,
-  set: (v) => emit("update:modelValue", v),
-});
-
-onMounted(() => {
-  fetchPlList();
-});
 </script>
 
 <style scoped>
@@ -303,5 +243,9 @@ onMounted(() => {
 :deep(.el-form-item__label) {
   font-size: 13px;
   color: #374151;
+}
+
+.input-with-select .el-input-group__prepend {
+  background-color: var(--el-fill-color-blank);
 }
 </style>

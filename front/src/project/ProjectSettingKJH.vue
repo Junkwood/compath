@@ -113,32 +113,41 @@
         <!-- Table -->
 
         <el-table
-          :data="pagedTaskData"
+          :data="memberList"
           style="width: 100%"
           :header-cell-style="headerStyle"
           :cell-style="cellStyle"
         >
-          <el-table-column prop="no" label="번호" width="70" align="center" />
-          <el-table-column prop="projectName" label="이름" width="80" />
           <el-table-column
-            prop="created"
+            prop="name"
+            label="이름"
+            width="300"
+            align="center"
+          />
+          <el-table-column
+            prop="userId"
             label="사번"
-            width="70"
+            width="300"
             align="center"
           />
           <el-table-column
-            prop="inProgress"
+            prop="email"
             label="이메일"
-            width="70"
+            width="500"
             align="center"
           />
           <el-table-column
-            prop="devDone"
+            prop="userRoleName"
             label="역할"
-            width="90"
+            width="300"
             align="center"
           />
-          <el-table-column label="삭제">
+          <el-table-column
+            fixed="right"
+            label="삭제"
+            width="200"
+            align="center"
+          >
             <template #default="scope">
               <el-button
                 size="small"
@@ -160,7 +169,12 @@
     @handle-cancel="closeModifyMdoal"
     @modify-Info="modifyProject"
   />
-  <ProjectMemberModal v-model="MemberModalOpen" :originInfo="projectInfo" />
+  <ProjectMemberModal
+    v-model="MemberModalOpen"
+    :groupList="groupList"
+    @member-cancel="closeMemberMdoal"
+    @member-insert="memberInsert"
+  />
 </template>
 
 <script setup>
@@ -200,6 +214,8 @@ const id = route.params.id;
 
 const ModifyProjectModalOpen = ref(false); // 수정 모달
 const MemberModalOpen = ref(false); // 구성원 추가 모달
+const memberList = ref([]); // 구성원 테이블
+const groupList = ref([]);
 
 onBeforeMount(async () => {
   // 프로젝트명
@@ -210,6 +226,18 @@ onBeforeMount(async () => {
   await projectStore.getProjectInfo(id);
   projectInfo.value = projectStore.projectInfo;
   console.log("프로젝트 정보: ", projectInfo.value);
+
+  // 사용자 정보 조회
+  await projectStore.getUsersById(projectInfo.value.pmUserNum);
+  memberList.value.push(projectStore.userInfo);
+  memberList.value[0].userRoleName = "PM";
+  await projectStore.getUsersById(projectInfo.value.plUserNum);
+  memberList.value.push(projectStore.userInfo);
+  memberList.value[1].userRoleName = "PL";
+
+  // 그룹정보
+  await projectStore.getAllGroups();
+  groupList.value = projectStore.groupList;
 });
 
 // 수정버튼
@@ -217,12 +245,12 @@ const openModfyModal = () => {
   ModifyProjectModalOpen.value = true;
 };
 
-// 모달 취소버튼
+// 설정 모달 취소버튼
 const closeModifyMdoal = () => {
   ModifyProjectModalOpen.value = false;
 };
 
-// 모달창 수정 버튼
+// 설정 모달창 수정 버튼
 const modifyProject = async (form) => {
   const payload = {
     projectId: form.projectId,
@@ -241,13 +269,23 @@ const modifyProject = async (form) => {
   await projectStore.modifyProject(payload);
 
   projectInfo.value = projectStore.modifiedInfo;
-  ModifyProjectModalOpen.value = false;
+  await closeModifyMdoal();
 };
 
 // 구성원 추가 버튼
 const openMemberModal = () => {
-  console.log("ddddd");
   MemberModalOpen.value = true;
+};
+
+// 구성원 모달 취소 버튼
+const closeMemberMdoal = () => {
+  MemberModalOpen.value = false;
+};
+
+// 구성원 모달 추가 버튼
+const memberInsert = () => {
+  console.log("구성원 추가 완료");
+  closeMemberMdoal();
 };
 </script>
 <style scoped>

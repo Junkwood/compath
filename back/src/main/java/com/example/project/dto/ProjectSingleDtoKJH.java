@@ -27,4 +27,6 @@ public class ProjectSingleDtoKJH {
     private String plUserId;
     private Integer editorUserId;
     private String useMilestone;
+    private Integer pmUserNum;
+    private Integer plUserNum;
 }
