@@ -28,6 +28,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
 
     @Override
     public int updateTask(TaskReqDtoJJW dto) {
+
         // 시작일 자동 세팅
         if (dto.getTaskStatusId() != null && dto.getTaskStatusId() == 2) {
             if (dto.getStartDate() == null) {
@@ -44,6 +45,11 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
         return taskMapperJJW.updateTask(dto);
     }
 
+    @Override
+    public List<TaskReqDtoJJW> getTaskAll() {
+        return taskMapperJJW.getTaskAll();
+    }
+
     //업무 상세조회(수정 페이지에 뿌릴려고)
     @Override
     public TaskReqDtoJJW getTaskById(Integer taskId) {
@@ -52,8 +58,10 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
 
     //반려 사유 모달 등록
     @Override
-    public void insert(TaskRejectDtoJJW re) {
+    @Transactional
+    public void insert1(TaskRejectDtoJJW re) {
         taskMapperJJW.insert1(re);
+        taskMapperJJW.updateTaskStatus(re.getTaskId(), 4);
     }
 
     @Override

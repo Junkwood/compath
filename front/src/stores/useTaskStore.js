@@ -225,9 +225,39 @@ export const useTaskStore = defineStore("task", () => {
   }; // 업무상태 → 소요시간 자동계산 (수정 전용)
   watch(
     () => form.value.taskStatusId,
-    (newVal, oldVal) => {
+    async (newVal, oldVal) => {
       if (!oldVal) return;
       const status = Number(newVal);
+
+      //반려 상태일 때 모달
+      if (status === 4) {
+        const { value: text, isConfirmed } = await Swal.fire({
+          title: "업무 반려",
+          input: "textarea",
+          inputLabel: "반려 사유를 입력해주세요.",
+          inputPlaceholder: "사유를 입력하세요...",
+          showCancelButton: true,
+          confirmButtonText: "입력 완료",
+          cancelButtonText: "취소",
+          allowOutsideClick: false,
+          inputValidator: (value) => {
+            if (!value) return "반려 사유는 필수입니다!";
+          },
+        });
+
+        if (isConfirmed && text) {
+          rejectReason.value = text;
+          Swal.fire(
+            "사유 입력됨",
+            "저장 버튼을 누르면 최종 반영됩니다.",
+            "success",
+          );
+        } else {
+          form.value.taskStatusId = oldVal;
+          rejectReason.value = "";
+        }
+        return;
+      }
       const isFinished = [3, 6].includes(status);
 
       if (isFinished) {
@@ -349,7 +379,19 @@ export const useTaskStore = defineStore("task", () => {
     });
     return true;
   };
+
+  // ───────────── 반려 처리 ─────────────
+  const rejectTask = async (taskId, editorUserId) => {
+    const payload = {
+      taskId: Number(taskId),
+      rejectionReason: rejectReason.value,
+      rejectedBy: editorUserId, // 현재 수정하는 사람의 ID
+    };
+    await axios.post("/api/reject", payload);
+  };
+
   return {
+    rejectReason,
     form,
     actualHours,
     hasMilestone,
@@ -360,6 +402,7 @@ export const useTaskStore = defineStore("task", () => {
     userList,
     userModal,
     milestoneModal,
+    rejectTask,
     initCreate,
     initEdit,
     openUserModal,

@@ -23,6 +23,13 @@ public class TaskControllerJJW {
      return dto;
     }
 
+    //사유 모달 등록
+    @PostMapping("/reject")
+    public TaskRejectDtoJJW regiseterRejected(@RequestBody TaskRejectDtoJJW re){
+        taskServiceJJW.insert1(re);
+        return re;
+    }
+
     //상위 업무 수정
     @PutMapping("/task/{taskId}")
     public TaskReqDtoJJW updateTasks(@PathVariable("taskId") Integer taskId,
@@ -31,6 +38,14 @@ public class TaskControllerJJW {
         taskServiceJJW.updateTask(dto);
         return taskServiceJJW.getTaskById(taskId);
     }
+
+    //업무 전체 조회
+    @ResponseBody
+    @GetMapping("/task/gantt")
+    public List<TaskReqDtoJJW> list5(){
+        return  taskServiceJJW.getTaskAll();
+    }
+
 
     //업무 상세 조회
     @ResponseBody
