@@ -64,6 +64,14 @@
         SYSDATE
         )
     </insert>
+
+    <!--반려 사유 상태 업데이트-->
+    <update id="updateTaskStatus">
+        UPDATE tasks
+        SET task_status_id = #{status}
+        WHERE task_id = #{taskId}
+    </update>
+
     <!--업무 수정-->
     <update id="updateTask" parameterType="TaskReqDtoJJW">
         UPDATE tasks

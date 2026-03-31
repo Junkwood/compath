@@ -13,11 +13,13 @@ public interface TaskServiceJJW {
     void insert(TaskReqDtoJJW dto);
     //상위 업무 수정
     int updateTask(TaskReqDtoJJW dto);
+    //업무 전체 조회
+    List<TaskReqDtoJJW> getTaskAll();
 
     //업무 상세 조회
     TaskReqDtoJJW getTaskById(Integer taskId);
     //사유등록
-    void insert (TaskRejectDtoJJW re);
+    void insert1 (TaskRejectDtoJJW re);
 
 
     //선택 모달 조회

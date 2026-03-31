@@ -255,12 +255,12 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectSelectModal from "../components/SelectModal.vue";
 import { useTaskStore } from "../stores/useTaskStore";
-
+import { useAuthStore } from "../stores/auth";
 const router = useRouter();
 const route = useRoute();
 const sidebarOpen = ref(false);
 const store = useTaskStore();
-const rejectReason = ref("");
+const authStore = useAuthStore();
 
 const {
   form,
@@ -287,25 +287,20 @@ onMounted(async () => {
 });
 
 const handleSubmit = async () => {
+  const taskId = route.params.taskId;
+  const status = Number(store.form.taskStatusId);
+  const editorUserId = authStore.user?.userId || authStore.user?.id;
   try {
-    const success = await store.updateTask(route.params.taskId);
-    if (success === false) return;
-    await Swal.fire({
-      icon: "success",
-      title: "수정 완료!",
-      text: "업무 내용이 성공적으로 반영되었습니다.",
-      timer: 1500, // 1.5초 뒤 자동 닫힘
-      showConfirmButton: false,
-    });
-
+    if (status === 4) {
+      await store.rejectTask(taskId, editorUserId);
+      Swal.fire("완료", "반려 처리가 되었습니다.", "success");
+    } else {
+      await store.updateTask(taskId);
+      Swal.fire("완료", "수정되었습니다.", "success");
+    }
     router.push("/tasks");
-  } catch (error) {
-    // ❌ 실패 알림
-    Swal.fire({
-      icon: "error",
-      title: "오류 발생",
-      text: error.response?.data?.message || "입력값을 확인해 주세요.",
-    });
+  } catch (e) {
+    Swal.fire("실패", e.message, "error");
   }
 };
 
