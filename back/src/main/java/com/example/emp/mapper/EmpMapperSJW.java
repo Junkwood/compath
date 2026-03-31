@@ -21,6 +21,6 @@ public interface EmpMapperSJW {
     List<Integer> selectActiveGroupIds(Integer userId);
     void updateGroupMemberPrimary(@Param("userId") Integer userId, @Param("groupId") Integer groupId,@Param("isPrimary") String isPrimary);
     void insertEmailAuth(AccountDTOSJW account);
-    Integer verifyAuthCode(Integer emailId,Integer emailNo);
+    Integer verifyAuthCode(Integer code,Integer emailId);
     void cleanUpOldCodes(Integer emailId);
 }

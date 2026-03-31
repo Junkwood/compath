@@ -153,22 +153,19 @@
               <div>
                 <label
                   class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
-                  for="employeeId"
+                  for="userId"
                   >사번</label
                 >
                 <input
-                  id="employeeId"
-                  v-model="form.employeeId"
+                  id="userId"
+                  v-model="form.userId"
                   type="text"
                   autocomplete="username"
                   placeholder="사번을 입력하세요"
-                  :class="inputClass(fieldError.employeeId)"
+                  :class="inputClass(fieldError.userId)"
                 />
-                <p
-                  v-if="fieldError.employeeId"
-                  class="mt-1 text-xs text-rose-500"
-                >
-                  {{ fieldError.employeeId }}
+                <p v-if="fieldError.userId" class="mt-1 text-xs text-rose-500">
+                  {{ fieldError.userId }}
                 </p>
               </div>
 
@@ -623,22 +620,23 @@
 
 <script setup>
 import { ref, reactive, computed, onUnmounted } from "vue";
+import axios from "axios";
 
 const currentStep = ref(0);
 const isLoading = ref(false);
 const errorMsg = ref("");
 const hasCodeError = ref(false);
 const resendCooldown = ref(0);
-
+const emailId = ref(0);
 const form = reactive({
-  employeeId: "",
+  userId: "",
   email: "",
   newPassword: "",
   confirmPassword: "",
 });
 
 const fieldError = reactive({
-  employeeId: "",
+  userId: "",
   email: "",
   newPassword: "",
   confirmPassword: "",
@@ -759,18 +757,23 @@ function startResendCooldown() {
 // ── Step 0: 이메일 전송 ──
 async function handleSendCode() {
   errorMsg.value = "";
-  fieldError.employeeId = "";
+  fieldError.userId = "";
   fieldError.email = "";
 
-  if (!form.employeeId) return (fieldError.employeeId = "사번을 입력해주세요.");
+  if (!form.userId) return (fieldError.userId = "사번을 입력해주세요.");
   if (!form.email) return (fieldError.email = "이메일을 입력해주세요.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
     return (fieldError.email = "올바른 이메일 형식이 아닙니다.");
 
   isLoading.value = true;
   try {
-    // TODO: POST /api/auth/send-code { employeeId: form.employeeId, email: form.email }
-    await new Promise((r) => setTimeout(r, 1000));
+    const response = await axios.post("/api/email/sendCode", form);
+    console.log(response);
+    emailId.value = response.data.emailId;
+    if (emailId.value <= 0) {
+      //에러 일으키기
+      throw new Error("Invalid Email ID"); // 여기서 바로 catch로 점프!
+    }
     currentStep.value = 1;
     startTimer();
     startResendCooldown();
@@ -785,7 +788,12 @@ async function handleSendCode() {
 async function handleResend() {
   if (resendCooldown.value > 0) return;
   try {
-    // TODO: POST /api/auth/send-code { email: form.email }
+    const response = await axios.post("/api/email/sendCode", form);
+    emailId.value = response.data.emailId;
+    if (emailId.value <= 0) {
+      //에러 일으키기
+      throw new Error("Invalid Email ID"); // 여기서 바로 catch로 점프!
+    }
     await new Promise((r) => setTimeout(r, 800));
     startTimer();
     startResendCooldown();
@@ -805,7 +813,15 @@ async function handleVerifyCode() {
 
   isLoading.value = true;
   try {
-    // TODO: POST /api/auth/verify-code { email: form.email, code }
+    const response = await axios.post("/api/email/verifyCode", {
+      emailId: emailId.value,
+      code: code,
+    });
+    console.log(response);
+    let success = response.data.success;
+    if (!success) {
+      throw new Error("Invalid code");
+    }
     await new Promise((r) => setTimeout(r, 1000));
     clearInterval(timerInterval);
     currentStep.value = 2;
@@ -825,8 +841,8 @@ async function handleResetPassword() {
 
   if (!form.newPassword)
     return (fieldError.newPassword = "새 비밀번호를 입력해주세요.");
-  if (form.newPassword.length < 8)
-    return (fieldError.newPassword = "비밀번호는 8자 이상이어야 합니다.");
+  if (form.newPassword.length < 6)
+    return (fieldError.newPassword = "비밀번호는 6자 이상이어야 합니다.");
   if (!form.confirmPassword)
     return (fieldError.confirmPassword = "비밀번호 확인을 입력해주세요.");
   if (form.newPassword !== form.confirmPassword)
@@ -835,6 +851,14 @@ async function handleResetPassword() {
   isLoading.value = true;
   try {
     // TODO: POST /api/auth/reset-password { email: form.email, password: form.newPassword }
+    const response = await axios.put("/api/emp", {
+      userId: form.userId,
+      password: form.newPassword,
+    });
+    console.log(response.data);
+    if (!response.data) {
+      throw new Error("password change failed.");
+    }
     await new Promise((r) => setTimeout(r, 1000));
     currentStep.value = 3;
   } catch {

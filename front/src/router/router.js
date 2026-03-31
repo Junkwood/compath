@@ -57,9 +57,21 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  const alive = sessionStorage.getItem("alive");
+  const keepLogin = localStorage.getItem("keepLogin");
+
+  if (authStore.user && !keepLogin && !alive) {
+    authStore.logout();
+    return next("/login");
+  }
+
+  if (to.meta.requiresAuth && !authStore.user) {
+    return next("/login");
+  }
   if (to.path == "/resetPassword") {
     next();
-  } else if (to.path !== "/login" && !useAuthStore().user) {
+  } else if (to.path !== "/login" && !authStore.user) {
     next("/login");
   } else if (to.path.startsWith("/admin") && !useAuthStore().isAdmin) {
     next("/");

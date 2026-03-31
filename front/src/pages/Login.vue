@@ -254,7 +254,7 @@ import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { useAuthStore } from "../stores/auth";
-
+const authStore = useAuthStore();
 const router = useRouter();
 
 const form = reactive({
@@ -299,14 +299,18 @@ async function handleSubmit() {
   isLoading.value = true;
 
   try {
-    // TODO: 실제 로그인 API 연결
     const response = await axios.post("/api/login", {
-      userId: form.id,
+      userId: form.id, // 사번
       password: form.password,
     });
-    useAuthStore().login(response.data);
-    // 로그인 성공 시 대시보드로 이동
-    await router.push("/");
+
+    if (!response.data) {
+      errorMsg.value = "사번 또는 비밀번호가 올바르지 않습니다.";
+      return;
+    }
+
+    authStore.login(response.data, form.remember);
+    router.push("/");
   } catch (err) {
     errorMsg.value = "사번 또는 비밀번호가 올바르지 않습니다.";
   } finally {

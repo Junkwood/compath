@@ -47,11 +47,29 @@ public class EmpControllerSJW {
     @PostMapping("/api/email/sendCode")
     public ResponseEntity<Map<String, Object>> sendEmail(@RequestBody Map<String, String> request) {
         String email = request.get("email");
-        Integer emailId = empService.sendEmail(email);
+        Integer userId = Integer.valueOf(request.get("userId"));
+        Integer emailId = empService.sendEmail(email,userId);
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("emailId", emailId);
         response.put("message", "인증번호가 발송되었습니다.");
         return ResponseEntity.ok(response);
     }
+    @PostMapping("/api/email/verifyCode")
+    public ResponseEntity<Map<String, Object>> verifyCode(@RequestBody Map<String, String> request) {
+        Integer code = Integer.valueOf( request.get("code"));
+        Integer emailId = Integer.valueOf( request.get("emailId"));
+        if(empService.verifyCode(code,emailId)){
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "인증이 완료되었습니다.");
+            return ResponseEntity.ok(response);
+        }else{
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", true);
+            response.put("message", "인증이 실패하였습니다.");
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
 }
