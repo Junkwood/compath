@@ -45,7 +45,25 @@
         #{estimatedHours},
         #{progressRate},
         sysdate
-        )    </insert>
+        )
+    </insert>
+
+    <!--반려 사유 모달 저장-->
+    <insert id="insert" parameterType="TaskRejectDtoJJW">
+        INSERT INTO task_rejections (
+        task_rejection_id,
+        task_id,
+        rejection_reason,
+        rejected_by,
+        rejection_date
+        ) VALUES (
+        task_rejection_seq.NEXTVAL,
+        #{taskId},
+        #{rejectionReason},
+        #{rejectedBy},
+        SYSDATE
+        )
+    </insert>
     <!--업무 수정-->
     <update id="updateTask" parameterType="TaskReqDtoJJW">
         UPDATE tasks

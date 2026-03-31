@@ -50,6 +50,12 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
         return taskMapperJJW.getTaskById(taskId);
     }
 
+    //반려 사유 모달 등록
+    @Override
+    public void insert(TaskRejectDtoJJW re) {
+        taskMapperJJW.insert(re);
+    }
+
     @Override
     public List<ProjectDtoJJW> getProjectList() {
         return taskMapperJJW.getProjectList();

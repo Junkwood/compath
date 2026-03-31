@@ -248,6 +248,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import Swal from "sweetalert2";
 import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import Sidebar from "../partials/Sidebar.vue";
@@ -259,6 +260,7 @@ const router = useRouter();
 const route = useRoute();
 const sidebarOpen = ref(false);
 const store = useTaskStore();
+const rejectReason = ref("");
 
 const {
   form,
@@ -287,12 +289,23 @@ onMounted(async () => {
 const handleSubmit = async () => {
   try {
     const success = await store.updateTask(route.params.taskId);
-
     if (success === false) return;
-    alert("수정이 완료되었습니다!");
+    await Swal.fire({
+      icon: "success",
+      title: "수정 완료!",
+      text: "업무 내용이 성공적으로 반영되었습니다.",
+      timer: 1500, // 1.5초 뒤 자동 닫힘
+      showConfirmButton: false,
+    });
+
     router.push("/tasks");
-  } catch {
-    alert("수정에 실패했습니다. 입력값을 확인해 주세요.");
+  } catch (error) {
+    // ❌ 실패 알림
+    Swal.fire({
+      icon: "error",
+      title: "오류 발생",
+      text: error.response?.data?.message || "입력값을 확인해 주세요.",
+    });
   }
 };
 

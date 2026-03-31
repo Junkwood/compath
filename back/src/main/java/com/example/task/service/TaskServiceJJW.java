@@ -16,6 +16,8 @@ public interface TaskServiceJJW {
 
     //업무 상세 조회
     TaskReqDtoJJW getTaskById(Integer taskId);
+    //사유등록
+    void insert (TaskRejectDtoJJW re);
 
 
     //선택 모달 조회
