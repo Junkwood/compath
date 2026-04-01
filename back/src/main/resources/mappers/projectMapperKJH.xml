@@ -86,6 +86,7 @@
                pm.project_id,
                pm.is_active,
                pmr.role_id,
+               pmr.project_member_role_id,
                r.role_name,
                u.email,
                u.user_name
@@ -95,4 +96,16 @@
         JOIN users u ON pm.user_id=u.user_id
         WHERE pm.project_id = #{id}
     </select>
+
+<!--    프로젝트 구성원 역할 삭제-->
+    <delete id="removeProjectMemRole">
+        DELETE FROM project_member_roles
+        WHERE project_member_role_id = #{id}
+    </delete>
+
+<!--    프로젝트 구성원 삭제-->
+    <delete id="removeProjectMem">
+        DELETE FROM project_members
+        WHERE project_member_id = #{id}
+    </delete>
 </mapper>

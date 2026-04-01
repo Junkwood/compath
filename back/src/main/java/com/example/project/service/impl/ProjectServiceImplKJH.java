@@ -49,5 +49,15 @@ public class ProjectServiceImplKJH implements ProjectServiceKJH {
         return mapper.getAllProjectMem(id);
     }
 
+    @Override
+    public List<ProjectMemberDtoKJH> removeProjectMem(ProjectMemberDtoKJH dto) {
+        Integer id = dto.getProjectMemberRoleId();
+        Integer pMid = dto.getProjectMemberId();
+        Integer pid = dto.getProjectId();
+        mapper.removeProjectMemRole(id);
+        mapper.removeProjectMem(pMid);
 
+        return mapper.getAllProjectMem(pid);
+    }
 }
+

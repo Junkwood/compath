@@ -108,6 +108,7 @@ const emit = defineEmits(["memberInsert", "memberCancel"]);
 const prop = defineProps({
   groupList: { type: Array },
   memberList: { type: Array },
+  roleList: { type: Array },
 });
 
 const input3 = ref("");
@@ -118,17 +119,21 @@ const options = [];
 const groupData = ref([]);
 
 watch(
-  () => [prop.groupList, prop.memberList],
+  () => [prop.groupList, prop.memberList, prop.roleList],
   async (mNewVal) => {
     console.log("그룹", mNewVal[0]);
     console.log("멤버", mNewVal[1]);
 
     const data = [...mNewVal[0]];
+    console.log(mNewVal[2]);
+    const roleList = [...prop.roleList];
+
+    roleList.forEach((role) => {
+      let list = { name: role.roleName, id: role.roleId };
+      options.push(list);
+    });
 
     for (let i = 0; i < data.length; i++) {
-      let list = { name: data[i].groupName, id: data[i].groupId };
-      options.push(list);
-
       await projectStore.getAllGroupMem(data[i].groupId);
       groupData.value[i] = {
         groupId: data[i].groupId,

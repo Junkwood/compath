@@ -25,5 +25,11 @@ public interface ProjectMapperKJH {
 
     //프로젝트 구성원 및 역할 조회
     public List<ProjectMemberDtoKJH> getAllProjectMem(int id);
+
+    //구성원 역할 테이블 삭제
+    public int removeProjectMemRole(Integer id);
+
+    //구성원 테이블 삭제
+    public int removeProjectMem(Integer id);
 }
 
