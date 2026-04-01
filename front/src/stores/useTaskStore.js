@@ -88,8 +88,13 @@ export const useTaskStore = defineStore("task", () => {
       params: { taskId },
     });
 
-    const { taskDetail, projectList, userList, taskTypeList, milestoneList } =
-      res.data;
+    const {
+      taskDetail,
+      projectList,
+      userList,
+      taskTypeList: rawTypeList,
+      milestoneList,
+    } = res.data;
 
     const d = taskDetail[0]; // 상세는 단건
     const pd = projectList;
@@ -101,7 +106,7 @@ export const useTaskStore = defineStore("task", () => {
     priorityList.value = codeRes.data.c0H;
     statusList.value = codeRes.data.c0G;
 
-    taskTypeList.value = taskTypeList;
+    taskTypeList.value = rawTypeList;
     userList.value = userList.map((u) => ({
       name: u.userName,
       value: u.userId,
