@@ -46,5 +46,53 @@
         WHERE project_id = #{projectId}
     </insert>
 
+<!--  프로젝트 구성원테이블 추가  -->
+    <insert id="registerMember">
+        INSERT INTO project_members(project_member_id,
+                                    user_id,
+                                    project_id,
+                                    joined_at,
+                                    is_active)
+        VALUES(PROJECT_MEMBERS_SEQ.NEXTVAL,
+               #{userId},
+               #{projectId},
+               SYSDATE,
+               'O1')
+    </insert>
 
+<!--    프로젝트 구성원 조회-->
+    <select id="getProjectMember">
+        SELECT project_member_id
+        FROM project_members
+        WHERE user_id = #{userId} AND project_id = #{projectId}
+    </select>
+
+<!--    프로젝트 구성원 역할 테이블 추가-->
+    <insert id="registerMemRole">
+        INSERT INTO project_member_roles(project_member_role_id,
+                                         role_id,
+                                         project_member_id,
+                                         assigned_at)
+        VALUES (PROJECT_MEMBERS_ROLE_SEQ.NEXTVAL,
+                #{roleId},
+                #{projectMemberId},
+                SYSDATE)
+    </insert>
+
+<!--    프로젝트 구성원 조회-->
+    <select id="getAllProjectMem">
+        SELECT pm.project_member_id,
+               pm.user_id,
+               pm.project_id,
+               pm.is_active,
+               pmr.role_id,
+               r.role_name,
+               u.email,
+               u.user_name
+        FROM project_members pm
+        JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+        JOIN roles r ON pmr.role_id = r.role_id
+        JOIN users u ON pm.user_id=u.user_id
+        WHERE pm.project_id = #{id}
+    </select>
 </mapper>

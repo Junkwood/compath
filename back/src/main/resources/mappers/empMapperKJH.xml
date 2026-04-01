@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.emp.mapper.EmpMapperKJH">
+    <resultMap id="EmpResultMap" type="com.example.emp.entity.EmpVOKJH">
+        <!-- PK(아이디)는 id 태그로 반드시 명시해야 MyBatis가 중복을 제거함 -->
+        <id property="userId" column="user_id" />
+        <result property="name" column="user_name" />
+        <result property="email" column="email" />
+        <result property="userType" column="user_type" />
+        <result property="isActive" column="is_active" />
+
+        <!-- group_name 컬럼으로 나온 여러 줄의 결과를 groupList라는 배열로 묶기 -->
+        <collection property="groupList" ofType="string">
+            <result column="group_name" />
+        </collection>
+    </resultMap>
+
+    <sql id="user">
+        USER_ID,
+        USER_NAME as NAME,
+        EMAIL,
+        PASSWORD,
+        active(IS_ACTIVE) as IS_ACTIVE,
+        CREATED_AT,
+        UPDATED_AT,
+        EDITOR_USER_ID,
+        role(USER_TYPE) as USER_TYPE
+    </sql>
+
+    <select id="getById">
+        SELECT
+        u.user_id,
+        u.user_name as name,
+        u.password,
+        u.email,
+        role(u.user_type) as user_type,
+        active(u.is_active) as is_active,
+        g.group_id
+        FROM users u
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active='O1'
+        LEFT JOIN groups g ON gm.group_id = g.group_id
+        WHERE u.user_id=#{id} AND g.group_type='C1' AND g.is_active='O1'
+    </select>
+
+</mapper>

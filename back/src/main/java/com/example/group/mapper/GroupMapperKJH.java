@@ -9,5 +9,6 @@ import java.util.List;
 
 @Mapper
 public interface GroupMapperKJH {
-    List<GroupDTOKJH> getAllgroupMembers(Integer id);
+    List<GroupDTOKJH> getAllgroupMembers(Integer id, String name);
+
 }
