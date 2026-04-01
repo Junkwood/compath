@@ -98,13 +98,25 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
 
     @Override
     public Map<String, Object> getTaskInitData(Integer taskId, Integer projectId) {
-        Map<String,Object> params = new HashMap<>();
-
-        params.put("taskId",taskId);
-        params.put("projectId" , projectId);
+        Map<String, Object> params = new HashMap<>();
+        params.put("taskId", taskId);
+        params.put("projectId", projectId);
+        params.put("taskDetail", null);
+        params.put("projectList", null);
+        params.put("userList", null);
+        params.put("taskTypeList", null);
+        params.put("milestoneList", null);
 
         taskMapperJJW.getTaskTotalInfo(params);
-        return params;
+
+        // OUT 커서 결과를 꺼내서 별도 Map으로 구성
+        Map<String, Object> result = new HashMap<>();
+        result.put("taskDetail", params.get("taskDetail"));       // List<TaskReqDtoJJW>
+        result.put("projectList", params.get("projectList"));     // List<ProjectDtoJJW>
+        result.put("userList", params.get("userList"));           // List<UserDtoJJW>
+        result.put("taskTypeList", params.get("taskTypeList"));   // List<TaskTypeDtoJJW>
+        result.put("milestoneList", params.get("milestoneList")); // List<MilestoneDtoJJW>
+        return result;
     }
 
 

@@ -82,39 +82,55 @@ export const useTaskStore = defineStore("task", () => {
   // 초기화 (수정용)
   const initEdit = async (taskId) => {
     resetForm();
-    await loadCommonCodes();
 
-    const res = await axios.get(`/api/task/${taskId}`);
-    const d = res.data;
+    // 프로시저 한 번 호출로 전부 조회
+    const res = await axios.get("/api/task-total-info", {
+      params: { taskId },
+    });
 
-    const projectRes = await axios.get(`/api/projectDetail/${d.projectId}`);
-    const pd = projectRes.data;
+    const { taskDetail, projectList, userList, taskTypeList, milestoneList } =
+      res.data;
 
-    // 마일스톤은 항상 최상위 프로젝트 기준으로 조회
-    await fetchMilestones(pd.parentProjectId || pd.projectId);
+    const d = taskDetail[0]; // 상세는 단건
+    const pd = projectList;
+
+    // 공통 코드는 별도 로드 (우선순위는 프로시저에 없으므로)
+    const codeRes = await axios.get("/api/code", {
+      params: { groupValue: ["0H", "0G"] },
+    });
+    priorityList.value = codeRes.data.c0H;
+    statusList.value = codeRes.data.c0G;
+
+    taskTypeList.value = taskTypeList;
+    userList.value = userList.map((u) => ({
+      name: u.userName,
+      value: u.userId,
+    }));
+    milestoneList.value = milestoneList.map((m) => ({
+      name: m.milestoneName,
+      value: m.milestoneId,
+    }));
+
+    // 프로젝트 정보 세팅 (projectList에서 parent/child 구분)
+    const parentProject = pd.find((p) => !p.parentProjectId) ?? pd[0];
+    const subProject = pd.find((p) => p.parentProjectId);
 
     form.value = {
       ...form.value,
       ...d,
-      projectName: pd.displayProjectName,
-      subProjectName: pd.displaySubProjectName,
-      projectId: pd.parentProjectId || pd.projectId,
-      subProjectId: pd.parentProjectId ? pd.projectId : null,
-      estStartDate: d.estStartDate ? d.estStartDate.split("T")[0] : "",
-      estEndDate: d.estEndDate ? d.estEndDate.split("T")[0] : "",
-      startDate: d.startDate ? d.startDate.split("T")[0] : "",
-      dueDate: d.dueDate ? d.dueDate.split("T")[0] : "",
+      projectName: parentProject?.projectName,
+      subProjectName: subProject?.projectName ?? null,
+      projectId: parentProject?.projectId,
+      subProjectId: subProject?.projectId ?? null,
+      estStartDate: d.estStartDate?.split("T")[0] ?? "",
+      estEndDate: d.estEndDate?.split("T")[0] ?? "",
+      startDate: d.startDate?.split("T")[0] ?? "",
+      dueDate: d.dueDate?.split("T")[0] ?? "",
       estTime: d.estimatedHours ? `${d.estimatedHours}시간` : "0시간",
-      actualHours: [3, 6].includes(Number(d.taskStatusId))
-        ? d.actualHours
-        : null,
       milestone:
-        milestoneList.value.find((m) => m.value === d.milestoneId)?.name ||
+        milestoneList.value.find((m) => m.value === d.milestoneId)?.name ??
         "마일스톤 없음",
     };
-    actualHours.value = form.value.actualHours
-      ? `${form.value.actualHours}시간`
-      : "";
   };
 
   //  공통 코드 로드
