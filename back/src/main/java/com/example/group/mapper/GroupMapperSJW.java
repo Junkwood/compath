@@ -9,7 +9,8 @@ import java.util.List;
 @Mapper
 public interface GroupMapperSJW {
     List<GroupVOSJW> getAll();
-    GroupVOSJW getById(Integer id);
-    Integer registerGroup(GroupVOSJW emp);
+    GroupDTOSJW getById(Integer id);
+    Integer registerGroup(GroupDTOSJW emp);
     List<GroupDTOSJW>getAllGroupForEmpRegister();
+    Integer checkDuplicatedName(String name);
 }

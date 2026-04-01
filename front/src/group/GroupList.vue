@@ -163,14 +163,17 @@
                       <!-- Group ID -->
                       <td
                         class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
+                        @click="toGroupInfo(group.groupId)"
                       >
                         <div class="font-medium text-sky-500">
                           #{{ group.groupId }}
                         </div>
                       </td>
                       <!-- Group Name -->
+
                       <td
                         class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
+                        @click="toGroupInfo(group.groupId)"
                       >
                         <div
                           class="font-medium text-gray-800 dark:text-gray-100"
@@ -354,8 +357,9 @@
 import { onMounted, ref, computed, watch } from "vue";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
-import { useGroupStore } from "../stores/group.js";
+import { useGroupStore } from "../stores/groupSJW.js";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth.js";
 export default {
   name: "GroupList",
   components: { Header, Sidebar },
@@ -365,7 +369,7 @@ export default {
     const createGroupOpen = ref(false);
     const selectedGroup = ref(null);
     const groupStore = useGroupStore();
-
+    const authStore = useAuthStore();
     // ── 검색 ──
     const searchQuery = ref("");
 
@@ -446,7 +450,9 @@ export default {
     const handleCreateGroup = () => {
       router.push({ name: "groupRegister" });
     };
-
+    const toGroupInfo = (id) => {
+      router.push({ name: "groupInfo", params: { id: id } });
+    };
     const handleUpdateGroup = async (groupId) => {
       const group = await groupStore.getGroup(groupId);
       selectedGroup.value = { ...group };
@@ -481,6 +487,7 @@ export default {
       handleCreateGroup,
       handleUpdateGroup,
       handleToggle,
+      toGroupInfo,
     };
   },
 };

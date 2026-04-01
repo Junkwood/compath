@@ -4,12 +4,18 @@ import axios from "axios";
 export const useEmpStore = defineStore("emp", {
   state: () => ({
     empList: [],
+    empList4Group: [],
   }),
   getters: {},
   actions: {
     async getEmpList() {
       await axios.get("/api/emp/list").then((response) => {
         this.empList = response.data;
+      });
+    },
+    async getEmpList4Group() {
+      await axios.get("/api/emp/list/group").then((response) => {
+        this.empList4Group = response.data;
       });
     },
     async getEmp(id) {

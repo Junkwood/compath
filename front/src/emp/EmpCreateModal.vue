@@ -91,8 +91,8 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch, nextTick } from "vue";
-import { useGroupStore } from "../stores/group";
-import { useEmpStore } from "../stores/emp";
+import { useGroupStore } from "../stores/groupSJW";
+import { useEmpStore } from "../stores/empSJW";
 const groupStore = useGroupStore();
 const empStore = useEmpStore();
 

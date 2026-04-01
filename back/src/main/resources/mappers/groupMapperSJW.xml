@@ -3,7 +3,18 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.group.mapper.GroupMapperSJW">
-
+    <resultMap id="GroupDetailMap" type="com.example.group.dto.GroupDTOSJW">
+        <id property="groupId" column="group_id"/>
+        <result property="groupName" column="group_name"/>
+        <result property="isActive" column="is_active"/>
+        <result property="description" column="description"/>
+        <result property="groupType" column="group_type"/>
+        <collection property="members" ofType="com.example.emp.entity.EmpVOSJW">
+            <id property="groupMemberId" column="group_member_id"/>
+            <result property="userId" column="user_id"/>
+            <result property="roleName" column="role_name"/>
+            <result property="name" column="user_name"/> </collection>
+    </resultMap>
     <sql id="group">
         GROUP_ID,
         GROUP_NAME,
@@ -34,11 +45,17 @@
         active(g.is_active)
         ORDER BY g.group_id desc
     </select>
-    <select id="getById">
+
+
+    <select id="getById" resultMap="GroupDetailMap">
         SELECT
-        <include refid="group"/>
-        FROM groups
-        WHERE group_id = #{id}
+        g.group_id, g.group_name, active(g.is_active) as is_active, g.group_type, g.description, m.group_member_id, m.user_id, r.role_name,
+        u.user_name
+        FROM groups g
+        LEFT JOIN group_members m ON g.group_id = m.group_id
+        LEFT JOIN users u ON m.user_id = u.user_id
+        LEFT JOIN roles r ON m.role_id = r.role_id
+        WHERE g.group_id = #{groupId}
     </select>
     <select id="getAllGroupForEmpRegister">
         SELECT
@@ -56,4 +73,16 @@
         </set>
         WHERE user_id = #{userId}
     </update>
+    <select id="checkDuplicatedName">
+        SELECT count(*)
+        FROM groups
+        WHERE upper(group_name) = upper(#{id})
+    </select>
+    <insert id="registerGroup" parameterType="com.example.group.dto.GroupDTOSJW">
+        <selectKey keyProperty="groupId" resultType="int" order="BEFORE">
+            select groups_seq.NEXTVAL from dual
+        </selectKey>
+        INSERT INTO groups(group_id,group_name,group_type,description,created_by)
+        VALUES (#{groupId}, #{groupName},#{groupType},#{description},#{createdBy})
+    </insert>
 </mapper>
