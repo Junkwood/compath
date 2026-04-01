@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface EmpServiceSJW {
     List<EmpDTOSJW> getAll();
+    List<EmpVOSJW> getAllForGroup();
     EmpVOSJW getById(Integer id);
     String modifyStatusById(Integer id);
     Integer registerEmp(EmpVOSJW emp);

@@ -8,6 +8,8 @@ import java.util.List;
 public interface GroupServiceSJW {
     List<GroupVOSJW> getAll();
     List<GroupDTOSJW> getAllGroupForEmpRegister();
-    GroupVOSJW getById(Integer id);
-    String registerGroup(GroupVOSJW emp);
+    GroupDTOSJW getById(Integer id);
+    String registerGroup(GroupDTOSJW group);
+    String checkDuplicatedName(String name);
+    String modifyGroup(GroupDTOSJW group);
 }

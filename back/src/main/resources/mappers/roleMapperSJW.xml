@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.role.mapper.RoleMapperSJW">
+
+    <sql id="role">
+        ROLE_ID,
+        ROLE_NAME,
+        DESCRIPTION,
+        active(IS_ACTIVE) as IS_ACTIVE ,
+        CREATED_AT,
+        UPDATED_AT,
+        EDITOR_USER_ID
+    </sql>
+    <select id="getAll">
+        select
+        <include refid="role"/>
+        from roles
+        where is_active = 'O1'
+        order by role_id
+    </select>
+
+</mapper>

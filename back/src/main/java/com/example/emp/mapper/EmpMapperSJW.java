@@ -12,10 +12,11 @@ import java.util.Map;
 @Mapper
 public interface EmpMapperSJW {
     List<EmpDTOSJW> getAll();
+    List<EmpVOSJW> getAllForGroup();
     EmpVOSJW getById(Integer id);
     void modifyStatusById(Map<String,Object> id);
     Integer registerEmp(EmpVOSJW emp);
-    void insertGroupMember(@Param("userId") Integer userId, @Param("groupId") Integer groupId,@Param("isPrimary") String isPrimary);
+    void insertGroupMember(EmpVOSJW emp);
     Integer modifyEmpById(EmpVOSJW emp);
     void deactivateGroupMember(@Param("userId") Integer userId, @Param("groupId") Integer groupId);
     List<Integer> selectActiveGroupIds(Integer userId);
