@@ -67,11 +67,9 @@
         u.password,
         u.email,
         role(u.user_type) as user_type,
-        active(u.is_active) as is_active,
-        g.group_id
+        active(u.is_active) as is_active
+
         FROM users u
-        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active='O1'
-        LEFT JOIN groups g ON gm.group_id = g.group_id and g.group_type='C1' AND g.is_active='O1'
         WHERE u.user_id=#{id}
     </select>
     <select id="modifyStatusById" statementType="CALLABLE" parameterType="map">
