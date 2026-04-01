@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TaskMapperJJW {
 
@@ -20,6 +21,9 @@ public interface TaskMapperJJW {
 
     //업무 전체 조회
     List<TaskReqDtoJJW> getTaskAll();
+
+
+    void getTaskTotalInfo(Map<String, Object> params);
 
     //사유등록
     void insert1 (TaskRejectDtoJJW re);

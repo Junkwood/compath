@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Transactional
@@ -92,6 +94,17 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     @Override
     public ProjectDtoJJW getProjectDetail(Integer projectId) {
         return taskMapperJJW.getProjectDetail(projectId);
+    }
+
+    @Override
+    public Map<String, Object> getTaskInitData(Integer taskId, Integer projectId) {
+        Map<String,Object> params = new HashMap<>();
+
+        params.put("taskId",taskId);
+        params.put("projectId" , projectId);
+
+        taskMapperJJW.getTaskTotalInfo(params);
+        return params;
     }
 
 

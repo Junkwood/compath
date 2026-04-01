@@ -42,19 +42,21 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { Gantt } from "@bryntum/gantt/gantt.module.js";
 import "@bryntum/gantt/gantt.css";
+import { useGanttChartStore } from "../stores/GantChart";
 
 const router = useRouter();
+const route = useRoute();
 const sidebarOpen = ref(false);
 const ganttContainer = ref(null);
 let ganttInstance = null;
+const store = useGanttChartStore();
 
 const activeView = ref("weekAndDay");
 const viewOptions = [
@@ -69,7 +71,7 @@ const changeView = (preset) => {
 };
 
 const getPriorityColor = (priority) => {
-  const map = { 상: "#dc2626", 중: "#f59e0b", 하: "#16a34a" };
+  const map = { H1: "#dc2626", H2: "#f59e0b", H3: "#16a34a" };
   return map[priority] || "#94a3b8";
 };
 
@@ -80,57 +82,40 @@ const getTaskColor = (percentDone) => {
   return "#bfdbfe";
 };
 
+//날짜 계산
 const initGantt = async () => {
   if (ganttInstance) ganttInstance.destroy();
 
-  // 두 API 동시 호출
-  const [taskRes, projectRes] = await Promise.all([
-    fetch("/api/task/gantt"),
-    fetch("/api/projectList"),
-  ]);
-  const rawTasks = await taskRes.json();
-  const rawProjects = await projectRes.json();
+  await store.fetchGanttData(route.params.projectId);
+  const tasksData = store.tasksData;
+  const allDates = store.rawTasks
+    .flatMap((t) => [t.estStartDate ?? t.startDate, t.estEndDate ?? t.dueDate])
+    .filter(Boolean)
+    .map((d) => new Date(d));
 
-  // 프로젝트 id → name 맵
-  const projectNameMap = new Map(
-    rawProjects.map((p) => [String(p.projectId), p.projectName]),
-  );
+  const minDate = new Date(Math.min(...allDates));
+  const maxDate = new Date(Math.max(...allDates));
 
-  // 프로젝트별로 그룹핑
-  const projectMap = new Map();
-  rawTasks.forEach((task) => {
-    const pid = String(task.projectId);
-    if (!projectMap.has(pid)) {
-      projectMap.set(pid, {
-        id: `p_${pid}`,
-        name: projectNameMap.get(pid) ?? `프로젝트 ${pid}`,
-        expanded: true,
-        children: [],
-      });
-    }
-    projectMap.get(pid).children.push({
-      id: task.taskId,
-      name: task.title,
-      startDate: task.estStartDate ?? task.startDate,
-      endDate: task.estEndDate ?? task.dueDate,
-      assignee: task.assigneeName,
-      priority: task.priorityCode,
-      percentDone: task.progressRate ?? 0,
-    });
-  });
-
-  const tasksData = Array.from(projectMap.values());
+  // 1달추가
+  minDate.setMonth(minDate.getMonth() - 1);
+  maxDate.setMonth(maxDate.getMonth() + 1);
 
   ganttInstance = new Gantt({
     appendTo: ganttContainer.value,
-    startDate: "2026-01-01",
-    endDate: "2026-12-31",
+    startDate: minDate,
+    endDate: maxDate,
     viewPreset: activeView.value,
     tbar: null,
+    readOnly: true,
 
     features: {
-      timeRanges: {
-        showCurrentTimeLine: true,
+      timeRanges: { showCurrentTimeLine: true },
+      labels: {
+        // 글자 바 밖으로
+        left: {
+          field: "name",
+          editor: false,
+        },
       },
     },
 
@@ -167,30 +152,36 @@ const initGantt = async () => {
         width: 50,
         htmlEncode: false,
         renderer({ record }) {
+          if (
+            String(record.id).startsWith("p_") ||
+            String(record.id).startsWith("root_")
+          )
+            return "";
           return `<button
-            onclick="window.__ganttAdd('${record.id}')"
-            style="width:22px;height:22px;border-radius:50%;border:1px solid #e2e8f0;
-                   background:#f8fafc;color:#475569;font-size:15px;line-height:1;
-                   cursor:pointer;display:flex;align-items:center;justify-content:center;">
-            +
-          </button>`;
+          onclick="window.__ganttAdd('${record.id}')"
+          style="width:22px;height:22px;border-radius:50%;border:1px solid #e2e8f0;
+                 background:#f8fafc;color:#475569;font-size:15px;line-height:1;
+                 cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          +
+        </button>`;
         },
       },
     ],
 
     taskRenderer({ taskRecord, renderData }) {
-      renderData.style = `
-        background-color: ${getTaskColor(taskRecord.percentDone)};
-        border-radius: 6px;
-        color: #1e293b;
-        font-weight: 500;
-      `;
-      return taskRecord.name;
+      if (taskRecord.isParent) {
+        renderData.style = `background-color: #475569; border-radius: 6px;`;
+      } else {
+        renderData.style = `background-color: ${getTaskColor(taskRecord.percentDone)}; border-radius: 6px;`;
+      }
+      return "";
     },
 
-    project: { tasksData },
+    project: {
+      tasksData,
+      autoCalculatePercentDoneForParentTasks: true,
+    },
   });
-
   window.__ganttAdd = (parentId) => {
     router.push({ path: "/tasks/create", query: { parentId } });
   };

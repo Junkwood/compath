@@ -4,6 +4,48 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.task.mapper.TaskMapperJJW">
 
+    <resultMap id="taskResultMap" type="com.example.task.dto.TaskReqDtoJJW">
+        <id property="taskId" column="TASK_ID" />
+        <result property="title" column="TITLE" />
+        <result property="content" column="CONTENT" />
+        <result property="taskTypeId" column="TASK_TYPE_ID" />
+        <result property="taskStatusId" column="TASK_STATUS_ID" />
+        <result property="priorityCode" column="PRIORITY_CODE" />
+        <result property="estStartDate" column="EST_START_DATE" />
+        <result property="estEndDate" column="EST_END_DATE" />
+        <result property="startDate" column="START_DATE" />
+        <result property="dueDate" column="DUE_DATE" />
+        <result property="progressRate" column="PROGRESS_RATE" />
+        <result property="estimatedHours" column="ESTIMATED_HOURS" />
+        <result property="actualHours" column="ACTUAL_HOURS" />
+        <result property="milestoneId" column="MILESTONE_ID" />
+        <result property="projectId" column="PROJECT_ID" />
+        <result property="assigneeUserId" column="ASSIGNEE_USER_ID" />
+        <result property="assigneeName" column="ASSIGNEENAME" /> </resultMap>
+
+    <resultMap id="projectMap" type="com.example.project.dto.ProjectDtoJJW">
+        <id property="projectId" column="PROJECT_ID" />
+        <result property="projectName" column="PROJECT_NAME" />
+        <result property="parentProjectId" column="PARENT_PROJECT_ID" />
+        <result property="displayProjectName" column="PROJECT_NAME" />
+        <result property="displaySubProjectName" column="PROJECT_NAME" />
+    </resultMap>
+
+    <resultMap id="userMap" type="com.example.task.dto.UserDtoJJW">
+        <id property="userId" column="USER_ID" />
+        <result property="userName" column="USER_NAME" />
+    </resultMap>
+
+    <resultMap id="typeMap" type="com.example.task.dto.TaskTypeDtoJJW">
+        <id property="taskTypeId" column="TASK_TYPE_ID" />
+        <result property="typeName" column="TYPE_NAME" />
+    </resultMap>
+
+    <resultMap id="milestoneMap" type="com.example.milestone.dto.MilestoneDtoJJW">
+        <id property="milestoneId" column="MILESTONE_ID" />
+        <result property="milestoneName" column="MILESTONE_NAME" />
+    </resultMap>
+
     <!--업무 생성-->
     <insert id="insert" parameterType="TaskReqDtoJJW">
         <selectKey keyProperty="taskId" resultType="int" order="BEFORE">
@@ -89,6 +131,20 @@
         WHERE task_id = #{taskId}
     </update>
 
+    <!--업무 조회 pl/sql-->
+    <select id="getTaskTotalInfo" statementType="CALLABLE">
+        {CALL SP_GET_TASK_TOTAL_INFO(
+        #{taskId, mode=IN, jdbcType=INTEGER},
+        #{projectId, mode=IN, jdbcType=INTEGER},
+        #{taskDetail, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=taskResultMap},
+        #{projectList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=projectMap},
+        #{userList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=userMap},
+        #{taskTypeList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=typeMap},
+        #{milestoneList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=milestoneMap}
+        )}
+    </select>
+
+
     <!-- 업무 상세 조회-->
     <select id="getTaskById" resultType="com.example.task.dto.TaskReqDtoJJW">
         SELECT
@@ -114,9 +170,14 @@
         WHERE t.task_id = #{taskId}
     </select>
 
+    <select id="getTaskAll" resultType="com.example.task.dto.TaskReqDtoJJW">
+        SELECT *
+        FROM tasks
+    </select>
+
     <!-- 프로젝트 목록 조회 -->
     <select id="getProjectList" resultType="com.example.project.dto.ProjectDtoJJW">
-        SELECT project_id, project_name
+        SELECT project_id, project_name, parent_project_id
         FROM projects
         WHERE status = 'F1'
     </select>
@@ -156,10 +217,10 @@
     <!-- 프로젝트 상세 조회-->
     <select id="getProjectDetail" parameterType="Integer" resultType="ProjectDtoJJW">
         SELECT
-        curr.PROJECT_ID as projectId,           -- 현재 ID
-        curr.PROJECT_NAME as projectName,       -- 현재 이름
-        parent.PROJECT_ID as parentProjectId,   -- 부모 ID
-        parent.PROJECT_NAME as parentProjectName, -- 부모 이름
+        curr.PROJECT_ID as projectId,
+        curr.PROJECT_NAME as projectName,
+        parent.PROJECT_ID as parentProjectId,
+        parent.PROJECT_NAME as parentProjectName,
 
         CASE
         WHEN curr.PARENT_PROJECT_ID IS NULL THEN curr.PROJECT_NAME

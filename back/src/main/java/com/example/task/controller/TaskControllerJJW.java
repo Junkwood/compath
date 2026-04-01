@@ -4,10 +4,12 @@ import com.example.milestone.dto.MilestoneDtoJJW;
 import com.example.project.dto.ProjectDtoJJW;
 import com.example.task.dto.*;
 import com.example.task.service.TaskServiceJJW;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,7 +20,7 @@ public class TaskControllerJJW {
 
     //상위 업무 등록
     @PostMapping("/tasks")
-    public TaskReqDtoJJW registerTasks(@RequestBody TaskReqDtoJJW dto){
+    public TaskReqDtoJJW registerTasks(@Valid @RequestBody TaskReqDtoJJW dto){
      taskServiceJJW.insert(dto);
      return dto;
     }
@@ -94,6 +96,12 @@ public class TaskControllerJJW {
     public  List<MilestoneDtoJJW> list4(@RequestParam("projectId") Integer projectId){
         return taskServiceJJW.getMilestone(projectId);
     }
-
+    @ResponseBody
+    @GetMapping("/task-total-info")
+    public Map<String, Object> getTaskTotalInfo(
+            @RequestParam(value = "taskId", required = false) Integer taskId,
+            @RequestParam(value = "projectId", required = false) Integer projectId) {
+        return taskServiceJJW.getTaskInitData(taskId, projectId);
+    }
 
 }

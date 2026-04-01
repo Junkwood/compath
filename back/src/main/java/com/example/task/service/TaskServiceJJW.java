@@ -6,6 +6,7 @@ import com.example.task.dto.*;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface TaskServiceJJW {
@@ -32,5 +33,5 @@ public interface TaskServiceJJW {
     //프로젝트 상세 조회
     ProjectDtoJJW getProjectDetail(Integer projectId);
 
-
+    Map<String, Object> getTaskInitData(Integer taskId, Integer projectId);
 }

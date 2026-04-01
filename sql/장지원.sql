@@ -5,6 +5,8 @@ SELECT * FROM users;
 
 
 SELECT * FROM tasks;
+SELECT * FROM projects;
+
 SELECT * FROM task_rejections;
 
 CREATE SEQUENCE task_rejection_seq
@@ -17,6 +19,9 @@ CREATE SEQUENCE task_rejection_seq
 
 SELECT column_name FROM USER_TAB_COLUMNS 
 WHERE TABLE_NAME = 'TASK_REJECTIONS';
+
+SELECT column_name FROM USER_TAB_COLUMNS 
+WHERE TABLE_NAME = 'PROJECTS';
 
 DELETE FROM tasks WHERE task_id = '10108';
 
@@ -95,3 +100,83 @@ SELECT
 
 
 
+-- pl/sql 업무+ 프로젝트 + 상태 + 마일스톤
+CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
+    p_task_id      IN  NUMBER,
+    p_project_id   IN  NUMBER,
+    taskDetail     OUT SYS_REFCURSOR, 
+    projectList    OUT SYS_REFCURSOR, 
+    userList       OUT SYS_REFCURSOR, 
+    taskTypeList   OUT SYS_REFCURSOR, 
+    milestoneList  OUT SYS_REFCURSOR  
+) AS
+    v_pid NUMBER; 
+BEGIN
+   
+    v_pid := p_project_id;
+    
+    IF v_pid IS NULL THEN
+        SELECT project_id INTO v_pid FROM tasks WHERE task_id = p_task_id;
+    END IF;
+
+    -- 2. 업무 상세
+    OPEN taskDetail FOR
+    SELECT t.*, u.user_name as ASSIGNEENAME
+    FROM tasks t
+    LEFT JOIN users u ON t.assignee_user_id = u.user_id
+    WHERE t.task_id = p_task_id;
+
+    -- 3. 프로젝트 목록
+    OPEN projectList FOR 
+    SELECT * FROM projects 
+    WHERE project_id = v_pid  
+    OR project_id = (SELECT parent_project_id FROM projects WHERE project_id = v_pid);
+    
+    -- 4. 유저 목록
+    OPEN userList FOR SELECT user_id, user_name FROM users WHERE is_active = 'O1';
+
+    -- 5. 업무 유형 목록
+    OPEN taskTypeList FOR SELECT task_type_id, type_name FROM task_types WHERE is_active = 'O1';
+
+    -- 6. 마일스톤 목록 
+    OPEN milestoneList FOR
+    SELECT milestone_id, milestone_name
+    FROM milestones
+    WHERE project_id = (SELECT NVL(parent_project_id, project_id) FROM projects WHERE project_id = v_pid);
+END;
+
+CREATE OR REPLACE PROCEDURE SP_REJECT_TASK_COMPLETE (
+    p_task_id          IN NUMBER,   
+    p_rejection_reason IN VARCHAR2, 
+    p_rejected_by      IN NUMBER,   -
+    o_result           OUT VARCHAR2 
+) AS
+BEGIN
+    -- 반려 사유 테이블에 저장
+    INSERT INTO task_rejections (
+        task_rejection_id,
+        task_id,
+        rejection_reason,
+        rejected_by,
+        rejection_date
+    ) VALUES (
+        task_rejection_seq.NEXTVAL,
+        p_task_id,
+        p_rejection_reason,
+        p_rejected_by,
+        SYSDATE
+    );
+
+    -- 업무 테이블의 상태
+    UPDATE tasks
+    SET task_status_id = 'G4'
+    WHERE task_id = p_task_id;
+
+    o_result := 'SUCCESS';
+    COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        o_result := 'ERROR: ' || SQLERRM;
+END SP_REJECT_TASK_COMPLETE;
