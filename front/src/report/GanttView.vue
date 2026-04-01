@@ -42,19 +42,21 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { Gantt } from "@bryntum/gantt/gantt.module.js";
 import "@bryntum/gantt/gantt.css";
+import { useGanttChartStore } from "../stores/GantChart";
 
 const router = useRouter();
+const route = useRoute();
 const sidebarOpen = ref(false);
 const ganttContainer = ref(null);
 let ganttInstance = null;
+const store = useGanttChartStore();
 
 const activeView = ref("weekAndDay");
 const viewOptions = [
@@ -68,13 +70,11 @@ const changeView = (preset) => {
   if (ganttInstance) ganttInstance.viewPreset = preset;
 };
 
-// 우선순위 색상
 const getPriorityColor = (priority) => {
-  const map = { 상: "#dc2626", 중: "#f59e0b", 하: "#16a34a" };
+  const map = { H1: "#dc2626", H2: "#f59e0b", H3: "#16a34a" };
   return map[priority] || "#94a3b8";
 };
 
-// 진척도에 따른 태스크 바 색상
 const getTaskColor = (percentDone) => {
   if (percentDone >= 100) return "#93c5fd";
   if (percentDone >= 60) return "#60a5fa";
@@ -82,135 +82,45 @@ const getTaskColor = (percentDone) => {
   return "#bfdbfe";
 };
 
+//날짜 계산
 const initGantt = async () => {
   if (ganttInstance) ganttInstance.destroy();
 
-  // 실제 API 호출 위치
-  // const res = await fetch("/api/tasks/gantt");
-  // const tasksData = await res.json();
+  await store.fetchGanttData(route.params.projectId);
+  const tasksData = store.tasksData;
+  const allDates = store.rawTasks
+    .flatMap((t) => [t.estStartDate ?? t.startDate, t.estEndDate ?? t.dueDate])
+    .filter(Boolean)
+    .map((d) => new Date(d));
 
-  // 샘플 데이터 (API 연동 전)
-  const tasksData = [
-    {
-      id: 1,
-      name: "발명정보인...",
-      expanded: true,
-      children: [
-        {
-          id: 2,
-          name: "로그인 구현",
-          startDate: "2026-01-13",
-          endDate: "2026-01-15",
-          assignee: "일개발",
-          priority: "중",
-          percentDone: 30,
-        },
-        {
-          id: 3,
-          name: "회원가입 구현",
-          startDate: "2026-01-16",
-          endDate: "2026-01-17",
-          assignee: "이개발",
-          priority: "상",
-          percentDone: 40,
-        },
-      ],
-    },
-    {
-      id: 10,
-      name: "네더버 수정",
-      expanded: true,
-      children: [
-        {
-          id: 11,
-          name: "기여 제제",
-          startDate: "2026-02-05",
-          endDate: "2026-02-15",
-          assignee: "강강왕",
-          priority: "중",
-          percentDone: 10,
-        },
-        {
-          id: 12,
-          name: "초과진 처리...",
-          startDate: "2026-02-15",
-          endDate: "2026-02-25",
-          assignee: "김한왕",
-          priority: "중",
-          percentDone: 20,
-        },
-        {
-          id: 13,
-          name: "보조거가 산정",
-          startDate: "2026-02-18",
-          endDate: "2026-02-27",
-          assignee: "강한왕",
-          priority: "강",
-          percentDone: 20,
-        },
-        {
-          id: 14,
-          name: "태형 수정",
-          startDate: "2026-02-24",
-          endDate: "2026-02-34",
-          assignee: "강강왕",
-          priority: "상",
-          percentDone: 20,
-        },
-        {
-          id: 15,
-          name: "복지 새형 동록",
-          startDate: "2026-02-25",
-          endDate: "2026-02-05",
-          assignee: "이개발",
-          priority: "중",
-          percentDone: 10,
-        },
-        {
-          id: 16,
-          name: "재료",
-          startDate: "2026-02-25",
-          endDate: "2026-02-09",
-          assignee: "김한왕",
-          priority: "중",
-          percentDone: 30,
-        },
-        {
-          id: 17,
-          name: "달성 제류",
-          startDate: "2026-02-18",
-          endDate: "2026-02-09",
-          assignee: "아카셀",
-          priority: "하",
-          percentDone: 40,
-        },
-      ],
-    },
-  ];
+  const minDate = new Date(Math.min(...allDates));
+  const maxDate = new Date(Math.max(...allDates));
+
+  // 1달추가
+  minDate.setMonth(minDate.getMonth() - 1);
+  maxDate.setMonth(maxDate.getMonth() + 1);
 
   ganttInstance = new Gantt({
     appendTo: ganttContainer.value,
-    startDate: "2026-01-28",
-    endDate: "2026-03-15",
+    startDate: minDate,
+    endDate: maxDate,
     viewPreset: activeView.value,
-
-    // 툴바 제거
     tbar: null,
+    readOnly: true,
 
-    // Today line
     features: {
-      timeRanges: {
-        showCurrentTimeLine: true,
+      timeRanges: { showCurrentTimeLine: true },
+      labels: {
+        // 글자 바 밖으로
+        left: {
+          field: "name",
+          editor: false,
+        },
       },
     },
 
     columns: [
-      {
-        type: "name",
-        text: "작업명",
-        width: 180,
-        htmlEncode: false,
-      },
+      { type: "name", text: "작업명", width: 180, htmlEncode: false },
       {
         text: "시작",
         field: "startDate",
@@ -225,11 +135,7 @@ const initGantt = async () => {
         format: "YYYY-MM-DD",
         width: 100,
       },
-      {
-        text: "담당자",
-        field: "assignee",
-        width: 90,
-      },
+      { text: "담당자", field: "assignee", width: 90 },
       {
         text: "우선순위",
         field: "priority",
@@ -240,42 +146,42 @@ const initGantt = async () => {
           return `<span style="color:${color}; font-weight:600;">${record.priority ?? "-"}</span>`;
         },
       },
-      {
-        text: "진척도",
-        type: "percentdone",
-        width: 90,
-        showValue: true,
-      },
+      { text: "진척도", type: "percentdone", width: 90, showValue: true },
       {
         text: "추가",
         width: 50,
         htmlEncode: false,
         renderer({ record }) {
+          if (
+            String(record.id).startsWith("p_") ||
+            String(record.id).startsWith("root_")
+          )
+            return "";
           return `<button
-            onclick="window.__ganttAdd('${record.id}')"
-            style="width:22px;height:22px;border-radius:50%;border:1px solid #e2e8f0;
-                   background:#f8fafc;color:#475569;font-size:15px;line-height:1;
-                   cursor:pointer;display:flex;align-items:center;justify-content:center;">
-            +
-          </button>`;
+          onclick="window.__ganttAdd('${record.id}')"
+          style="width:22px;height:22px;border-radius:50%;border:1px solid #e2e8f0;
+                 background:#f8fafc;color:#475569;font-size:15px;line-height:1;
+                 cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          +
+        </button>`;
         },
       },
     ],
 
     taskRenderer({ taskRecord, renderData }) {
-      renderData.style = `
-    background-color: ${getTaskColor(taskRecord.percentDone)};
-    border-radius: 6px;
-    color: #1e293b;
-    font-weight: 500;
-  `;
-      return taskRecord.name;
+      if (taskRecord.isParent) {
+        renderData.style = `background-color: #475569; border-radius: 6px;`;
+      } else {
+        renderData.style = `background-color: ${getTaskColor(taskRecord.percentDone)}; border-radius: 6px;`;
+      }
+      return "";
     },
 
-    project: { tasksData },
+    project: {
+      tasksData,
+      autoCalculatePercentDoneForParentTasks: true,
+    },
   });
-
-  // + 버튼 핸들러 (전역 등록)
   window.__ganttAdd = (parentId) => {
     router.push({ path: "/tasks/create", query: { parentId } });
   };

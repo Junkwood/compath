@@ -1,6 +1,7 @@
 package com.example.task.dto;
 
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,10 +19,14 @@ public class TaskReqDtoJJW {
     Integer editorUserId;
     Integer taskId;
     Integer parentTaskId;
+    @NotNull(message = "프로젝트는 필수입니다.")
     Integer projectId;
     Integer milestoneId;
+    @NotNull(message = "업무유형은 필수입니다.")
     Integer taskTypeId;
+    @NotNull(message = "업무상태는 필수입니다.")
     Integer taskStatusId;
+    @NotNull(message = "업무명은 필수입니다.")
     String title;
     String content;
     Integer assigneeUserId;
@@ -32,6 +37,8 @@ public class TaskReqDtoJJW {
     String actualHours;
     String isDeleted;
     Integer createdBy;
+    @NotNull(message = "우선순위는 필수입니다.")
     String priorityCode;
+    @NotNull(message = "담당자는 필수입니다.")
     String assigneeName;
 }

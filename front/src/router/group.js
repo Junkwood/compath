@@ -14,5 +14,11 @@ const groupRoutes = [
     name: "groupRegister",
     component: () => import("../group/GroupCreate.vue"),
   },
+  {
+    path: "/admin/group/Info/:id",
+    name: "groupInfo",
+    component: () => import("../group/GroupInfo.vue"),
+    props: true,
+  },
 ];
 export default groupRoutes;

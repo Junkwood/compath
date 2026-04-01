@@ -131,7 +131,7 @@
                       <th
                         class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
                       >
-                        <div class="font-semibold text-center">직군 그룹</div>
+                        <div class="font-semibold text-center">그룹</div>
                       </th>
                       <th
                         class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
@@ -377,7 +377,7 @@
 import { onMounted, ref, computed, watch } from "vue";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
-import { useEmpStore } from "../stores/emp.js";
+import { useEmpStore } from "../stores/empSJW.js";
 import EmpCreateModal from "./EmpCreateModal.vue";
 
 export default {

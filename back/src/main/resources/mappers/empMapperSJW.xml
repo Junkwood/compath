@@ -16,6 +16,15 @@
             <result column="group_name" />
         </collection>
     </resultMap>
+    <resultMap id="Emp4GroupResultMap" type="com.example.emp.entity.EmpVOSJW">
+        <!-- PK(아이디)는 id 태그로 반드시 명시해야 MyBatis가 중복을 제거함 -->
+        <id property="userId" column="user_id" />
+        <result property="name" column="user_name" />
+        <result property="email" column="email" />
+        <result property="userType" column="user_type" />
+        <result property="isActive" column="is_active" />
+        <result property="groupName" column="group_name" />
+    </resultMap>
 
     <sql id="user">
         USER_ID,
@@ -41,6 +50,16 @@
         LEFT JOIN groups g ON gm.group_id = g.group_id
         ORDER BY u.user_id desc
     </select>
+    <select id="getAllForGroup" resultMap="Emp4GroupResultMap">
+        SELECT
+        u.user_id,
+        u.user_name,
+        g.group_name
+        FROM users u
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y' AND u.is_active='O1'
+        LEFT JOIN groups g ON gm.group_id = g.group_id
+        ORDER BY u.user_id
+    </select>
     <select id="getById">
         SELECT
         u.user_id,
@@ -48,11 +67,9 @@
         u.password,
         u.email,
         role(u.user_type) as user_type,
-        active(u.is_active) as is_active,
-        g.group_id
+        active(u.is_active) as is_active
+
         FROM users u
-        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active='O1'
-        LEFT JOIN groups g ON gm.group_id = g.group_id and g.group_type='C1' AND g.is_active='O1'
         WHERE u.user_id=#{id}
     </select>
     <select id="modifyStatusById" statementType="CALLABLE" parameterType="map">
@@ -68,12 +85,12 @@
         INSERT INTO users (user_id, user_name, email, password, is_active, user_type)
         VALUES (#{userId}, #{name}, #{email}, #{password}, 'O1', #{userType})
     </insert>
-    <insert id="insertGroupMember">
+    <insert id="insertGroupMember" parameterType="com.example.emp.entity.EmpVOSJW">
         <selectKey keyProperty="groupMemberId" resultType="int" order="BEFORE">
             SELECT group_members_seq.NEXTVAL FROM DUAL
         </selectKey>
-        INSERT INTO group_members (group_member_id,user_id, group_id, is_primary)
-        VALUES (#{groupMemberId},#{userId}, #{groupId}, #{isPrimary})
+        INSERT INTO group_members (group_member_id,user_id, group_id, is_primary, role_id)
+        VALUES (#{groupMemberId},#{userId}, #{groupId}, #{isPrimary},#{roleId})
     </insert>
     <update id="modifyEmpById" parameterType="com.example.emp.entity.EmpVOSJW">
         UPDATE users

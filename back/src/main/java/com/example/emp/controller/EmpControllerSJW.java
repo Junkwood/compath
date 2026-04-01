@@ -24,6 +24,10 @@ public class EmpControllerSJW {
     public List<EmpDTOSJW> getAll() {
         return empService.getAll();
     }
+    @GetMapping("/api/emp/list/group")
+    public List<EmpVOSJW> getAllForGroup() {
+        return empService.getAllForGroup();
+    }
     @GetMapping("/api/emp/info/{id}")
     public EmpVOSJW getById(@PathVariable Integer id) {
         return empService.getById(id);

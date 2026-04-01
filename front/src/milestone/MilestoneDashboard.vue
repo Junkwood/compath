@@ -172,14 +172,6 @@ const fetchProjectDetail = async () => {
     projectInfo.value = res.data;
   } catch (err) {
     console.error("프로젝트 상세 조회 실패:", err);
-
-    // 백엔드 연결 전 임시값
-    projectInfo.value = {
-      projectId: route.params.projectId,
-      projectName: "삼성라이온즈 베리즈샵 구축",
-      startDate: "2026/03/19",
-      endDate: "2026/12/24",
-    };
   }
 };
 
@@ -215,9 +207,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ────────────────────────────────────────────
-   projectDashboard.vue와 동일한 제목 영역
-──────────────────────────────────────────── */
+/* =========================
+   Title Area
+========================= */
 .proj-title-row {
   display: flex;
   align-items: flex-start;
@@ -229,7 +221,7 @@ onMounted(() => {
 .proj-title-left {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .proj-name-row {
@@ -242,75 +234,81 @@ onMounted(() => {
 .proj-name {
   font-size: 18px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #0f172a;
+  letter-spacing: -0.02em;
 }
 
 .proj-period {
   font-size: 13px;
   color: #64748b;
+  font-weight: 500;
 }
 
-/* ────────────────────────────────────────────
-   마일스톤 페이지 전체
-──────────────────────────────────────────── */
+/* =========================
+   Page Shell
+========================= */
 .milestone-page {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  background:
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.06), transparent 28%),
+    linear-gradient(to bottom, #ffffff, #fbfcff);
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.06),
+    0 2px 8px rgba(15, 23, 42, 0.03);
   overflow: hidden;
   min-height: 720px;
 }
 
-/* ────────────────────────────────────────────
-   마일스톤 상단 헤더
-──────────────────────────────────────────── */
+/* =========================
+   Header
+========================= */
 .milestone-header {
-  padding: 24px 28px 18px;
-  border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(to bottom, #ffffff, #fcfdff);
+  padding: 30px 32px 22px;
+  border-bottom: 1px solid #eef2f7;
+  background: transparent;
 }
 
 .milestone-header-left {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 18px;
 }
 
 .flag-icon-wrap {
   position: relative;
-  width: 30px;
-  height: 38px;
+  width: 34px;
+  height: 40px;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
 .flag-pole {
   position: absolute;
-  left: 12px;
+  left: 13px;
   top: 0;
   width: 2px;
   height: 34px;
-  background: #111827;
+  background: #334155;
   border-radius: 999px;
 }
 
 .flag-box {
   position: absolute;
-  left: 12px;
+  left: 13px;
   top: 4px;
-  width: 24px;
+  width: 22px;
   height: 13px;
-  border: 2px solid #111827;
-  border-radius: 2px;
-  background: #fff;
-  clip-path: polygon(0 0, 76% 0, 100% 50%, 76% 100%, 0 100%);
+  border: 2px solid #334155;
+  border-radius: 3px;
+  background: #eef2ff;
+  clip-path: polygon(0 0, 78% 0, 100% 50%, 78% 100%, 0 100%);
 }
 
 .milestone-title-wrap {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -322,71 +320,87 @@ onMounted(() => {
 }
 
 .milestone-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  color: #1f2937;
+  color: #0f172a;
   margin: 0;
   line-height: 1.2;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .create-milestone-btn {
-  height: 34px;
-  padding: 0 14px;
-  border: none;
-  border-radius: 10px;
-  background: #4f9cf9;
-  color: #fff;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #ffffff;
   font-size: 13px;
   font-weight: 700;
-  box-shadow: 0 4px 10px rgba(79, 156, 249, 0.18);
 }
 
 .create-milestone-btn:hover {
-  background: #3d8cf0;
+  background: linear-gradient(135deg, #4338ca, #2563eb);
+  transform: translateY(-1px);
 }
 
 .milestone-guide {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .milestone-guide p {
   margin: 0;
   font-size: 13px;
-  color: #6b7280;
-  line-height: 1.55;
+  color: #64748b;
+  line-height: 1.6;
 }
 
-/* ────────────────────────────────────────────
-   목록 영역
-──────────────────────────────────────────── */
+/* =========================
+   List Wrap
+========================= */
 .milestone-list-wrap {
-  margin: 18px;
-  border: 1px solid #d1d5db;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #ffffff;
+  margin: 20px;
+  padding: 10px;
+  border: 1px solid #eef2f7;
+  border-radius: 20px;
+  background: rgba(248, 250, 252, 0.72);
+  backdrop-filter: blur(8px);
 }
 
+/* =========================
+   Item Row
+========================= */
 .milestone-row {
   display: grid;
-  grid-template-columns: minmax(280px, 1.4fr) minmax(300px, 2fr) 110px;
+  grid-template-columns: minmax(260px, 1.35fr) minmax(280px, 1.8fr);
   align-items: center;
-  gap: 24px;
+  gap: 28px;
   padding: 22px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 10px;
+  border: 1px solid #edf2f7;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
   cursor: pointer;
-  transition: background 0.16s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease;
 }
 
 .milestone-row:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .milestone-row:hover {
-  background: #f5f9ff;
+  transform: translateY(-2px);
+  border-color: #dbe4ff;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.07),
+    0 2px 8px rgba(59, 130, 246, 0.08);
+  background: #ffffff;
 }
 
 .milestone-left,
@@ -394,152 +408,133 @@ onMounted(() => {
   min-width: 0;
 }
 
+/* =========================
+   Left Content
+========================= */
 .milestone-name {
-  font-size: 25px;
-  font-weight: 800;
-  color: #111827;
-  line-height: 1.3;
+  font-size: 20px;
+  font-weight: 750;
+  color: #0f172a;
+  line-height: 1.35;
   margin-bottom: 8px;
   letter-spacing: -0.02em;
 }
 
 .milestone-date {
-  font-size: 13px;
-  color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
   margin-bottom: 14px;
-  font-weight: 500;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 12px;
+  color: #475569;
+  font-weight: 700;
 }
 
 .milestone-date span {
-  color: #475569;
+  color: #64748b;
 }
 
 .milestone-desc {
   font-size: 13px;
-  color: #475569;
-  line-height: 1.6;
+  color: #64748b;
+  line-height: 1.65;
   white-space: pre-line;
   word-break: keep-all;
 }
 
-/* ────────────────────────────────────────────
-   진행률
-──────────────────────────────────────────── */
+/* =========================
+   Progress
+========================= */
 .progress-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   margin-bottom: 10px;
   line-height: 1.5;
 }
 
 .progress-done {
-  color: #3b82f6;
-  font-weight: 700;
+  color: #2563eb;
+  font-weight: 800;
 }
 
 .progress-sub {
   color: #64748b;
   font-weight: 600;
-  margin-left: 4px;
 }
 
 .progress-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .progress-bar-bg {
+  position: relative;
   flex: 1;
-  height: 18px;
-  background: #eceff3;
+  height: 12px;
+  background: #e9eef5;
   border-radius: 999px;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: #bedfb8;
+  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
   border-radius: 999px;
-  transition: width 0.25s ease;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+  transition: width 0.3s ease;
 }
 
 .progress-rate {
-  width: 32px;
+  min-width: 42px;
   text-align: right;
-  font-size: 12px;
-  font-weight: 700;
-  color: #475569;
+  font-size: 13px;
+  font-weight: 800;
+  color: #334155;
 }
 
 .no-task-text {
-  font-size: 13px;
-  color: #6b7280;
-  text-align: center;
-  padding: 8px 0;
-}
-
-/* ────────────────────────────────────────────
-   상태 뱃지
-──────────────────────────────────────────── */
-.milestone-right {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.status-badge {
-  min-width: 86px;
-  height: 40px;
-  padding: 0 18px;
-  border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.01em;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px dashed #dbe2ea;
+  font-size: 13px;
+  color: #64748b;
 }
 
-.status-done {
-  background: #666666;
-}
-
-.status-progress {
-  background: #2f7d38;
-}
-
-.status-wait {
-  background: #9ca3af;
-}
-
-.status-default {
-  background: #6b7280;
-}
-
+/* =========================
+   Empty
+========================= */
 .empty-box {
-  padding: 48px 20px;
+  padding: 56px 20px;
   text-align: center;
   font-size: 14px;
   color: #94a3b8;
-  background: #ffffff;
+  background: transparent;
 }
 
-/* ────────────────────────────────────────────
-   반응형
-──────────────────────────────────────────── */
+/* =========================
+   Responsive
+========================= */
 @media (max-width: 1024px) {
   .milestone-row {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 18px;
     align-items: start;
   }
 
-  .milestone-right {
-    justify-content: flex-start;
-  }
-
   .milestone-name {
-    font-size: 21px;
+    font-size: 18px;
   }
 }
 
@@ -561,29 +556,32 @@ onMounted(() => {
   }
 
   .milestone-header {
-    padding: 18px 16px 14px;
+    padding: 20px 18px 16px;
   }
 
   .milestone-list-wrap {
     margin: 12px;
+    padding: 8px;
+    border-radius: 16px;
   }
 
   .milestone-row {
-    padding: 16px;
+    padding: 18px 16px;
+    border-radius: 16px;
   }
 
   .milestone-title {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .milestone-name {
-    font-size: 18px;
+    font-size: 17px;
   }
 
-  .status-badge {
-    min-width: 78px;
+  .create-milestone-btn {
     height: 36px;
-    font-size: 14px;
+    font-size: 12px;
   }
 }
+
 </style>

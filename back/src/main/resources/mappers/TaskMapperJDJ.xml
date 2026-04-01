@@ -7,11 +7,11 @@
         SELECT
             RP.PROJECT_ID,
             RP.PROJECT_NAME,
-            SUM(CASE WHEN TS.STATUS_NAME = '시작 전' THEN 1 ELSE 0 END) AS created,
-            SUM(CASE WHEN TS.STATUS_NAME = '진행중' THEN 1 ELSE 0 END) AS inProgress,
-            SUM(CASE WHEN TS.STATUS_NAME = '개발완료' THEN 1 ELSE 0 END) AS devDone,
-            SUM(CASE WHEN TS.STATUS_NAME = '반려' THEN 1 ELSE 0 END) AS rejected,
-            SUM(CASE WHEN TS.STATUS_NAME = '종료' THEN 1 ELSE 0 END) AS done,
+            SUM(CASE WHEN TS.TASK_STATUS_ID = 1 THEN 1 ELSE 0 END) AS created,
+            SUM(CASE WHEN TS.TASK_STATUS_ID = 2 THEN 1 ELSE 0 END) AS inProgress,
+            SUM(CASE WHEN TS.TASK_STATUS_ID = 3 THEN 1 ELSE 0 END) AS devDone,
+            SUM(CASE WHEN TS.TASK_STATUS_ID = 4 THEN 1 ELSE 0 END) AS rejected,
+            SUM(CASE WHEN TS.TASK_STATUS_ID = 5 THEN 1 ELSE 0 END) AS done,
             COUNT(T.TASK_ID) AS totalSum
         FROM PROJECTS RP
         LEFT JOIN PROJECTS CP

@@ -92,7 +92,7 @@
                     <input
                       type="radio"
                       v-model="form.groupType"
-                      value="PROJECT"
+                      value="C2"
                       class="form-radio text-indigo-500"
                     />
                     <span class="text-gray-700 dark:text-gray-300"
@@ -103,7 +103,7 @@
                     <input
                       type="radio"
                       v-model="form.groupType"
-                      value="JOB"
+                      value="C1"
                       class="form-radio text-indigo-500"
                     />
                     <span class="text-gray-700 dark:text-gray-300"
@@ -112,7 +112,20 @@
                   </label>
                 </div>
               </div>
-
+              <!-- 그룹 설명 -->
+              <div class="mb-5 flex flex-col sm:flex-row sm:items-start gap-4">
+                <label
+                  class="font-semibold text-gray-800 dark:text-gray-100 min-w-[80px] pt-2"
+                >
+                  그룹설명
+                </label>
+                <textarea
+                  v-model="form.description"
+                  class="form-textarea w-full bg-white dark:bg-gray-800 resize-none"
+                  rows="2"
+                  placeholder="그룹에 대한 설명을 입력하세요 (선택)"
+                />
+              </div>
               <!-- 3. 검색 및 조직도 영역 -->
               <div
                 class="flex-1 flex flex-col border border-gray-200 dark:border-gray-700 rounded-sm overflow-hidden"
@@ -212,19 +225,19 @@
                     >
                       <label
                         v-for="user in group.users"
-                        :key="user.id"
+                        :key="user.userId"
                         class="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded cursor-pointer transition-colors"
                       >
                         <div class="flex items-center gap-3">
                           <input
                             type="checkbox"
-                            :value="user"
+                            :value="user.userId"
                             v-model="selectedLeftUsers"
                             class="form-checkbox text-indigo-500"
                           />
                           <span
                             class="text-sm text-gray-700 dark:text-gray-300"
-                            v-html="highlight(user.name)"
+                            v-html="highlight(`${user.name} (${user.userId})`)"
                           ></span>
                         </div>
                       </label>
@@ -238,7 +251,7 @@
                 >
                   <!-- 프로젝트 그룹일 때만 역할 선택 보이기 (mr-auto로 왼쪽 밀착) -->
                   <div
-                    v-if="form.groupType === 'PROJECT'"
+                    v-if="form.groupType === 'C2'"
                     class="flex items-center gap-3 flex-wrap mr-auto"
                   >
                     <span
@@ -247,17 +260,17 @@
                     >
                     <label
                       v-for="role in roles"
-                      :key="role"
+                      :key="role.roleId"
                       class="flex items-center gap-1 cursor-pointer"
                     >
                       <input
                         type="radio"
                         v-model="selectedRole"
-                        :value="role"
+                        :value="role.roleId"
                         class="form-radio text-indigo-500 w-3.5 h-3.5"
                       />
                       <span class="text-xs text-gray-700 dark:text-gray-300">{{
-                        role
+                        role.roleName
                       }}</span>
                     </label>
                   </div>
@@ -302,7 +315,7 @@
                       <th class="px-2 py-3 text-center">직군그룹</th>
                       <!-- 프로젝트 그룹일 때만 역할 헤더 표시 -->
                       <th
-                        v-if="form.groupType === 'PROJECT'"
+                        v-if="form.groupType === 'C2'"
                         class="px-2 py-3 text-center"
                       >
                         역할
@@ -316,7 +329,7 @@
                     <tr v-if="groupMembers.length === 0">
                       <!-- 프로젝트면 5칸, 직군이면 4칸 병합 -->
                       <td
-                        :colspan="form.groupType === 'PROJECT' ? 5 : 4"
+                        :colspan="form.groupType === 'C2' ? 5 : 4"
                         class="px-2 py-8 text-center text-gray-400"
                       >
                         추가된 구성원이 없습니다.
@@ -324,23 +337,23 @@
                     </tr>
                     <tr
                       v-for="member in groupMembers"
-                      :key="member.id"
+                      :key="member.userId"
                       class="text-center"
                     >
-                      <td class="px-2 py-3">{{ member.id }}</td>
+                      <td class="px-2 py-3">{{ member.userId }}</td>
                       <td class="px-2 py-3">{{ member.name }}</td>
-                      <td class="px-2 py-3">{{ member.jobGroup }}</td>
+                      <td class="px-2 py-3">{{ member.groupName }}</td>
                       <!-- 프로젝트 그룹일 때만 역할 데이터 표시 -->
                       <td
-                        v-if="form.groupType === 'PROJECT'"
+                        v-if="form.groupType === 'C2'"
                         class="px-2 py-3 font-medium text-indigo-500"
                       >
-                        {{ member.role }}
+                        {{ member.roleName }}
                       </td>
                       <td class="px-2 py-3">
                         <button
                           class="text-rose-500 hover:text-rose-600"
-                          @click="removeMember(member.id)"
+                          @click="removeMember(member.userId)"
                         >
                           <svg class="w-4 h-4 fill-current" viewBox="0 0 16 16">
                             <path
@@ -372,22 +385,28 @@
 </template>
 
 <script>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
-
+import axios from "axios";
+import { useEmpStore } from "../stores/empSJW";
+import { useRoleStore } from "../stores/roleSJW";
+import { useAuthStore } from "../stores/auth";
 export default {
   name: "GroupCreate",
   components: { Header, Sidebar },
   setup() {
     const router = useRouter();
     const sidebarOpen = ref(false);
-
+    const empStore = useEmpStore();
+    const roleStore = useRoleStore();
+    const authStore = useAuthStore();
     // ── 상태 변수 ──
     const form = ref({
       groupName: "",
-      groupType: "PROJECT",
+      groupType: "C2",
+      description: "",
     });
 
     const isNameChecked = ref(false);
@@ -396,20 +415,18 @@ export default {
     const userSearchQuery = ref("");
     const selectedLeftUsers = ref([]); // 왼쪽 창에서 체크된 유저들
     const selectedRole = ref("PM"); // 라디오 버튼 기본값
-    const roles = ["PM", "PL", "상PL", "하PL", "개발", "QA"];
+    const roles = ref([
+      { roleId: 1, roleName: "PM" },
+      { roleId: 2, roleName: "상PL" },
+      { roleId: 3, roleName: "하PL" },
+      { roleId: 4, roleName: "개발" },
+      { roleId: 5, roleName: "QA" },
+    ]);
 
     const groupMembers = ref([]); // 오른쪽 창으로 넘어간 구성원들
 
     // ── 임시 더미 데이터 (백엔드에서 사원 목록을 가져온다고 가정) ──
-    const allUsers = ref([
-      { id: 1021, name: "강피엠", jobGroup: "PM" },
-      { id: 1506, name: "오피엘", jobGroup: "PL" },
-      { id: 1775, name: "지피엘", jobGroup: "PL" },
-      { id: 1231, name: "김개발", jobGroup: "개발" },
-      { id: 1999, name: "김세발", jobGroup: "개발" },
-      { id: 2000, name: "박큐에", jobGroup: "QA" },
-      { id: 2001, name: "한규에", jobGroup: "QA" },
-    ]);
+    const allUsers = ref([]);
 
     // ── Computed ──
     // 검색 + 이미 오른쪽에 추가된 멤버는 왼쪽 리스트에서 제외
@@ -417,15 +434,17 @@ export default {
       const q = userSearchQuery.value.trim().toLowerCase();
       return allUsers.value.filter((user) => {
         // 이미 구성원에 포함되었는지 확인
-        const isAlreadyAdded = groupMembers.value.some((m) => m.id === user.id);
+        const isAlreadyAdded = groupMembers.value.some(
+          (m) => m.userId === user.userId,
+        );
         if (isAlreadyAdded) return false;
 
         // 검색 필터
         if (!q) return true;
         return (
           user.name.includes(q) ||
-          String(user.id).includes(q) ||
-          user.jobGroup.toLowerCase().includes(q)
+          String(user.userId).includes(q) ||
+          user.groupName.toLowerCase().includes(q)
         );
       });
     });
@@ -436,9 +455,16 @@ export default {
         alert("그룹명을 입력해주세요.");
         return;
       }
-      // TODO: 백엔드 API 연동 (중복 체크)
+      const name = form.value.groupName;
+      const response = await axios.get(`/api/group/dup/${name}`);
+      const result = response.data;
+      console.log(result);
+      if (result == "Y") {
+        isNameValid.value = true;
+      } else {
+        isNameValid.value = false;
+      }
       isNameChecked.value = true;
-      isNameValid.value = true; // 임시로 성공 처리
     };
 
     watch(
@@ -451,21 +477,36 @@ export default {
     const moveUsersToRight = () => {
       if (selectedLeftUsers.value.length === 0) return;
 
-      const newMembers = selectedLeftUsers.value.map((user) => ({
-        ...user,
-        // 직군 그룹(JOB)일 경우 역할 값을 null 처리 (어차피 안 쓰지만 데이터 정합성을 위해)
-        role: form.value.groupType === "PROJECT" ? selectedRole.value : null,
-      }));
+      const newMembers = selectedLeftUsers.value
+        .map((userId) => {
+          const user = allUsers.value.find((u) => u.userId === userId);
+          if (!user) return null;
+
+          // ✅ roleId로 roleName 찾아서 같이 저장
+          const roleObj = roles.value.find(
+            (r) => r.roleId === selectedRole.value,
+          );
+
+          return {
+            userId: user.userId,
+            name: user.name,
+            groupName: user.groupName,
+            roleId: form.value.groupType === "C2" ? selectedRole.value : null,
+            roleName:
+              form.value.groupType === "C2" ? (roleObj?.roleName ?? "-") : null,
+          };
+        })
+        .filter(Boolean);
 
       groupMembers.value.push(...newMembers);
-
-      // 왼쪽 체크박스 초기화
       selectedLeftUsers.value = [];
     };
 
-    const removeMember = (id) => {
+    const removeMember = (userId) => {
       // 오른쪽 리스트에서 삭제 (삭제되면 자동으로 왼쪽 리스트에 다시 나타남)
-      groupMembers.value = groupMembers.value.filter((m) => m.id !== id);
+      groupMembers.value = groupMembers.value.filter(
+        (m) => m.userId !== userId,
+      );
     };
 
     const submitGroup = async () => {
@@ -473,7 +514,7 @@ export default {
         alert("그룹명 중복 확인을 해주세요.");
         return;
       }
-      if (groupMembers.value.length === 0) {
+      if (form.value.groupType === "C2" && groupMembers.value.length === 0) {
         alert("그룹 구성원을 최소 1명 이상 추가해주세요.");
         return;
       }
@@ -481,30 +522,36 @@ export default {
       const payload = {
         groupName: form.value.groupName,
         groupType: form.value.groupType,
+        description: form.value.description,
         members: groupMembers.value.map((m) => ({
-          userId: m.id,
-          role: m.role,
+          userId: m.userId,
+          roleId: m.roleId,
         })),
+        createdBy: authStore.user.userId,
       };
 
       console.log("Submit Data:", payload);
-      // TODO: 백엔드 API 호출로 그룹 생성 로직 구현
-
-      alert("그룹이 성공적으로 생성되었습니다.");
-      goBack();
+      const response = await axios.post("/api/group", payload);
+      const result = response.data;
+      if (result == "Y") {
+        alert("그룹이 성공적으로 생성되었습니다.");
+        goBack();
+      } else {
+        alert("그룹생성에 실패했습니다.");
+      }
     };
 
     const goBack = () => {
       router.back(); // 라우터 설정에 맞게 변경하세요
     };
-    // 1. 데이터를 직군(jobGroup)별로 묶어주는 Computed
+    // 1. 데이터를 직군(groupName)별로 묶어주는 Computed
     const groupedUsers = computed(() => {
       const groups = {};
       filteredUsers.value.forEach((user) => {
-        if (!groups[user.jobGroup]) {
-          groups[user.jobGroup] = [];
+        if (!groups[user.groupName]) {
+          groups[user.groupName] = [];
         }
-        groups[user.jobGroup].push(user);
+        groups[user.groupName].push(user);
       });
       // 객체를 배열 형태로 변환 (템플릿에서 v-for 돌리기 쉽게)
       return Object.keys(groups).map((key) => ({
@@ -539,7 +586,7 @@ export default {
     const isGroupChecked = (group) => {
       if (group.users.length === 0) return false;
       return group.users.every((u) =>
-        selectedLeftUsers.value.some((sel) => sel.id === u.id),
+        selectedLeftUsers.value.includes(u.userId),
       );
     };
 
@@ -547,17 +594,15 @@ export default {
     const toggleGroupSelection = (group, event) => {
       const isChecked = event.target.checked;
       if (isChecked) {
-        // 그룹 내 유저들을 selectedLeftUsers에 추가 (중복 방지)
         group.users.forEach((u) => {
-          if (!selectedLeftUsers.value.some((sel) => sel.id === u.id)) {
-            selectedLeftUsers.value.push(u);
+          if (!selectedLeftUsers.value.includes(u.userId)) {
+            selectedLeftUsers.value.push(u.userId); // ← userId만 push
           }
         });
       } else {
-        // 그룹 내 유저들을 selectedLeftUsers에서 제거
-        const groupUserIds = group.users.map((u) => u.id);
+        const groupUserIds = group.users.map((u) => u.userId);
         selectedLeftUsers.value = selectedLeftUsers.value.filter(
-          (sel) => !groupUserIds.includes(sel.id),
+          (userId) => !groupUserIds.includes(userId),
         );
       }
     };
@@ -573,6 +618,12 @@ export default {
         '<mark class="bg-yellow-100 dark:bg-yellow-800 text-inherit rounded px-0.5">$1</mark>',
       );
     };
+    onMounted(async () => {
+      await empStore.getEmpList4Group();
+      allUsers.value = empStore.empList4Group;
+      await roleStore.getRoleList();
+      roles.value = roleStore.roleList;
+    });
     return {
       sidebarOpen,
       form,

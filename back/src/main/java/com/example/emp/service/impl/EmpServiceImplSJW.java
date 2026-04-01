@@ -30,6 +30,10 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
     public List<EmpDTOSJW> getAll() {
         return empMapper.getAll();
     }
+    @Override
+    public List<EmpVOSJW> getAllForGroup() {
+        return empMapper.getAllForGroup();
+    }
 
     @Override
     public EmpVOSJW getById(Integer id) {
@@ -58,7 +62,8 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
             emp.setUserType("M2");
         }
         empMapper.registerEmp(emp);
-        empMapper.insertGroupMember(emp.getUserId(), emp.getGroupId(),"Y");
+        emp.setIsPrimary("Y");
+        empMapper.insertGroupMember(emp);
         return emp.getUserId();
     }
 
@@ -123,7 +128,11 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
             for (Integer groupId : toAdd) {
 
                 String isPrimary = groupId.equals(vo.getPrimaryGroupId()) ? "Y" : "N";
-                empMapper.insertGroupMember(vo.getUserId(), groupId, isPrimary);
+                EmpVOSJW emp =  new EmpVOSJW();
+                emp.setUserId(vo.getUserId());
+                emp.setGroupId(groupId);
+                emp.setIsPrimary(isPrimary);
+                empMapper.insertGroupMember(emp);
             }
 
             // - 유지되는 그룹은 joined_at은 냅두고 대표 그룹 지정(is_primary)만 갱신

@@ -24,11 +24,19 @@ public class GroupControllerSJW {
         return groupService.getAllGroupForEmpRegister();
     }
     @GetMapping("/api/group/info/{id}")
-    public GroupVOSJW getById(@PathVariable Integer id) {
+    public GroupDTOSJW getById(@PathVariable Integer id) {
         return groupService.getById(id);
     }
+    @GetMapping("/api/group/dup/{name}")
+    public String dup(@PathVariable String name) {
+        return groupService.checkDuplicatedName(name);
+    }
     @PostMapping("/api/group")
-    public String register(@RequestBody GroupVOSJW emp) {
-    return groupService.registerGroup(emp);
+    public String register(@RequestBody GroupDTOSJW group) {
+        return groupService.registerGroup(group);
+    }
+    @PutMapping("/api/group")
+    public String update(@RequestBody GroupDTOSJW group) {
+        return groupService.modifyGroup(group);
     }
 }
