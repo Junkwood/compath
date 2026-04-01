@@ -119,7 +119,7 @@
           :cell-style="cellStyle"
         >
           <el-table-column
-            prop="name"
+            prop="userName"
             label="이름"
             width="300"
             align="center"
@@ -137,7 +137,7 @@
             align="center"
           />
           <el-table-column
-            prop="userRoleName"
+            prop="roleName"
             label="역할"
             width="300"
             align="center"
@@ -172,6 +172,7 @@
   <ProjectMemberModal
     v-model="MemberModalOpen"
     :groupList="groupList"
+    :memberList="memberList"
     @member-cancel="closeMemberMdoal"
     @member-insert="memberInsert"
   />
@@ -228,12 +229,8 @@ onBeforeMount(async () => {
   console.log("프로젝트 정보: ", projectInfo.value);
 
   // 사용자 정보 조회
-  await projectStore.getUsersById(projectInfo.value.pmUserNum);
-  memberList.value.push(projectStore.userInfo);
-  memberList.value[0].userRoleName = "PM";
-  await projectStore.getUsersById(projectInfo.value.plUserNum);
-  memberList.value.push(projectStore.userInfo);
-  memberList.value[1].userRoleName = "PL";
+  await projectStore.getAllMembers(id);
+  memberList.value = projectStore.memberList;
 
   // 그룹정보
   await projectStore.getAllGroups();
@@ -283,8 +280,11 @@ const closeMemberMdoal = () => {
 };
 
 // 구성원 모달 추가 버튼
-const memberInsert = () => {
-  console.log("구성원 추가 완료");
+const memberInsert = (value) => {
+  console.log(value);
+  value.forEach(async (val) => {
+    await projectStore.registerProjectMem(val.id, id, val.role);
+  });
   closeMemberMdoal();
 };
 </script>

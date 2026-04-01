@@ -31,4 +31,17 @@ public class ProjectControllerKJH {
 
         return service.getSingleProject(projectId);
     }
+
+    // 프로젝트 구성원 등록
+    @PostMapping("/projects/registerMember")
+    public List<ProjectMemberDtoKJH> registerProjectMember(@RequestBody ProjectMemberDtoKJH dto) {
+        return service.registerMember(dto);
+    }
+
+    // 프로젝트 구성원 조회
+    @GetMapping("/projects/getMembers/{id}")
+    public List<ProjectMemberDtoKJH> getProjectMember(@PathVariable("id") int id) {
+        return service.getAllProjectMem(id);
+    }
+
 }

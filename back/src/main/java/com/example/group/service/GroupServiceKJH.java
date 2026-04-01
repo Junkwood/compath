@@ -7,5 +7,5 @@ import com.example.group.entity.GroupVOSJW;
 import java.util.List;
 
 public interface GroupServiceKJH {
-    List<GroupDTOKJH> getAllgroupMembers(Integer id);
+    List<GroupDTOKJH> getAllgroupMembers(Integer id, String name);
 }

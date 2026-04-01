@@ -11,30 +11,45 @@
     <div class="mt-4 mb-3">
       <el-input
         v-model="input3"
-        style="max-width: 600px"
-        placeholder="Please input"
+        style="max-width: 100%"
+        placeholder="이름을 입력해주세요"
         class="input-with-select"
       >
-        <template #prepend>
+        <!-- <template #prepend>
           <el-select v-model="select" placeholder="Select" style="width: 115px">
-            <el-option label="Restaurant" value="1" />
-            <el-option label="Order No." value="2" />
-            <el-option label="Tel" value="3" />
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.name"
+              :value="item.id"
+            />
           </el-select>
-        </template>
+        </template> -->
         <template #append>
-          <el-button :icon="Search" />
+          <el-button :icon="Search" @click="searchUsers" />
         </template>
       </el-input>
     </div>
     <!-- 구성원목록 -->
 
-    <div class="flex flex-row gap-5 mb-3">
+    <div v-if="search">
+      <el-checkbox
+        v-for="mem in projectStore.groupMem"
+        :key="mem"
+        :label="mem"
+        :value="mem"
+        v-model="searchedChecked"
+      >
+        {{ mem.userName }}
+      </el-checkbox>
+    </div>
+
+    <div v-else class="flex flex-row gap-5 mb-3">
       <div v-for="group in groupData">
         <el-checkbox
           v-model="group.Allcheck"
           :indeterminate="isIndeterminate"
-          @change="handleCheckAllChange(group.groupId, e)"
+          @change="handleCheckAllChange(group)"
         >
           <el-icon> <User /></el-icon>{{ group.groupName }}
         </el-checkbox>
@@ -57,11 +72,13 @@
     </div>
     <!-- 역할부여 -->
 
+    <div class="h-64"></div>
     <div>
       <el-checkbox-group
         v-model="checkList"
         :options="options"
         :props="props"
+        :max="1"
       />
     </div>
 
@@ -69,12 +86,8 @@
     <template #footer>
       <div class="modal-footer">
         <div class="footer-right">
-          <el-button class="btn-submit" @click="$emit('memberInsert')">
-            추가
-          </el-button>
-          <el-button class="btn-cancel" @click="$emit('memberCancel')"
-            >취소</el-button
-          >
+          <el-button class="btn-submit" @click="insertUsers"> 추가 </el-button>
+          <el-button class="btn-cancel" @click="cancelInsert">취소</el-button>
         </div>
       </div>
     </template>
@@ -82,74 +95,162 @@
 </template>
 
 <script setup>
-import { ref, defineProps, watch, reactive } from "vue";
+import { ref, defineProps, watch, defineEmits } from "vue";
 import { Search } from "@element-plus/icons-vue";
 import { User } from "@element-plus/icons-vue";
 import { useProjectKJHStore } from "../stores/projectKJH";
 
 const projectStore = useProjectKJHStore();
 
+const emit = defineEmits(["memberInsert", "memberCancel"]);
 const prop = defineProps({
   groupList: { type: Array },
+  memberList: { type: Array },
 });
 
 const input3 = ref("");
-const select = ref("");
 
-const checkList = ref(["Value selected and disabled", "Value A"]);
+const checkList = ref([]);
 const props = { label: "name", value: "id", disabled: "unable" };
 const options = [];
-
 const groupData = ref([]);
 
 watch(
-  () => prop.groupList,
-  (newVal) => {
-    console.log(newVal);
+  () => [prop.groupList, prop.memberList],
+  async (gNewVal, mNewVal) => {
+    console.log("그룹", gNewVal[0]);
+    console.log("멤버", mNewVal[1]);
 
-    const data = [...newVal];
+    const data = [...gNewVal[0]];
 
-    data.forEach(async (li) => {
-      console.log(li);
-      let list = { name: li.groupName, id: li.groupId };
+    for (let i = 0; i < data.length; i++) {
+      let list = { name: data[i].groupName, id: data[i].groupId };
       options.push(list);
 
-      await projectStore.getAllGroupMem(li.groupId);
-      groupData.value[li.groupId - 1] = {
-        groupId: li.groupId,
-        groupName: li.groupName,
+      await projectStore.getAllGroupMem(data[i].groupId);
+      groupData.value[i] = {
+        groupId: data[i].groupId,
+        groupName: data[i].groupName,
+        Allcheck: false,
         members: projectStore.groupMem,
         checkedusers: [],
       };
-    });
+    }
   },
 );
 
 const isIndeterminate = ref(false);
 const handleCheckAllChange = (val) => {
-  groupData.value[val - 1].members.forEach((gr) => {
-    if (groupData.value[val - 1].Allcheck) {
-      groupData.value[val - 1].checkedusers.push(gr);
-    } else {
-      groupData.value[val - 1].checkedusers = [];
+  console.log(val);
+  let count = 0;
+  groupData.value.forEach((li) => {
+    if (val.groupId == li.groupId) {
+      if (li.members.length == 0) {
+        li.Allcheck = false;
+        count++;
+        return;
+      }
+
+      li.members.forEach((gr) => {
+        if (li.Allcheck) {
+          li.checkedusers.push(gr);
+        } else {
+          li.checkedusers = [];
+        }
+      });
     }
   });
 };
-const handleCheckedCitiesChange = (value, group) => {
-  console.log(group);
 
+const handleCheckedCitiesChange = (value, group) => {
+  console.log(value, group);
   if (value.length > 0) {
     let id = value[0].groupId;
-    let len = groupData.value[id - 1].checkedusers.length;
-    let groupLen = groupData.value[id - 1].members.length;
-    if (len == groupLen) {
-      groupData.value[id - 1].Allcheck = true;
-    } else {
-      groupData.value[id - 1].Allcheck = false;
-    }
+    groupData.value.forEach((li) => {
+      if (li.groupId == id) {
+        let len = li.checkedusers.length;
+        let groupLen = li.members.length;
+        if (len == groupLen) {
+          li.Allcheck = true;
+        } else {
+          li.Allcheck = false;
+        }
+      }
+    });
   } else {
-    groupData.value[id - 1].Allcheck = false;
+    let id = group.groupId;
+    groupData.value.forEach((li) => {
+      if (li.groupId == id) {
+        groupData.value[id - 1].Allcheck = false;
+      }
+    });
   }
+};
+
+// 검색창
+const search = ref(false);
+const searchedChecked = ref([]); // 검색시 나오는 회원 체크
+
+const searchUsers = async () => {
+  if (input3.value == "" && search.value == false) {
+    alert("이름을 입력해주세요.");
+    return;
+  }
+  if (input3.value == "" && search.value == true) {
+    search.value = false;
+    return;
+  }
+  search.value = true;
+  await projectStore.getAllGroupMem("", input3.value);
+};
+
+// 추가버튼
+const insertUsers = () => {
+  let count = 0;
+  let InsertList = ref([]);
+  groupData.value.forEach((group) => {
+    if (group.checkedusers.length > 0) {
+      count++;
+    }
+    group.checkedusers.forEach((mem) => {
+      InsertList.value.push({ id: mem.userId, role: checkList.value[0] });
+    });
+  });
+
+  if (count == 0 && searchedChecked.length == 0) {
+    alert("추가할 회원을 선택해주세요");
+    return;
+  }
+
+  if (checkList.value.length == 0) {
+    alert("역할을 선택해주세요");
+    return;
+  }
+
+  emit("memberInsert", InsertList.value);
+
+  reset();
+};
+
+// 취소 버튼
+const cancelInsert = () => {
+  reset();
+
+  emit("memberCancel");
+};
+
+// 초기화
+const reset = () => {
+  groupData.value.forEach((group) => {
+    if (group.checkedusers.length > 0) {
+      group.checkedusers.length = 0;
+    }
+    group.Allcheck = false;
+  });
+  searchedChecked.value.length = 0; // 검색해서 나온 유저
+  checkList.value.length = 0; // 역할 분배 초기화
+  search.value = false;
+  input3.value = "";
 };
 </script>
 
@@ -247,5 +348,24 @@ const handleCheckedCitiesChange = (value, group) => {
 
 .input-with-select .el-input-group__prepend {
   background-color: var(--el-fill-color-blank);
+}
+
+.infinite-list {
+  height: 300px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.infinite-list .infinite-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  background: var(--el-color-primary-light-9);
+  margin: 10px;
+  color: var(--el-color-primary);
+}
+.infinite-list .infinite-list-item + .list-item {
+  margin-top: 10px;
 }
 </style>

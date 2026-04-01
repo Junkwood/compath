@@ -8,6 +8,8 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     userInfo: {},
     groupList: [],
     groupMem: [],
+    groupInfo: [],
+    memberList: [],
   }),
   getters: {},
   actions: {
@@ -38,12 +40,11 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     // 멤버 정보
     async getUsersById(id) {
       let result = await axios //
-        .get("/api/emp/info/" + id);
-
+        .get("/api/emp/users/" + id);
       this.userInfo = result.data;
     },
 
-    // 그룹 정보
+    // 그룹 전체 정보
     async getAllGroups() {
       let result = await axios //
         .get("/api/group/list");
@@ -52,11 +53,43 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     },
 
     // 그룹 멤버 조회
-    async getAllGroupMem(id) {
+    async getAllGroupMem(id, name) {
       let result = await axios //
-        .get("/api/group/members/" + id);
+        .get("/api/group/members", {
+          params: {
+            id: id,
+            name: name,
+          },
+        });
 
       this.groupMem = result.data;
+    },
+
+    // 그룹 하나 조회
+    async getGroupsById(id) {
+      let result = await axios //
+        .get("/api/group/info/" + id);
+
+      this.groupInfo = result.data;
+    },
+
+    // 프로젝트 구성원 등록
+    async registerProjectMem(uId, pId, rId) {
+      let result = await axios.post("/api/projects/registerMember", {
+        userId: uId,
+        projectId: pId,
+        roleId: rId,
+      });
+
+      console.log("구성원 등록 ", result.data);
+    },
+
+    // 프로젝트 구성원 조회
+    async getAllMembers(id) {
+      let result = await axios //
+        .get("/api/projects/getMembers/" + id);
+
+      this.memberList = result.data;
     },
   },
 });

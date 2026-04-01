@@ -13,5 +13,17 @@ public interface ProjectMapperKJH {
 
     //프로젝트 정보 수정
     public int modifyProject(ProjectModifyDtoKJH dto);
+
+    //프로젝트 구성원 추가
+    public int registerMember(ProjectMemberDtoKJH dto);
+
+    //프로젝트 구성원 조회
+    public int getProjectMember(int userId, int projectId);
+
+    //프로젝트 구성원 역할 테이블
+    public int registerMemRole(ProjectMemberDtoKJH dto);
+
+    //프로젝트 구성원 및 역할 조회
+    public List<ProjectMemberDtoKJH> getAllProjectMem(int id);
 }
 

@@ -5,10 +5,16 @@
 <mapper namespace="com.example.group.mapper.GroupMapperKJH">
 
     <select id="getAllgroupMembers">
-        SELECT g.user_id, u.user_name, g.group_id
-        FROM group_members g
-        JOIN users u ON g.user_id = u.user_id
-        WHERE g.group_id = #{id}
-        GROUP BY g.user_id, u.user_name, g.group_id
+        SELECT u.user_id, u.user_name, gm.group_id
+        FROM group_members gm
+        JOIN groups g ON gm.group_id = g.group_id
+        JOIN users u ON gm.user_id = u.user_id
+        <if test="id != null">
+        WHERE g.group_id = #{id} AND g.group_type = 'C1'
+        </if>
+        <if test="name != null">
+            WHERE u.user_name = #{name} AND g.group_type = 'C1'
+        </if>
+        ORDER BY gm.group_id
     </select>
 </mapper>
