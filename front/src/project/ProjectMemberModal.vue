@@ -63,6 +63,7 @@
               :key="mem"
               :label="mem"
               :value="mem"
+              :disabled="mem.disabled == true"
             >
               {{ mem.userName }}
             </el-checkbox>
@@ -79,6 +80,7 @@
         :options="options"
         :props="props"
         :max="1"
+        :value="options"
       />
     </div>
 
@@ -117,11 +119,11 @@ const groupData = ref([]);
 
 watch(
   () => [prop.groupList, prop.memberList],
-  async (gNewVal, mNewVal) => {
-    console.log("그룹", gNewVal[0]);
+  async (mNewVal) => {
+    console.log("그룹", mNewVal[0]);
     console.log("멤버", mNewVal[1]);
 
-    const data = [...gNewVal[0]];
+    const data = [...mNewVal[0]];
 
     for (let i = 0; i < data.length; i++) {
       let list = { name: data[i].groupName, id: data[i].groupId };
@@ -135,6 +137,17 @@ watch(
         members: projectStore.groupMem,
         checkedusers: [],
       };
+
+      groupData.value[i].members.forEach((li) => {
+        for (let j = 0; j < mNewVal[1].length; j++) {
+          if (li.userId == mNewVal[1][j].userId) {
+            li.disabled = true;
+            return;
+          } else {
+            li.disabled = false;
+          }
+        }
+      });
     }
   },
 );
@@ -227,6 +240,7 @@ const insertUsers = () => {
     return;
   }
 
+  console.log(InsertList.value);
   emit("memberInsert", InsertList.value);
 
   reset();

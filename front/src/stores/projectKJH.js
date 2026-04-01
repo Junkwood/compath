@@ -10,6 +10,7 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     groupMem: [],
     groupInfo: [],
     memberList: [],
+    insertedList: [],
   }),
   getters: {},
   actions: {
@@ -82,6 +83,7 @@ export const useProjectKJHStore = defineStore("projectKJH", {
       });
 
       console.log("구성원 등록 ", result.data);
+      this.insertedList = result.data;
     },
 
     // 프로젝트 구성원 조회

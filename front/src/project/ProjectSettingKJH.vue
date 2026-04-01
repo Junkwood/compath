@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen overflow-hidden">
+  <div class="flex min-h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <div
@@ -280,11 +280,14 @@ const closeMemberMdoal = () => {
 };
 
 // 구성원 모달 추가 버튼
-const memberInsert = (value) => {
+const memberInsert = async (value) => {
   console.log(value);
   value.forEach(async (val) => {
     await projectStore.registerProjectMem(val.id, id, val.role);
   });
+
+  memberList.value = projectStore.insertedList;
+
   closeMemberMdoal();
 };
 </script>

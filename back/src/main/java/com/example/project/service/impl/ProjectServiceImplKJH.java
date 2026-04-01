@@ -1,19 +1,17 @@
 package com.example.project.service.impl;
 
 import com.example.project.dto.*;
-import com.example.project.mapper.ProjectMapperJDJ;
 import com.example.project.mapper.ProjectMapperKJH;
-import com.example.project.service.ProjectServiceJDJ;
 import com.example.project.service.ProjectServiceKJH;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class ProjectServiceImplKJH implements ProjectServiceKJH {
 
     private final ProjectMapperKJH mapper;
@@ -32,7 +30,7 @@ public class ProjectServiceImplKJH implements ProjectServiceKJH {
 
 //    프로젝트 구성원 등록
     @Override
-    @Transactional
+
     public List<ProjectMemberDtoKJH> registerMember(ProjectMemberDtoKJH dto) {
         // 프로젝트 구성원 테이블 추가
         mapper.registerMember(dto);
