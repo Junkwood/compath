@@ -17,7 +17,7 @@
           <div class="mb-6 proj-title-row">
             <div class="proj-title-left">
               <h2
-                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
+                class="text-2xl md:text-3xl font-bold text-[#000000]""
               >
                 마일스톤 상세 페이지
               </h2>
@@ -95,8 +95,8 @@
             </section>
 
             <!-- 2. 개별 업무 -->
-            <section class="detail-section">
 
+            <section class="detail-section">
               <div class="section-card">
                 <div class="section-header">개별 업무</div>
 
@@ -168,7 +168,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
-import axios from "axios";
+import api from "../utils/api.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -185,7 +185,7 @@ const projectInfo = ref({
 const fetchProjectDetail = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/ProjectDetail/${projectId}`);
+    const res = await api.get(`/ProjectDetail/${projectId}`);
     projectInfo.value = res.data;
   } catch (err) {
     console.error("프로젝트 상세 조회 실패:", err);
@@ -198,7 +198,7 @@ const milestoneList = ref([]);
 const fetchMlistTab = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/MilestoneTab/${projectId}`);
+    const res = await api.get(`/MilestoneTab/${projectId}`);
 
     milestoneList.value = res.data;
   } catch (err) {
@@ -219,16 +219,14 @@ const fetchSubProjectList = async () => {
     const projectId = route.params.projectId;
     const milestoneId = route.params.milestoneId;
 
-    const res = await axios.get(
-      `/api/MilestoneSubProjects/${projectId}/${milestoneId}`
+    const res = await api.get(
+      `/MilestoneSubProjects/${projectId}/${milestoneId}`
     );
 
     subProjectList.value = Array.isArray(res.data) ? res.data : [];
-    console.log("하위프로젝트 응답:", res.data);
   } catch (err) {
     console.error("하위 프로젝트 목록 조회 실패:", err);
-    console.error("status:", err?.response?.status);
-    console.error("data:", err?.response?.data);
+
     subProjectList.value = [];
   }
 };
@@ -242,7 +240,7 @@ const fetchTaskWnoSubP = async ()=>{
     const projectId = route.params.projectId;
     const milestoneId = route.params.milestoneId;
 
-    const res = await axios.get(`/api/MilestoneWnoSubPidList/${projectId}/${milestoneId}`);
+    const res = await api.get(`/MilestoneWnoSubPidList/${projectId}/${milestoneId}`);
     currentTaskList.value = res.data;
   } catch(err){
     console.error("하위프로젝트 없는 개별업무 조회 실패 : ", err)
@@ -311,16 +309,31 @@ watch(
 );
 </script>
 
-<style scoped>
+<style>
 /* =========================
-   Variables
+   Design Tokens — Pastel Blue
 ========================= */
-.milestone-detail-page,
-.proj-title-row,
-.milestone-top-wrap {
-  --accent: #4f46e5;
-  --accent-bg: #eef2ff;
-  --accent-text: #3730a3;
+:root {
+  --ink-900:    #1a2d4a;
+  --ink-600:    #3d5472;
+  --ink-400:    #7a95b0;
+  --ink-200:    #b8cede;
+
+  --surface:    #ffffff;
+  --surface-2:  #f0f5fb;
+  --surface-3:  #e2ecf7;
+
+  --border:     #cddcee;
+  --border-str: #b3c9e3;
+
+  --accent:     #2253B0;
+  --accent-dim: #deeaf8;
+  --accent-mid: #7aaad9;
+
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
 }
 
 /* =========================
@@ -332,7 +345,6 @@ watch(
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 24px;
 }
 .proj-title-left {
   display: flex;
@@ -342,34 +354,36 @@ watch(
 .proj-name-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 .proj-name {
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.02em;
+  color: var(--ink-900);
+  letter-spacing: -0.025em;
 }
 .proj-period {
   font-size: 12px;
-  color: #64748b;
+  color: var(--ink-400);
   font-weight: 500;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  padding: 2px 10px;
+  padding: 3px 10px;
+  border: 1px solid var(--border-str);
+  border-radius: var(--r-xs);
+  background: var(--surface-2);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* =========================
    Page Shell
 ========================= */
 .milestone-detail-page {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
-  padding: 28px 26px 36px;
+  background: var(--surface);
+  border: none;
+  border-radius: 10;
+  box-shadow: none;
+  padding: 30px 28px 42px;
   min-height: 720px;
 }
 
@@ -382,9 +396,9 @@ watch(
   align-items: flex-start;
   gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
-  padding-bottom: 22px;
-  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 30px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
 }
 .milestone-top-list {
   display: flex;
@@ -395,21 +409,23 @@ watch(
 .top-milestone-item {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  min-width: 200px;
-  padding: 11px 14px;
-  border-radius: 12px;
+  gap: 11px;
+  min-width: 205px;
+  padding: 12px 15px;
+  border-radius: var(--r-md);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
+  transition: border-color 0.14s, background 0.14s, box-shadow 0.14s;
+  border: 1px solid var(--border);
+  background: var(--surface);
 }
 .top-milestone-item:hover {
-  border-color: #c7d2fe;
+  border-color: var(--border-str);
+  border-left-color: var(--accent-mid);
+  background: var(--surface-2);
 }
 .top-milestone-item.active {
-  border-color: var(--accent);
-  background: var(--accent-bg);
+  border-color: var(--border-str);
+  background: var(--accent-dim);
 }
 
 /* Flag */
@@ -424,10 +440,11 @@ watch(
   position: absolute;
   left: 10px;
   top: 0;
-  width: 2px;
+  width: 1.5px;
   height: 30px;
-  background: #cbd5e1;
+  background: var(--ink-200);
   border-radius: 999px;
+  transition: background 0.14s;
 }
 .top-milestone-item.active .flag-pole {
   background: var(--accent);
@@ -438,9 +455,10 @@ watch(
   top: 3px;
   width: 16px;
   height: 10px;
-  background: #e2e8f0;
-  border-radius: 2px;
+  background: var(--surface-3);
+  border-radius: 1px;
   clip-path: polygon(0 0, 70% 0, 100% 50%, 70% 100%, 0 100%);
+  transition: background 0.14s;
 }
 .top-milestone-item.active .flag-box {
   background: var(--accent);
@@ -449,26 +467,29 @@ watch(
 .top-milestone-text {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
 }
 .top-milestone-name {
   font-size: 13.5px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ink-900);
   line-height: 1.3;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  transition: color 0.14s;
 }
 .top-milestone-item.active .top-milestone-name {
-  color: var(--accent-text);
+  color: var(--accent);
 }
 .top-milestone-date {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ink-400);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
+/* Back Button */
 .top-btn-wrap {
   display: flex;
   align-items: center;
@@ -476,46 +497,48 @@ watch(
 .list-btn {
   height: 34px !important;
   padding: 0 14px !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 8px !important;
-  background: #ffffff !important;
-  color: #64748b !important;
+  border: 1px solid var(--border-str) !important;
+  border-radius: var(--r-sm) !important;
+  background: var(--surface) !important;
+  color: var(--ink-600) !important;
   font-size: 12.5px !important;
   font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
   box-shadow: none !important;
-  transition: border-color 0.15s, color 0.15s !important;
+  transition: border-color 0.14s, color 0.14s, background 0.14s !important;
 }
 .list-btn:hover {
   border-color: var(--accent) !important;
   color: var(--accent) !important;
-  background: #ffffff !important;
+  background: var(--accent-dim) !important;
 }
 
 /* =========================
    Section
 ========================= */
 .detail-section {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 .section-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  background: #ffffff;
+  border: 1px solid var(--border-str);
+  border-radius: var(--r-md);
+  background: var(--surface);
   overflow: hidden;
 }
 .section-header {
   min-height: 46px;
   display: flex;
   align-items: center;
-  padding: 0 18px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
   font-size: 15px;
-  font-weight: 500;
-  color: #202122;
-  letter-spacing: 0.06em;
+  color: var(--ink-900);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  gap: 8px;
 }
+
 
 /* =========================
    Table
@@ -532,11 +555,11 @@ watch(
 }
 .detail-table td,
 .detail-table th {
-  border-bottom: 1px solid #f1f5f9;
-  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  padding: 0 18px;
   height: 50px;
   font-size: 13px;
-  color: #0f172a;
+  color: #1a1b1c;
   vertical-align: middle;
   text-align: left;
 }
@@ -544,19 +567,29 @@ watch(
   border-bottom: none;
 }
 .detail-table th {
-  background: #f8fafc;
-  font-size: 11px;
-  /* font-weight: 600; */
-  color: #94a3b8;
+  background: var(--surface-2);
+  color: #1a1b1c;
+  font-size: 13px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  height: 40px;
 }
 
 /* Sub Project Table */
 .subproject-table td { height: 52px; }
-.subproject-table td:nth-child(1) { width: 36%; color: #000000; }
-.subproject-table td:nth-child(2) { width: 38%; color: #000000; font-variant-numeric: tabular-nums; }
-.subproject-table td:nth-child(3) { width: 26%; color: #000000; }
+.subproject-table td:nth-child(1) {
+  width: 36%;
+  color: #1a1b1c;
+}
+.subproject-table td:nth-child(2) {
+  width: 38%;
+  color: #1a1b1c;
+  font-variant-numeric: tabular-nums;
+}
+.subproject-table td:nth-child(3) {
+  width: 26%;
+  color: #1a1b1c;
+}
 
 /* Task Table */
 .task-table th:nth-child(1), .task-table td:nth-child(1) { width: 28%; }
@@ -566,7 +599,9 @@ watch(
 .task-table th:nth-child(5), .task-table td:nth-child(5) { width: 18%; }
 .task-table th:nth-child(6), .task-table td:nth-child(6) { width: 11%; }
 .task-table th:nth-child(7), .task-table td:nth-child(7) { width: 11%; }
-.task-table td:nth-child(1) { font-size:13px; color: #000000; }
+.task-table td:nth-child(1) {
+  color: #1a1b1c;
+}
 
 /* =========================
    Progress
@@ -574,49 +609,51 @@ watch(
 .progress-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .mini-progress-bar {
-  width: 80px;
-  height: 5px;
-  background: #e2e8f0;
+  width: 84px;
+  height: 4px;
+  background: var(--surface-3);
   border-radius: 999px;
   overflow: hidden;
 }
 .mini-progress-fill {
   height: 100%;
-  background: #4f46e5;
+  background: var(--accent);
   border-radius: 999px;
   transition: width 0.4s ease;
 }
 .mini-progress-text {
   font-size: 11.5px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--ink-600);
   font-variant-numeric: tabular-nums;
-  min-width: 30px;
+  min-width: 32px;
+  letter-spacing: 0.01em;
 }
 .not-started-text {
   font-size: 13px;
-  color: #cbd5e1;
+  color: var(--ink-200);
 }
 .empty-cell {
   text-align: center;
-  color: #94a3b8;
+  color: var(--ink-400);
   font-size: 13px;
-  padding: 32px 16px !important;
+  padding: 36px 16px !important;
   height: auto !important;
+  letter-spacing: 0.01em;
 }
 
 /* =========================
-   Hover
+   Hover / Clickable
 ========================= */
 .clickable-row {
   cursor: pointer;
-  transition: background 0.12s;
+  transition: background 0.1s;
 }
 .clickable-row:hover td {
-  background: #f8fafc;
+  background: var(--surface-2);
 }
 
 /* =========================
@@ -630,7 +667,7 @@ watch(
   .proj-title-row { flex-direction: column; gap: 6px; }
   .proj-name-row { flex-direction: column; align-items: flex-start; gap: 4px; }
   .proj-name { font-size: 13.5px; }
-  .milestone-detail-page { padding: 18px 14px 24px; border-radius: 16px; }
+  .milestone-detail-page { padding: 18px 14px 24px; }
   .top-milestone-item { width: 100%; min-width: 100%; }
   .detail-table td, .detail-table th { font-size: 12px; padding: 0 10px; }
   .section-header { min-height: 42px; padding: 0 14px; }
