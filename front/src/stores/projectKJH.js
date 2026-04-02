@@ -10,6 +10,9 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     groupMem: [],
     groupInfo: [],
     memberList: [],
+    insertedList: [],
+    roleList: [],
+    remainMem: [],
   }),
   getters: {},
   actions: {
@@ -82,6 +85,7 @@ export const useProjectKJHStore = defineStore("projectKJH", {
       });
 
       console.log("구성원 등록 ", result.data);
+      this.insertedList = result.data;
     },
 
     // 프로젝트 구성원 조회
@@ -90,6 +94,27 @@ export const useProjectKJHStore = defineStore("projectKJH", {
         .get("/api/projects/getMembers/" + id);
 
       this.memberList = result.data;
+    },
+
+    // 역할 전체 조회
+    async getAllRoles() {
+      let result = await axios //
+        .get("/api/role/list");
+      this.roleList = result.data;
+    },
+
+    // 역할 전체 조회
+    async removeMem(obj) {
+      console.log("구성원 삭제전", obj);
+      let result = await axios //
+        .delete("/api/projects/delMembers", {
+          data: {
+            projectId: obj.projectId,
+            projectMemberId: obj.projectMemberId,
+            projectMemberRoleId: obj.projectMemberRoleId,
+          },
+        });
+      this.remainMem = result.data;
     },
   },
 });

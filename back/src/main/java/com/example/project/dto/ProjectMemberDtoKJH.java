@@ -17,6 +17,7 @@ public class ProjectMemberDtoKJH {
 
     // 프로젝트 구성원 역할 테이블
     private Integer roleId;
+    private Integer projectMemberRoleId;
 
     // 역할 테이블
     private String roleName;

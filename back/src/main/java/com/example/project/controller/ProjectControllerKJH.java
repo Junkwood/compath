@@ -44,4 +44,11 @@ public class ProjectControllerKJH {
         return service.getAllProjectMem(id);
     }
 
+    // 프로젝트 구성원 삭제
+    @DeleteMapping("/projects/delMembers")
+    public List<ProjectMemberDtoKJH> removeProjectMem(@RequestBody ProjectMemberDtoKJH dto) {
+
+        return service.removeProjectMem(dto);
+    }
+
 }
