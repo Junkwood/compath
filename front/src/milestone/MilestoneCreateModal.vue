@@ -9,15 +9,14 @@
     @close="handleClose"
   >
     <div class="milestone-modal-body">
-
       <div class="milestone-form-wrap">
         <el-form label-width="100px" class="milestone-form">
           <el-form-item label="번호">
-            <el-input v-model="form.milestoneId" readonly disabled/>
+            <el-input v-model="form.milestoneId" readonly disabled />
           </el-form-item>
 
           <el-form-item label="프로젝트 이름">
-            <el-input :model-value="projectName" readonly disabled/>
+            <el-input :model-value="projectName" readonly disabled />
           </el-form-item>
 
           <el-form-item label="마일스톤 이름">
@@ -67,7 +66,9 @@
     <template #footer>
       <div class="modal-footer-btns">
         <el-button class="cancel-btn" @click="handleClose">취소</el-button>
-        <el-button class="save-btn" type="primary" @click="handleSave">저장</el-button>
+        <el-button class="save-btn" type="primary" @click="handleSave">
+          저장
+        </el-button>
       </div>
     </template>
   </el-dialog>
@@ -78,6 +79,7 @@ import { reactive, watch } from "vue";
 import api from "../utils/api";
 import { ElMessage } from "element-plus";
 import { useAuthStore } from "../stores/auth";
+import Swal from "sweetalert2";
 
 const authStore = useAuthStore();
 
@@ -94,12 +96,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
-
   isEditMode: {
-  type: Boolean,
-  default: false,
+    type: Boolean,
+    default: false,
   },
-
   milestoneData: {
     type: Object,
     default: () => null,
@@ -121,16 +121,16 @@ watch(
   (newVal) => {
     if (!newVal) return;
 
-    if(props.isEditMode && props.milestoneData){
+    if (props.isEditMode && props.milestoneData) {
       form.milestoneId = props.milestoneData.milestoneId ?? "";
-      form.milestoneName  = props.milestoneData.milestoneName  ?? "";
-      form.startDate   = props.milestoneData.startDate  ?? "";
+      form.milestoneName = props.milestoneData.milestoneName ?? "";
+      form.startDate = props.milestoneData.startDate ?? "";
       form.dueDate = props.milestoneData.dueDate ?? "";
       form.description = props.milestoneData.description ?? "";
     } else {
       resetForm();
-      }
     }
+  }
 );
 
 const resetForm = () => {
@@ -164,18 +164,18 @@ const handleSave = async () => {
   }
 
   if (!userId) {
-  ElMessage.warning("로그인 사용자 정보가 없습니다.");
-  return;
-}
+    ElMessage.warning("로그인 사용자 정보가 없습니다.");
+    return;
+  }
 
-  if(form.startDate > form.dueDate){
-    ElMessage.warning("종료일은 시작일보다 빠를 수 없습니다");
+  if (form.startDate > form.dueDate) {
+    ElMessage.warning("종료일은 시작일보다 빠를 수 없습니다.");
     return;
   }
 
   try {
     const payload = {
-      createdBy : userId,
+      createdBy: userId,
       milestoneId: form.milestoneId,
       milestoneName: form.milestoneName,
       startDate: form.startDate,
@@ -184,26 +184,48 @@ const handleSave = async () => {
       projectId: props.projectId,
     };
 
-    if(props.isEditMode){
-             await api.put(`/MilestoneUpdate/${props.projectId}/${form.milestoneId}`,
+    if (props.isEditMode) {
+      await api.put(
+        `/MilestoneUpdate/${props.projectId}/${form.milestoneId}`,
         payload
       );
-      ElMessage.success("마일스톤이 수정되었습니다.")
-    } else{
+
+      await Swal.fire({
+        icon: "success",
+        title: "마일스톤이 수정되었습니다.",
+        confirmButtonText: "확인",
+      });
+    } else {
       await api.post(`/MilestoneCreate/${props.projectId}`, payload);
 
-      ElMessage.success("마일스톤이 생성되었습니다.");
-      emit("saved");
-      emit("update:modelValue", false);
-      } 
+      await Swal.fire({
+        icon: "success",
+        title: "마일스톤이 생성되었습니다.",
+        confirmButtonText: "확인",
+      });
+    }
+
+    emit("saved");
+    emit("update:modelValue", false);
   } catch (err) {
     console.error("마일스톤 저장 실패:", err);
-    ElMessage.error(props.isEditMode ? "마일스톤 수정에 실패했습니다." : "마일스톤 생성에 실패했습니다.");
+
+    await Swal.fire({
+      icon: "error",
+      title: props.isEditMode
+        ? "마일스톤 수정에 실패했습니다."
+        : "마일스톤 생성에 실패했습니다.",
+      confirmButtonText: "확인",
+    });
   }
 };
 </script>
 
 <style scoped>
+.swal2-container {
+  z-index: 99999 !important;
+}
+
 .milestone-modal-body {
   padding: 2px 2px 0;
 }
