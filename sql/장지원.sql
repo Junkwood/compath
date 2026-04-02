@@ -101,49 +101,66 @@ SELECT
 
 
 -- pl/sql 업무+ 프로젝트 + 상태 + 마일스톤
+DELIMITER $$
+
 CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
     p_task_id      IN  NUMBER,
     p_project_id   IN  NUMBER,
-    taskDetail     OUT SYS_REFCURSOR, 
-    projectList    OUT SYS_REFCURSOR, 
-    userList       OUT SYS_REFCURSOR, 
-    taskTypeList   OUT SYS_REFCURSOR, 
-    milestoneList  OUT SYS_REFCURSOR  
+    taskDetail     OUT SYS_REFCURSOR,
+    projectList    OUT SYS_REFCURSOR,
+    userList       OUT SYS_REFCURSOR,
+    taskTypeList   OUT SYS_REFCURSOR,
+    milestoneList  OUT SYS_REFCURSOR
 ) AS
-    v_pid NUMBER; 
+    v_pid NUMBER;
 BEGIN
-   
     v_pid := p_project_id;
-    
+
     IF v_pid IS NULL THEN
         SELECT project_id INTO v_pid FROM tasks WHERE task_id = p_task_id;
     END IF;
 
-    -- 2. 업무 상세
     OPEN taskDetail FOR
     SELECT t.*, u.user_name as ASSIGNEENAME
     FROM tasks t
     LEFT JOIN users u ON t.assignee_user_id = u.user_id
     WHERE t.task_id = p_task_id;
 
-    -- 3. 프로젝트 목록
-    OPEN projectList FOR 
-    SELECT * FROM projects 
-    WHERE project_id = v_pid  
+    OPEN projectList FOR
+    SELECT * FROM projects
+    WHERE project_id = v_pid
     OR project_id = (SELECT parent_project_id FROM projects WHERE project_id = v_pid);
-    
-    -- 4. 유저 목록
+
     OPEN userList FOR SELECT user_id, user_name FROM users WHERE is_active = 'O1';
 
-    -- 5. 업무 유형 목록
     OPEN taskTypeList FOR SELECT task_type_id, type_name FROM task_types WHERE is_active = 'O1';
 
-    -- 6. 마일스톤 목록 
     OPEN milestoneList FOR
     SELECT milestone_id, milestone_name
     FROM milestones
     WHERE project_id = (SELECT NVL(parent_project_id, project_id) FROM projects WHERE project_id = v_pid);
 END;
+$$
+
+SELECT line, position, text
+FROM user_errors
+WHERE name = 'SP_GET_TASK_TOTAL_INFO'
+ORDER BY line;
+
+SELECT object_name, status, last_ddl_time
+FROM user_objects
+WHERE object_name = 'SP_GET_TASK_TOTAL_INFO';
+SELECT line, position, text
+FROM user_errors
+WHERE name = 'SP_GET_TASK_TOTAL_INFO'
+ORDER BY line;
+
+
+
+SELECT line, position, text
+FROM user_errors
+WHERE name = 'SP_GET_TASK_TOTAL_INFO';
+
 
 CREATE OR REPLACE PROCEDURE SP_REJECT_TASK_COMPLETE (
     p_task_id          IN NUMBER,   
