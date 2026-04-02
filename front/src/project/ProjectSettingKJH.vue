@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen overflow-hidden">
+  <div class="flex min-h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <div
@@ -152,9 +152,9 @@
               <el-button
                 size="small"
                 type="danger"
-                @click="handleDelete(scope.$index, scope.row)"
+                @click="handleDelete(scope.row)"
               >
-                Delete
+                삭제
               </el-button>
             </template>
           </el-table-column>
@@ -173,13 +173,14 @@
     v-model="MemberModalOpen"
     :groupList="groupList"
     :memberList="memberList"
+    :roleList="roleList"
     @member-cancel="closeMemberMdoal"
     @member-insert="memberInsert"
   />
 </template>
 
 <script setup>
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, watch } from "vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { useProjectKJHStore } from "../stores/projectKJH";
 import { useRoute } from "vue-router";
@@ -217,6 +218,7 @@ const ModifyProjectModalOpen = ref(false); // 수정 모달
 const MemberModalOpen = ref(false); // 구성원 추가 모달
 const memberList = ref([]); // 구성원 테이블
 const groupList = ref([]);
+const roleList = ref([]);
 
 onBeforeMount(async () => {
   // 프로젝트명
@@ -235,6 +237,10 @@ onBeforeMount(async () => {
   // 그룹정보
   await projectStore.getAllGroups();
   groupList.value = projectStore.groupList;
+
+  // 역할 정보
+  await projectStore.getAllRoles();
+  roleList.value = projectStore.roleList;
 });
 
 // 수정버튼
@@ -280,13 +286,30 @@ const closeMemberMdoal = () => {
 };
 
 // 구성원 모달 추가 버튼
-const memberInsert = (value) => {
+const memberInsert = async (value) => {
   console.log(value);
   value.forEach(async (val) => {
     await projectStore.registerProjectMem(val.id, id, val.role);
   });
+
   closeMemberMdoal();
 };
+
+// 삭제 버튼
+const handleDelete = async (val) => {
+  console.log(val);
+  await projectStore.removeMem(val);
+  memberList.value = projectStore.remainMem;
+};
+
+watch(
+  () => projectStore.insertedList,
+  (newVal) => {
+    console.log("구성원추가후 ", newVal);
+
+    memberList.value = projectStore.insertedList;
+  },
+);
 </script>
 <style scoped>
 /* 인풋 전체 라운드 */
