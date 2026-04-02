@@ -1,5 +1,6 @@
 package com.example.task.service.impl;
 
+import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
 import com.example.task.entity.TaskEntityKJH;
 import com.example.task.mapper.TaskMapperKJH;
@@ -27,5 +28,10 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
     public TaskListDTOKJH getProjectName(Integer id) {
 
         return mapper.getProjectName(id);
+    }
+
+    @Override
+    public TaskDetailDTOKJH getTaskById(Integer id) {
+        return mapper.getTaskById(id);
     }
 }

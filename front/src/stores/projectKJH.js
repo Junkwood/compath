@@ -77,12 +77,9 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     },
 
     // 프로젝트 구성원 등록
-    async registerProjectMem(uId, pId, rId) {
-      let result = await axios.post("/api/projects/registerMember", {
-        userId: uId,
-        projectId: pId,
-        roleId: rId,
-      });
+    async registerProjectMem(arr) {
+      console.log(arr);
+      let result = await axios.post("/api/projects/registerMember", arr);
 
       console.log("구성원 등록 ", result.data);
       this.insertedList = result.data;

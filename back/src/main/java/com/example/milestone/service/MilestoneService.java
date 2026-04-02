@@ -1,8 +1,10 @@
 package com.example.milestone.service;
 
+import com.example.milestone.dto.MilestoneCreateDto;
 import com.example.milestone.dto.MilestoneSubProjectDto;
 import com.example.milestone.dto.MilestoneTabDto;
 import com.example.milestone.dto.MilestoneDto;
+import com.example.milestone.mapper.MilestoneMapper;
 import com.example.task.dto.TaskListWnoSubPidDtoJDJ;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -21,4 +23,10 @@ public interface MilestoneService {
 
     //마일스톤은 있고 하위프로젝트는 없는 개별업무 조회
     public List<TaskListWnoSubPidDtoJDJ> getTaskListWnoSubPid(int projectId, int milestoneId);
+
+    //마일스톤 생성
+    void registerMilestone(MilestoneCreateDto dto);
+
+    //마일스톤 수정
+    void updateMilestone(MilestoneCreateDto dto);
 }

@@ -15,16 +15,6 @@
         placeholder="이름을 입력해주세요"
         class="input-with-select"
       >
-        <!-- <template #prepend>
-          <el-select v-model="select" placeholder="Select" style="width: 115px">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.name"
-              :value="item.id"
-            />
-          </el-select>
-        </template> -->
         <template #append>
           <el-button :icon="Search" @click="searchUsers" />
         </template>
@@ -50,6 +40,7 @@
           v-model="group.Allcheck"
           :indeterminate="isIndeterminate"
           @change="handleCheckAllChange(group)"
+          :disabled="group.disabled == true"
         >
           <el-icon> <User /></el-icon>{{ group.groupName }}
         </el-checkbox>
@@ -119,19 +110,12 @@ const options = [];
 const groupData = ref([]);
 
 watch(
-  () => [prop.groupList, prop.memberList, prop.roleList],
+  () => [prop.groupList, prop.memberList],
   async (mNewVal) => {
     console.log("그룹", mNewVal[0]);
     console.log("멤버", mNewVal[1]);
 
     const data = [...mNewVal[0]];
-    console.log(mNewVal[2]);
-    const roleList = [...prop.roleList];
-
-    roleList.forEach((role) => {
-      let list = { name: role.roleName, id: role.roleId };
-      options.push(list);
-    });
 
     for (let i = 0; i < data.length; i++) {
       await projectStore.getAllGroupMem(data[i].groupId);
@@ -141,12 +125,20 @@ watch(
         Allcheck: false,
         members: projectStore.groupMem,
         checkedusers: [],
+        disabled: false,
       };
 
+      let count = 0;
       groupData.value[i].members.forEach((li) => {
         for (let j = 0; j < mNewVal[1].length; j++) {
           if (li.userId == mNewVal[1][j].userId) {
             li.disabled = true;
+            count++;
+            console.log(count, groupData.value[i].members.length);
+
+            if (groupData.value[i].members.length == count) {
+              groupData.value[i].disabled = true;
+            }
             return;
           } else {
             li.disabled = false;
@@ -157,6 +149,21 @@ watch(
   },
 );
 
+watch(
+  () => prop.roleList,
+  async (mNewVal) => {
+    console.log("그룹", mNewVal);
+
+    const roleList = [...mNewVal];
+
+    roleList.forEach((role) => {
+      let list = { name: role.roleName, id: role.roleId };
+      options.push(list);
+    });
+  },
+);
+
+// 그룹전체 선택시
 const isIndeterminate = ref(false);
 const handleCheckAllChange = (val) => {
   console.log(val);
@@ -171,7 +178,9 @@ const handleCheckAllChange = (val) => {
 
       li.members.forEach((gr) => {
         if (li.Allcheck) {
-          li.checkedusers.push(gr);
+          if (!gr.disabled) {
+            li.checkedusers.push(gr);
+          }
         } else {
           li.checkedusers = [];
         }
@@ -180,6 +189,7 @@ const handleCheckAllChange = (val) => {
   });
 };
 
+// 멤버 체크박스 선택시
 const handleCheckedCitiesChange = (value, group) => {
   console.log(value, group);
   if (value.length > 0) {
@@ -188,6 +198,13 @@ const handleCheckedCitiesChange = (value, group) => {
       if (li.groupId == id) {
         let len = li.checkedusers.length;
         let groupLen = li.members.length;
+
+        // 멤버 체크박스가 disabled일 경우 groupLen 감소
+        li.members.forEach((mem) => {
+          if (mem.disabled) {
+            groupLen--;
+          }
+        });
         if (len == groupLen) {
           li.Allcheck = true;
         } else {
@@ -199,7 +216,7 @@ const handleCheckedCitiesChange = (value, group) => {
     let id = group.groupId;
     groupData.value.forEach((li) => {
       if (li.groupId == id) {
-        groupData.value[id - 1].Allcheck = false;
+        li.Allcheck = false;
       }
     });
   }
@@ -270,6 +287,7 @@ const reset = () => {
   checkList.value.length = 0; // 역할 분배 초기화
   search.value = false;
   input3.value = "";
+  options.value = [];
 };
 </script>
 

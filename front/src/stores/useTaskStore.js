@@ -22,9 +22,6 @@ export const useTaskStore = defineStore("task", () => {
   //  소요시간 (수정 전용)
   const actualHours = ref("");
 
-  //진척도
-  const progressOptions = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-
   //  Form
   const initialForm = {
     projectId: "",
@@ -53,32 +50,63 @@ export const useTaskStore = defineStore("task", () => {
   //  초기화 (등록용)
   const initCreate = async (projectId) => {
     resetForm();
-    await loadCommonCodes();
+    const res = await axios.get("/api/task-total-info", {
+      params: { projectId },
+    });
 
-    statusList.value = statusList.value.filter(
-      (s) => s.codeName === "시작 전" || s.codeName === "진행중",
-    );
+    const {
+      userList: uList,
+      taskTypeList: tList,
+      milestoneList: mList,
+      projectList: pList,
+    } = res.data;
 
-    if (projectId) {
-      const res = await axios.get(`/api/projectDetail/${projectId}`);
-      const d = res.data;
-      form.value.projectName = d.displayProjectName;
-      form.value.subProjectName = d.displaySubProjectName;
-      form.value.projectId = d.parentProjectId || d.projectId;
-      form.value.subProjectId = d.parentProjectId ? d.projectId : null;
-      // 마일스톤은 항상 최상위 프로젝트 기준으로 조회
-      await fetchMilestones(form.value.projectId);
+    // 기초 리스트
+    userList.value = uList.map((u) => ({ name: u.userName, value: u.userId }));
+    taskTypeList.value = tList;
 
-      form.value.startDate = "";
-      form.value.dueDate = "";
+    // 마일스톤 리스트 매핑 및 초기값
+    milestoneList.value = mList.map((m) => ({
+      name: m.milestoneName,
+      value: m.milestoneId,
+    }));
+
+    if (milestoneList.value.length > 0) {
+      form.value.milestone = milestoneList.value[0].name;
+      form.value.milestoneId = milestoneList.value[0].value;
+    } else {
+      form.value.milestone = "등록된 마일스톤 없음";
     }
 
-    if (statusList.value.length > 0)
-      form.value.taskStatusId = statusList.value[0].codeValue;
-    if (taskTypeList.value.length > 0)
-      form.value.taskTypeId = taskTypeList.value[0].taskTypeId;
-  };
+    // 2. 프로젝트 정보
+    if (pList && pList.length > 0) {
+      const currentProj = pList.find((proj) => proj.projectId == projectId);
 
+      if (currentProj) {
+        // 만약 현재 프로젝트가 하위 프로젝트일때
+        if (currentProj.parentProjectId) {
+          const parentProj = pList.find(
+            (p) => p.projectId == currentProj.parentProjectId,
+          );
+          form.value.projectName = parentProj
+            ? parentProj.projectName
+            : "상위 프로젝트 없음";
+          form.value.projectId = currentProj.parentProjectId;
+
+          form.value.subProjectName = currentProj.projectName;
+          form.value.subProjectId = currentProj.projectId;
+        } else {
+          // 현재 프로젝트가 상위 프로젝트일때
+          form.value.projectName = currentProj.projectName;
+          form.value.projectId = currentProj.projectId;
+          form.value.subProjectName = "";
+          form.value.subProjectId = "";
+        }
+      }
+    }
+
+    await loadCommonCodes();
+  };
   // 초기화 (수정용)
   const initEdit = async (taskId) => {
     resetForm();
@@ -91,15 +119,14 @@ export const useTaskStore = defineStore("task", () => {
     const {
       taskDetail,
       projectList,
-      userList,
+      userList: uList,
       taskTypeList: rawTypeList,
       milestoneList,
     } = res.data;
 
-    const d = taskDetail[0]; // 상세는 단건
+    const d = taskDetail[0];
     const pd = projectList;
 
-    // 공통 코드는 별도 로드 (우선순위는 프로시저에 없으므로)
     const codeRes = await axios.get("/api/code", {
       params: { groupValue: ["0H", "0G"] },
     });
@@ -107,7 +134,7 @@ export const useTaskStore = defineStore("task", () => {
     statusList.value = codeRes.data.c0G;
 
     taskTypeList.value = rawTypeList;
-    userList.value = userList.map((u) => ({
+    userList.value = uList.map((u) => ({
       name: u.userName,
       value: u.userId,
     }));
@@ -116,7 +143,7 @@ export const useTaskStore = defineStore("task", () => {
       value: m.milestoneId,
     }));
 
-    // 프로젝트 정보 세팅 (projectList에서 parent/child 구분)
+    // 프로젝트 정보 세팅
     const parentProject = pd.find((p) => !p.parentProjectId) ?? pd[0];
     const subProject = pd.find((p) => p.parentProjectId);
 
@@ -138,25 +165,18 @@ export const useTaskStore = defineStore("task", () => {
     };
   };
 
-  //  공통 코드 로드
+  //  공통 코드 로드(우선순위, 상태)
   const loadCommonCodes = async () => {
-    const [typeRes, codeRes] = await Promise.all([
-      axios.get("/api/taskType"),
-      axios.get("/api/code", { params: { groupValue: ["0H", "0G"] } }),
-    ]);
-    taskTypeList.value = typeRes.data;
+    const codeRes = await axios.get("/api/code", {
+      params: { groupValue: ["0H", "0G"] },
+    });
+
     priorityList.value = codeRes.data.c0H;
     statusList.value = codeRes.data.c0G;
   };
 
   //  담당자
-  const openUserModal = async () => {
-    const res = await axios.get("/api/taskUser");
-    userList.value = res.data.map((u) => ({
-      ...u,
-      name: u.userName || u.user_name,
-      value: u.userId || u.user_id,
-    }));
+  const openUserModal = () => {
     userModal.value = true;
   };
 
@@ -165,14 +185,17 @@ export const useTaskStore = defineStore("task", () => {
       typeof val === "object" ? val.name || val.userName : val;
 
     const found = userList.value.find(
-      (u) => u.userName === selectedName || u.name === selectedName,
+      (u) => u.name === selectedName || u.userName === selectedName,
     );
+
     if (found) {
-      form.value.assigneeName = found.userName || found.name;
-      form.value.assigneeUserId = found.userId || found.value;
+      form.value.assigneeName = found.name || found.userName;
+      form.value.assigneeUserId = found.value || found.userId;
+
+      // 선택 후 모달 닫기
+      userModal.value = false;
     }
-  };
-  // 마일스톤
+  }; // 마일스톤
   const fetchMilestones = async (pId) => {
     if (!pId) return;
     const res = await axios.get("/api/taskMileStone", {
@@ -246,66 +269,28 @@ export const useTaskStore = defineStore("task", () => {
   }; // 업무상태 → 소요시간 자동계산 (수정 전용)
   watch(
     () => form.value.taskStatusId,
-    async (newVal, oldVal) => {
-      if (!oldVal) return;
+    (newVal) => {
       const status = Number(newVal);
-
-      //반려 상태일 때 모달
-      if (status === 4) {
-        const { value: text, isConfirmed } = await Swal.fire({
-          title: "업무 반려",
-          input: "textarea",
-          inputLabel: "반려 사유를 입력해주세요.",
-          inputPlaceholder: "사유를 입력하세요...",
-          showCancelButton: true,
-          confirmButtonText: "입력 완료",
-          cancelButtonText: "취소",
-          allowOutsideClick: false,
-          inputValidator: (value) => {
-            if (!value) return "반려 사유는 필수입니다!";
-          },
-        });
-
-        if (isConfirmed && text) {
-          rejectReason.value = text;
-          Swal.fire(
-            "사유 입력됨",
-            "저장 버튼을 누르면 최종 반영됩니다.",
-            "success",
-          );
-        } else {
-          form.value.taskStatusId = oldVal;
-          rejectReason.value = "";
-        }
-        return;
-      }
-      const isFinished = [3, 6].includes(status);
+      const isFinished = [3, 6].includes(status); // 완료(3) 또는 종료(6)
 
       if (isFinished) {
         const sDate = form.value.startDate;
-        const eDate = form.value.dueDate || form.value.endDate; // 마감일 또는 실제종료일
+        const eDate = form.value.dueDate;
 
         if (sDate && eDate) {
           const start = new Date(sDate);
           const end = new Date(eDate);
-
-          start.setHours(0, 0, 0, 0);
-          end.setHours(0, 0, 0, 0);
-
-          const diffTime = end - start;
-          const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1; // 당일 포함
-
-          const resultDays = diffDays <= 0 ? 1 : diffDays;
-          actualHours.value = `${resultDays * 8}시간`;
+          const diffDays =
+            Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+          actualHours.value = `${Math.max(1, diffDays) * 8}시간`;
           form.value.progressRate = 100;
-        } else {
-          actualHours.value = "날짜를 확인해주세요";
         }
       } else {
         actualHours.value = "";
       }
     },
   );
+
   // ───────────── 폼 초기화 (프로젝트 정보 유지) ─────────────
   const resetForm = () => {
     const saved = {
@@ -375,32 +360,61 @@ export const useTaskStore = defineStore("task", () => {
   };
 
   // ───────────── 수정 ─────────────
-  const updateTask = async (taskId) => {
+  const updateTask = async (taskId, editorUserId) => {
     const status = Number(form.value.taskStatusId);
 
-    if ([6].includes(status)) {
-      const result = await Swal.fire({
-        title: "업무를 종료하시겠습니까?",
-        text: "종료 후에는 상태나 소요 시간을 변경할 수 없습니다.",
-        icon: "warning",
+    // 1. 반려 처리 (상태 4)
+    if (status === 4) {
+      const { value: text, isConfirmed } = await Swal.fire({
+        title: "업무 반려",
+        input: "textarea",
+        inputLabel: "반려 사유를 입력해주세요.",
         showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "네, 저장합니다!",
+        confirmButtonText: "반려 확정",
         cancelButtonText: "취소",
+        inputValidator: (value) => !value && "반려 사유는 필수입니다!",
       });
 
-      if (!result.isConfirmed) return false; // 취소 시 중단
+      if (!isConfirmed) return false;
+
+      // 반려 사유 서버 전송 및 업무 수정 병행
+      rejectReason.value = text;
+      await rejectTask(taskId, editorUserId);
     }
 
-    validateForm();
-    await axios.put(`/api/task/${taskId}`, {
-      ...buildPayload(),
-      taskId: Number(taskId),
-    });
-    return true;
-  };
+    // 2. 종료 확인 (상태 6)
+    if (status === 6) {
+      const result = await Swal.fire({
+        title: "업무를 종료하시겠습니까?",
+        text: "종료 후에는 상태를 변경할 수 없습니다.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "종료 저장",
+      });
 
+      if (!result.isConfirmed) return false;
+    }
+
+    // 3. 최종 유효성 검사 및 저장
+    try {
+      validateForm();
+      await axios.put(`/api/task/${taskId}`, {
+        ...buildPayload(),
+        taskId: Number(taskId),
+        rejectionReason: rejectReason.value, // 반려 사유 포함
+      });
+
+      await Swal.fire(
+        "저장 완료",
+        "업무 정보가 업데이트되었습니다.",
+        "success",
+      );
+      return true;
+    } catch (error) {
+      Swal.fire("오류", error.message, "error");
+      return false;
+    }
+  };
   // ───────────── 반려 처리 ─────────────
   const rejectTask = async (taskId, editorUserId) => {
     const payload = {

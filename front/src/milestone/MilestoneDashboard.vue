@@ -127,7 +127,13 @@
         </div>
       </main>
     </div>
-  </div>
+    <MilestoneCreateModal
+        v-model="createModalVisible"
+        :project-id="route.params.projectId"
+        :project-name="projectInfo.projectName"
+        @saved="handleMilestoneSaved"
+      />
+    </div>
 </template>
 
 <script setup>
@@ -137,10 +143,12 @@ import axios from "axios";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import MilestoneCreateModal from "./MilestoneCreateModal.vue";
 
 const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(false);
+const createModalVisible = ref(false);
 
 // 프로젝트 정보
 const projectInfo = ref({
@@ -175,12 +183,14 @@ const fetchProjectDetail = async () => {
   }
 };
 
-
+// 마일스톤 생성 모달
 const handleCreateMilestone = () => {
-  router.push({
-    name: "milestoneCreate",
-    params: { projectId: route.params.projectId },
-  });
+  createModalVisible.value = true;
+};
+
+const handleMilestoneSaved = async () => {
+  createModalVisible.value = false;
+  await fetchMilestoneList();
 };
 
 const goMilestoneDetail = (item) => {
@@ -193,12 +203,6 @@ const goMilestoneDetail = (item) => {
   });
 };
 
-const getStatusClass = (statusName) => {
-  if (statusName === "완료") return "status-done";
-  if (statusName === "진행중") return "status-progress";
-  if (statusName === "시작 전") return "status-wait";
-  return "status-default";
-};
 
 onMounted(() => {
   fetchProjectDetail();

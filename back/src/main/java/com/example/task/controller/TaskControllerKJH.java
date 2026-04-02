@@ -1,5 +1,6 @@
 package com.example.task.controller;
 
+import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
 import com.example.task.entity.TaskEntityKJH;
 import com.example.task.service.TaskServiceKJH;
@@ -26,5 +27,11 @@ public class TaskControllerKJH {
     @GetMapping("/api/tasks/projectname/{id}")
     public TaskListDTOKJH getProjectName(@PathVariable Integer id){
         return service.getProjectName(id);
+    }
+
+    // 업무 단건 조회
+    @GetMapping("/api/tasks/detail/{id}")
+    public TaskDetailDTOKJH getTaskById(@PathVariable Integer id){
+        return service.getTaskById(id);
     }
 }

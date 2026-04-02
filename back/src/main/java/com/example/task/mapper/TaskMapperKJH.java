@@ -1,5 +1,6 @@
 package com.example.task.mapper;
 
+import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
 import com.example.task.entity.TaskEntityKJH;
 import org.apache.ibatis.annotations.Mapper;
@@ -14,4 +15,6 @@ public interface TaskMapperKJH {
   // 프로젝트 이름
   public TaskListDTOKJH getProjectName(Integer id);
 
+  // 업무 상세
+  public TaskDetailDTOKJH getTaskById(Integer id);
 }

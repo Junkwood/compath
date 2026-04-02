@@ -106,4 +106,42 @@
             AND T.PROJECT_ID = #{projectId}
             AND T.MILESTONE_ID = #{milestoneId}
     </select>
+
+    <!--마일스톤 생성-->
+    <insert id="registerMilestone">
+        <selectKey keyProperty="milestoneId" resultType="int" order="BEFORE">
+            SELECT milestone_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO MILESTONES(
+            MILESTONE_ID,
+            CREATED_BY,
+            MILESTONE_NAME,
+            DESCRIPTION,
+            START_DATE,
+            DUE_DATE,
+            CREATED_AT,
+            PROJECT_ID)
+        VALUES (
+            #{milestoneId},
+            #{createdBy},
+            #{milestoneName},
+            #{description},
+            #{startDate},
+            #{dueDate},
+            SYSDATE,
+            #{projectId}
+        )
+    </insert>
+
+    <!--마일스톤 수정-->
+    <update id="updateMilestone" parameterType="MilestoneCreateDto">
+        UPDATE MILESTONES
+        SET
+            MILESTONE_NAME = #{milestoneName},
+            DESCRIPTION    = #{description},
+            START_DATE     = #{startDate},
+            DUE_DATE       = #{dueDate}
+        WHERE MILESTONE_ID = #{milestoneId}
+        AND PROJECT_ID = #{projectId}
+    </update>
 </mapper>
