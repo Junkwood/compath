@@ -34,8 +34,8 @@ public class ProjectControllerKJH {
 
     // 프로젝트 구성원 등록
     @PostMapping("/projects/registerMember")
-    public List<ProjectMemberDtoKJH> registerProjectMember(@RequestBody ProjectMemberDtoKJH dto) {
-        return service.registerMember(dto);
+    public List<ProjectMemberDtoKJH> registerProjectMember(@RequestBody List<ProjectMemberDtoKJH> dtoList) {
+        return service.registerMember(dtoList);
     }
 
     // 프로젝트 구성원 조회
