@@ -61,16 +61,15 @@ export const useTaskStore = defineStore("task", () => {
       projectList: pList,
     } = res.data;
 
-    // 기초 리스트
+    // 리스트 매핑
     userList.value = uList.map((u) => ({ name: u.userName, value: u.userId }));
     taskTypeList.value = tList;
-
-    // 마일스톤 리스트 매핑 및 초기값
     milestoneList.value = mList.map((m) => ({
       name: m.milestoneName,
       value: m.milestoneId,
     }));
 
+    // 마일스톤 초기값
     if (milestoneList.value.length > 0) {
       form.value.milestone = milestoneList.value[0].name;
       form.value.milestoneId = milestoneList.value[0].value;
@@ -78,43 +77,33 @@ export const useTaskStore = defineStore("task", () => {
       form.value.milestone = "등록된 마일스톤 없음";
     }
 
-    // 2. 프로젝트 정보
-    if (pList && pList.length > 0) {
-      const currentProj = pList.find((proj) => proj.projectId == projectId);
-
-      if (currentProj) {
-        // 만약 현재 프로젝트가 하위 프로젝트일때
-        if (currentProj.parentProjectId) {
-          const parentProj = pList.find(
-            (p) => p.projectId == currentProj.parentProjectId,
-          );
-          form.value.projectName = parentProj
-            ? parentProj.projectName
-            : "상위 프로젝트 없음";
-          form.value.projectId = currentProj.parentProjectId;
-
-          form.value.subProjectName = currentProj.projectName;
-          form.value.subProjectId = currentProj.projectId;
-        } else {
-          // 현재 프로젝트가 상위 프로젝트일때
-          form.value.projectName = currentProj.projectName;
-          form.value.projectId = currentProj.projectId;
-          form.value.subProjectName = "";
-          form.value.subProjectId = "";
-        }
+    // 프로젝트 정보 (상위/하위 구분)
+    const currentProj = pList?.find((proj) => proj.projectId == projectId);
+    if (currentProj) {
+      if (currentProj.parentProjectId) {
+        const parentProj = pList.find(
+          (p) => p.projectId == currentProj.parentProjectId,
+        );
+        form.value.projectName = parentProj?.projectName || "상위 없음";
+        form.value.projectId = currentProj.parentProjectId;
+        form.value.subProjectName = currentProj.projectName;
+        form.value.subProjectId = currentProj.projectId;
+      } else {
+        form.value.projectName = currentProj.projectName;
+        form.value.projectId = currentProj.projectId;
       }
     }
 
+    // 상태 필터링
     await loadCommonCodes();
     statusList.value = statusList.value.filter(
-      (status) =>
-        status.value === "1" ||
-        status.value === "2" ||
-        status.name.includes("시작") ||
-        status.name.includes("진행"),
+      (s) =>
+        s.value === "1" ||
+        s.value === "2" ||
+        s.name?.includes("시작") ||
+        s.name?.includes("진행"),
     );
 
-    // 시작 전으로 기본 값
     if (statusList.value.length > 0) {
       form.value.taskStatusId = statusList.value[0].value;
     }
