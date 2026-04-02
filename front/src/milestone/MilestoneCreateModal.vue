@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from "vue";
+import { reactive, watch, nextTick } from "vue";
 import api from "../utils/api";
 import { ElMessage } from "element-plus";
 import { useAuthStore } from "../stores/auth";
@@ -130,7 +130,7 @@ watch(
     } else {
       resetForm();
     }
-  }
+  },
 );
 
 const resetForm = () => {
@@ -187,8 +187,12 @@ const handleSave = async () => {
     if (props.isEditMode) {
       await api.put(
         `/MilestoneUpdate/${props.projectId}/${form.milestoneId}`,
-        payload
+        payload,
       );
+
+      emit("update:modelValue", false);
+      emit("saved");
+      await nextTick(); //Vue가 화면 업데이트 끝낼 때까지 한 템포 기다리는 함수
 
       await Swal.fire({
         icon: "success",
@@ -198,15 +202,16 @@ const handleSave = async () => {
     } else {
       await api.post(`/MilestoneCreate/${props.projectId}`, payload);
 
+      emit("update:modelValue", false);
+      emit("saved");
+      await nextTick();
+
       await Swal.fire({
         icon: "success",
         title: "마일스톤이 생성되었습니다.",
         confirmButtonText: "확인",
       });
     }
-
-    emit("saved");
-    emit("update:modelValue", false);
   } catch (err) {
     console.error("마일스톤 저장 실패:", err);
 

@@ -15,4 +15,5 @@ public class MilestoneTabDto {
     private LocalDate startDate;
     private LocalDate dueDate;
     private Integer parentProjectId;
+    private String description;
 }
