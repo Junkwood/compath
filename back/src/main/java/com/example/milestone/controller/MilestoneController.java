@@ -1,16 +1,13 @@
 package com.example.milestone.controller;
 
+import com.example.milestone.dto.MilestoneCreateDto;
 import com.example.milestone.dto.MilestoneSubProjectDto;
 import com.example.milestone.dto.MilestoneTabDto;
 import com.example.milestone.dto.MilestoneDto;
 import com.example.milestone.service.MilestoneService;
 import com.example.task.dto.TaskListWnoSubPidDtoJDJ;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.parameters.P;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -47,5 +44,28 @@ public class MilestoneController {
             @PathVariable Integer projectId,
             @PathVariable Integer milestoneId){
         return milestoneService.getTaskListWnoSubPid(projectId, milestoneId);
+    }
+
+    //마일스톤 생성
+    @PostMapping("/MilestoneCreate/{projectId}")
+    public MilestoneCreateDto registerMilestone(
+            @RequestBody MilestoneCreateDto dto,
+            @PathVariable Integer projectId){
+        dto.setProjectId(projectId);
+        milestoneService.registerMilestone(dto);
+        return dto;
+    }
+
+    //마일스톤 수정
+    @PutMapping("/MilestoneUpdate/{projectId}/{milestoneId}")
+    public MilestoneCreateDto updateMilestone(
+            @PathVariable Integer milestoneId,
+            @PathVariable Integer projectId,
+            @RequestBody MilestoneCreateDto dto) {
+
+        dto.setMilestoneId(milestoneId);
+        dto.setProjectId(projectId);
+        milestoneService.updateMilestone(dto);
+        return dto;
     }
 }
