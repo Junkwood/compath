@@ -1,7 +1,11 @@
 package com.example.project.controller;
 
 
+<<<<<<< Updated upstream
 import com.example.project.dto.*;
+=======
+import com.example.project.dto.ProjectDTOJDJ;
+>>>>>>> Stashed changes
 import com.example.project.service.ProjectServiceJDJ;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

@@ -287,6 +287,7 @@
   <TaskActualTimeModal
     v-model="openTimeModal"
     :timeRegisterUser="timeRegisterUser"
+    @submitted="submitted"
   ></TaskActualTimeModal>
 </template>
 
@@ -366,6 +367,9 @@ const registerActualTime = () => {
 const goModify = () => {
   router.push({ name: "taskModify", params: { taskId: taskId.value } });
 };
+
+// 모달창 등록시
+const submitted = async (val) => {};
 
 // ── 테이블 공통 스타일 ─────────────────────────────
 const headerStyle = () => ({
