@@ -10,13 +10,11 @@
       />
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <!-- 페이지 헤더 -->
           <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
               간트 차트
             </h1>
             <div class="flex items-center gap-3">
-              <!-- 뷰 전환 버튼 -->
               <div class="view-toggle">
                 <button
                   v-for="v in viewOptions"
@@ -31,7 +29,6 @@
             </div>
           </div>
 
-          <!-- 간트 차트 -->
           <div
             class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden"
           >
@@ -42,6 +39,7 @@
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -50,6 +48,7 @@ import Header from "../partials/Header.vue";
 import { Gantt } from "@bryntum/gantt/gantt.module.js";
 import "@bryntum/gantt/gantt.css";
 import { useGanttChartStore } from "../stores/GantChart";
+import { TaskModel } from "@bryntum/gantt/gantt.module.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -65,29 +64,34 @@ const viewOptions = [
   { label: "월별", value: "monthAndYear" },
 ];
 
+class CustomTaskModel extends TaskModel {
+  static fields = [
+    ...TaskModel.fields,
+    { name: "priority" },
+    { name: "priorityCode" },
+    { name: "assignee" },
+    { name: "statusCode" },
+  ];
+}
+
 const changeView = (preset) => {
   activeView.value = preset;
   if (ganttInstance) ganttInstance.viewPreset = preset;
 };
 
-const getPriorityColor = (priority) => {
-  const map = { H1: "#dc2626", H2: "#f59e0b", H3: "#16a34a" };
-  return map[priority] || "#94a3b8";
-};
-
 const getTaskColor = (percentDone) => {
-  if (percentDone >= 100) return "#93c5fd";
-  if (percentDone >= 60) return "#60a5fa";
-  if (percentDone >= 30) return "#7dd3fc";
-  return "#bfdbfe";
+  if (percentDone >= 100) return "linear-gradient(90deg, #93c5fd, #60a5fa)";
+  if (percentDone >= 60) return "linear-gradient(90deg, #bae6fd, #7dd3fc)";
+  if (percentDone >= 30) return "linear-gradient(90deg, #bfdbfe, #93c5fd)";
+  return "#dbeafe";
 };
 
-//날짜 계산
 const initGantt = async () => {
   if (ganttInstance) ganttInstance.destroy();
 
   await store.fetchGanttData(route.params.projectId);
   const tasksData = store.tasksData;
+
   const allDates = store.rawTasks
     .flatMap((t) => [t.estStartDate ?? t.startDate, t.estEndDate ?? t.dueDate])
     .filter(Boolean)
@@ -95,8 +99,6 @@ const initGantt = async () => {
 
   const minDate = new Date(Math.min(...allDates));
   const maxDate = new Date(Math.max(...allDates));
-
-  // 1달추가
   minDate.setMonth(minDate.getMonth() - 1);
   maxDate.setMonth(maxDate.getMonth() + 1);
 
@@ -111,11 +113,7 @@ const initGantt = async () => {
     features: {
       timeRanges: { showCurrentTimeLine: true },
       labels: {
-        // 글자 바 밖으로
-        left: {
-          field: "name",
-          editor: false,
-        },
+        left: { field: "name", editor: false },
       },
     },
 
@@ -142,46 +140,93 @@ const initGantt = async () => {
         width: 80,
         htmlEncode: false,
         renderer({ record }) {
-          const color = getPriorityColor(record.priority);
-          return `<span style="color:${color}; font-weight:600;">${record.priority ?? "-"}</span>`;
+          const map = {
+            H1: "background:#fee2e2;color:#b91c1c",
+            H2: "background:#fef3c7;color:#b45309",
+            H3: "background:#dcfce7;color:#166534",
+            H4: "background:#f1f5f9;color:#475569",
+          };
+          const s = map[record.priorityCode];
+          if (!s) return "-";
+          return `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:0.3px;${s}">${record.priority}</span>`;
         },
       },
-      { text: "진척도", type: "percentdone", width: 90, showValue: true },
+      {
+        text: "진척도",
+        field: "percentDone",
+        width: 100,
+        htmlEncode: false,
+        renderer({ record }) {
+          const p = Math.round(record.percentDone ?? 0);
+          let style, icon;
+          if (p >= 100) {
+            style = "background:#dbeafe;color:#1d4ed8";
+            icon = "✓";
+          } else if (p >= 60) {
+            style = "background:#dcfce7;color:#15803d";
+            icon = "▶";
+          } else if (p >= 30) {
+            style = "background:#fef9c3;color:#a16207";
+            icon = "◐";
+          } else {
+            style = "background:#f1f5f9;color:#475569";
+            icon = "○";
+          }
+          return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;${style}">${icon} ${p}%</span>`;
+        },
+      },
       {
         text: "추가",
         width: 50,
         htmlEncode: false,
         renderer({ record }) {
-          if (
-            String(record.id).startsWith("p_") ||
-            String(record.id).startsWith("root_")
-          )
-            return "";
-          return `<button
-          onclick="window.__ganttAdd('${record.id}')"
-          style="width:22px;height:22px;border-radius:50%;border:1px solid #e2e8f0;
-                 background:#f8fafc;color:#475569;font-size:15px;line-height:1;
-                 cursor:pointer;display:flex;align-items:center;justify-content:center;">
-          +
-        </button>`;
+          const id = String(record.id);
+
+          // 하위프로젝트
+          if (id.startsWith("p_")) {
+            return `<button
+              onclick="window.__ganttAdd('${id.replace("p_", "")}')"
+              title="업무 추가"
+              style="width:22px;height:22px;border-radius:50%;border:1px solid #bfdbfe;
+                     background:#eff6ff;color:#3b82f6;font-size:15px;line-height:1;
+                     cursor:pointer;display:flex;align-items:center;justify-content:center;">
+              +
+            </button>`;
+          }
+
+          // 반려된 업무
+          if (!id.startsWith("root_") && record.statusCode === "REJECTED") {
+            return `<button
+              onclick="window.__ganttAdd('${record.id}')"
+              title="업무 재생성"
+              style="width:22px;height:22px;border-radius:50%;border:1px solid #fecaca;
+                     background:#fef2f2;color:#dc2626;font-size:15px;line-height:1;
+                     cursor:pointer;display:flex;align-items:center;justify-content:center;">
+              +
+            </button>`;
+          }
+
+          return "";
         },
       },
     ],
 
     taskRenderer({ taskRecord, renderData }) {
       if (taskRecord.isParent) {
-        renderData.style = `background-color: #475569; border-radius: 6px;`;
+        renderData.style = `background: #475569; border-radius: 8px;`;
       } else {
-        renderData.style = `background-color: ${getTaskColor(taskRecord.percentDone)}; border-radius: 6px;`;
+        renderData.style = `background: ${getTaskColor(taskRecord.percentDone)}; border-radius: 8px;`;
       }
       return "";
     },
 
     project: {
       tasksData,
+      taskModelClass: CustomTaskModel,
       autoCalculatePercentDoneForParentTasks: true,
     },
   });
+
   window.__ganttAdd = (parentId) => {
     router.push({ path: "/tasks/create", query: { parentId } });
   };
@@ -201,8 +246,6 @@ onBeforeUnmount(() => {
   height: calc(100vh - 180px);
   min-height: 400px;
 }
-
-/* 뷰 전환 토글 */
 .view-toggle {
   display: flex;
   background: #f8fafc;
@@ -228,14 +271,12 @@ onBeforeUnmount(() => {
   color: #1e293b;
 }
 .toggle-btn.active {
-  background: #fff;
-  color: #1e293b;
+  background: #3b82f6;
+  color: #fff;
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  border: none;
 }
-
-/* Bryntum 오버라이드 */
 :deep(.b-toolbar) {
   display: none !important;
 }
@@ -257,7 +298,7 @@ onBeforeUnmount(() => {
   background: #f1f5f9 !important;
 }
 :deep(.b-gantt-task) {
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   font-size: 11px !important;
 }
 :deep(.b-tree-cell-value) {

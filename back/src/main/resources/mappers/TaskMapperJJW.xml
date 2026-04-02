@@ -171,8 +171,12 @@
     </select>
 
     <select id="getTaskAll" resultType="com.example.task.dto.TaskReqDtoJJW">
-        SELECT *
-        FROM tasks
+        SELECT
+        t.*,
+        u.user_name AS assigneeName
+        FROM tasks t
+        LEFT JOIN users u ON t.assignee_user_id = u.user_id
+        WHERE t.is_deleted = 'Q1'
     </select>
 
     <!-- 프로젝트 목록 조회 -->

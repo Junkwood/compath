@@ -288,17 +288,14 @@ onMounted(async () => {
 
 const handleSubmit = async () => {
   const taskId = route.params.taskId;
-  const status = Number(store.form.taskStatusId);
   const editorUserId = authStore.user?.userId || authStore.user?.id;
+
   try {
-    if (status === 4) {
-      await store.rejectTask(taskId, editorUserId);
-      Swal.fire("완료", "반려 처리가 되었습니다.", "success");
-    } else {
-      await store.updateTask(taskId);
-      Swal.fire("완료", "수정되었습니다.", "success");
+    const isSuccess = await store.updateTask(taskId, editorUserId);
+
+    if (isSuccess) {
+      router.push("/tasks");
     }
-    router.push("/tasks");
   } catch (e) {
     Swal.fire("실패", e.message, "error");
   }
