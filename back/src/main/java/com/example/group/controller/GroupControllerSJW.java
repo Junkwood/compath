@@ -36,7 +36,7 @@ public class GroupControllerSJW {
         return groupService.registerGroup(group);
     }
     @PutMapping("/api/group")
-    public String update(@RequestBody GroupDTOSJW group) {
+    public GroupDTOSJW update(@RequestBody GroupDTOSJW group) {
         return groupService.modifyGroup(group);
     }
 }

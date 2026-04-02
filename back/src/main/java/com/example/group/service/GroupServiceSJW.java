@@ -11,5 +11,5 @@ public interface GroupServiceSJW {
     GroupDTOSJW getById(Integer id);
     String registerGroup(GroupDTOSJW group);
     String checkDuplicatedName(String name);
-    String modifyGroup(GroupDTOSJW group);
+    GroupDTOSJW modifyGroup(GroupDTOSJW group);
 }

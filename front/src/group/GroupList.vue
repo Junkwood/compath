@@ -461,11 +461,13 @@ export default {
 
     const handleToggle = async (group) => {
       try {
-        const newStatus = await groupStore.changeStatus(group.groupId);
-        group.isActive = newStatus; // 백엔드가 'Y'/'N' 반환 기준
+        await groupStore.changeStatus(
+          group.groupId,
+          group.isActive,
+          authStore.user.userId,
+        );
       } catch {
         alert("상태 변경에 실패했습니다.");
-        await groupStore.getGroupList();
       }
     };
 

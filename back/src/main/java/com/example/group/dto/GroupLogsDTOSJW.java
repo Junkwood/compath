@@ -13,16 +13,14 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GroupDTOSJW {
-    Integer groupId;
-    String groupName;
-    String description;
-    String roleId;
-    Date joinedAt;
-    String isActive;
-    String groupType;
-    List<EmpVOSJW> members;
-    List<GroupLogsDTOSJW> logs;
-    Integer createdBy;
-    Integer editorUserId;
+public class GroupLogsDTOSJW {
+    Integer activityLogId;
+    String targetType;
+    String targetId;
+    String actionType;
+    Integer actorUserId;
+    String actorName;
+    String beforeValue;
+    String afterValue;
+    Date createdAt;
 }

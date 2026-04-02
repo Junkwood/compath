@@ -620,7 +620,7 @@
 
 <script setup>
 import { ref, reactive, computed, onUnmounted } from "vue";
-import axios from "axios";
+import api from "../utils/api";
 
 const currentStep = ref(0);
 const isLoading = ref(false);
@@ -767,7 +767,7 @@ async function handleSendCode() {
 
   isLoading.value = true;
   try {
-    const response = await axios.post("/api/email/sendCode", form);
+    const response = await api.post("/email/sendCode", form);
     console.log(response);
     emailId.value = response.data.emailId;
     if (emailId.value <= 0) {
@@ -788,7 +788,7 @@ async function handleSendCode() {
 async function handleResend() {
   if (resendCooldown.value > 0) return;
   try {
-    const response = await axios.post("/api/email/sendCode", form);
+    const response = await api.post("/email/sendCode", form);
     emailId.value = response.data.emailId;
     if (emailId.value <= 0) {
       //에러 일으키기
@@ -813,7 +813,7 @@ async function handleVerifyCode() {
 
   isLoading.value = true;
   try {
-    const response = await axios.post("/api/email/verifyCode", {
+    const response = await api.post("/email/verifyCode", {
       emailId: emailId.value,
       code: code,
     });
@@ -851,7 +851,7 @@ async function handleResetPassword() {
   isLoading.value = true;
   try {
     // TODO: POST /api/auth/reset-password { email: form.email, password: form.newPassword }
-    const response = await axios.put("/api/emp", {
+    const response = await api.put("/emp", {
       userId: form.userId,
       password: form.newPassword,
     });

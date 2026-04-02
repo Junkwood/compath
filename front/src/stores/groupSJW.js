@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import api from "../utils/api";
 
 export const useGroupStore = defineStore("group", {
   state: () => ({
@@ -10,22 +10,39 @@ export const useGroupStore = defineStore("group", {
   getters: {},
   actions: {
     async getActiveGroupList() {
-      await axios.get("/api/group/list/active").then((response) => {
+      await api.get("/group/list/active").then((response) => {
         this.activeGroupList = response.data;
       });
     },
     async getGroupList() {
-      const response = await axios.get("/api/group/list");
+      const response = await api.get("/group/list");
       this.groupList = response.data;
       return this.groupList;
     },
-    async changeStatus(id) {
-      const response = await axios.get("/api/group/deacitvate/" + id);
-      this.getGroupList();
-      return response.data;
+    async changeStatus(id, isActive, editorUserId) {
+      let value;
+      if (isActive == "Y") {
+        value = "O2";
+      } else {
+        value = "O1";
+      }
+      console.log(id, value, editorUserId);
+      const group = {
+        groupId: id,
+        isActive: value,
+        editorUserId: editorUserId,
+      };
+      const response = await api.put("/group", group);
+      const result = response.data;
+      if (result.isActive == null) {
+        return false;
+      } else {
+        this.getGroupList();
+        return true;
+      }
     },
     async getGroupInfo(id) {
-      const response = await axios.get("/api/group/info/" + id);
+      const response = await api.get("/group/info/" + id);
       const result = response.data;
       this.group = result;
       return this.group;

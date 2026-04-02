@@ -252,8 +252,8 @@
 <script setup>
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
 import { useAuthStore } from "../stores/auth";
+import api from "../utils/api";
 const authStore = useAuthStore();
 const router = useRouter();
 
@@ -299,7 +299,7 @@ async function handleSubmit() {
   isLoading.value = true;
 
   try {
-    const response = await axios.post("/api/login", {
+    const response = await api.post("/api/login", {
       userId: form.id, // 사번
       password: form.password,
     });

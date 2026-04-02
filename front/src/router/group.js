@@ -20,5 +20,10 @@ const groupRoutes = [
     component: () => import("../group/GroupInfo.vue"),
     props: true,
   },
+  {
+    path: "/admin/group/modify/:groupId",
+    component: () => import("../group/GroupModify.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 export default groupRoutes;

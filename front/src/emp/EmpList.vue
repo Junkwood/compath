@@ -483,8 +483,7 @@ export default {
 
     const handleToggle = async (account) => {
       try {
-        const newStatus = await empStore.chageStatus(account.userId);
-        account.isActive = newStatus;
+        await empStore.chageStatus(account.userId);
       } catch {
         alert("실패");
         await empStore.getEmpList();

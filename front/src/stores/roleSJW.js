@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
-
+import api from "../utils/api";
 export const useRoleStore = defineStore("role", {
   state: () => ({
     roleList: [],
@@ -8,7 +7,7 @@ export const useRoleStore = defineStore("role", {
   getters: {},
   actions: {
     async getRoleList() {
-      const response = await axios.get("/api/role/list");
+      const response = await api.get("/role/list");
       this.roleList = response.data;
       return this.roleList;
     },

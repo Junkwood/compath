@@ -13,7 +13,10 @@
             <id property="groupMemberId" column="group_member_id"/>
             <result property="userId" column="user_id"/>
             <result property="roleName" column="role_name"/>
-            <result property="name" column="user_name"/> </collection>
+            <result property="roleId" column="role_id"/>
+            <result property="name" column="user_name"/>
+            <result property="primaryGroupName" column="primary_group_name"/>
+        </collection>
     </resultMap>
     <sql id="group">
         GROUP_ID,
@@ -49,12 +52,30 @@
 
     <select id="getById" resultMap="GroupDetailMap">
         SELECT
-        g.group_id, g.group_name, active(g.is_active) as is_active, g.group_type, g.description, m.group_member_id, m.user_id, r.role_name,
-        u.user_name
+        g.group_id,
+        g.group_name,
+        active(g.is_active) as is_active,
+        g.group_type,
+        g.description,
+
+        -- 멤버 정보
+        m.group_member_id,
+        m.user_id,
+        r.role_name,
+        r.role_id,
+        u.user_name,
+
+        --  대표 직군 그룹명
+        pg.group_name AS primary_group_name
+
         FROM groups g
-        LEFT JOIN group_members m ON g.group_id = m.group_id
+        LEFT JOIN group_members m ON g.group_id = m.group_id AND m.is_active='O1'
         LEFT JOIN users u ON m.user_id = u.user_id
         LEFT JOIN roles r ON m.role_id = r.role_id
+        -- 해당 유저의 대표 직군(is_primary='Y') 정보 찾기
+        LEFT JOIN group_members pm ON m.user_id = pm.user_id AND pm.is_primary = 'Y'
+        LEFT JOIN groups pg ON pm.group_id = pg.group_id
+
         WHERE g.group_id = #{groupId}
     </select>
     <select id="getAllGroupForEmpRegister">
@@ -84,5 +105,92 @@
         </selectKey>
         INSERT INTO groups(group_id,group_name,group_type,description,created_by)
         VALUES (#{groupId}, #{groupName},#{groupType},#{description},#{createdBy})
+    </insert>
+    <select id="getGroupActivityLogs" resultType="com.example.group.dto.GroupLogsDTOSJW">
+        SELECT
+        al.activity_log_id AS activityLogId,
+        al.target_type AS targetType,
+        al.target_id AS targetId,
+        fn_get_action_name(al.action_type) AS actionType,
+        al.actor_user_id AS actorUserId,
+        u.user_name AS actorName,
+        al.before_value AS beforeValue,
+        al.after_value AS afterValue,
+        al.created_at AS createdAt
+        FROM activity_logs al
+        LEFT JOIN users u ON al.actor_user_id = u.user_id
+        WHERE
+        -- 1. 그룹 자체(groups)의 변경 로그 가져오기
+        (al.target_type = 'groups' AND al.target_id = TO_CHAR(#{groupId}))
+
+        OR
+
+        -- 2. 해당 그룹에 속한 구성원(group_members)의 변경 로그 가져오기
+        (al.target_type = 'group_members' AND al.target_id IN (
+        SELECT TO_CHAR(group_member_id)
+        FROM group_members
+        WHERE group_id = #{groupId}
+        ))
+        ORDER BY al.created_at DESC
+    </select>
+    <update id="modifyGroup" parameterType="com.example.group.dto.GroupDTOSJW">
+        UPDATE groups
+        <set>
+            <if test="groupName != null and groupName != ''">
+                group_name = #{groupName},
+            </if>
+
+            <if test="isActive != null and isActive != ''">
+                is_active = #{isActive},
+            </if>
+
+            <if test="description != null">
+                description = #{description},
+            </if>
+
+            <if test="editorUserId != null">
+                editor_user_id = #{editorUserId},
+            </if>
+
+            updated_at = SYSDATE
+        </set>
+        WHERE group_id = #{groupId}
+    </update>
+    <select id="getMembersByGroupId" resultType="com.example.emp.entity.EmpVOSJW">
+        SELECT
+        group_member_id AS groupMemberId,
+        user_id AS userId,
+        role_id AS roleId
+        FROM group_members
+        WHERE group_id = #{groupId}
+    </select>
+
+    <insert id="insertGroupMember">
+        INSERT INTO group_members (
+        group_member_id, group_id, user_id, role_id, created_by
+        ) VALUES (
+        group_member_id_seq.NEXTVAL, #{groupId}, #{userId}, #{roleId}, #{editorUserId}
+        )
+    </insert>
+
+    <update id="updateGroupMemberRole">
+        UPDATE group_members
+        SET role_id = #{roleId},
+        editor_user_id = #{editorUserId},
+        updated_at = SYSDATE
+        WHERE group_id = #{groupId} AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteGroupMember">
+        DELETE FROM group_members
+        WHERE group_id = #{groupId} AND user_id = #{userId}
+    </delete>
+
+    <insert id="insertDeleteLog">
+        INSERT INTO activity_logs (
+        activity_log_id, target_type, target_id, action_type, actor_user_id, before_value, after_value, created_at
+        ) VALUES (
+        activity_logs_seq.NEXTVAL, 'group_members', #{targetId}, 'MD', #{editorUserId}, '참여', '제외', SYSDATE
+        )
     </insert>
 </mapper>
