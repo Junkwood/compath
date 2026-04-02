@@ -22,9 +22,6 @@ export const useTaskStore = defineStore("task", () => {
   //  소요시간 (수정 전용)
   const actualHours = ref("");
 
-  //진척도
-  const progressOptions = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-
   //  Form
   const initialForm = {
     projectId: "",
@@ -53,32 +50,75 @@ export const useTaskStore = defineStore("task", () => {
   //  초기화 (등록용)
   const initCreate = async (projectId) => {
     resetForm();
-    await loadCommonCodes();
+    const res = await axios.get("/api/task-total-info", {
+      params: { projectId },
+    });
 
-    statusList.value = statusList.value.filter(
-      (s) => s.codeName === "시작 전" || s.codeName === "진행중",
-    );
+    const {
+      userList: uList,
+      taskTypeList: tList,
+      milestoneList: mList,
+      projectList: pList,
+    } = res.data;
 
-    if (projectId) {
-      const res = await axios.get(`/api/projectDetail/${projectId}`);
-      const d = res.data;
-      form.value.projectName = d.displayProjectName;
-      form.value.subProjectName = d.displaySubProjectName;
-      form.value.projectId = d.parentProjectId || d.projectId;
-      form.value.subProjectId = d.parentProjectId ? d.projectId : null;
-      // 마일스톤은 항상 최상위 프로젝트 기준으로 조회
-      await fetchMilestones(form.value.projectId);
+    // 기초 리스트
+    userList.value = uList.map((u) => ({ name: u.userName, value: u.userId }));
+    taskTypeList.value = tList;
 
-      form.value.startDate = "";
-      form.value.dueDate = "";
+    // 마일스톤 리스트 매핑 및 초기값
+    milestoneList.value = mList.map((m) => ({
+      name: m.milestoneName,
+      value: m.milestoneId,
+    }));
+
+    if (milestoneList.value.length > 0) {
+      form.value.milestone = milestoneList.value[0].name;
+      form.value.milestoneId = milestoneList.value[0].value;
+    } else {
+      form.value.milestone = "등록된 마일스톤 없음";
     }
 
-    if (statusList.value.length > 0)
-      form.value.taskStatusId = statusList.value[0].codeValue;
-    if (taskTypeList.value.length > 0)
-      form.value.taskTypeId = taskTypeList.value[0].taskTypeId;
-  };
+    // 2. 프로젝트 정보
+    if (pList && pList.length > 0) {
+      const currentProj = pList.find((proj) => proj.projectId == projectId);
 
+      if (currentProj) {
+        // 만약 현재 프로젝트가 하위 프로젝트일때
+        if (currentProj.parentProjectId) {
+          const parentProj = pList.find(
+            (p) => p.projectId == currentProj.parentProjectId,
+          );
+          form.value.projectName = parentProj
+            ? parentProj.projectName
+            : "상위 프로젝트 없음";
+          form.value.projectId = currentProj.parentProjectId;
+
+          form.value.subProjectName = currentProj.projectName;
+          form.value.subProjectId = currentProj.projectId;
+        } else {
+          // 현재 프로젝트가 상위 프로젝트일때
+          form.value.projectName = currentProj.projectName;
+          form.value.projectId = currentProj.projectId;
+          form.value.subProjectName = "";
+          form.value.subProjectId = "";
+        }
+      }
+    }
+
+    await loadCommonCodes();
+    statusList.value = statusList.value.filter(
+      (status) =>
+        status.value === "1" ||
+        status.value === "2" ||
+        status.name.includes("시작") ||
+        status.name.includes("진행"),
+    );
+
+    // 시작 전으로 기본 값
+    if (statusList.value.length > 0) {
+      form.value.taskStatusId = statusList.value[0].value;
+    }
+  };
   // 초기화 (수정용)
   const initEdit = async (taskId) => {
     resetForm();
@@ -116,7 +156,7 @@ export const useTaskStore = defineStore("task", () => {
       value: m.milestoneId,
     }));
 
-    // 프로젝트 정보 세팅 (projectList에서 parent/child 구분)
+    // 프로젝트 정보 세팅
     const parentProject = pd.find((p) => !p.parentProjectId) ?? pd[0];
     const subProject = pd.find((p) => p.parentProjectId);
 
@@ -138,25 +178,19 @@ export const useTaskStore = defineStore("task", () => {
     };
   };
 
-  //  공통 코드 로드
+  //  공통 코드 로드(우선순위, 상태)
   const loadCommonCodes = async () => {
-    const [typeRes, codeRes] = await Promise.all([
-      axios.get("/api/taskType"),
-      axios.get("/api/code", { params: { groupValue: ["0H", "0G"] } }),
-    ]);
-    taskTypeList.value = typeRes.data;
+    const codeRes = await axios.get("/api/code", {
+      params: { groupValue: ["0H", "0G"] },
+    });
+
     priorityList.value = codeRes.data.c0H;
     statusList.value = codeRes.data.c0G;
   };
 
   //  담당자
-  const openUserModal = async () => {
-    const res = await axios.get("/api/taskUser");
-    userList.value = res.data.map((u) => ({
-      ...u,
-      name: u.userName || u.user_name,
-      value: u.userId || u.user_id,
-    }));
+  const openUserModal = () => {
+    // 이미 userList에 데이터가 들어있으므로 모달 상태만 바꿉니다.
     userModal.value = true;
   };
 

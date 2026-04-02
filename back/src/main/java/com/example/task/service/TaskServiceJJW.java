@@ -16,22 +16,21 @@ public interface TaskServiceJJW {
     int updateTask(TaskReqDtoJJW dto);
     //업무 전체 조회
     List<TaskReqDtoJJW> getTaskAll();
-
-    //업무 상세 조회
-    TaskReqDtoJJW getTaskById(Integer taskId);
     //사유등록
     void insert1 (TaskRejectDtoJJW re);
+    //프로시져 curssor
+    Map<String, Object> getTaskInitData(Integer taskId, Integer projectId);
 
 
     //선택 모달 조회
-    List<ProjectDtoJJW> getProjectList();
-    List<UserDtoJJW> getUserList();
-    List<TaskTypeDtoJJW> getTaskType();
-    List<TaskStatusDtoJJW> getTaskStatus();
-    List<MilestoneDtoJJW> getMilestone(Integer projectId);
-
+//    List<ProjectDtoJJW> getProjectList();
+//    List<UserDtoJJW> getUserList();
+//    List<TaskTypeDtoJJW> getTaskType();
+//    List<TaskStatusDtoJJW> getTaskStatus();
+//    List<MilestoneDtoJJW> getMilestone(Integer projectId);
     //프로젝트 상세 조회
-    ProjectDtoJJW getProjectDetail(Integer projectId);
+ //   ProjectDtoJJW getProjectDetail(Integer projectId);
+    //업무 상세 조회
+    // TaskReqDtoJJW getTaskById(Integer taskId);
 
-    Map<String, Object> getTaskInitData(Integer taskId, Integer projectId);
 }

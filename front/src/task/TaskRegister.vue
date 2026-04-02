@@ -247,8 +247,7 @@ const {
 } = store;
 
 onMounted(async () => {
-  const projectId = route.params.projectId || route.query.projectId;
-  await store.initCreate(projectId);
+  await store.initCreate(route.params.projectId || route.query.projectId);
 });
 
 const handleSubmit = async () => {

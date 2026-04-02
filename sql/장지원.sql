@@ -98,11 +98,9 @@ SELECT
     FROM tasks
     WHERE task_id = 10083;
 
-
+ALTER PROCEDURE SP_GET_TASK_TOTAL_INFO COMPILE;
 
 -- pl/sql 업무+ 프로젝트 + 상태 + 마일스톤
-DELIMITER $$
-
 CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
     p_task_id      IN  NUMBER,
     p_project_id   IN  NUMBER,
@@ -112,35 +110,35 @@ CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
     taskTypeList   OUT SYS_REFCURSOR,
     milestoneList  OUT SYS_REFCURSOR
 ) AS
-    v_pid NUMBER;
 BEGIN
-    v_pid := p_project_id;
-
-    IF v_pid IS NULL THEN
-        SELECT project_id INTO v_pid FROM tasks WHERE task_id = p_task_id;
-    END IF;
-
     OPEN taskDetail FOR
     SELECT t.*, u.user_name as ASSIGNEENAME
     FROM tasks t
     LEFT JOIN users u ON t.assignee_user_id = u.user_id
     WHERE t.task_id = p_task_id;
 
-    OPEN projectList FOR
-    SELECT * FROM projects
-    WHERE project_id = v_pid
-    OR project_id = (SELECT parent_project_id FROM projects WHERE project_id = v_pid);
-
-    OPEN userList FOR SELECT user_id, user_name FROM users WHERE is_active = 'O1';
+	OPEN projectList FOR
+    SELECT * FROM projects 
+    WHERE project_id IN (
+        SELECT NVL(p_project_id, project_id) FROM tasks WHERE task_id = p_task_id
+        UNION
+        SELECT project_id FROM projects WHERE project_id = p_project_id --등록 할때
+        UNION
+        SELECT parent_project_id FROM projects WHERE project_id = p_project_id
+    );   
+	
+	OPEN userList FOR SELECT user_id, user_name FROM users WHERE is_active = 'O1';
 
     OPEN taskTypeList FOR SELECT task_type_id, type_name FROM task_types WHERE is_active = 'O1';
 
-    OPEN milestoneList FOR
-    SELECT milestone_id, milestone_name
-    FROM milestones
-    WHERE project_id = (SELECT NVL(parent_project_id, project_id) FROM projects WHERE project_id = v_pid);
+	OPEN milestoneList FOR
+    SELECT milestone_id, milestone_name FROM milestones
+    WHERE project_id = NVL(
+        (SELECT project_id FROM tasks WHERE task_id = p_task_id), -- 수정 시
+        p_project_id -- 등록 시
+    )
+    OR project_id = (SELECT parent_project_id FROM projects WHERE project_id = p_project_id);
 END;
-$$
 
 SELECT line, position, text
 FROM user_errors
