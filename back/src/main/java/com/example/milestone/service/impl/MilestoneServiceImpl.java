@@ -1,5 +1,6 @@
 package com.example.milestone.service.impl;
 
+import com.example.milestone.dto.MilestoneCreateDto;
 import com.example.milestone.dto.MilestoneSubProjectDto;
 import com.example.milestone.dto.MilestoneTabDto;
 import com.example.milestone.dto.MilestoneDto;
@@ -41,6 +42,19 @@ public class MilestoneServiceImpl implements MilestoneService {
     @Override
     public List<TaskListWnoSubPidDtoJDJ> getTaskListWnoSubPid(int projectId, int milestoneId) {
         return milestoneMapper.getTaskListWnoSubPid(projectId, milestoneId);
+    }
+
+    //마일스톤 생성
+    @Override
+    public void registerMilestone(MilestoneCreateDto dto) {
+        milestoneMapper.registerMilestone(dto);
+    }
+
+
+    //마일스톤 수정
+    @Override
+    public void updateMilestone(MilestoneCreateDto dto) {
+        milestoneMapper.updateMilestone(dto);
     }
 
 

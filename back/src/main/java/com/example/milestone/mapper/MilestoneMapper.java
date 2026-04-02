@@ -1,5 +1,6 @@
 package com.example.milestone.mapper;
 
+import com.example.milestone.dto.MilestoneCreateDto;
 import com.example.milestone.dto.MilestoneSubProjectDto;
 import com.example.milestone.dto.MilestoneTabDto;
 import com.example.milestone.dto.MilestoneDto;
@@ -22,4 +23,10 @@ public interface MilestoneMapper {
 
     //마일스톤은 있고 하위프로젝트는 없는 개별업무 조회
     public List<TaskListWnoSubPidDtoJDJ> getTaskListWnoSubPid(int projectId, int milestoneId);
+
+    //마일스톤 생성
+    int registerMilestone(MilestoneCreateDto dto);
+
+    //마일스톤 수정
+    int updateMilestone(MilestoneCreateDto dto);
 }
