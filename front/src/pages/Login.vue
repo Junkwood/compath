@@ -299,7 +299,7 @@ async function handleSubmit() {
   isLoading.value = true;
 
   try {
-    const response = await api.post("/api/login", {
+    const response = await api.post("/login", {
       userId: form.id, // 사번
       password: form.password,
     });
