@@ -288,9 +288,17 @@ const closeMemberMdoal = () => {
 // 구성원 모달 추가 버튼
 const memberInsert = async (value) => {
   console.log(value);
+  let list = [];
   value.forEach(async (val) => {
-    await projectStore.registerProjectMem(val.id, id, val.role);
+    list.push({
+      userId: val.id,
+      projectId: id,
+      roleId: val.role,
+    });
   });
+
+  console.log(list);
+  await projectStore.registerProjectMem(list);
 
   closeMemberMdoal();
 };

@@ -30,8 +30,8 @@ public class ProjectServiceImplKJH implements ProjectServiceKJH {
 
 //    프로젝트 구성원 등록
     @Override
-
-    public List<ProjectMemberDtoKJH> registerMember(ProjectMemberDtoKJH dto) {
+    public List<ProjectMemberDtoKJH> registerMember(List<ProjectMemberDtoKJH> dtoList) {
+        for(ProjectMemberDtoKJH dto : dtoList){
         // 프로젝트 구성원 테이블 추가
         mapper.registerMember(dto);
         // 구성원 테이블 기본키 값 조회
@@ -40,8 +40,10 @@ public class ProjectServiceImplKJH implements ProjectServiceKJH {
         dto.setProjectMemberId(id);
         // 구성원 역할 테이블에 등록
         mapper.registerMemRole(dto);
+        }
 
-        return mapper.getAllProjectMem(dto.getProjectId());
+        // 구서원 조회
+        return mapper.getAllProjectMem(dtoList.getFirst().getProjectId());
     }
 
     @Override

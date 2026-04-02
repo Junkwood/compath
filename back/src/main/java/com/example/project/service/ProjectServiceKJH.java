@@ -12,7 +12,7 @@ public interface ProjectServiceKJH {
     public int modifyProject(ProjectModifyDtoKJH dto);
 
     //프로젝트 구성원 추가
-    public List<ProjectMemberDtoKJH> registerMember(ProjectMemberDtoKJH dto);
+    public List<ProjectMemberDtoKJH> registerMember(List<ProjectMemberDtoKJH> dtoList);
 
     //프로젝트 구성원 및 역할 조회
     public List<ProjectMemberDtoKJH> getAllProjectMem(int id);

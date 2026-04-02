@@ -203,7 +203,11 @@
                 </td>
               </tr>
               <template v-if="filterList.length > 0">
-                <tr v-for="task in filterList" :key="task.id">
+                <tr
+                  v-for="task in filterList"
+                  :key="task.id"
+                  @click="goDetail(task.taskId)"
+                >
                   <td class="p-2 w-80">
                     <div class="text-center">
                       {{ task.title }}
@@ -602,6 +606,12 @@ const resetForm = () => {
     priority: "전체",
     small: "전체",
   };
+};
+
+// 업무 상세페이지 이동
+const goDetail = (val) => {
+  console.log(val);
+  router.push({ name: "taskDetail", params: { taskId: val } });
 };
 </script>
 <style scoped>

@@ -65,4 +65,34 @@
         FROM projects
         WHERE project_id = #{id}
     </select>
+    
+<!--    업무 상세-->
+    <select id="getTaskById">
+        SELECT t.task_id,
+               t.title,
+               t.content,
+               t.assignee_user_id,
+               u.user_name AS assignee_user_name,
+               c.code_name AS priority_name,
+               t.progress_rate,
+               t.start_date,
+               t.due_date,
+               t.actual_hours,
+               t.estimated_hours,
+               t.est_start_date,
+               t.est_end_date,
+               t.created_at,
+               p.project_name,
+               p2.project_name AS parent_project_name,
+               t2.type_name,
+               t3.status_name
+        FROM tasks t
+        JOIN projects p ON t.project_id = p.project_id
+        LEFT JOIN projects p2 ON p.parent_project_id = p.project_id
+        JOIN task_types t2 ON t.task_type_id = t2.task_type_id
+        JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
+        JOIN common_code c ON t.priority_code = c.code_value
+        JOIN users u ON t.assignee_user_id = u.user_id
+        WHERE t.task_id = #{id}
+    </select>
 </mapper>
