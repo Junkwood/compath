@@ -1,5 +1,5 @@
 import axios from "axios";
-import router from "../router"; // 라우터 파일 경로에 맞게 수정
+import router from "../router/router.js"; // 라우터 파일 경로에 맞게 수정
 import { useAuthStore } from "../stores/auth"; // 스토어 파일 경로에 맞게 수정
 
 // 1. 커스텀 Axios 인스턴스 생성
@@ -38,7 +38,24 @@ api.interceptors.response.use(
         authStore.logout(); // 피니아 데이터 초기화
         router.push("/login"); // 로그인 화면으로 강제 이동
       }
+
+      else if (status === 403) {
+        alert("접근 권한이 없습니다.");
+      }
+      else if (status === 404) {
+        alert("요청하신 페이지나 데이터를 찾을 수 없습니다.");
+      }
+      else if (status === 500) {
+        alert("서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      }
+      else {
+        const serverMessage = error.response.data?.message;
+        alert(serverMessage || "데이터 요청 중 오류가 발생했습니다.");
+      }
+    } else {
+      alert("서버와 통신할 수 없습니다. 네트워크 상태를 확인해주세요.");
     }
+
 
     // 컴포넌트 쪽으로 에러를 넘겨줌 (컴포넌트의 catch 블록이 실행되도록)
     return Promise.reject(error);
