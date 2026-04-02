@@ -15,4 +15,10 @@ public interface TaskServiceKJH {
 
     // 업무 상세
     public TaskDetailDTOKJH getTaskById(Integer id);
+
+    // 소요시간 등록
+    public List<TaskDetailDTOKJH> registerTimeEntries(TaskDetailDTOKJH dto);
+
+    // 업무별 소요시간 목록들 조회
+    public List<TaskDetailDTOKJH> getTimeEntriesById(Integer id);
 }

@@ -17,4 +17,22 @@ public interface TaskMapperKJH {
 
   // 업무 상세
   public TaskDetailDTOKJH getTaskById(Integer id);
+
+  // 소요시간 등록
+  public int registerTimeEntries(TaskDetailDTOKJH dto);
+
+  // 소요시간 등록
+  public int getSumTimeById(Integer id);
+
+  // 소요시간 등록 건 조회
+  public int getTimeEntriesId(Integer id);
+
+  // 소요시간 등록으로 인한 합 수정
+  public int modifyActualTime(Integer hours, Integer id);
+
+  // 활동내역 테이블 등록(소요시간)
+  public int registerTimeLog(TaskDetailDTOKJH dto);
+
+  // 업무별 소요시간 목록들 조회
+   public List<TaskDetailDTOKJH> getTimeEntriesById(Integer id);
 }

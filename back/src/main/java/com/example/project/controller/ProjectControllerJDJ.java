@@ -1,11 +1,6 @@
 package com.example.project.controller;
 
-
-<<<<<<< Updated upstream
 import com.example.project.dto.*;
-=======
-import com.example.project.dto.ProjectDTOJDJ;
->>>>>>> Stashed changes
 import com.example.project.service.ProjectServiceJDJ;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +14,7 @@ public class ProjectControllerJDJ {
 
     final ProjectServiceJDJ projectServiceJDJ;
 
-    //프로젝트 전체목록 조회
+    //프로젝트 전체목록 조회e
     @ResponseBody
     @GetMapping("/ProjectList")
     public List<ProjectListDto> list() {

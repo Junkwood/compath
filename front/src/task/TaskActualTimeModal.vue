@@ -15,7 +15,7 @@
     >
       <!-- 프로젝트 명 -->
       <el-form-item label="업무명" prop="taskTitle">
-        <el-input v-model="form.taskTitle" placeholder="" disabled />
+        <el-input v-model="form.taskTitle" placeholder="" />
       </el-form-item>
       <!-- 작업일자 작업자 -->
       <div class="date-row">
@@ -27,12 +27,11 @@
             value-format="YYYY-MM-DD"
             format="YYYY-MM-DD"
             style="width: 100%"
-            disabled
           />
         </el-form-item>
 
         <el-form-item label="작업시간" class="date-item" prop="hours">
-          <el-input v-model="form.hours" placeholder="" type="number" />
+          <el-input v-model="form.hours" placeholder="" type="number" min="1" />
         </el-form-item>
       </div>
 
@@ -92,10 +91,27 @@ const handleClose = () => {
 
 // 등록버튼
 const handleSubmit = () => {
-  console.log(form.value.hours, form.value.description);
-  let obj = { hours: form.value.hours, task_desc: form.value.description };
+  let formHour = form.value.hours;
+  let formDescription = form.value.description;
+  let vaild = true;
+  if (
+    formHour == null ||
+    formHour == "" ||
+    formDescription == null ||
+    formDescription == ""
+  ) {
+    vaild = false;
+  }
 
-  emit("submitted", obj);
+  if (vaild) {
+    let obj = {
+      hours: form.value.hours,
+      taskDesc: form.value.description,
+      workDate: form.value.workDate,
+    };
+
+    emit("submitted", obj);
+  }
 };
 
 // props 변경내역 확인
