@@ -1,0 +1,690 @@
+<template>
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
+
+    <!-- Content area -->
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+    >
+      <!-- Site header -->
+      <Header
+        :sidebarOpen="sidebarOpen"
+        @toggle-sidebar="sidebarOpen = !sidebarOpen"
+      />
+
+      <main class="grow">
+        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+          <!-- 상단 타이틀 -->
+          <div class="mb-6 proj-title-row">
+            <div class="proj-title-left">
+              <div class="proj-name-row">
+                <span class="proj-name">【{{ subProjectInfo.projectName }}】</span>
+                <span class="proj-period">
+                  {{ subProjectInfo.startDate }} - {{ subProjectInfo.endDate }}
+                </span>
+              </div>
+            </div>
+
+            <div class="proj-title-right">
+              <el-button class="task-create-btn" @click="handleCreateTask">
+                업무 생성
+              </el-button>
+              <el-button class="setting-btn" @click="handleSubProjectSetting">
+                ⚙ 하위프로젝트 설정
+              </el-button>
+            </div>
+          </div>
+
+          <!-- 본문 -->
+          <div class="sub-dash-layout">
+            <!-- 좌측 -->
+            <div class="left-panel">
+              <div class="card main-card">
+                <div class="sub-header-row">
+                  <div class="sub-header-left">
+                    <div class="sub-title">하위 프로젝트</div>
+                    <div class="sub-period-inline">
+                      {{ subProjectInfo.startDate }} - {{ subProjectInfo.endDate }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sub-name-box">
+                  [ {{ subProjectInfo.projectName }} ]
+                </div>
+
+                <!-- 업무 현황 테이블 -->
+                <div class="section-block">
+                  <div class="inner-table-wrap">
+                    <el-table
+                      :data="taskSummaryData"
+                      class="status-table"
+                      style="width: 100%"
+                      :header-cell-style="tableHeaderStyle"
+                      :cell-style="tableCellStyle"
+                    >
+                      <el-table-column prop="type" label="유형" min-width="90" />
+                      <el-table-column prop="total" label="전체" min-width="72" align="center" />
+                      <el-table-column prop="inProgress" label="진행중" min-width="80" align="center" />
+                      <el-table-column prop="done" label="완료" min-width="72" align="center" />
+                      <el-table-column prop="rejected" label="반려" min-width="72" align="center" />
+                      <el-table-column prop="sum" label="합계" min-width="72" align="center" />
+                    </el-table>
+                  </div>
+                </div>
+
+                <!-- 업무목록 -->
+                <div class="section-block task-list-section">
+                  <div class="section-title">
+                    [{{ subProjectInfo.projectName }}] 의 업무목록 리스트
+                  </div>
+
+                  <div class="inner-list-wrap">
+                    <el-table
+                      :data="taskList"
+                      class="task-list-table"
+                      style="width: 100%"
+                      :show-header="false"
+                      :cell-style="taskListCellStyle"
+                    >
+                      <el-table-column prop="title" min-width="260" />
+                      <el-table-column label="" width="120" align="right">
+                        <template #default="{ row }">
+                          <span class="task-pl">PL {{ row.plName }}</span>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 우측 -->
+            <div class="right-panel">
+              <!-- 관리자 카드 -->
+              <div class="card side-card manager-card">
+                <div class="side-title">하위프로젝트 관리자</div>
+
+                <div class="manager-item">
+                  <div class="manager-avatar">
+                    {{ subProjectInfo.managerName?.charAt(0) }}
+                  </div>
+
+                  <div class="manager-info">
+                    <span class="manager-name">{{ subProjectInfo.managerName }}</span>
+                    <span class="manager-role">{{ subProjectInfo.managerRole }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 그래프 카드 -->
+              <div class="card side-card graph-card">
+                <div class="side-title">업무 상태 그래프</div>
+
+                <div class="graph-body">
+                  <div class="graph-placeholder">
+                    <div class="graph-bars">
+                      <div
+                        v-for="item in graphData"
+                        :key="item.label"
+                        class="graph-item"
+                      >
+                        <div class="graph-bar-wrap">
+                          <div
+                            class="graph-bar"
+                            :style="{ height: `${item.value}%` }"
+                          ></div>
+                        </div>
+                        <div class="graph-label">{{ item.label }}</div>
+                        <div class="graph-value">{{ item.raw }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 우측 끝 -->
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+
+import Sidebar from "../partials/Sidebar.vue";
+import Header from "../partials/Header.vue";
+
+const route = useRoute();
+const router = useRouter();
+const sidebarOpen = ref(false);
+
+// 지금은 mock 데이터
+// 나중에 route.params.projectId 로 API 붙이면 됨
+const subProjectId = route.params.projectId;
+
+const subProjectInfo = ref({
+  projectId: subProjectId,
+  projectName: "요구사항-공통관리",
+  startDate: "2026/03/19",
+  endDate: "2026/04/24",
+  managerName: "김관리",
+  managerRole: "PM",
+});
+
+const taskSummaryData = ref([
+  { type: "개발", total: 13, inProgress: 9, done: 0, rejected: 1, sum: 23 },
+  { type: "업무", total: 13, inProgress: 9, done: 0, rejected: 1, sum: 23 },
+  { type: "업무", total: 18, inProgress: 4, done: 1, rejected: 0, sum: 23 },
+  { type: "기타", total: 5, inProgress: 4, done: 1, rejected: 0, sum: 10 },
+  { type: "다스트", total: 5, inProgress: 0, done: 0, rejected: 0, sum: 2 },
+]);
+
+const taskList = ref([
+  { title: "요구사항 분석 및 산출물", plName: "김피엘" },
+  { title: "화면 설계", plName: "윤피엘" },
+  { title: "로그인 기능 구현", plName: "강피엘" },
+  { title: "메인 대시보드 구현", plName: "김피엘" },
+  { title: "자유게시판 구현", plName: "박피엘" },
+]);
+
+const graphData = ref([
+  { label: "개발", raw: 23, value: 72 },
+  { label: "업무", raw: 23, value: 72 },
+  { label: "기타", raw: 10, value: 38 },
+  { label: "다스트", raw: 2, value: 12 },
+]);
+
+const handleCreateTask = () => {
+  console.log("업무 생성");
+};
+
+const handleSubProjectSetting = () => {
+  console.log("하위프로젝트 설정");
+};
+
+const tableHeaderStyle = () => ({
+  background: "#f3f4f6",
+  color: "#111827",
+  fontSize: "12px",
+  fontWeight: "700",
+  padding: "8px 0",
+  borderBottom: "1px solid #d1d5db",
+});
+
+const tableCellStyle = () => ({
+  fontSize: "12px",
+  color: "#374151",
+  padding: "7px 0",
+  height: "36px",
+  borderBottom: "1px solid #e5e7eb",
+});
+
+const taskListCellStyle = () => ({
+  fontSize: "12px",
+  color: "#374151",
+  padding: "7px 10px",
+  height: "38px",
+  borderBottom: "1px solid #d1d5db",
+});
+</script>
+
+<style scoped>
+/* ────────────────────────────────────────────
+   타이틀 영역
+──────────────────────────────────────────── */
+.proj-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.proj-title-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.proj-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proj-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  letter-spacing: -0.01em;
+}
+
+.proj-period {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.proj-title-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.task-create-btn,
+.setting-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  height: 36px;
+  padding: 0 14px;
+}
+
+.task-create-btn:hover,
+.setting-btn:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+/* ────────────────────────────────────────────
+   전체 레이아웃
+──────────────────────────────────────────── */
+.sub-dash-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  align-items: start;
+  min-width: 0;
+}
+
+.left-panel,
+.right-panel {
+  min-width: 0;
+}
+
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ────────────────────────────────────────────
+   카드 공통
+──────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #edf2f7;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.main-card {
+  padding: 24px;
+}
+
+.side-card {
+  padding: 20px;
+}
+
+.manager-card {
+  min-height: 150px;
+}
+
+.graph-card {
+  min-height: 420px;
+}
+
+/* ────────────────────────────────────────────
+   좌측 메인 헤더
+──────────────────────────────────────────── */
+.sub-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.sub-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sub-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.sub-period-inline {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.sub-name-box {
+  margin-bottom: 22px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+/* ────────────────────────────────────────────
+   섹션 공통
+──────────────────────────────────────────── */
+.section-block + .section-block {
+  margin-top: 28px;
+}
+
+.section-title {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+}
+
+/* ────────────────────────────────────────────
+   내부 박스
+──────────────────────────────────────────── */
+.inner-table-wrap,
+.inner-list-wrap {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.inner-table-wrap {
+  max-width: 620px;
+}
+
+.inner-list-wrap {
+  max-width: 560px;
+}
+
+/* ────────────────────────────────────────────
+   업무 현황 테이블
+──────────────────────────────────────────── */
+.status-table :deep(.el-table),
+.task-list-table :deep(.el-table) {
+  border: none !important;
+  font-size: 12px;
+}
+
+.status-table :deep(.el-table__inner-wrapper::before),
+.status-table :deep(.el-table::before),
+.task-list-table :deep(.el-table__inner-wrapper::before),
+.task-list-table :deep(.el-table::before) {
+  display: none;
+}
+
+.status-table :deep(th.el-table__cell) {
+  background: #f8fafc !important;
+  color: #475569;
+  font-weight: 700;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.status-table :deep(td.el-table__cell),
+.task-list-table :deep(td.el-table__cell) {
+  border-bottom: 1px solid #eef2f7 !important;
+}
+
+.status-table :deep(tr:last-child td.el-table__cell),
+.task-list-table :deep(tr:last-child td.el-table__cell) {
+  border-bottom: none !important;
+}
+
+.status-table :deep(.cell),
+.task-list-table :deep(.cell) {
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  color: #334155;
+}
+
+/* ────────────────────────────────────────────
+   업무 목록
+──────────────────────────────────────────── */
+.task-list-section {
+  padding-bottom: 4px;
+}
+
+.task-pl {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* ────────────────────────────────────────────
+   우측 카드 타이틀
+──────────────────────────────────────────── */
+.side-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 18px;
+}
+
+/* ────────────────────────────────────────────
+   관리자 카드
+──────────────────────────────────────────── */
+.manager-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.manager-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1d4ed8;
+  font-size: 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(191, 219, 254, 0.9);
+}
+
+.manager-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.manager-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.manager-role {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #bfdbfe;
+}
+
+/* ────────────────────────────────────────────
+   그래프 카드
+──────────────────────────────────────────── */
+.graph-body {
+  min-height: 310px;
+}
+
+.graph-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 310px;
+  border-radius: 16px;
+  background: linear-gradient(to bottom, #fbfdff, #f8fbff);
+  border: 1px dashed #dbe2ea;
+  padding: 22px 16px 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.graph-bars {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.graph-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  height: 100%;
+}
+
+.graph-bar-wrap {
+  width: 100%;
+  max-width: 42px;
+  height: 210px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.graph-bar {
+  width: 100%;
+  min-height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #93c5fd 0%, #60a5fa 55%, #3b82f6 100%);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.18);
+  transition: height 0.25s ease;
+}
+
+.graph-label {
+  font-size: 12px;
+  color: #475569;
+  font-weight: 700;
+  text-align: center;
+}
+
+.graph-value {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* ────────────────────────────────────────────
+   Element Plus 공통
+──────────────────────────────────────────── */
+:deep(.el-table) {
+  --el-table-border-color: #eef2f7;
+  --el-table-header-bg-color: #f8fafc;
+}
+
+:deep(.el-table__row:hover > td) {
+  background: #f8fbff !important;
+}
+
+/* ────────────────────────────────────────────
+   반응형
+──────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sub-dash-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .right-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .inner-table-wrap,
+  .inner-list-wrap {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .proj-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .proj-title-right {
+    width: 100%;
+  }
+
+  .task-create-btn,
+  .setting-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .proj-name-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .proj-name {
+    font-size: 15px;
+  }
+
+  .sub-name-box {
+    font-size: 20px;
+  }
+
+  .right-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .main-card,
+  .side-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sub-name-box {
+    font-size: 18px;
+    line-height: 1.4;
+  }
+
+  .graph-bars {
+    gap: 10px;
+  }
+
+  .graph-bar-wrap {
+    max-width: 34px;
+    height: 170px;
+  }
+}
+</style>

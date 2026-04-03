@@ -135,13 +135,14 @@
                       </div>
 
                       <div class="sub-project-table-wrap">
-                        <el-table
-                          :data="currentMilestone.projects"
-                          class="sub-project-table"
-                          style="width: 100%"
-                          :show-header="false"
-                          :cell-style="subCellStyle"
-                        >
+                          <el-table
+                            :data="currentMilestone.projects"
+                            class="sub-project-table"
+                            style="width: 100%"
+                            :show-header="false"
+                            :cell-style="subCellStyle"
+                            @row-click="handleSubProjectRowClick"
+                          >
                           <el-table-column prop="projectName" min-width="220" />
                           <el-table-column label="PL" width="140" align="right">
                             <template #default="{ row }">
@@ -271,49 +272,19 @@ const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(false);
 
-// ── 업무 현황 (하드코딩) ────────────────────────────
-const taskSummaryData = ref([
-  {
-    type: "개발",
-    total: 13,
-    inProgress: 9,
-    done: 0,
-    rejected: 1,
-    totalSum: 23,
-  },
-  {
-    type: "기획",
-    total: 13,
-    inProgress: 9,
-    done: 0,
-    rejected: 1,
-    totalSum: 23,
-  },
-  {
-    type: "업무",
-    total: 18,
-    inProgress: 4,
-    done: 1,
-    rejected: 0,
-    totalSum: 23,
-  },
-  {
-    type: "기타",
-    total: 5,
-    inProgress: 4,
-    done: 1,
-    rejected: 0,
-    totalSum: 10,
-  },
-  {
-    type: "다스트",
-    total: 5,
-    inProgress: 0,
-    done: 0,
-    rejected: 0,
-    totalSum: 2,
-  },
-]);
+// ── 업무 현황  ────────────────────────────
+const taskSummaryData = ref([]);
+
+const fetchTaskSummary = async () => {
+  try {
+    const projectId = route.params.projectId;
+    const res = await axios.get(`/api/TaskSummary/${projectId}`);
+    taskSummaryData.value = res.data;
+  } catch (err) {
+    console.error("업무 현황 조회 실패:", err);
+    taskSummaryData.value = [];
+  }
+};
 
 // ── 공지사항 (하드코딩) ──────────────────────────────
 const noticeList = ref([
@@ -529,6 +500,13 @@ const handleViewTasks = () => {};
 const handleNoticeClick = () => {};
 const handleAddSubProject = () => {};
 
+const handleSubProjectRowClick = (row) => {
+  router.push({
+    name: "subProjectDashboard",
+    params: { projectId: row.projectId },
+  });
+};
+
 const handleAddMemo = () => {
   isMemoEditMode.value = false;
   editingMemoId.value = null;
@@ -568,6 +546,7 @@ onMounted(() => {
   fetchSubProject();
   fetchMemoList();
   fetchPmemList();
+  fetchTaskSummary();
 });
 </script>
 
@@ -1146,5 +1125,13 @@ onMounted(() => {
   .memo-body {
     padding: 10px 12px;
   }
+}
+
+.sub-project-table :deep(.el-table__row) {
+  cursor: pointer;
+}
+
+.sub-project-table :deep(.el-table__row:hover > td) {
+  background: #f5f9ff !important;
 }
 </style>

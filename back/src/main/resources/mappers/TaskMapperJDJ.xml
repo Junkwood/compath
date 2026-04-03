@@ -29,4 +29,23 @@
             RP.PROJECT_ID
     </select>
 
+    <!-- 하위프로젝트대쉬보드 업무통계 보기-->
+    <select id="getTaskSummaryByProjectId" resultType="TaskSummaryDtoJDJ">
+        SELECT
+        TT.TYPE_NAME AS type,
+        SUM(CASE WHEN T.TASK_STATUS_ID = 1 THEN 1 ELSE 0 END) AS total,
+        SUM(CASE WHEN T.TASK_STATUS_ID = 2 THEN 1 ELSE 0 END) AS inProgress,
+        SUM(CASE WHEN T.TASK_STATUS_ID = 5 THEN 1 ELSE 0 END) AS done,
+        SUM(CASE WHEN T.TASK_STATUS_ID = 4 THEN 1 ELSE 0 END) AS rejected,
+        COUNT(T.TASK_ID) AS totalSum
+        FROM TASK_TYPES TT
+        LEFT JOIN TASKS T
+        ON T.TASK_TYPE_ID = TT.TASK_TYPE_ID
+        AND T.PROJECT_ID = #{projectId}
+        GROUP BY
+        TT.TASK_TYPE_ID,
+        TT.TYPE_NAME
+        ORDER BY
+        TT.TASK_TYPE_ID
+    </select>
 </mapper>
