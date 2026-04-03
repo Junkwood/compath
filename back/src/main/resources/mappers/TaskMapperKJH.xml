@@ -55,6 +55,7 @@
         JOIN common_code c ON t.priority_code = c.code_value
         JOIN users u ON t.assignee_user_id = u.user_id
         WHERE t.project_id = #{id} OR p.parent_project_id = #{pid}
+        ORDER BY p.project_name
     </select>
 
 <!--    프로젝트 이름-->
@@ -88,7 +89,7 @@
                t3.status_name
         FROM tasks t
         JOIN projects p ON t.project_id = p.project_id
-        LEFT JOIN projects p2 ON p.parent_project_id = p.project_id
+        LEFT JOIN projects p2 ON p.parent_project_id = p2.project_id
         JOIN task_types t2 ON t.task_type_id = t2.task_type_id
         JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
         JOIN common_code c ON t.priority_code = c.code_value
@@ -146,6 +147,7 @@
         SELECT *
         FROM (SELECT time_entry_id
               FROM time_entries
+              WHERE task_id = #{id}
               ORDER BY created_at DESC)
         WHERE ROWNUM = 1
     </select>

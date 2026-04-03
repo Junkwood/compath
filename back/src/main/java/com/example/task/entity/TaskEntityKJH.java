@@ -2,6 +2,7 @@ package com.example.task.entity;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -20,7 +21,7 @@ public class TaskEntityKJH {
     private String priorityCode;
     private Integer progressRate;
     private Date startDate;
-    private Date dueDate;
+    private LocalDate dueDate;
     private Integer estimatedHours;
     private Integer actualHours;
     private String isDeleted;

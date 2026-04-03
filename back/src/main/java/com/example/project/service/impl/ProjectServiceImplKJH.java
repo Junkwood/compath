@@ -51,6 +51,7 @@ public class ProjectServiceImplKJH implements ProjectServiceKJH {
         return mapper.getAllProjectMem(id);
     }
 
+//    구성원 삭제
     @Override
     public List<ProjectMemberDtoKJH> removeProjectMem(ProjectMemberDtoKJH dto) {
         Integer id = dto.getProjectMemberRoleId();
