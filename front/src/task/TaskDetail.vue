@@ -157,43 +157,51 @@
                   <el-tab-pane label="소요시간" name="second">
                     <el-table
                       v-loading="loadingProjects"
-                      :data="pagedProjectData"
+                      :data="pagedTimeData"
                       style="width: 100%"
                       :header-cell-style="headerStyle"
                       :cell-style="cellStyle"
-                      @row-click="goProjectDashboard"
                     >
                       <el-table-column
-                        prop="parentProjectName"
+                        prop="no"
                         label="번호"
                         width="100"
                         align="center"
                       />
                       <el-table-column
-                        prop="endDate"
-                        label="일시"
+                        prop="workDate"
+                        label="작업 일시"
                         width="200"
                         align="center"
                       />
                       <el-table-column
-                        prop="pmUserId"
+                        prop="userName"
                         label="작업자"
                         width="200"
                         align="center"
                       />
                       <el-table-column
-                        prop="pmUserId"
+                        prop="hours"
                         label="소요시간"
                         width="200"
                         align="center"
                       />
                       <el-table-column
-                        prop="pmUserId"
-                        label="내역"
+                        prop="taskDesc"
+                        label="작업 내용"
                         min-width="550"
                         align="center"
                       />
                     </el-table>
+                    <div class="pagination-wrap">
+                      <el-pagination
+                        v-model:current-page="timeEntriesPage"
+                        :page-size="pagedtimeEntries"
+                        :total="timeEntriesList.length"
+                        layout="prev, pager, next"
+                        background
+                      />
+                    </div>
                   </el-tab-pane>
                   <el-tab-pane label="첨부파일" name="third"></el-tab-pane>
                 </el-tabs>
@@ -237,7 +245,7 @@
                   </div>
                   <ul class="dot-list">
                     <li
-                      v-for="item in taskStatusList"
+                      v-for="item in timeEntriesList"
                       :key="item.label"
                       class="dot-item"
                     >
@@ -287,13 +295,13 @@
   <TaskActualTimeModal
     v-model="openTimeModal"
     :timeRegisterUser="timeRegisterUser"
+    @submitted="submitted"
   ></TaskActualTimeModal>
 </template>
 
 <script setup>
-import { ref, onBeforeMount } from "vue";
+import { ref, onBeforeMount, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "axios";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
@@ -344,6 +352,10 @@ onBeforeMount(async () => {
   } else {
     taskPjList.value = [taskInfo.value.projectName];
   }
+
+  // 소요시간 목록 조회
+  await taskStore.getTimeEntries(taskId.value);
+  timeEntriesList.value = taskStore.timeEntriesList;
 });
 
 // 소요시간 등록 버튼(모달 오픈)
@@ -366,6 +378,47 @@ const registerActualTime = () => {
 const goModify = () => {
   router.push({ name: "taskModify", params: { taskId: taskId.value } });
 };
+
+// 모달창 등록시
+const timeEntriesList = ref([]);
+const submitted = async (val) => {
+  openTimeModal.value = false;
+  let obj = {
+    taskId: taskInfo.value.taskId,
+    userId: authStore.user.userId,
+    workDate: val.workDate,
+    hours: val.hours,
+    taskDesc: val.taskDesc,
+  };
+
+  // 소요시간 등록
+  await taskStore.registerTimeEntries(obj);
+  timeEntriesList.value = taskStore.timeEntriesList;
+
+  // 소요시간 목록 최신화
+  let arr = timeEntriesList.value;
+  for (let i = 0; i < arr.length; i++) {
+    // 새로 추가된 소요시간 플러스
+    if (i == arr.length - 1) {
+      taskInfo.value.actualHours += arr[i].hours;
+    }
+  }
+};
+
+// 페이지네이션
+const timeEntriesPage = ref(1);
+const pagedtimeEntries = ref(5);
+const workPageSize = 5;
+
+const pagedTimeData = computed(() => {
+  const s = (timeEntriesPage.value - 1) * workPageSize;
+  return timeEntriesList.value
+    .slice(s, s + workPageSize)
+    .map((item, index) => ({
+      ...item,
+      no: s + index + 1, //번호 칼럼 없다면 no 빼도 됨
+    }));
+});
 
 // ── 테이블 공통 스타일 ─────────────────────────────
 const headerStyle = () => ({

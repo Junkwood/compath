@@ -6,6 +6,7 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     projectName: null,
     taskAllList: [],
     taskDetail: {},
+    timeEntriesList: [],
   }),
   getters: {},
   actions: {
@@ -24,6 +25,22 @@ export const usetaskKJHStore = defineStore("taskKJH", {
       let result = await axios.get("/api/tasks/detail/" + id);
       this.taskDetail = result.data;
       console.log("업무상세정보: ", this.taskDetail);
+    },
+
+    // 소요시간 등록
+    async registerTimeEntries(obj) {
+      console.log("전송데이터: ", obj);
+      let result = await axios //
+        .post("/api/tasks/timelog", obj);
+
+      this.timeEntriesList = result.data;
+      console.log("소요시간목록: ", this.timeEntriesList);
+    },
+
+    // 소요시간 등록 목록 조회
+    async getTimeEntries(id) {
+      let result = await axios.get("/api/tasks/timelog/" + id);
+      this.timeEntriesList = result.data;
     },
   },
 });

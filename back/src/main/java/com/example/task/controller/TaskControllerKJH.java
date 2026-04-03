@@ -5,9 +5,7 @@ import com.example.task.dto.TaskListDTOKJH;
 import com.example.task.entity.TaskEntityKJH;
 import com.example.task.service.TaskServiceKJH;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,5 +31,17 @@ public class TaskControllerKJH {
     @GetMapping("/api/tasks/detail/{id}")
     public TaskDetailDTOKJH getTaskById(@PathVariable Integer id){
         return service.getTaskById(id);
+    }
+
+    // 소요시간 등록
+    @PostMapping("/api/tasks/timelog")
+    public List<TaskDetailDTOKJH> registerTimeEntries(@RequestBody TaskDetailDTOKJH dto) {
+        return service.registerTimeEntries(dto);
+    }
+
+    //소요시간 단건 조회
+    @GetMapping("/api/tasks/timelog/{id}")
+    public List<TaskDetailDTOKJH> getTimeEntriesById(@PathVariable Integer id) {
+        return service.getTimeEntriesById(id);
     }
 }

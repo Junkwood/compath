@@ -15,31 +15,25 @@
     >
       <!-- 프로젝트 명 -->
       <el-form-item label="업무명" prop="taskTitle">
-        <el-input v-model="form.taskTitle" placeholder="" disabled />
+        <el-input v-model="form.taskTitle" placeholder="" />
       </el-form-item>
-
-      <!-- 프로젝트 식별자 + 총괄PL -->
-      <el-form-item label="작업 일자" prop="workDate">
-        <div class="row-fields">
+      <!-- 작업일자 작업자 -->
+      <div class="date-row">
+        <el-form-item label="작업일" class="date-item">
           <el-date-picker
             v-model="form.workDate"
             type="date"
-            format="YYYY-MM-DD"
+            placeholder="시작일 선택"
             value-format="YYYY-MM-DD"
-            style="flex: 1"
-            disabled
+            format="YYYY-MM-DD"
+            style="width: 100%"
           />
-          <div class="pl-field">
-            <span class="pl-label">작업시간</span>
-            <el-input
-              v-model="form.hours"
-              placeholder=""
-              style="width: 140px"
-              prop="hours"
-            />
-          </div>
-        </div>
-      </el-form-item>
+        </el-form-item>
+
+        <el-form-item label="작업시간" class="date-item" prop="hours">
+          <el-input v-model="form.hours" placeholder="" type="number" min="1" />
+        </el-form-item>
+      </div>
 
       <!-- 프로젝트 설명 -->
       <el-form-item label="작업 내용" prop="description">
@@ -57,14 +51,8 @@
       <div class="modal-footer">
         <div></div>
         <div class="footer-right">
-          <el-button class="btn-reset" @click="handleReset">취소</el-button>
-          <el-button
-            class="btn-submit"
-            :loading="submitting"
-            @click="handleSubmit"
-          >
-            등록
-          </el-button>
+          <el-button class="btn-submit" @click="handleSubmit"> 등록 </el-button>
+          <el-button class="btn-reset" @click="handleClose">취소</el-button>
         </div>
       </div>
     </template>
@@ -72,12 +60,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from "vue";
+import { ref, computed, watch } from "vue";
 
 const props = defineProps({
   timeRegisterUser: { type: Object, default: false },
 });
-const emit = defineEmits(["update:modelValue", "submitted"]);
+const emit = defineEmits(["submitted"]);
 
 const visible = computed({
   get: () => props.modelValue,
@@ -88,14 +76,42 @@ const form = ref({});
 const submitting = ref(false);
 
 const rules = {
-  hours: [{ required: true, message: "총괄PL을 선택하세요", trigger: "blur" }],
+  hours: [
+    { required: true, message: "작업시간을 입력해주세요", trigger: "blur" },
+  ],
   description: [
     { required: true, message: "작업내용을 입력해주세요", trigger: "blur" },
   ],
 };
 
+// 취소, x버튼
 const handleClose = () => {
   visible.value = false;
+};
+
+// 등록버튼
+const handleSubmit = () => {
+  let formHour = form.value.hours;
+  let formDescription = form.value.description;
+  let vaild = true;
+  if (
+    formHour == null ||
+    formHour == "" ||
+    formDescription == null ||
+    formDescription == ""
+  ) {
+    vaild = false;
+  }
+
+  if (vaild) {
+    let obj = {
+      hours: form.value.hours,
+      taskDesc: form.value.description,
+      workDate: form.value.workDate,
+    };
+
+    emit("submitted", obj);
+  }
 };
 
 // props 변경내역 확인

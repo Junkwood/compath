@@ -87,7 +87,9 @@
           <el-switch v-model="form.isPublic" />
           <span class="switch-desc">
             모든 사용자에게 공개<br />
-            <span class="switch-sub">공개된 프로젝트는 누구나 조회할 수 있습니다.</span>
+            <span class="switch-sub"
+              >공개된 프로젝트는 누구나 조회할 수 있습니다.</span
+            >
           </span>
         </div>
       </el-form-item>
@@ -99,7 +101,11 @@
         <el-button class="btn-list" @click="handleClose">← 목록으로</el-button>
         <div class="footer-right">
           <el-button class="btn-reset" @click="handleReset">↺ 초기화</el-button>
-          <el-button class="btn-submit" :loading="submitting" @click="handleSubmit">
+          <el-button
+            class="btn-submit"
+            :loading="submitting"
+            @click="handleSubmit"
+          >
             프로젝트 생성
           </el-button>
         </div>
@@ -109,68 +115,73 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, reactive, computed, onMounted } from "vue";
+import axios from "axios";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
-})
-const emit = defineEmits(['update:modelValue', 'submitted'])
+});
+const emit = defineEmits(["update:modelValue", "submitted"]);
 
 const visible = computed({
   get: () => props.modelValue,
-  set: (v) => emit('update:modelValue', v),
-})
-
+  set: (v) => emit("update:modelValue", v),
+});
 
 // ── PL 옵션 (백엔드 연결 시 API로 교체) ──
 const plOptions = ref([]);
 
-const fetchPlList = async()=>{
-  const res = await axios.get('/api/ProjectPlList')
+const fetchPlList = async () => {
+  const res = await axios.get("/api/ProjectPlList");
   console.log(res.data);
-  plOptions.value=res.data;
-}
+  plOptions.value = res.data;
+};
 
-
-const formRef   = ref(null)
-const submitting = ref(false)
+const formRef = ref(null);
+const submitting = ref(false);
 
 //폼의 초기값
 const defaultForm = () => ({
-  projectName: '',
-  projectCode: '',
+  projectName: "",
+  projectCode: "",
   plUserId: null,
-  startDate: '',
-  endDate: '',
-  description: '',
+  startDate: "",
+  endDate: "",
+  description: "",
   useMilestone: true,
   isPublic: true,
-})
+});
 
-const form = reactive(defaultForm())
+const form = reactive(defaultForm());
 
 const rules = {
-  projectName: [{ required: true, message: '프로젝트 명을 입력하세요', trigger: 'blur' }],
-  projectCode: [{ required: true, message: '프로젝트 식별자를 입력하세요', trigger: 'blur' }],
-  userId: [{ required: true, message: '총괄PL을 선택하세요', trigger: 'blur' }],
-
-}
+  projectName: [
+    { required: true, message: "프로젝트 명을 입력하세요", trigger: "blur" },
+  ],
+  projectCode: [
+    {
+      required: true,
+      message: "프로젝트 식별자를 입력하세요",
+      trigger: "blur",
+    },
+  ],
+  userId: [{ required: true, message: "총괄PL을 선택하세요", trigger: "blur" }],
+};
 
 const handleClose = () => {
-  visible.value = false
-}
+  visible.value = false;
+};
 
 const handleReset = () => {
-  Object.assign(form, defaultForm())
-  formRef.value?.clearValidate()
-}
+  Object.assign(form, defaultForm());
+  formRef.value?.clearValidate();
+};
 
 const handleSubmit = async () => {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
+  const valid = await formRef.value?.validate().catch(() => false);
+  if (!valid) return;
 
-  submitting.value = true
+  submitting.value = true;
   try {
     const payload = {
       projectName: form.projectName,
@@ -179,24 +190,24 @@ const handleSubmit = async () => {
       startDate: form.startDate,
       endDate: form.endDate,
       description: form.description,
-      useMilestone: form.useMilestone ? 'O1' : 'O2',
-      isPublic: form.isPublic ? 'O1' : 'O2',
-    }
+      useMilestone: form.useMilestone ? "O1" : "O2",
+      isPublic: form.isPublic ? "O1" : "O2",
+    };
 
-    await axios.post('/api/ProjectRegister', payload)
-    visible.value = false
-    handleReset()
-    emit('submitted')
+    await axios.post("/api/ProjectRegister", payload);
+    visible.value = false;
+    handleReset();
+    emit("submitted");
   } catch (err) {
-    console.error('프로젝트 등록 실패:', err)
+    console.error("프로젝트 등록 실패:", err);
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
-}
+};
 
 onMounted(() => {
-  fetchPlList()
-})
+  fetchPlList();
+});
 </script>
 
 <style scoped>

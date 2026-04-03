@@ -25,7 +25,6 @@ public class TaskDetailDTOKJH { // 업무 상세
     private Integer progressRate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate startDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -46,4 +45,26 @@ public class TaskDetailDTOKJH { // 업무 상세
     private String parentProjectName;
     private String typeName;
     private String statusName;
+
+    // 소요시간 등록
+    private Integer userId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+    private LocalDate workDate;
+
+    private Integer hours;
+    private String taskDesc;
+
+    // 소요시간 합계
+    private Integer sum;
+
+    // 활동내역
+    private String targetType;
+    private String targetId;
+    private String actionType;
+    private Integer actorUserId;
+    private String userName;
+    private String beforeValue;
+    private String afterValue;
+
 }

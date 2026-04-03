@@ -95,4 +95,67 @@
         JOIN users u ON t.assignee_user_id = u.user_id
         WHERE t.task_id = #{id}
     </select>
+
+<!--   소요시간 테이블 등록-->
+    <insert id="registerTimeEntries">
+        INSERT INTO time_entries( time_entry_id,
+                                  task_id,
+                                  user_id,
+                                  work_date,
+                                  hours,
+                                  created_at,
+                                  task_desc)
+        VALUES (TIME_ENTRIES_SEQ.NEXTVAL,
+                #{taskId},
+                #{userId},
+                #{workDate},
+                #{hours},
+                SYSDATE,
+                #{taskDesc})
+    </insert>
+
+<!--    소요시간 합계 조회-->
+    <select id="getSumTimeById">
+        SELECT SUM(hours) as sum
+        FROM time_entries
+        WHERE task_id = #{id}
+    </select>
+
+<!--    소요시간 합으로 수정-->
+    <update id="modifyActualTime">
+        UPDATE tasks
+        SET actual_hours = #{hours}
+        WHERE task_id = #{id}
+    </update>
+
+<!--    활동내역 등록-->
+    <insert id="registerTimeLog">
+        INSERT INTO activity_logs(activity_log_id,
+                                  target_type,
+                                  target_id,
+                                  action_type,
+                                  actor_user_id,
+                                  before_value,
+                                  after_value,
+                                  created_at)
+        VALUES (ACTIVITY_LOGS_SEQ.NEXTVAL,
+                'time_entries',
+                #{targetId},
+                'J0',
+                #{actorUserId},
+                0,
+                #{afterValue},
+                SYSDATE
+    </insert>
+<!--    업무멸 소요시간 등록내역 조회-->
+    <select id="getTimeEntriesById">
+        SELECT t.work_date,
+               t.hours,
+               t.created_at,
+               t.task_desc,
+               u.user_name
+        FROM time_entries t
+        JOIN users u ON t.user_id = u.user_id
+        WHERE t.task_id = #{taskId}
+    </select>
 </mapper>

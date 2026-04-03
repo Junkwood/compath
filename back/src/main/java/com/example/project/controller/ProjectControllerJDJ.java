@@ -1,6 +1,5 @@
 package com.example.project.controller;
 
-
 import com.example.project.dto.*;
 import com.example.project.service.ProjectServiceJDJ;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,7 @@ public class ProjectControllerJDJ {
 
     final ProjectServiceJDJ projectServiceJDJ;
 
-    //프로젝트 전체목록 조회
+    //프로젝트 전체목록 조회e
     @ResponseBody
     @GetMapping("/ProjectList")
     public List<ProjectListDto> list() {
