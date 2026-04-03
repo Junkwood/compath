@@ -10,10 +10,15 @@
       />
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <div class="flex items-center justify-between mb-6">
+          <div class="flex flex-col gap-1">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
               간트 차트
             </h1>
+            <ProjectInfo
+              :projectName="projectInfo.projectName"
+              :startDate="projectInfo.startDate"
+              :endDate="projectInfo.endDate"
+            />
             <div class="flex items-center gap-3">
               <div class="view-toggle">
                 <button
@@ -49,6 +54,7 @@ import { Gantt } from "@bryntum/gantt/gantt.module.js";
 import "@bryntum/gantt/gantt.css";
 import { useGanttChartStore } from "../stores/GantChart";
 import { TaskModel } from "@bryntum/gantt/gantt.module.js";
+import ProjectInfo from "../components/ProjectName.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -73,7 +79,12 @@ class CustomTaskModel extends TaskModel {
     { name: "statusCode" },
   ];
 }
-
+//프로젝트 값 세팅
+const projectInfo = ref({
+  projectName: "",
+  startDate: "",
+  endDate: "",
+});
 const changeView = (preset) => {
   activeView.value = preset;
   if (ganttInstance) ganttInstance.viewPreset = preset;
@@ -90,6 +101,19 @@ const initGantt = async () => {
   if (ganttInstance) ganttInstance.destroy();
 
   await store.fetchGanttData(route.params.projectId);
+
+  if (store.rawProjects && store.rawProjects.length > 0) {
+    const rootProject =
+      store.rawProjects.find((p) => !p.parentProjectId) || store.rawProjects[0];
+
+    if (rootProject) {
+      projectInfo.value = {
+        projectName: rootProject.projectName, //
+        startDate: rootProject.startDate?.split("T")[0] || "2026-04-01",
+        endDate: rootProject.endDate?.split("T")[0] || "2026-11-21",
+      };
+    }
+  }
   const tasksData = store.tasksData;
 
   const allDates = store.rawTasks
