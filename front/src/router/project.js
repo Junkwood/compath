@@ -26,5 +26,10 @@ const projectRoutes = [
     name: "milestoneDetail",
     component: () => import("../milestone/MilestoneDetail.vue"),
   },
+  {
+    path: "/subproject/:projectId",
+    name: "subProjectDashboard",
+    component: () => import("../project/ProjectSubDashboard.vue"),
+  },
 ];
 export default projectRoutes;

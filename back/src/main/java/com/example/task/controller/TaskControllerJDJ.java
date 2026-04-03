@@ -1,12 +1,10 @@
 package com.example.task.controller;
 
 import com.example.task.dto.TaskListDashDtoJDJ;
+import com.example.task.dto.TaskSummaryDtoJDJ;
 import com.example.task.service.TaskServiceJDJ;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,5 +20,13 @@ public class TaskControllerJDJ {
     @GetMapping("/TaskListDash")
     public List<TaskListDashDtoJDJ> list(){
         return taskServiceJDJ.getTaskListDash();
+    }
+
+    //하위프로젝트대쉬보드 업무통계 보기
+    @GetMapping("/TaskSummary/{projectId}")
+    public List<TaskSummaryDtoJDJ> getTaskSummaryByProjectId(
+            @PathVariable int projectId
+    ) {
+        return taskServiceJDJ.getTaskSummaryByProjectId(projectId);
     }
 }

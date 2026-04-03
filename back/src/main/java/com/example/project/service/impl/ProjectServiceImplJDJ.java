@@ -3,6 +3,7 @@ package com.example.project.service.impl;
 import com.example.project.dto.*;
 import com.example.project.mapper.ProjectMapperJDJ;
 import com.example.project.service.ProjectServiceJDJ;
+import com.example.task.dto.TaskSummaryDtoJDJ;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,6 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
     public void registerSubProject(ProjectSubCreateDtoJDJ dto) {
         projectMapperJDJ.registerSubProject(dto);
     }
-
 
 
 }
