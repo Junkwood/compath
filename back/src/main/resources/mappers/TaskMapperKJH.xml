@@ -128,25 +128,6 @@
         WHERE task_id = #{id}
     </update>
 
-<!--    활동내역 등록-->
-    <insert id="registerTimeLog">
-        INSERT INTO activity_logs(activity_log_id,
-                                  target_type,
-                                  target_id,
-                                  action_type,
-                                  actor_user_id,
-                                  before_value,
-                                  after_value,
-                                  created_at)
-        VALUES (ACTIVITY_LOGS_SEQ.NEXTVAL,
-                'time_entries',
-                #{targetId},
-                'J0',
-                #{actorUserId},
-                0,
-                #{afterValue},
-                SYSDATE
-    </insert>
 <!--    업무멸 소요시간 등록내역 조회-->
     <select id="getTimeEntriesById">
         SELECT t.work_date,
@@ -157,5 +138,53 @@
         FROM time_entries t
         JOIN users u ON t.user_id = u.user_id
         WHERE t.task_id = #{taskId}
+        ORDER BY t.created_at DESC
+    </select>
+
+<!--   소요시간 방금 등록된 건 조회-->
+    <select id="getRecentRegisteredTime">
+        SELECT *
+        FROM (SELECT time_entry_id
+              FROM time_entries
+              ORDER BY created_at DESC)
+        WHERE ROWNUM = 1
+    </select>
+
+    <!--    활동내역 등록-->
+    <insert id="registerTimeLog">
+        INSERT INTO activity_logs(activity_log_id,
+        target_type,
+        target_id,
+        action_type,
+        actor_user_id,
+        before_value,
+        after_value,
+        created_at)
+        VALUES (ACTIVITY_LOGS_SEQ.NEXTVAL,
+        'time_entries',
+        #{targetId},
+        'J1',
+        #{actorUserId},
+        #{beforeValue},
+        #{afterValue},
+        SYSDATE)
+    </insert>
+
+<!--    활동 내역 조회-->
+    <select id="getTimeLog">
+        SELECT ROWNUM AS idx
+               ,A.*
+        FROM(  SELECT t.created_at,
+               a.before_value,
+               a.after_value,
+               a.action_type,
+               u.user_name,
+               a.target_type,
+               t.task_desc
+               FROM activity_logs a
+               JOIN time_entries t ON a.target_id = t.time_entry_id
+               JOIN users u ON a.actor_user_id = u.user_id
+               WHERE target_type = 'time_entries' AND t.task_id = #{id}
+               ORDER BY t.created_at DESC) A
     </select>
 </mapper>

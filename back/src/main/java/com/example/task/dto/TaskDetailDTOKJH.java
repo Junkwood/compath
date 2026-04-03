@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -25,19 +26,24 @@ public class TaskDetailDTOKJH { // 업무 상세
     private Integer progressRate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate startDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate dueDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate estStartDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate estEndDate;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate createdAt;
+    @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime createdAt;
 
     private Integer actualHours;
     private Integer estimatedHours;
@@ -49,14 +55,15 @@ public class TaskDetailDTOKJH { // 업무 상세
     // 소요시간 등록
     private Integer userId;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate workDate;
 
-    private Integer hours;
+    private int hours;
     private String taskDesc;
 
     // 소요시간 합계
-    private Integer sum;
+    private int sum;
 
     // 활동내역
     private String targetType;
@@ -66,5 +73,6 @@ public class TaskDetailDTOKJH { // 업무 상세
     private String userName;
     private String beforeValue;
     private String afterValue;
+    private int idx;
 
 }

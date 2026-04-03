@@ -44,4 +44,10 @@ public class TaskControllerKJH {
     public List<TaskDetailDTOKJH> getTimeEntriesById(@PathVariable Integer id) {
         return service.getTimeEntriesById(id);
     }
+
+    // 활동내역 목록 조회
+    @GetMapping("/api/tasks/activityLog/{id}")
+    public List<TaskDetailDTOKJH> getTaskActivityLogs(@PathVariable Integer id) {
+        return service.getTimeLog(id);
+    }
 }

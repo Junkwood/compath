@@ -7,6 +7,7 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     taskAllList: [],
     taskDetail: {},
     timeEntriesList: [],
+    activityList: [],
   }),
   getters: {},
   actions: {
@@ -41,6 +42,12 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     async getTimeEntries(id) {
       let result = await axios.get("/api/tasks/timelog/" + id);
       this.timeEntriesList = result.data;
+    },
+
+    // 작업내역 목록 조회
+    async getActivityLogs(id) {
+      let result = await axios.get("/api/tasks/activityLog/" + id);
+      this.activityList = result.data;
     },
   },
 });

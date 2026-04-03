@@ -21,4 +21,7 @@ public interface TaskServiceKJH {
 
     // 업무별 소요시간 목록들 조회
     public List<TaskDetailDTOKJH> getTimeEntriesById(Integer id);
+
+    // 활동내역 목록조회
+    public List<TaskDetailDTOKJH> getTimeLog(Integer id);
 }

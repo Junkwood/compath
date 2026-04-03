@@ -306,8 +306,8 @@ const memberInsert = async (value) => {
 // 삭제 버튼
 const handleDelete = async (val) => {
   console.log(val);
-  await projectStore.removeMem(val);
-  memberList.value = projectStore.remainMem;
+  // await projectStore.removeMem(val);
+  // memberList.value = projectStore.remainMem;
 };
 
 watch(
