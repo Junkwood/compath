@@ -68,7 +68,15 @@
                   <el-button class="setting-btn" @click="openEditModal">
                     ⚙ 마일스톤 수정
                   </el-button>
+                  <el-button
+                      class="delete-milestone-btn"
+                      @click.stop="handleDeleteMilestone"
+                    >
+                      삭제
+                  </el-button>
                 </div>
+
+
             </div>
 
             <!-- 1. 하위 프로젝트 목록 -->
@@ -184,6 +192,7 @@ import Header from "../partials/Header.vue";
 import api from "../utils/api.js";
 import MilestoneCreateModal from "../milestone/MilestoneCreateModal.vue";
 import Swal from "sweetalert2";
+import { useAuthStore } from "../stores/auth";
 
 const route = useRoute();
 const router = useRouter();
@@ -327,6 +336,55 @@ const goTaskDetail = (task) => {
   //   },
   // });
 };
+
+//마일스톤 삭제 (상태값 업데이트)
+const handleDeleteMilestone = async () => {
+  try {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "마일스톤을 삭제할까요?",
+      text: "하위 프로젝트나 업무가 없을 때만 삭제할 수 있습니다.",
+      showCancelButton: true,
+      confirmButtonText: "삭제",
+      cancelButtonText: "취소",
+      reverseButtons: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    await api.put(
+      `/MilestoneDelete/${route.params.projectId}/${route.params.milestoneId}`,
+      {editUserId : useAuthStore.user?.userId,}
+    );
+
+    await Swal.fire({
+      icon: "success",
+      title: "마일스톤이 삭제되었습니다.",
+      confirmButtonText: "확인",
+    });
+
+    router.push({
+        name: "milestoneDashboard",
+        params: {
+          projectId: Number(route.params.projectId),
+        },
+      });
+  } catch (err) {
+    console.error("마일스톤 삭제 실패:", err);
+
+     const message =
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        "하위 프로젝트 또는 업무가 존재하여 삭제할 수 없습니다.";
+
+      await Swal.fire({
+        icon: "error",
+        title: "삭제 실패",
+        text: message,
+        confirmButtonText: "확인",
+      });
+    }
+  };
 
 const handleMilestoneUpdated = async () => {
   editModalVisible.value = false;

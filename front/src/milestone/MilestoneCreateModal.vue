@@ -114,6 +114,7 @@ const form = reactive({
   startDate: "",
   dueDate: "",
   description: "",
+  editorUserId:"",
 });
 
 watch(
@@ -121,12 +122,15 @@ watch(
   (newVal) => {
     if (!newVal) return;
 
+    const userId = authStore.user?.userId??"";
+
     if (props.isEditMode && props.milestoneData) {
       form.milestoneId = props.milestoneData.milestoneId ?? "";
       form.milestoneName = props.milestoneData.milestoneName ?? "";
       form.startDate = props.milestoneData.startDate ?? "";
       form.dueDate = props.milestoneData.dueDate ?? "";
       form.description = props.milestoneData.description ?? "";
+      form.editorUserId = userId ?? "";
     } else {
       resetForm();
     }
@@ -174,25 +178,25 @@ const handleSave = async () => {
   }
 
   try {
-    const payload = {
-      createdBy: userId,
-      milestoneId: form.milestoneId,
-      milestoneName: form.milestoneName,
-      startDate: form.startDate,
-      dueDate: form.dueDate,
-      description: form.description,
-      projectId: props.projectId,
-    };
-
     if (props.isEditMode) {
+      const payload = {
+        milestoneId: form.milestoneId,
+        milestoneName: form.milestoneName,
+        startDate: form.startDate,
+        dueDate: form.dueDate,
+        description: form.description,
+        projectId: props.projectId,
+        editorUserId: userId,
+      };
+
       await api.put(
         `/MilestoneUpdate/${props.projectId}/${form.milestoneId}`,
-        payload,
+        payload
       );
 
       emit("update:modelValue", false);
       emit("saved");
-      await nextTick(); //Vue가 화면 업데이트 끝낼 때까지 한 템포 기다리는 함수
+      await nextTick();
 
       await Swal.fire({
         icon: "success",
@@ -200,6 +204,15 @@ const handleSave = async () => {
         confirmButtonText: "확인",
       });
     } else {
+      const payload = {
+        createdBy: userId,
+        milestoneName: form.milestoneName,
+        startDate: form.startDate,
+        dueDate: form.dueDate,
+        description: form.description,
+        projectId: props.projectId,
+      };
+
       await api.post(`/MilestoneCreate/${props.projectId}`, payload);
 
       emit("update:modelValue", false);
@@ -214,6 +227,7 @@ const handleSave = async () => {
     }
   } catch (err) {
     console.error("마일스톤 저장 실패:", err);
+    console.error("응답 데이터:", err.response?.data);
 
     await Swal.fire({
       icon: "error",

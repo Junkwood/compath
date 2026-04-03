@@ -141,8 +141,20 @@
             MILESTONE_NAME = #{milestoneName},
             DESCRIPTION    = #{description},
             START_DATE     = #{startDate},
-            DUE_DATE       = #{dueDate}
+            DUE_DATE       = #{dueDate},
+            UPDATED_AT     = SYSDATE,
+            EDITOR_USER_ID = #{editorUserId}
         WHERE MILESTONE_ID = #{milestoneId}
         AND PROJECT_ID = #{projectId}
+    </update>
+
+
+    <!--마일스톤 삭제 (상태값 업데이트 : E2로)-->
+    <update id="deleteMilestoneProc" statementType="CALLABLE">
+        { CALL DELETE_MILESTONE_PROC(
+        #{projectId, mode=IN, jdbcType=NUMERIC},
+        #{milestoneId, mode=IN, jdbcType=NUMERIC},
+        #{editorUserId, mode=IN, jdbcType=NUMERIC}
+        ) }
     </update>
 </mapper>
