@@ -37,4 +37,8 @@ public class TaskReportDto {
     String priorityCode;
     String assigneeName;
 
+    String userName;
+    String projectName;
+    String typeName;
+
 }

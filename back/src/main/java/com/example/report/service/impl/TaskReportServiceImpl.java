@@ -13,10 +13,10 @@ import java.util.List;
 @Service
 @Transactional
 public class TaskReportServiceImpl implements TaskReportService {
-    TaskReportMapper taskReportMapper;
+    final TaskReportMapper taskReportMapper;
 
     @Override
     public List<TaskReportDto> getReportAll(TaskReportDto dto) {
-        return taskReportMapper.getReportAll();
+        return taskReportMapper.getReportAll(dto);
     }
 }

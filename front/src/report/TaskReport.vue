@@ -325,6 +325,11 @@ const workPageSize = ref(0);
 const workPage = ref(1);
 const listNum = ref(10);
 const selectedTaskIds = ref([]);
+const nowPage = ref(1);
+const real = ref(true);
+const titleList = ref([]);
+const assigneeUserIdList = ref([]);
+const taskTypeList = ref([]);
 
 // 테이블 헤더 (고정)
 const thList = [
@@ -352,7 +357,7 @@ const filteringList = async () => {
     assigneeUserId:
       filteredList.value.user !== "전체" ? filteredList.value.user : null,
     startDate: filteredList.value.start || null,
-    endDate: filteredList.value.end || null,
+    dueDate: filteredList.value.end || null,
   };
 
   try {
@@ -361,6 +366,22 @@ const filteringList = async () => {
       filterList.value = data; // 실제 서비스 시에는 페이징 처리가 된 list를 할당
       listLength.value = data.length;
       workPageSize.value = data.length;
+      if (
+        !params.title &&
+        !params.assigneeUserId &&
+        !params.startDate &&
+        !params.endDate
+      ) {
+        titleList.value = [
+          ...new Set(data.map((t) => t.title).filter(Boolean)),
+        ];
+        assigneeUserIdList.value = [
+          ...new Set(data.map((t) => t.userName).filter(Boolean)),
+        ];
+        taskTypeList.value = [
+          ...new Set(data.map((t) => t.typeName).filter(Boolean)),
+        ];
+      }
     }
   } catch (error) {
     console.error("데이터 조회 중 오류 발생:", error);
@@ -368,6 +389,10 @@ const filteringList = async () => {
     listLoading.value = false;
   }
 };
+
+onBeforeMount(async () => {
+  await filteringList();
+});
 
 // 2. 초기화 로직
 const resetForm = () => {

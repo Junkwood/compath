@@ -9,17 +9,23 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
       <main class="grow">
-        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <div class="flex flex-col gap-1">
-            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-              간트 차트
-            </h1>
-            <ProjectInfo
-              :projectName="projectInfo.projectName"
-              :startDate="projectInfo.startDate"
-              :endDate="projectInfo.endDate"
-            />
-            <div class="flex items-center gap-3">
+        <div class="px-4 sm:px-6 lg:px-8 py-6 w-full max-w-9xl mx-auto">
+          <!-- 헤더 영역 -->
+          <div class="gantt-header">
+            <!-- 왼쪽: 제목 + 프로젝트 정보 -->
+            <div class="gantt-header-left">
+              <div class="gantt-title-row">
+                <h1 class="gantt-title">간트 차트</h1>
+              </div>
+              <ProjectInfo
+                :projectName="projectInfo.projectName"
+                :startDate="projectInfo.startDate"
+                :endDate="projectInfo.endDate"
+              />
+            </div>
+
+            <!-- 오른쪽: 뷰 토글 + 목록으로 버튼 -->
+            <div class="gantt-header-right">
               <div class="view-toggle">
                 <button
                   v-for="v in viewOptions"
@@ -27,16 +33,19 @@
                   :class="['toggle-btn', activeView === v.value && 'active']"
                   @click="changeView(v.value)"
                 >
-                  {{ v.label }}
+                  <span class="toggle-icon">{{ v.icon }}</span>
+                  <span>{{ v.label }}</span>
                 </button>
               </div>
-              <button @click="goBack" class="btn-navy">← 목록으로</button>
+              <button @click="goBack" class="btn-back">
+                <span class="btn-back-arrow">←</span>
+                목록으로
+              </button>
             </div>
           </div>
 
-          <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden"
-          >
+          <!-- 간트 차트 본체 -->
+          <div class="gantt-card">
             <div ref="ganttContainer" class="gantt-wrapper" />
           </div>
         </div>
@@ -65,9 +74,9 @@ const store = useGanttChartStore();
 
 const activeView = ref("weekAndDay");
 const viewOptions = [
-  { label: "일별", value: "weekAndDay" },
-  { label: "주별", value: "weekAndMonth" },
-  { label: "월별", value: "monthAndYear" },
+  { label: "일별", value: "weekAndDay", icon: "📅" },
+  { label: "주별", value: "weekAndMonth", icon: "🗓️" },
+  { label: "월별", value: "monthAndYear", icon: "📆" },
 ];
 
 class CustomTaskModel extends TaskModel {
@@ -79,15 +88,20 @@ class CustomTaskModel extends TaskModel {
     { name: "statusCode" },
   ];
 }
-//프로젝트 값 세팅
+
 const projectInfo = ref({
   projectName: "",
   startDate: "",
   endDate: "",
 });
+
 const changeView = (preset) => {
   activeView.value = preset;
-  if (ganttInstance) ganttInstance.viewPreset = preset;
+  if (ganttInstance) {
+    ganttInstance.viewPreset = preset;
+    // 뷰 변경 후에도 오늘 날짜로 스크롤
+    scrollToToday();
+  }
 };
 
 const getTaskColor = (percentDone) => {
@@ -95,6 +109,24 @@ const getTaskColor = (percentDone) => {
   if (percentDone >= 60) return "linear-gradient(90deg, #bae6fd, #7dd3fc)";
   if (percentDone >= 30) return "linear-gradient(90deg, #bfdbfe, #93c5fd)";
   return "#dbeafe";
+};
+
+// 오늘 날짜로 스크롤
+const scrollToToday = () => {
+  if (!ganttInstance) return;
+  setTimeout(() => {
+    try {
+      ganttInstance.scrollToDate(new Date(), {
+        block: "start",
+        animate: true,
+        edgeOffset: 100,
+      });
+    } catch (e) {
+      // fallback: 타임라인 직접 스크롤
+      const el = ganttInstance.timeAxisSubGrid?.element;
+      if (el) el.scrollLeft = 0;
+    }
+  }, 200);
 };
 
 const initGantt = async () => {
@@ -105,15 +137,15 @@ const initGantt = async () => {
   if (store.rawProjects && store.rawProjects.length > 0) {
     const rootProject =
       store.rawProjects.find((p) => !p.parentProjectId) || store.rawProjects[0];
-
     if (rootProject) {
       projectInfo.value = {
-        projectName: rootProject.projectName, //
+        projectName: rootProject.projectName,
         startDate: rootProject.startDate?.split("T")[0] || "2026-04-01",
         endDate: rootProject.endDate?.split("T")[0] || "2026-11-21",
       };
     }
   }
+
   const tasksData = store.tasksData;
 
   const allDates = store.rawTasks
@@ -205,31 +237,22 @@ const initGantt = async () => {
         htmlEncode: false,
         renderer({ record }) {
           const id = String(record.id);
-
-          // 하위프로젝트
           if (id.startsWith("p_")) {
             return `<button
               onclick="window.__ganttAdd('${id.replace("p_", "")}')"
               title="업무 추가"
               style="width:22px;height:22px;border-radius:50%;border:1px solid #bfdbfe;
                      background:#eff6ff;color:#3b82f6;font-size:15px;line-height:1;
-                     cursor:pointer;display:flex;align-items:center;justify-content:center;">
-              +
-            </button>`;
+                     cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>`;
           }
-
-          // 반려된 업무
           if (!id.startsWith("root_") && record.statusCode === "REJECTED") {
             return `<button
               onclick="window.__ganttAdd('${record.id}')"
               title="업무 재생성"
               style="width:22px;height:22px;border-radius:50%;border:1px solid #fecaca;
                      background:#fef2f2;color:#dc2626;font-size:15px;line-height:1;
-                     cursor:pointer;display:flex;align-items:center;justify-content:center;">
-              +
-            </button>`;
+                     cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>`;
           }
-
           return "";
         },
       },
@@ -251,6 +274,11 @@ const initGantt = async () => {
     },
   });
 
+  // 렌더링 완료 후 오늘 날짜로 스크롤
+  ganttInstance.on("render", () => {
+    scrollToToday();
+  });
+
   window.__ganttAdd = (parentId) => {
     router.push({ path: "/tasks/create", query: { parentId } });
   };
@@ -266,41 +294,165 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.gantt-wrapper {
-  height: calc(100vh - 180px);
-  min-height: 400px;
+/* ───────────────────────────────
+   헤더 레이아웃
+─────────────────────────────── */
+.gantt-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
 }
+
+.gantt-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gantt-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gantt-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.gantt-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.dark .gantt-title {
+  color: #f1f5f9;
+}
+
+.gantt-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ───────────────────────────────
+   뷰 토글 버튼
+─────────────────────────────── */
 .view-toggle {
   display: flex;
-  background: #f8fafc;
+  background: #f1f5f9;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 3px;
+  border-radius: 12px;
+  padding: 4px;
   gap: 2px;
 }
+
 .toggle-btn {
-  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
   padding: 0 14px;
   font-size: 13px;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 9px;
   border: none;
   background: transparent;
-  color: #475569;
+  color: #64748b;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s ease;
+  white-space: nowrap;
 }
+
+.toggle-btn .toggle-icon {
+  font-size: 13px;
+}
+
 .toggle-btn:hover {
-  background: #f1f5f9;
+  background: #e2e8f0;
   color: #1e293b;
 }
+
 .toggle-btn.active {
-  background: #3b82f6;
-  color: #fff;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-  border: none;
+  background: #fff;
+  color: #2563eb;
+  font-weight: 700;
+  box-shadow:
+    0 2px 8px rgba(37, 99, 235, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.08);
 }
+
+/* ───────────────────────────────
+   목록으로 버튼
+─────────────────────────────── */
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-back:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
+  transform: translateX(-2px);
+}
+
+.btn-back-arrow {
+  font-size: 15px;
+  line-height: 1;
+  transition: transform 0.18s ease;
+}
+
+.btn-back:hover .btn-back-arrow {
+  transform: translateX(-3px);
+}
+
+/* ───────────────────────────────
+   간트 카드
+─────────────────────────────── */
+.gantt-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.06),
+    0 4px 16px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  border: 1px solid #e8edf2;
+}
+
+.dark .gantt-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* ───────────────────────────────
+   간트 래퍼
+─────────────────────────────── */
+.gantt-wrapper {
+  height: calc(100vh - 200px);
+  min-height: 400px;
+}
+
+/* ───────────────────────────────
+   Bryntum 간트 커스텀
+─────────────────────────────── */
 :deep(.b-toolbar) {
   display: none !important;
 }
@@ -332,6 +484,9 @@ onBeforeUnmount(() => {
   font-size: 12px !important;
 }
 :deep(.b-sch-current-time) {
-  border-left: 2px solid #f97316 !important;
+  border-left: 2px dashed #f97316 !important;
+}
+:deep(.b-sch-current-time-indicator) {
+  background: #f97316 !important;
 }
 </style>

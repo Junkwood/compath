@@ -5,7 +5,5 @@ import com.example.report.dto.TaskReportDto;
 import java.util.List;
 
 public interface TaskReportMapper {
-    List<TaskReportDto> getReportAll();
-
-    List<TaskReportDto> getReportAll1();
+    List<TaskReportDto> getReportAll(TaskReportDto dto);
 }
