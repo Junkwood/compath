@@ -52,5 +52,13 @@
         WHERE r.IS_ACTIVE = 'O1'
         ORDER BY r.ROLE_ID, p.PERMISSION_ID
     </select>
-
+    <select id="getAllPermission" parameterType="com.example.role.dto.PermissionDTOSJW">
+        select * from permissions
+    </select>
+    <delete id="deleteRolePermissionByRoleId">
+        DELETE FROM role_permissions WHERE role_id = #{roleId}
+    </delete>
+    <delete id="deleteRoleById">
+        DELETE FROM roles WHERE role_id = #{roleId}
+    </delete>
 </mapper>

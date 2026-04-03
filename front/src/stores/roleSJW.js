@@ -11,5 +11,8 @@ export const useRoleStore = defineStore("role", {
       this.roleList = response.data;
       return this.roleList;
     },
+    async getPermissionList() {
+      return await api.get("/permission/list");
+    },
   },
 });

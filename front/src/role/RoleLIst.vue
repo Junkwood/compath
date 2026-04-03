@@ -82,7 +82,6 @@
     </div>
   </div>
 
-  <!-- 역할 등록/수정 모달 -->
   <el-dialog
     v-model="modalVisible"
     :title="isEditMode ? '역할 수정' : '역할 등록'"
@@ -92,18 +91,24 @@
   >
     <div v-loading="modalLoading">
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
-        <!-- ❶ 역할명 -->
         <el-form-item label="역할 명" prop="roleName">
           <el-input v-model="form.roleName" placeholder="역할명을 입력하세요" />
         </el-form-item>
 
-        <!-- ❷ 권한 트리 -->
+        <el-form-item label="역할 설명" prop="description">
+          <el-input
+            v-model="form.description"
+            type="textarea"
+            :rows="3"
+            placeholder="역할에 대한 간단한 설명을 입력하세요 (선택)"
+          />
+        </el-form-item>
+
         <el-form-item label="권한">
           <div class="perm-table">
             <div class="perm-header">권한</div>
 
-            <!-- 권한이 없을 때 -->
-            <div v-if="groupedPermissions.length === 0" class="perm-empty">
+            <div v-if="!groupedPermissions?.length" class="perm-empty">
               등록된 권한이 없습니다.
             </div>
 
@@ -112,7 +117,6 @@
               :key="category.prefix"
               class="perm-group"
             >
-              <!-- 부모 행 -->
               <div
                 class="perm-parent-row"
                 @click="toggleCategory(category.prefix)"
@@ -129,7 +133,6 @@
                 }}</span>
               </div>
 
-              <!-- 자식 권한 목록 -->
               <div v-show="expandedCategories.includes(category.prefix)">
                 <div
                   v-for="perm in category.perms"
@@ -182,6 +185,7 @@
 <script setup>
 import { ref, computed, onMounted, reactive, nextTick } from "vue";
 import axios from "axios";
+import Swal from "sweetalert2"; // 💡 SweetAlert2 Import
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useRoleStore } from "../stores/roleSJW";
@@ -202,16 +206,6 @@ const pagedRoles = computed(() => {
 // ── 전체 권한 목록 (permissions 테이블) ──
 const allPermissions = ref([]);
 
-// permission_code prefix → 카테고리명 매핑
-// permission_code 컨벤션: UPPER_PROJECT_READ, TASK_CREATE 등
-const categoryLabelMap = {
-  UPPER_PROJECT: "상위프로젝트",
-  LOWER_PROJECT: "하위프로젝트",
-  TASK: "업무",
-  DOCUMENT: "문서",
-  MEETING: "회의",
-};
-
 // 💡 [수정됨] 유저님의 실제 DB 코드(a1 ~ a20)에 맞춘 카테고리 매핑
 const categoryGroups = [
   { label: "상위프로젝트", codes: ["a1", "a2", "a3", "a4"] },
@@ -221,15 +215,20 @@ const categoryGroups = [
   { label: "회의록", codes: ["a17", "a18", "a19", "a20"] },
 ];
 
-// 💡 [수정됨] flat 권한 목록 → 카테고리별 그룹핑 로직
+//  flat 권한 목록 → 카테고리별 그룹핑 로직
 const groupedPermissions = computed(() => {
+  // allPermissions.value가 배열이 아니거나 비어있으면 안전하게 빈 배열 반환!
+  if (!allPermissions.value || !Array.isArray(allPermissions.value)) {
+    return [];
+  }
+
   const groups = {};
 
   // 1. 화면에 보여질 순서를 보장하기 위해 미리 빈 방을 만들어 둡니다.
   categoryGroups.forEach((cg) => {
     groups[cg.label] = { prefix: cg.label, label: cg.label, perms: [] };
   });
-  groups["ETC"] = { prefix: "ETC", label: "기타", perms: [] }; // 매핑 안 된 권한용
+  groups["ETC"] = { prefix: "ETC", label: "기타", perms: [] };
 
   // 2. 백엔드에서 받아온 권한들을 알맞은 방에 분배합니다.
   allPermissions.value.forEach((perm) => {
@@ -267,16 +266,47 @@ const expandedCategories = ref([]);
 const defaultForm = () => ({
   roleId: null,
   roleName: "",
+  description: "",
   isActive: "Y",
   selectedPermissionIds: [], // 선택된 permission_id 배열
 });
 
 const form = reactive(defaultForm());
 
+// 💡 기존의 rules 객체를 이렇게 덮어씌워 주세요!
 const rules = reactive({
   roleName: [
     { required: true, message: "역할명을 입력하세요", trigger: "blur" },
     { max: 100, message: "역할명은 100자 이하로 입력하세요", trigger: "blur" },
+    {
+      // 💡 [추가] 중복 체크 커스텀 검증 로직
+      validator: (rule, value, callback) => {
+        if (!value) {
+          callback(); // 빈 값은 required 룰에서 잡히므로 패스
+          return;
+        }
+
+        // store에 있는 목록을 뒤져서 똑같은 이름이 있는지 확인
+        const isDuplicate = roleStore.roleList.some((role) => {
+          // 수정 모드일 때: 자기 자신의 원래 이름은 중복으로 치면 안 됨!
+          if (isEditMode.value && role.roleId === form.roleId) {
+            return false;
+          }
+          // 공백 제거 후 정확히 일치하는지 검사
+          return role.roleName.trim() === value.trim();
+        });
+
+        if (isDuplicate) {
+          callback(new Error("이미 존재하는 역할명입니다."));
+        } else {
+          callback(); // 통과!
+        }
+      },
+      trigger: "blur", // 입력창에서 포커스가 벗어날 때 검사
+    },
+  ],
+  description: [
+    { max: 85, message: "설명은 85자 이하로 입력하세요", trigger: "blur" },
   ],
 });
 
@@ -355,19 +385,18 @@ const handleCreate = () => {
 };
 
 // ── 역할 수정 모달 열기 ──
-// ── 역할 수정 모달 열기 (수정됨) ──
 const handleEdit = (row) => {
   isEditMode.value = true;
   Object.assign(form, {
     ...defaultForm(),
     roleId: row.roleId,
     roleName: row.roleName,
+    description: row.description,
     isActive: row.isActive,
   });
   expandedCategories.value = [];
 
-  // 💡 핵심 변경점: API 호출을 할 필요 없이, 이미 row 안에 있는 permissions 배열에서 ID만 쏙 뽑아옵니다!
-  // (만약 권한이 아예 없으면 빈 배열 [] 반환)
+  // API 호출을 할 필요 없이, 이미 row 안에 있는 permissions 배열에서 ID만 쏙 뽑아옵니다
   form.selectedPermissionIds = row.permissions
     ? row.permissions.map((p) => p.permissionId)
     : [];
@@ -383,7 +412,13 @@ const handleToggle = async (row) => {
     await roleStore.changeRoleStatus(row.roleId);
   } catch {
     row.isActive = row.isActive === "Y" ? "N" : "Y";
-    alert("상태 변경에 실패했습니다.");
+    // 💡 에러 알림 SweetAlert2 적용
+    Swal.fire({
+      icon: "error",
+      title: "변경 실패",
+      text: "상태 변경에 실패했습니다.",
+      confirmButtonColor: "#2563eb",
+    });
   }
 };
 
@@ -409,6 +444,7 @@ const handleSubmit = async () => {
   try {
     const payload = {
       roleName: form.roleName,
+      description: form.description,
       isActive: form.isActive,
       permissionIds: form.selectedPermissionIds, // 선택된 ID 배열만 전송
     };
@@ -423,12 +459,24 @@ const handleSubmit = async () => {
 
     modalVisible.value = false;
     await roleStore.getRoleList();
+
+    // 💡 성공 알림 SweetAlert2 적용
+    Swal.fire({
+      icon: "success",
+      title: isEditMode.value ? "수정 완료" : "등록 완료",
+      text: "정상적으로 처리되었습니다.",
+      confirmButtonColor: "#2563eb",
+    });
   } catch {
-    alert(
-      isEditMode.value
+    // 💡 에러 알림 SweetAlert2 적용
+    Swal.fire({
+      icon: "error",
+      title: "처리 실패",
+      text: isEditMode.value
         ? "역할 수정에 실패했습니다."
         : "역할 등록에 실패했습니다.",
-    );
+      confirmButtonColor: "#2563eb",
+    });
   } finally {
     submitting.value = false;
   }
@@ -441,11 +489,17 @@ onMounted(async () => {
     // 역할 목록 + 전체 권한 목록 병렬 조회
     const [, permsRes] = await Promise.all([
       roleStore.getRoleList(),
-      // axios.get("/api/permissions"), // GET /api/permissions → permissions 테이블 전체
+      roleStore.getPermissionList(),
     ]);
     allPermissions.value = permsRes.data;
   } catch {
-    alert("데이터를 불러오는 데 실패했습니다.");
+    // 💡 로드 실패 알림 SweetAlert2 적용
+    Swal.fire({
+      icon: "error",
+      title: "조회 실패",
+      text: "데이터를 불러오는 데 실패했습니다.",
+      confirmButtonColor: "#2563eb",
+    });
   } finally {
     isLoading.value = false;
   }
