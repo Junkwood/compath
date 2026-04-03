@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
-import axios from "axios";
+import api from "../utils/api";
 import Swal from "sweetalert2";
 
 export const useTaskStore = defineStore("task", () => {
@@ -50,7 +50,7 @@ export const useTaskStore = defineStore("task", () => {
   //  초기화 (등록용)
   const initCreate = async (projectId) => {
     resetForm();
-    const res = await axios.get("/api/task-total-info", {
+    const res = await api.get("/task-total-info", {
       params: { projectId },
     });
 
@@ -112,7 +112,7 @@ export const useTaskStore = defineStore("task", () => {
     resetForm();
 
     // 프로시저 한 번 호출로 전부 조회
-    const res = await axios.get("/api/task-total-info", {
+    const res = await api.get("/task-total-info", {
       params: { taskId },
     });
 
@@ -127,7 +127,7 @@ export const useTaskStore = defineStore("task", () => {
     const d = taskDetail[0];
     const pd = projectList;
 
-    const codeRes = await axios.get("/api/code", {
+    const codeRes = await api.get("/code", {
       params: { groupValue: ["0H", "0G"] },
     });
     priorityList.value = codeRes.data.c0H;
@@ -167,7 +167,7 @@ export const useTaskStore = defineStore("task", () => {
 
   //  공통 코드 로드(우선순위, 상태)
   const loadCommonCodes = async () => {
-    const codeRes = await axios.get("/api/code", {
+    const codeRes = await api.get("/code", {
       params: { groupValue: ["0H", "0G"] },
     });
 
@@ -198,7 +198,7 @@ export const useTaskStore = defineStore("task", () => {
   }; // 마일스톤
   const fetchMilestones = async (pId) => {
     if (!pId) return;
-    const res = await axios.get("/api/taskMileStone", {
+    const res = await api.get("/taskMileStone", {
       params: { projectId: pId },
     });
     milestoneList.value = res.data.map((m) => ({
@@ -398,7 +398,7 @@ export const useTaskStore = defineStore("task", () => {
     // 3. 최종 유효성 검사 및 저장
     try {
       validateForm();
-      await axios.put(`/api/task/${taskId}`, {
+      await api.put(`/task/${taskId}`, {
         ...buildPayload(),
         taskId: Number(taskId),
         rejectionReason: rejectReason.value, // 반려 사유 포함
@@ -422,7 +422,7 @@ export const useTaskStore = defineStore("task", () => {
       rejectionReason: rejectReason.value,
       rejectedBy: editorUserId, // 현재 수정하는 사람의 ID
     };
-    await axios.post("/api/reject", payload);
+    await api.post("/reject", payload);
   };
 
   return {

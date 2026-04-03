@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import api from "../utils/api";
 
 export const useGanttChartStore = defineStore("ganttChart", {
   state: () => ({
@@ -20,7 +20,7 @@ export const useGanttChartStore = defineStore("ganttChart", {
         const [taskRes, projectRes, codeRes] = await Promise.all([
           fetch(`/api/task/gantt?projectId=${projectId}`),
           fetch(`/api/task-total-info?projectId=${projectId}`),
-          axios.get("/api/code", { params: { groupValue: ["0H"] } }),
+          api.get("/code", { params: { groupValue: ["0H"] } }),
         ]);
 
         const tasks = await taskRes.json();
