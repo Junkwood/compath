@@ -108,8 +108,12 @@
                 <div class="card-header">
                   <span class="card-title">업무 설명</span>
                 </div>
-                <div class="min-h-48">
-                  <span>{{ taskInfo.content }}</span>
+                <div class="min-h-48 text-base pl-4 pt-2">
+                  <span
+                    v-if="taskInfo.content != null || taskInfo.content != ''"
+                    >{{ taskInfo.content }}</span
+                  >
+                  <span v-else>등록된 설명이 없습니다.</span>
                 </div>
               </div>
               <!-- ────────── 하단: 프로젝트 목록 ────────── -->
@@ -117,42 +121,50 @@
                 <el-tabs
                   v-model="activeName"
                   @tab-click="handleClick"
-                  default-value="작업이력"
+                  default-value="first"
                 >
-                  <el-tab-pane label="작업이력" name="작업이력">
+                  <el-tab-pane label="작업이력" name="first">
                     <el-table
                       v-loading="loadingProjects"
-                      :data="pagedProjectData"
+                      :data="pagedTimeData"
                       style="width: 100%"
                       :header-cell-style="headerStyle"
                       :cell-style="cellStyle"
-                      @row-click="goProjectDashboard"
                     >
                       <el-table-column
-                        prop="parentProjectName"
+                        prop="idx"
                         label="번호"
                         width="100"
                         align="center"
                       />
                       <el-table-column
-                        prop="endDate"
+                        prop="createdAt"
                         label="일시"
                         width="200"
                         align="center"
                       />
                       <el-table-column
-                        prop="pmUserId"
+                        prop="userName"
                         label="작업자"
                         width="200"
                         align="center"
                       />
                       <el-table-column
-                        prop="pmUserId"
+                        prop="taskDesc"
                         label="내역"
                         min-width="550"
                         align="center"
                       />
                     </el-table>
+                    <div class="pagination-wrap">
+                      <el-pagination
+                        v-model:current-page="timeEntriesPage"
+                        :page-size="pagedtimeEntries"
+                        :total="timeEntriesList.length"
+                        layout="prev, pager, next"
+                        background
+                      />
+                    </div>
                   </el-tab-pane>
                   <el-tab-pane label="소요시간" name="second">
                     <el-table
@@ -335,8 +347,11 @@ let taskInfo = ref({
   taskId: "",
   title: "",
   typeName: "",
-}); // 업무 상세 정보
+});
+// 업무 상세 정보
 let taskPjList = ref([]); // 프로젝트 이름 배열
+let activityList = ref([]); // 작업내역
+let activeName = ref("first"); // 선택된 탭
 
 const loadingProjects = ref(false);
 
@@ -353,6 +368,9 @@ onBeforeMount(async () => {
     taskPjList.value = [taskInfo.value.projectName];
   }
 
+  // 작업내역 조회
+  chageTaskDesc();
+
   // 소요시간 목록 조회
   await taskStore.getTimeEntries(taskId.value);
   timeEntriesList.value = taskStore.timeEntriesList;
@@ -362,7 +380,6 @@ onBeforeMount(async () => {
 const openTimeModal = ref(false);
 const timeRegisterUser = ref({});
 const registerActualTime = () => {
-  console.log();
   openTimeModal.value = true;
 
   // 모달창 전달 정보(props)
@@ -389,6 +406,7 @@ const submitted = async (val) => {
     workDate: val.workDate,
     hours: val.hours,
     taskDesc: val.taskDesc,
+    beforeValue: taskInfo.value.actualHours,
   };
 
   // 소요시간 등록
@@ -396,12 +414,38 @@ const submitted = async (val) => {
   timeEntriesList.value = taskStore.timeEntriesList;
 
   // 소요시간 목록 최신화
-  let arr = timeEntriesList.value;
-  for (let i = 0; i < arr.length; i++) {
-    // 새로 추가된 소요시간 플러스
-    if (i == arr.length - 1) {
-      taskInfo.value.actualHours += arr[i].hours;
+  taskInfo.value.actualHours += Number(val.hours);
+  console.log("소요시간 우측: ", taskInfo.value.actualHours);
+
+  chageTaskDesc();
+};
+
+// 작업이력 형식 변경
+const chageTaskDesc = async () => {
+  await taskStore.getActivityLogs(taskId.value);
+  activityList.value = taskStore.activityList;
+
+  activityList.value.forEach((el) => {
+    if (el.targetType == "time_entries") {
+      if (el.actionType == "J1") {
+        el.taskDesc = `소요시간을 ${el.beforeValue}시간에서 ${el.afterValue}시간으로 변경 했습니다.`;
+      }
     }
+  });
+
+  if (activeName.value == "first") {
+    tableList.value = activityList.value;
+  }
+};
+
+// 탭 선택시
+const handleClick = (tab) => {
+  let name = tab.props.name;
+  if (name == "first") {
+    tableList.value = activityList.value;
+  } else if (name == "second") {
+    tableList.value = timeEntriesList.value;
+  } else if (name == "third") {
   }
 };
 
@@ -409,15 +453,14 @@ const submitted = async (val) => {
 const timeEntriesPage = ref(1);
 const pagedtimeEntries = ref(5);
 const workPageSize = 5;
+const tableList = ref([]);
 
 const pagedTimeData = computed(() => {
   const s = (timeEntriesPage.value - 1) * workPageSize;
-  return timeEntriesList.value
-    .slice(s, s + workPageSize)
-    .map((item, index) => ({
-      ...item,
-      no: s + index + 1, //번호 칼럼 없다면 no 빼도 됨
-    }));
+  return tableList.value.slice(s, s + workPageSize).map((item, index) => ({
+    ...item,
+    no: s + index + 1, //번호 칼럼 없다면 no 빼도 됨
+  }));
 });
 
 // ── 테이블 공통 스타일 ─────────────────────────────

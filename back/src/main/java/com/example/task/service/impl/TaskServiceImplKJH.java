@@ -49,18 +49,28 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
 
         // 소요시간 합계로 수정
         Integer hours = dto.getSum();
-
-        // 활동내역에 등록
-//        dto.setTargetId();
-//        mapper.registerTimeLog(dto);
         mapper.modifyActualTime(hours,taskId);
 
-        return mapper.getTimeEntriesById(taskId);
+        // 소요시간 최신 등록 건 조회
+        String recentId = mapper.getRecentRegisteredTime();
 
+        // 활동내역에 등록
+        dto.setTargetId(recentId);
+        dto.setActorUserId(dto.getUserId());
+        dto.setBeforeValue(dto.getBeforeValue());
+        dto.setAfterValue(Integer.toString(dto.getSum()));
+        mapper.registerTimeLog(dto);
+
+        return mapper.getTimeEntriesById(taskId);
     }
 
     @Override
     public List<TaskDetailDTOKJH> getTimeEntriesById(Integer id) {
         return mapper.getTimeEntriesById(id);
+    }
+
+    @Override
+    public List<TaskDetailDTOKJH> getTimeLog(Integer id) {
+        return mapper.getTimeLog(id);
     }
 }

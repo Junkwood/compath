@@ -15,7 +15,7 @@
     >
       <!-- 프로젝트 명 -->
       <el-form-item label="업무명" prop="taskTitle">
-        <el-input v-model="form.taskTitle" placeholder="" />
+        <el-input v-model="form.taskTitle" placeholder="" disabled />
       </el-form-item>
       <!-- 작업일자 작업자 -->
       <div class="date-row">
@@ -61,6 +61,7 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
+import { changeDate } from "../utils/commonFunc";
 
 const props = defineProps({
   timeRegisterUser: { type: Object, default: false },
@@ -73,7 +74,6 @@ const visible = computed({
 });
 
 const form = ref({});
-const submitting = ref(false);
 
 const rules = {
   hours: [
@@ -119,19 +119,7 @@ watch(
   () => props.timeRegisterUser,
   (newVal) => {
     let date = new Date();
-    let today = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-
-    if (date.getMonth() < 9) {
-      today = `${date.getFullYear()}-0${date.getMonth() + 1}-${date.getDate()}`;
-      if (date.getDate() < 10) {
-        today = `${date.getFullYear()}-0${date.getMonth() + 1}-0${date.getDate()}`;
-        console.log(today);
-      }
-    } else {
-      if (date.getDate() < 10) {
-        today = `${date.getFullYear()}-${date.getMonth() + 1}-0${date.getDate()}`;
-      }
-    }
+    let today = changeDate(date);
 
     form.value = { ...newVal, workDate: today, hours: "", description: "" };
   },
