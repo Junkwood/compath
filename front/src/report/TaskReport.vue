@@ -239,10 +239,12 @@
                   <div class="text-center">{{ task.typeName }}</div>
                 </td>
                 <td class="p-2">
-                  <div class="text-center">{{ task.startDate }}</div>
+                  <div class="text-center">
+                    {{ formatDate(task.startDate) }}
+                  </div>
                 </td>
                 <td class="p-2">
-                  <div class="text-center">{{ task.dueDate }}</div>
+                  <div class="text-center">{{ formatDate(task.dueDate) }}</div>
                 </td>
                 <td class="p-2 w-28">
                   <div class="text-center">{{ task.workHours }}시간</div>
@@ -330,6 +332,11 @@ const real = ref(true);
 const titleList = ref([]);
 const assigneeUserIdList = ref([]);
 const taskTypeList = ref([]);
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  return dateStr.toString().substring(0, 10);
+};
 
 // 테이블 헤더 (고정)
 const thList = [
