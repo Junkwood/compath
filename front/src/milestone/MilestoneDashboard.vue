@@ -43,9 +43,10 @@
                 <div class="milestone-title-wrap">
                   <div class="milestone-title-row">
                     <h3 class="milestone-title">마일스톤</h3>
-                    <el-button class="create-milestone-btn" @click="handleCreateMilestone">
-                      + 마일스톤 생성
+                    <el-button @click="handleCreateMilestone">
+                      마일스톤 생성
                     </el-button>
+
                   </div>
 
                   <div class="milestone-guide">
@@ -144,6 +145,7 @@ import axios from "axios";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import MilestoneCreateModal from "./MilestoneCreateModal.vue";
+import Swal from "sweetalert2";
 
 const route = useRoute();
 const router = useRouter();
@@ -202,6 +204,7 @@ const goMilestoneDetail = (item) => {
     },
   });
 };
+
 
 
 onMounted(() => {

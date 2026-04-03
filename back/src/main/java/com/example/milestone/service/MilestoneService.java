@@ -29,4 +29,8 @@ public interface MilestoneService {
 
     //마일스톤 수정
     void updateMilestone(MilestoneCreateDto dto);
+
+    //마일스톤 삭제 (상태값 업데이트 : E2로)
+    void deleteMilestone(MilestoneCreateDto dto);
+
 }

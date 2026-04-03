@@ -18,5 +18,6 @@ public class MilestoneCreateDto {
     private LocalDate startDate;
     private LocalDate dueDate;
     private Integer projectId;
-
+    private Integer editorUserId;
+    private LocalDateTime updatedAt;
 }

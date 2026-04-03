@@ -57,5 +57,9 @@ public class MilestoneServiceImpl implements MilestoneService {
         milestoneMapper.updateMilestone(dto);
     }
 
-
+    //마일스톤 삭제 (상태값 업데이트 : E2로)
+    @Override
+    public void deleteMilestone(MilestoneCreateDto dto) {
+        milestoneMapper.deleteMilestoneProc(dto);
+    }
 }
