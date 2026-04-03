@@ -1,11 +1,14 @@
 package com.example.task.dto;
 
 import com.example.task.entity.TaskEntityKJH;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -25,7 +28,11 @@ public class TaskListDTOKJH {
     private Integer progressRate;
     private Date startDate;
     private Date endDate;
-    private Date dueDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul" )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private LocalDate dueDate;
+
     private String projectName;
     private String typeName;
     private String statusName;

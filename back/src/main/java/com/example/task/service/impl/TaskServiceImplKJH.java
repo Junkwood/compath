@@ -52,7 +52,7 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
         mapper.modifyActualTime(hours,taskId);
 
         // 소요시간 최신 등록 건 조회
-        String recentId = mapper.getRecentRegisteredTime();
+        String recentId = mapper.getRecentRegisteredTime(taskId);
 
         // 활동내역에 등록
         dto.setTargetId(recentId);

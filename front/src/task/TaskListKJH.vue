@@ -151,7 +151,7 @@
               <label
                 for="password"
                 class="block mb-2.5 text-sm font-medium text-heading"
-                >프로젝트명</label
+                >하위 프로젝트명</label
               >
               <select
                 class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 bm-2 shadow-xs placeholder:text-body"
@@ -209,7 +209,7 @@
                   @click="goDetail(task.taskId)"
                 >
                   <td class="p-2 w-80">
-                    <div class="text-center">
+                    <div class="text-left">
                       {{ task.title }}
                     </div>
                   </td>
@@ -258,7 +258,7 @@
                     </div>
                   </td>
                   <td class="p-2 w-80">
-                    <div class="text-center">
+                    <div class="text-left">
                       {{ task.projectName }}
                     </div>
                   </td>
@@ -297,6 +297,7 @@ import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
+import { changeDate } from "../utils/commonFunc";
 
 const sidebarOpen = ref(false);
 const taskStore = usetaskKJHStore();
@@ -358,8 +359,8 @@ onBeforeMount(async () => {
   await taskStore.getProjectName(id);
 
   name.value = taskStore.projectName.projectName;
-  projectStartDate.value = changeDateType(taskStore.projectName.startDate);
-  projectendDate.value = changeDateType(taskStore.projectName.startDate);
+  projectStartDate.value = changeDate(taskStore.projectName.startDate);
+  projectendDate.value = changeDate(taskStore.projectName.startDate);
   console.log("프로젝트명 ", name.value);
 
   // 전체 목록 조회
@@ -371,8 +372,16 @@ onBeforeMount(async () => {
 
   for (let i = 0; i < taskList.value.length; i++) {
     // 날짜 형식 변경
-    taskList.value[i].startDate = changeDateType(taskList.value[i].startDate);
-    taskList.value[i].dueDate = changeDateType(taskList.value[i].dueDate);
+    if (taskList.value[i].startDate != null) {
+      taskList.value[i].startDate = changeDate(taskList.value[i].startDate);
+    } else {
+      taskList.value[i].startDate = "-";
+    }
+    if (taskList.value[i].dueDate != null) {
+      taskList.value[i].dueDate = changeDate(taskList.value[i].dueDate);
+    } else {
+      taskList.value[i].dueDate = "-";
+    }
 
     // 필터링 조건들 구분
     // 업무명
@@ -417,12 +426,12 @@ onBeforeMount(async () => {
     // 하위 프로젝트 목록
     if (
       smallProjectList.value.length < 1 &&
-      taskList.value[i].projectName != name
+      taskList.value[i].projectName != name.value
     ) {
       smallProjectList.value.push(taskList.value[i].projectName);
     } else if (
       smallProjectList.value.indexOf(taskList.value[i].projectName) == -1 &&
-      taskList.value[i].projectName != name
+      taskList.value[i].projectName != name.value
     ) {
       smallProjectList.value.push(taskList.value[i].projectName);
     }
@@ -433,25 +442,6 @@ onBeforeMount(async () => {
 
   await paging(taskList);
 });
-
-// 날짜 변경 함수
-const changeDateType = (day) => {
-  let date = new Date(day);
-
-  if (date.getMonth() < 9) {
-    let realDay = `${date.getFullYear()}-0${date.getMonth() + 1}-${date.getDate()}`;
-    if (date.getDate() < 10) {
-      realDay = `${date.getFullYear()}-0${date.getMonth() + 1}-0${date.getDate()}`;
-    }
-    return realDay;
-  } else {
-    let realDay = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-    if (date.getDate() < 10) {
-      realDay = `${date.getFullYear()}-0${date.getMonth() + 1}-0${date.getDate()}`;
-    }
-    return realDay;
-  }
-};
 
 // 업무명 필터링
 let filterFinishList = ref([]);
@@ -593,8 +583,9 @@ const goResister = () => {
 };
 
 // 초기화 버튼
-const resetForm = () => {
-  filterList.value = taskList.value;
+const resetForm = async () => {
+  workPage.value = 1;
+  await paging(taskList);
 
   filteredList.value = {
     title: "전체",
@@ -606,6 +597,8 @@ const resetForm = () => {
     priority: "전체",
     small: "전체",
   };
+
+  console.log("업무목록", filterList.value.length);
 };
 
 // 업무 상세페이지 이동
@@ -728,5 +721,17 @@ const goDetail = (val) => {
 :deep(.input:disabled) {
   background: #f1f5f9 !important;
   color: #475569 !important; /* #94a3b8 → #475569 으로 변경! */
+}
+:deep(.text-left) {
+  text-align: left;
+  padding-left: 15px;
+}
+:deep(th:nth-child(1) .text-center) {
+  text-align: left;
+  padding-left: 15px;
+}
+:deep(th:nth-child(9) .text-center) {
+  text-align: left;
+  padding-left: 15px;
 }
 </style>
