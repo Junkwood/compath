@@ -178,5 +178,59 @@ SELECT
         t.*, 
         u.user_name AS assigneeName
     FROM tasks t
-    LEFT JOIN users u ON t.assignee_user_id = u.user_id
-    WHERE t.is_deleted = 'Q1';
+    LEFT JOIN users u ON t.assignee_user_id = u.user_id;
+SELECT * FROM users;
+
+
+--업무 전체 조회
+        SELECT t.task_id,
+        t.parent_task_id,
+        t.milestone_id,
+        t.task_type_id,
+        t.task_status_id,
+        t.title,
+        t.content,
+        t.assignee_user_id,
+        t.actual_hours,
+        u.user_name,
+        t.priority_code,
+        c.code_name,
+        t.progress_rate,
+        t.start_date,
+        t.due_date,
+        p.project_name,
+        t2.type_name,
+        t3.status_name
+        FROM tasks t
+        JOIN projects p ON t.project_id = p.project_id
+        JOIN task_types t2 ON t.task_type_id = t2.task_type_id
+        JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
+        JOIN common_code c ON t.priority_code = c.code_value
+        JOIN users u ON t.assignee_user_id = u.user_id;
+        WHERE t.project_id = #{id} OR p.parent_project_id = #{pid}
+
+
+SELECT * FROM tasks;
+SELECT * FROM projects;
+
+SELECT t.task_id,
+       t.parent_task_id,
+       p.PROJECT_NAME,
+	   t.title,
+	   t.assignee_user_id,
+	   t.task_type_id,
+	   t.start_date,
+       t.due_date,
+       t.EST_START_DATE,
+       t.EST_END_DATE 
+	   FROM tasks t
+	   JOIN projects p ON t.project_id = p.project_id
+       JOIN task_types t2 ON t.task_type_id = t2.task_type_id
+       JOIN users u ON t.ASSIGNEE_USER_ID = u.user_id;
+
+	   
+
+
+
+
+

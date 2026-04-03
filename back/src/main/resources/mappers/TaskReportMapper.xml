@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.report.mapper.TaskReportMapper">
+    <sql id="task">
+        task_id,
+        parent_task_id,
+        project_id,
+        milestone_id,
+        task_type_id,
+        task_status_id,
+        title,
+        content,
+        assignee_user_id,
+        priority_code,
+        progress_rate,
+        start_date,
+        due_date,
+        estimated_hours,
+        actual_hours,
+        is_deleted,
+        created_by,
+        created_at,
+        updated_at,
+        est_start_date,
+        est_end_date,
+        attachment_group_id,
+        editor_user_id
+    </sql>
+
+    <select id="getReportAll" >
+        SELECT t.task_id,
+        t.parent_task_id,
+        t.milestone_id,
+        t.task_type_id,
+        t.task_status_id,
+        t.title,
+        t.content,
+        t.assignee_user_id,
+        u.user_name,
+        t.priority_code,
+        c.code_name,
+        t.progress_rate,
+        t.start_date,
+        t.due_date,
+        p.project_name,
+        t2.type_name,
+        t3.status_name
+        FROM tasks t
+        LEFT JOIN projects p ON t.project_id = p.project_id
+        LEFT JOIN task_types t2 ON t.task_type_id = t2.task_type_id
+        LEFT JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
+        LEFT JOIN common_code c ON t.priority_code = c.code_value
+        LEFT JOIN users u ON t.assignee_user_id = u.user_id
+        WHERE t.project_id = #{id} OR p.parent_project_id = #{pid}
+    </select>
+
+    <select id="getReportAll1"
+            parameterType="TaskReportDto"
+            resultType="TaskReportDto">
+        SELECT
+        t.task_id,
+        t.parent_task_id,
+        p.project_name,
+        t.title,
+        t.assignee_user_id,
+        t.task_type_id,
+        t.start_date,
+        t.due_date,
+        t.est_start_date,
+        t.est_end_date
+        FROM tasks t
+        LEFT JOIN projects p ON t.project_id = p.project_id
+        LEFT JOIN task_types t2 ON t.task_type_id = t2.task_type_id
+        LEFT JOIN users u ON t.assignee_user_id = u.user_id
+        <where>
+            <!-- 프로젝트 필터 -->
+            <if test="projectId != null">
+                AND (
+                t.project_id = #{projectId}
+                OR p.parent_project_id = #{projectId}
+                )
+            </if>
+
+            <!-- 업무명 -->
+            <if test="title != null and title != ''">
+                AND t.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+
+            <!-- 담당자 -->
+            <if test="assigneeUserId != null">
+                AND t.assignee_user_id = #{assigneeUserId}
+            </if>
+
+            <!-- 시작일 -->
+            <if test="startDate != null">
+                AND t.start_date <![CDATA[ >= ]]> #{startDate}
+            </if>
+
+            <!-- 종료일 -->
+            <if test="endDate != null">
+                AND t.due_date <![CDATA[ <= ]]> #{endDate}
+            </if>
+        </where>
+        ORDER BY t.start_date DESC
+    </select>
+
+
+
+</mapper>

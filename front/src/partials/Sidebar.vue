@@ -290,7 +290,11 @@
                   </router-link>
 
                   <router-link
-                    to="/task/TaskRegister"
+                    v-if="currentProjectId"
+                    :to="{
+                      name: 'taskRegister',
+                      params: { projectId: currentProjectId },
+                    }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -338,7 +342,11 @@
                   </router-link>
 
                   <router-link
-                    to="/project/gantt"
+                    v-if="currentProjectId"
+                    :to="{
+                      name: 'GanttView',
+                      params: { projectId: currentProjectId },
+                    }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -362,7 +370,11 @@
                   </router-link>
 
                   <router-link
-                    to="/project/report"
+                    v-if="currentProjectId"
+                    :to="{
+                      name: 'TaskReport',
+                      params: { projectId: currentProjectId },
+                    }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -483,7 +495,10 @@
 
                   <router-link
                     v-if="currentProjectId"
-                    :to="{ name: 'milestoneDashboard', params: { projectId: currentProjectId } }"                    
+                    :to="{
+                      name: 'milestoneDashboard',
+                      params: { projectId: currentProjectId },
+                    }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
