@@ -357,14 +357,15 @@ onBeforeMount(async () => {
 
   // 프로젝트 이름 조회
   await taskStore.getProjectName(id);
-
-  name.value = taskStore.projectName.projectName;
-  projectStartDate.value = changeDate(taskStore.projectName.startDate);
-  projectendDate.value = changeDate(taskStore.projectName.startDate);
-  console.log("프로젝트명 ", name.value);
+  const projectInfo = taskStore.projectName;
+  name.value = projectInfo.projectName;
+  projectStartDate.value = changeDate(projectInfo.startDate);
+  projectendDate.value = changeDate(projectInfo.startDate);
+  listLength.value = projectInfo.taskCounts;
 
   // 전체 목록 조회
-  await taskStore.getAllTask(id);
+  let obj = { projectId: id, startNum: 1, endNum: 10 };
+  await taskStore.getAllTask(obj);
 
   listLoading.value = false;
 

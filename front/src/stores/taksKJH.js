@@ -17,8 +17,13 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     },
 
     // 프로젝트별 전체 업무 목록
-    async getAllTask(id) {
-      this.taskAllList = (await axios.get("/api/tasks/" + id)).data;
+    async getAllTask(obj) {
+      console.log(obj);
+      this.taskAllList = (
+        await axios.get("/api/tasks", {
+          params: obj,
+        })
+      ).data;
     },
 
     // 업무 상세 정보

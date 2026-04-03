@@ -1,6 +1,5 @@
 package com.example.task.dto;
 
-import com.example.task.entity.TaskEntityKJH;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -39,10 +38,9 @@ public class TaskListDTOKJH {
     private String codeName;
     private String userName;
 
-    public static TaskListDTOKJH fromTaskEntity(TaskEntityKJH task) {
-        return new TaskListDTOKJH(task.getTaskId(), task.getParentTaskId(), task.getMilestoneId(), task.getTaskTypeId(),
-                                  task.getTaskStatusId(), task.getTitle(), task.getContent(), task.getAssigneeUserId(),
-                                  task.getPriorityCode(), task.getProgressRate(), task.getStartDate(), task.getEndDate(), task.getDueDate(), task.getProjectName(),
-                                  task.getTypeName(), task.getStatusName(), task.getCodeName(), task.getUserName());
-    }
+// 백에서 페이지 네이션
+    private Integer taskCounts;
+    private Integer startNum;
+    private Integer endNum;
+
 }

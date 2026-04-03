@@ -2,7 +2,6 @@ package com.example.task.service.impl;
 
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
-import com.example.task.entity.TaskEntityKJH;
 import com.example.task.mapper.TaskMapperKJH;
 import com.example.task.service.TaskServiceKJH;
 import jakarta.transaction.Transactional;
@@ -10,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,16 +18,19 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
     private final TaskMapperKJH mapper;
 
     @Override
-    public List<TaskListDTOKJH> getAllTasks(String id, String pid) {
-        List<TaskEntityKJH> list = mapper.getAllTasks(id, pid);
-
-        return list.stream().map(TaskListDTOKJH::fromTaskEntity).collect(Collectors.toList());
+    public List<TaskListDTOKJH> getAllTasks(Integer id, Integer pid, Integer startNum, Integer endNum) {
+        return mapper.getAllTasks(id, pid, startNum, endNum);
     }
 
     @Override
     public TaskListDTOKJH getProjectName(Integer id) {
+        int count = mapper.getAllTaskCount(id);
 
-        return mapper.getProjectName(id);
+        TaskListDTOKJH dto = mapper.getProjectName(id);
+
+        dto.setTaskCounts(count);
+
+        return dto;
     }
 
     @Override
@@ -73,4 +74,6 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
     public List<TaskDetailDTOKJH> getTimeLog(Integer id) {
         return mapper.getTimeLog(id);
     }
+
+    //
 }

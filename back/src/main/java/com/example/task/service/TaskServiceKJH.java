@@ -8,7 +8,7 @@ import java.util.List;
 public interface TaskServiceKJH {
 
     // 업무 목록
-    public List<TaskListDTOKJH> getAllTasks(String id, String pid);
+    public List<TaskListDTOKJH> getAllTasks(Integer id, Integer pid, Integer startNum, Integer endNum);
 
     // 프로젝트 이름
     public TaskListDTOKJH getProjectName(Integer id);
@@ -24,4 +24,6 @@ public interface TaskServiceKJH {
 
     // 활동내역 목록조회
     public List<TaskDetailDTOKJH> getTimeLog(Integer id);
+
+
 }
