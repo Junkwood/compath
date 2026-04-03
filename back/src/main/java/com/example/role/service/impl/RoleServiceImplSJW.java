@@ -34,20 +34,20 @@ public class RoleServiceImplSJW implements RoleServiceSJW {
     public List<PermissionDTOSJW> getAllPermission() {
         return roleMapper.getAllPermission();
     }
-
+    @Transactional
     @Override
     public RoleDTOSJW registerRole(RoleDTOSJW role) {
         roleMapper.registerRole(role);
         return role;
     }
-
+    @Transactional
     @Override
     public RoleDTOSJW modifyRole(RoleDTOSJW role) {
         roleMapper.deleteRolePermissionByRoleId(role.getRoleId());
         //수정하는 매퍼 실행
         return role;
     }
-
+    @Transactional
     @Override
     public Boolean deleteRole(Integer roleId) {
         roleMapper.deleteRolePermissionByRoleId(roleId);

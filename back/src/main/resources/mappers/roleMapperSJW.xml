@@ -52,6 +52,9 @@
         WHERE r.IS_ACTIVE = 'O1'
         ORDER BY r.ROLE_ID, p.PERMISSION_ID
     </select>
+    <insert id="registerRole" parameterType="com.example.role.dto.RoleDTOSJW">
+
+    </insert>
     <select id="getAllPermission" parameterType="com.example.role.dto.PermissionDTOSJW">
         select * from permissions
     </select>
