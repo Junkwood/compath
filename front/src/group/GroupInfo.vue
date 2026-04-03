@@ -337,9 +337,19 @@
                           >
                             <span
                               class="font-medium text-gray-800 dark:text-gray-200"
-                              >{{ item.afterValue }}</span
                             >
+                              {{ item.afterValue }}
+                            </span>
                           </template>
+
+                          <template
+                            v-else-if="item.actionType === '구성원 제외'"
+                          >
+                            <span class="font-medium text-red-500">
+                              {{ item.beforeValue }}
+                            </span>
+                          </template>
+
                           <template v-else>
                             <del class="text-gray-400 mr-1">{{
                               item.beforeValue

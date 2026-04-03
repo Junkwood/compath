@@ -29,6 +29,7 @@ public class EmpVOSJW implements UserDetails {
     private Integer roleId;
     private String roleName;
     private String primaryGroupName;
+    private String userName;
     //시큐리티에서 권한 체크
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -38,6 +39,10 @@ public class EmpVOSJW implements UserDetails {
     @Override
     public String getUsername() {
         return String.valueOf(this.userId) ;
+    }
+
+    public String getUserName() {
+        return this.userName;
     }
     //시큐리티에서 비번체크
     @Override

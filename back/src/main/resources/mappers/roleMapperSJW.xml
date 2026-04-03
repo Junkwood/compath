@@ -4,21 +4,53 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.role.mapper.RoleMapperSJW">
 
-    <sql id="role">
-        ROLE_ID,
-        ROLE_NAME,
-        DESCRIPTION,
-        active(IS_ACTIVE) as IS_ACTIVE ,
-        CREATED_AT,
-        UPDATED_AT,
-        EDITOR_USER_ID
-    </sql>
-    <select id="getAll">
-        select
-        <include refid="role"/>
-        from roles
-        where is_active = 'O1'
-        order by role_id
+    <resultMap id="RoleWithPermissionsMap" type="com.example.role.dto.RoleDTOSJW">
+        <id property="roleId" column="ROLE_ID"/>
+        <result property="roleName" column="ROLE_NAME"/>
+        <result property="description" column="DESCRIPTION"/>
+        <result property="isActive" column="IS_ACTIVE"/>
+        <result property="createdAt" column="CREATED_AT"/>
+        <result property="updatedAt" column="UPDATED_AT"/>
+        <result property="editorUserId" column="EDITOR_USER_ID"/>
+
+        <collection property="permissions" ofType="com.example.role.dto.PermissionDTOSJW">
+            <id property="permissionId" column="PERM_ID"/>
+            <result property="permissionName" column="PERM_NAME"/>
+            <result property="permissionCode" column="PERM_CODE"/>
+            <result property="description" column="PERM_DESC"/>
+            <result property="permissionUrl" column="PERM_URL"/>
+            <result property="permissionMethod" column="PERM_METHOD"/>
+            <result property="createdAt" column="PERM_CREATED_AT"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAll" resultMap="RoleWithPermissionsMap">
+        SELECT
+        -- [역할 컬럼]
+        r.ROLE_ID,
+        r.ROLE_NAME,
+        r.DESCRIPTION,
+        active(r.IS_ACTIVE) AS IS_ACTIVE,
+        r.CREATED_AT,
+        r.UPDATED_AT,
+        r.EDITOR_USER_ID,
+
+        -- [권한 컬럼] 중복 방지를 위해 PERM_ 접두사 별칭 사용
+        p.PERMISSION_ID AS PERM_ID,
+        p.PERMISSION_NAME AS PERM_NAME,
+        p.PERMISSION_CODE AS PERM_CODE,
+        p.DESCRIPTION AS PERM_DESC,
+        p.PERMISSION_URL AS PERM_URL,
+        p.PERMISSION_METHOD AS PERM_METHOD,
+        p.CREATED_AT AS PERM_CREATED_AT
+
+        FROM roles r
+        -- 권한이 없는 역할도 가져와야 하므로 무조건 LEFT JOIN
+        LEFT JOIN role_permissions rp ON r.ROLE_ID = rp.ROLE_ID
+        LEFT JOIN permissions p ON rp.PERMISSION_ID = p.PERMISSION_ID
+
+        WHERE r.IS_ACTIVE = 'O1'
+        ORDER BY r.ROLE_ID, p.PERMISSION_ID
     </select>
 
 </mapper>

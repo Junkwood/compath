@@ -41,6 +41,7 @@ public interface GroupMapperSJW {
     // ==========================================
 
     // [로그] 구성원 제외 수동 기록 (DELETE 직전에 Java에서 호출)
-    void insertDeleteLog(@Param("targetId") String targetId,
+    void insertDeleteLog(@Param("groupId") String groupId,
+                         @Param("logBeforeValue") Integer logBeforeValue,
                          @Param("editorUserId") Integer editorUserId);
 }

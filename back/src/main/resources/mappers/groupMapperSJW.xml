@@ -120,16 +120,15 @@
         FROM activity_logs al
         LEFT JOIN users u ON al.actor_user_id = u.user_id
         WHERE
-        -- 1. 그룹 자체(groups)의 변경 로그 가져오기
-        (al.target_type = 'groups' AND al.target_id = TO_CHAR(#{groupId}))
+        -- 💡 핵심: target_id가 그룹 번호인 건 '타입 불문하고' 다 가져옵니다.
+        -- 이렇게 해야 삭제된 멤버의 로그(MD)도 그룹 ID를 통해 한꺼번에 잡힙니다.
+        al.target_id = TO_CHAR(#{groupId})
 
         OR
 
-        -- 2. 해당 그룹에 속한 구성원(group_members)의 변경 로그 가져오기
+        -- (하위 호환용) 아직 DB에 살아있는 멤버들의 개별 로그 추적
         (al.target_type = 'group_members' AND al.target_id IN (
-        SELECT TO_CHAR(group_member_id)
-        FROM group_members
-        WHERE group_id = #{groupId}
+        SELECT TO_CHAR(group_member_id) FROM group_members WHERE group_id = #{groupId}
         ))
         ORDER BY al.created_at DESC
     </select>
@@ -169,7 +168,7 @@
         INSERT INTO group_members (
         group_member_id, group_id, user_id, role_id, created_by
         ) VALUES (
-        group_member_id_seq.NEXTVAL, #{groupId}, #{userId}, #{roleId}, #{editorUserId}
+        group_members_seq.NEXTVAL, #{groupId}, #{userId}, #{roleId}, #{editorUserId}
         )
     </insert>
 
@@ -190,7 +189,10 @@
         INSERT INTO activity_logs (
         activity_log_id, target_type, target_id, action_type, actor_user_id, before_value, after_value, created_at
         ) VALUES (
-        activity_logs_seq.NEXTVAL, 'group_members', #{targetId}, 'MD', #{editorUserId}, '참여', '제외', SYSDATE
+        activity_logs_seq.NEXTVAL,
+        'groups',               #{groupId},             'MD',
+        #{editorUserId},        userlog(#{logBeforeValue}),      NULL,
+        SYSDATE
         )
     </insert>
 </mapper>

@@ -76,17 +76,28 @@ public class GroupServiceImplSJW implements GroupServiceSJW {
         // 1. 그룹 기본 정보 수정
         groupMapper.modifyGroup(group);
         if(group.getMembers() != null ) {
-        if(group.getMembers().size()<=0){return null;}
+            if (group.getMembers().size() <= 0) {
+                return null;
+            }
 
             // 2. DB에 있던 '기존 멤버' 조회 (💡 주의: Mapper에서 is_active = 'Y'인 사람만 가져와야 함)
             List<EmpVOSJW> oldMembers = groupMapper.getMembersByGroupId(group.getGroupId());
 
 
             Map<Integer, EmpVOSJW> oldMemberMap = oldMembers.stream()
-                    .collect(Collectors.toMap(EmpVOSJW::getUserId, m -> m));
+                    .collect(Collectors.toMap(
+                            EmpVOSJW::getUserId,
+                            m -> m,
+                            (existing, replacement) -> existing // 중복 키가 들어오면 기존 것을 유지
+                    ));
 
+            // 💡 새로 넘어온 멤버 리스트를 Map으로 바꿀 때 중복 방어
             Map<Integer, EmpVOSJW> newMemberMap = group.getMembers().stream()
-                    .collect(Collectors.toMap(EmpVOSJW::getUserId, m -> m));
+                    .collect(Collectors.toMap(
+                            EmpVOSJW::getUserId,
+                            m -> m,
+                            (existing, replacement) -> existing //
+                    ));
 
             // 3. 추가 및 역할 변경(비활성화 후 INSERT) 처리
             // ... [이전 코드 동일] ...
@@ -112,10 +123,17 @@ public class GroupServiceImplSJW implements GroupServiceSJW {
             for (EmpVOSJW oldMember : oldMembers) {
                 if (!newMemberMap.containsKey(oldMember.getUserId())) {
 
-                    // 💡 핵심: 진짜로 지우기 전에 수동으로 제외(MD) 로그를 쏩니다!
-                    groupMapper.insertDeleteLog(String.valueOf(oldMember.getGroupMemberId()), editorUserId);
+                    // 💡 1. 동명이인 방지를 위해 "이름(사번)" 형태로 문자열 조립!
+                    String logBeforeValue = oldMember.getUserName() + "(" + oldMember.getUserId() + ")";
 
-                    // 그 다음 깔끔하게 삭제
+                    // 💡 2. 조립된 문자열을 수동 로그 쿼리에 넘겨줍니다.
+                    groupMapper.insertDeleteLog(
+                            String.valueOf(group.getGroupId()),
+                            oldMember.getUserId(), // 👈 "김유저(1002)" 형태로 들어감
+                            editorUserId
+                    );
+
+                    // 💡 3. 실제 멤버 삭제
                     groupMapper.deleteGroupMember(group.getGroupId(), oldMember.getUserId());
                 }
             }
