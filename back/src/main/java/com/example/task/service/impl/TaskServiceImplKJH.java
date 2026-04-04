@@ -8,7 +8,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -18,8 +20,25 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
     private final TaskMapperKJH mapper;
 
     @Override
-    public List<TaskListDTOKJH> getAllTasks(Integer id, Integer pid, Integer startNum, Integer endNum) {
-        return mapper.getAllTasks(id, pid, startNum, endNum);
+    public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto) {
+        return mapper.getAllTasks(dto);
+    }
+
+    // 필터링 조건 조회(PL/SQL)
+    public Map<String, Object> getAllFiterInfo(Integer id) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("projectId", id);
+        mapper.getAllFilterList(params);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("taskTitleList", params.get("taskTitleList"));
+        result.put("userNameList", params.get("userNameList"));
+        result.put("taskTypeList", params.get("taskTypeList"));
+        result.put("taskStatusList", params.get("taskStatusList"));
+        result.put("taskPriorityList", params.get("taskPriorityList"));
+        result.put("smallProjectList", params.get("smallProjectList"));
+
+        return result;
     }
 
     @Override

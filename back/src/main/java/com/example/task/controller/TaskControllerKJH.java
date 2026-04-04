@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,12 +17,15 @@ public class TaskControllerKJH {
 
     // 목록 조회
     @GetMapping("/api/tasks")
-    public List<TaskListDTOKJH> getAllTasks(@RequestParam("projectId") Integer id,
-                                            @RequestParam("startNum") Integer startNum,
-                                            @RequestParam("endNum") Integer endNum){
+    public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto){
 
-        int pId = id;
-        return service.getAllTasks(id, pId, startNum, endNum);
+        return service.getAllTasks(dto);
+    }
+
+    // 필터링 조건 조회
+    @GetMapping("/api/tasksFilters/{id}")
+    public Map<String, Object> getAllFilterInfo(@PathVariable Integer id) {
+        return service.getAllFiterInfo(id);
     }
 
     // 프로젝트 이름 조회

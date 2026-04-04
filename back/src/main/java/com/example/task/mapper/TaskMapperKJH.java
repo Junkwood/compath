@@ -5,11 +5,12 @@ import com.example.task.dto.TaskListDTOKJH;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface TaskMapperKJH {
   // 업무 목록
-  public List<TaskListDTOKJH> getAllTasks(Integer id, Integer pid, Integer startNum, Integer endNum);
+  public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto);
 
   // 프로젝트 이름
   public TaskListDTOKJH getProjectName(Integer id);
@@ -43,4 +44,7 @@ public interface TaskMapperKJH {
 //  백에서 페이지네이션 도전
 //  업무 총 건수
   public int getAllTaskCount(Integer id);
+
+//  필터링 조건들 조회(PL/SQL)
+  public void getAllFilterList(Map<String, Object> params);
 }

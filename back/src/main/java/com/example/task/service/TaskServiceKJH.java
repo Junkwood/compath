@@ -4,11 +4,15 @@ import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TaskServiceKJH {
 
     // 업무 목록
-    public List<TaskListDTOKJH> getAllTasks(Integer id, Integer pid, Integer startNum, Integer endNum);
+    public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto);
+
+    // 필터링 조건 조회(PL/SQL)
+    public Map<String, Object> getAllFiterInfo(Integer id);
 
     // 프로젝트 이름
     public TaskListDTOKJH getProjectName(Integer id);
@@ -24,6 +28,7 @@ public interface TaskServiceKJH {
 
     // 활동내역 목록조회
     public List<TaskDetailDTOKJH> getTimeLog(Integer id);
+
 
 
 }

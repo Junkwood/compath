@@ -3,8 +3,8 @@ import axios from "axios";
 
 export const usetaskKJHStore = defineStore("taskKJH", {
   state: () => ({
-    projectName: null,
     taskAllList: [],
+    filterInfo: [],
     taskDetail: {},
     timeEntriesList: [],
     activityList: [],
@@ -24,6 +24,11 @@ export const usetaskKJHStore = defineStore("taskKJH", {
           params: obj,
         })
       ).data;
+    },
+
+    // 필터링 조건들 호출(PL/SQL)
+    async getAllFilterInfo(id) {
+      this.filterInfo = (await axios.get("/api/tasksFilters/" + id)).data;
     },
 
     // 업무 상세 정보
