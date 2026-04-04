@@ -24,6 +24,8 @@ export const usetaskKJHStore = defineStore("taskKJH", {
           params: obj,
         })
       ).data;
+
+      console.log("조회 성공: ", this.taskAllList);
     },
 
     // 필터링 조건들 호출(PL/SQL)

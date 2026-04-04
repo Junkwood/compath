@@ -43,13 +43,8 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
 
     @Override
     public TaskListDTOKJH getProjectName(Integer id) {
-        int count = mapper.getAllTaskCount(id);
 
-        TaskListDTOKJH dto = mapper.getProjectName(id);
-
-        dto.setTaskCounts(count);
-
-        return dto;
+        return mapper.getProjectName(id);
     }
 
     @Override

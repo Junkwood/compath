@@ -43,6 +43,7 @@ public class TaskListDTOKJH {
 
     private String projectName;
     private Integer projectId;
+    private Integer parentProjectId;
     private String typeName;
     private String statusName;
     private String codeName;
@@ -50,7 +51,7 @@ public class TaskListDTOKJH {
 
 // 백에서 페이지 네이션
     private Integer taskCounts;
-    private Integer start;
-    private Integer end;
+    private Integer startNum = 1;
+    private Integer endNum = 10;
 
 }

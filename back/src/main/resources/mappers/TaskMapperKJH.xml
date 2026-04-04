@@ -58,52 +58,53 @@
     <select id="getAllTasks" >
         SELECT b.*
         FROM  (SELECT ROWNUM AS num, A.*
-        FROM (SELECT
-        t.title,
-        t.content,
-        t.assignee_user_id,
-        u.user_name,
-        c.code_name,
-        t.progress_rate,
-        t.start_date,
-        t.due_date,
-        p.project_name,
-        t2.type_name,
-        t3.status_name
-        FROM tasks t
-        JOIN projects p ON t.project_id = p.project_id
-        JOIN task_types t2 ON t.task_type_id = t2.task_type_id
-        JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
-        JOIN common_code c ON t.priority_code = c.code_value
-        JOIN users u ON t.assignee_user_id = u.user_id
-        WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
-        <if test="title != null and title != ''">
-            AND t.title = #{title}
-        </if>
-        <if test="assigneeUserId != null and assigneeUserId != ''">
-            AND t.assignee_user_id = #{assigneeUserId}
-        </if>
-        <if test="taskTypeId != null and taskTypeId != ''">
-            AND t.task_type_id = #{taskTypeId}
-        </if>
-        <if test="taskStatusId != null and taskStatusId != ''">
-            AND t.task_status_id = #{taskStatusId}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            AND t.start_date &gt;= #{startDate}
-        </if>
-        <if test="endDate != null and endDate != ''">
-            AND t.end_date &lt;= #{endDate}
-        </if>
-        <if test="priorityCode != null and priorityCode != ''">
-            AND t.priority_code = #{priorityCode}
-        </if>
-        <if test="projectId != null and projectId != ''">
-            AND t.project_id &lt;= #{projectId}
-        </if>
-        ORDER BY p.project_name) A
-        WHERE ROWNUM BETWEEN 1 AND #{end})b
-        WHERE b.num >= #{start}
+        FROM (SELECT COUNT(*) OVER() AS task_counts,
+                t.title,
+                t.content,
+                t.assignee_user_id,
+                t.task_id,
+                u.user_name,
+                c.code_name,
+                t.progress_rate,
+                t.start_date,
+                t.due_date,
+                p.project_name,
+                t2.type_name,
+                t3.status_name
+              FROM tasks t
+              JOIN projects p ON t.project_id = p.project_id
+              JOIN task_types t2 ON t.task_type_id = t2.task_type_id
+              JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
+              JOIN common_code c ON t.priority_code = c.code_value
+              JOIN users u ON t.assignee_user_id = u.user_id
+              WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
+              <if test="taskId != null and taskId != ''">
+                  AND t.task_id = #{taskId}
+              </if>
+              <if test="assigneeUserId != null and assigneeUserId != ''">
+                  AND t.assignee_user_id = #{assigneeUserId}
+              </if>
+              <if test="taskTypeId != null and taskTypeId != ''">
+                  AND t.task_type_id = #{taskTypeId}
+              </if>
+              <if test="taskStatusId != null and taskStatusId != ''">
+                  AND t.task_status_id = #{taskStatusId}
+              </if>
+              <if test="startDate != null and startDate != ''">
+                  AND t.start_date &gt;= #{startDate}
+              </if>
+              <if test="endDate != null and endDate != ''">
+                  AND t.end_date &lt;= #{endDate}
+              </if>
+              <if test="priorityCode != null and priorityCode != ''">
+                  AND t.priority_code = #{priorityCode}
+              </if>
+              <if test="parentProjectId != null and parentProjectId != ''and parentProjectId != projectId">
+                  AND p.project_id = #{parentProjectId}
+              </if>
+              ORDER BY p.project_name) A
+              WHERE ROWNUM BETWEEN 1 AND #{endNum})b
+        WHERE b.num >= #{startNum}
     </select>
 
 <!--    프로젝트 이름-->
@@ -236,16 +237,6 @@
                JOIN users u ON a.actor_user_id = u.user_id
                WHERE target_type = 'time_entries' AND t.task_id = #{id}
                ORDER BY t.created_at DESC) A
-    </select>
-
-<!--    -->
-<!--    백에서 페이지네이션 도전-->
-<!--    업무 총 건수-->
-    <select id="getAllTaskCount">
-        SELECT COUNT(*)
-        FROM tasks t
-        JOIN projects p ON t.project_id = p.project_id
-        WHERE p.project_id = #{id} OR p.parent_project_id =#{id}
     </select>
 
 <!--    필터링 정보들(PL/SQL)-->

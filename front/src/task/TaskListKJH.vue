@@ -49,9 +49,9 @@
               >
               <select
                 class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.title"
+                v-model="filteredList.taskId"
               >
-                <option value="전체">전체</option>
+                <option value="">전체</option>
                 <option
                   :value="title.taskId"
                   v-for="title in filterInfo.taskTitleList"
@@ -68,14 +68,14 @@
               >
               <select
                 class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.user"
+                v-model="filteredList.assigneeUserId"
               >
-                <option value="전체">전체</option>
+                <option value="">전체</option>
                 <option
-                  :value="userId"
-                  v-for="userId in filterInfo.userNameList"
+                  :value="user.assigneeUserId"
+                  v-for="user in filterInfo.userNameList"
                 >
-                  {{ userId.userName }}
+                  {{ user.userName }}
                 </option>
               </select>
             </div>
@@ -87,9 +87,9 @@
               >
               <select
                 class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.type"
+                v-model="filteredList.taskTypeId"
               >
-                <option value="전체">전체</option>
+                <option value="">전체</option>
                 <option
                   :value="type.taskTypeId"
                   v-for="type in filterInfo.taskTypeList"
@@ -106,9 +106,9 @@
               >
               <select
                 class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.status"
+                v-model="filteredList.taskStatusId"
               >
-                <option value="전체">전체</option>
+                <option value="">전체</option>
                 <option
                   :value="status.taskStatusId"
                   v-for="status in filterInfo.taskStatusList"
@@ -126,7 +126,7 @@
                 >시작일</label
               >
               <input
-                v-model="filteredList.start"
+                v-model="filteredList.startDate"
                 type="date"
                 class="input w-full"
               />
@@ -138,7 +138,7 @@
                 >종료일</label
               >
               <input
-                v-model="filteredList.end"
+                v-model="filteredList.endDate"
                 type="date"
                 class="input w-full"
               />
@@ -151,11 +151,11 @@
               >
               <select
                 class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.priority"
+                v-model="filteredList.priorityCode"
               >
-                <option value="전체">전체</option>
+                <option value="">전체</option>
                 <option
-                  :value="priority.PriorityCode"
+                  :value="priority.priorityCode"
                   v-for="priority in filterInfo.taskPriorityList"
                 >
                   {{ priority.codeName }}
@@ -170,9 +170,9 @@
               >
               <select
                 class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 bm-2 shadow-xs placeholder:text-body"
-                v-model="filteredList.small"
+                v-model="filteredList.parentProjectId"
               >
-                <option value="전체">전체</option>
+                <option value="">전체</option>
                 <option
                   :value="small.projectId"
                   v-for="small in filterInfo.smallProjectList"
@@ -328,12 +328,6 @@ const filterList = ref([]);
 let name = ref(); // 프로젝트명
 let projectStartDate = ref(); // 프로젝트 날짜
 let projectendDate = ref(); // 프로젝트 날짜
-let titleList = ref([]); // 업무명 목록
-let assigneeUserIdList = ref([]); // 담당자 목록
-let statusList = ref([]); // 업무 상태 목록
-let taskTypeList = ref([]); // 업무 유형 목록
-let priorityList = ref([]); // 우선순위 목록
-let smallProjectList = ref([]); // 하위프로젝트 목록
 
 let thList = ref([
   "업무명",
@@ -350,17 +344,16 @@ let thList = ref([
 let filterInfo = ref([]);
 
 let filteredList = ref({
-  title: "전체",
-  user: "전체",
-  type: "전체",
-  status: "전체",
-  start: null,
-  end: null,
-  priority: "전체",
-  small: "전체",
+  taskId: "",
+  assigneeUserId: "",
+  taskTypeId: "",
+  taskStatusId: "",
+  startDate: null,
+  endDate: null,
+  priorityCode: "",
+  parentProjectId: "",
 });
 
-const workPage = ref(1);
 const listNum = ref(10);
 const real = ref(true);
 const nowPage = ref(1);
@@ -379,7 +372,6 @@ onBeforeMount(async () => {
   name.value = projectInfo.projectName;
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.startDate;
-  listLength.value = projectInfo.taskCounts;
 
   // 전체 목록 조회
   let obj = { projectId: id, parentProjectId: id };
@@ -388,6 +380,8 @@ onBeforeMount(async () => {
   listLoading.value = false;
 
   taskList.value = taskStore.taskAllList;
+  listLength.value = taskList.value[0].taskCounts;
+
   changeDateType(taskList.value);
   // 필터링 조건 조회
   await taskStore.getAllFilterInfo(id);
@@ -395,27 +389,27 @@ onBeforeMount(async () => {
 });
 
 // 페이지네이션
-const handleCurrentChange = async (val) => {
-  if (nowPage.value != val) {
-    nowPage.value = val;
-    listLoading.value = true;
+const handleCurrentChange = async val => {
+  console.log("페이징", val);
+  nowPage.value = val;
+  listLoading.value = true;
 
-    let start = (val - 1) * listNum.value + 1;
-    let end = val * listNum.value;
+  let start = (val - 1) * listNum.value + 1;
+  let end = val * listNum.value;
 
-    // 페이지 변환 목록 조회
-    let obj = {
-      projectId: id,
-      parentProjectId: id,
-      startNum: start,
-      endNum: end,
-    };
-    await taskStore.getAllTask(obj);
-    taskList.value = taskStore.taskAllList;
+  // 페이지 변환 목록 조회
+  let obj = {
+    projectId: id,
+    startNum: start,
+    endNum: end,
+    ...filteredList.value,
+  };
+  await taskStore.getAllTask(obj);
+  taskList.value = taskStore.taskAllList;
+  listLength.value = taskList.value[0].taskCounts;
 
-    await changeDateType(taskList.value);
-    listLoading.value = false;
-  }
+  await changeDateType(taskList.value);
+  listLoading.value = false;
 };
 
 // 업무생성 버튼
@@ -423,32 +417,38 @@ const goResister = () => {
   router.push({ name: "taskRegister" });
 };
 
+// 검색 버튼
+const filteringList = async () => {
+  await handleCurrentChange(1);
+};
+
 // 초기화 버튼
 const resetForm = async () => {
-  await handleCurrentChange(1);
-
+  // 필터링 조건 초기화
   filteredList.value = {
-    title: "전체",
-    user: "전체",
-    type: "전체",
-    status: "전체",
-    start: null,
-    end: null,
-    priority: "전체",
-    small: "전체",
+    taskId: "",
+    assigneeUserId: "",
+    taskTypeId: "",
+    taskStatusId: "",
+    startDate: null,
+    endDate: null,
+    priorityCode: "",
+    parentProjectId: "",
   };
+
+  await handleCurrentChange(1);
 
   console.log("업무목록", filterList.value.length);
 };
 
 // 업무 상세페이지 이동
-const goDetail = (val) => {
+const goDetail = val => {
   console.log(val);
   router.push({ name: "taskDetail", params: { taskId: val } });
 };
 
 // 날짜 null 일 경우 형식 변경
-const changeDateType = (val) => {
+const changeDateType = val => {
   for (let i = 0; i < val.length; i++) {
     // 날짜 형식 변경
     if (val[i].startDate != null) {
