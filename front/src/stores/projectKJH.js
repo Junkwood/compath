@@ -14,6 +14,7 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     roleList: [],
     remainMem: [],
     projectGroupMem: [],
+    generalGroupMem: [],
   }),
   getters: {},
   actions: {
@@ -107,6 +108,12 @@ export const useProjectKJHStore = defineStore("projectKJH", {
       let result = await axios.get("/api/projectgroup/members");
       console.log(result);
       this.projectGroupMem = result.data;
+    },
+
+    // 직군 그룹 및 멤버 조회
+    async getGeneralGroupMem() {
+      let result = await axios.get("/api/group/members");
+      this.generalGroupMem = result.data;
     },
   },
 });

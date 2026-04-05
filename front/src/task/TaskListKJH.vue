@@ -220,7 +220,7 @@
                   <h5 class="text-gray-500">⌛로딩중입니다.</h5>
                 </td>
               </tr>
-              <template v-if="!listLoading">
+              <template v-if="!listLoading && listLength > 0">
                 <tr
                   v-for="task in taskList"
                   :key="task.id"
@@ -281,9 +281,27 @@
                     </div>
                   </td>
                 </tr>
+                <!-- <el-popover :visible="visible" placement="top" :width="180">
+                  <p>Are you sure to delete this?</p>
+                  <div style="text-align: right; margin: 0">
+                    <el-button size="small" text @click="visible = false"
+                      >cancel</el-button
+                    >
+                    <el-button
+                      size="small"
+                      type="primary"
+                      @click="visible = false"
+                    >
+                      confirm
+                    </el-button>
+                  </div>
+                  <template #reference>
+                    <el-button @click="visible = true">Delete</el-button>
+                  </template>
+                </el-popover> -->
               </template>
 
-              <tr v-else-if="listLoading == false">
+              <tr v-else-if="listLoading == false && listLength == 0">
                 <td :colspan="thList.length" class="text-center py-10">
                   <h5 class="text-gray-500">업무가 존재하지 않습니다</h5>
                 </td>
@@ -328,6 +346,7 @@ const filterList = ref([]);
 let name = ref(); // 프로젝트명
 let projectStartDate = ref(); // 프로젝트 날짜
 let projectendDate = ref(); // 프로젝트 날짜
+const visible = ref(false);
 
 let thList = ref([
   "업무명",
@@ -389,7 +408,7 @@ onBeforeMount(async () => {
 });
 
 // 페이지네이션
-const handleCurrentChange = async val => {
+const handleCurrentChange = async (val) => {
   console.log("페이징", val);
   nowPage.value = val;
   listLoading.value = true;
@@ -406,9 +425,12 @@ const handleCurrentChange = async val => {
   };
   await taskStore.getAllTask(obj);
   taskList.value = taskStore.taskAllList;
-  listLength.value = taskList.value[0].taskCounts;
+  listLength.value =
+    taskList.value.length == 0 ? 0 : taskList.value[0].taskCounts;
 
-  await changeDateType(taskList.value);
+  if (listLength.value > 0) {
+    await changeDateType(taskList.value);
+  }
   listLoading.value = false;
 };
 
@@ -442,13 +464,13 @@ const resetForm = async () => {
 };
 
 // 업무 상세페이지 이동
-const goDetail = val => {
+const goDetail = (val) => {
   console.log(val);
   router.push({ name: "taskDetail", params: { taskId: val } });
 };
 
 // 날짜 null 일 경우 형식 변경
-const changeDateType = val => {
+const changeDateType = (val) => {
   for (let i = 0; i < val.length; i++) {
     // 날짜 형식 변경
     if (val[i].startDate != null) {
@@ -590,5 +612,10 @@ const changeDateType = val => {
 :deep(th:nth-child(9) .text-center) {
   text-align: left;
   padding-left: 15px;
+}
+tbody tr:hover {
+  background-color: #f9fafb; /* 살짝 밝은 회색으로 강조 */
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 </style>

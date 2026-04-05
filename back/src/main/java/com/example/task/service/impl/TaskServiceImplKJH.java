@@ -8,9 +8,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +19,13 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
 
     @Override
     public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto) {
-        return mapper.getAllTasks(dto);
+        List<TaskListDTOKJH> list = mapper.getAllTasks(dto);
+        if(!list.isEmpty()) {
+            return list;
+        } else {
+            return Collections.emptyList();
+        }
+
     }
 
     // 필터링 조건 조회(PL/SQL)

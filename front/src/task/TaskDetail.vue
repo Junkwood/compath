@@ -259,9 +259,9 @@
                 </div>
                 <div class="task-body">
                   <div class="h-32 place-self-center leading-20">
-                    <span class="total-number"
+                    <span class="total-number" v-if="taskInfo.actualHours > 0"
                       >{{ taskInfo.actualHours }} 시간</span
-                    >
+                    ><span class="total-number" v-else>0 시간</span>
                   </div>
                 </div>
               </div>
@@ -402,7 +402,8 @@ const submitted = async (val) => {
     workDate: val.workDate,
     hours: val.hours,
     taskDesc: val.taskDesc,
-    beforeValue: taskInfo.value.actualHours,
+    beforeValue:
+      taskInfo.value.actualHours == null ? 0 : taskInfo.value.actualHours,
   };
 
   // 소요시간 등록
@@ -424,6 +425,9 @@ const chageTaskDesc = async () => {
   activityList.value.forEach((el) => {
     if (el.targetType == "time_entries") {
       if (el.actionType == "J1") {
+        if (el.beforeValue == null) {
+          el.beforeValue = 0;
+        }
         el.taskDesc = `소요시간을 ${el.beforeValue}시간에서 ${el.afterValue}시간으로 변경 했습니다.`;
       }
     }

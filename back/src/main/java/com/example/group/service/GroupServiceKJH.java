@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface GroupServiceKJH {
     // 직군그룹
-    List<GroupDTOKJH> getAllgroupMembers(Integer id, String name);
+    List<GroupDTOKJH> getAllForGroup();
 
     // 프로젝트 그룹 멤버들
     List<GroupDTOKJH> getProjectgroupMembers();

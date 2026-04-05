@@ -26,17 +26,17 @@ public class TaskListDTOKJH {
     private String priorityCode;
     private Integer progressRate;
 
-    @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul" )
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDate startDate;
 
-    @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul" )
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDate endDate;
 
-    @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul" )
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDate dueDate;

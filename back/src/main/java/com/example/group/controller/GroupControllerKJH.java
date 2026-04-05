@@ -17,9 +17,8 @@ public class GroupControllerKJH {
     private final GroupServiceKJH groupService;
 
     @GetMapping("/api/group/members")
-    public List<GroupDTOKJH> getAll(@RequestParam(required = false) Integer id,
-                                    @RequestParam(required = false) String name) {
-        return groupService.getAllgroupMembers(id,name);
+    public List<GroupDTOKJH> getAll() {
+        return groupService.getAllForGroup();
     }
 
     // 프로젝트 그룹 멤버들

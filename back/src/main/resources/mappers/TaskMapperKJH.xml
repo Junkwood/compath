@@ -90,11 +90,11 @@
               <if test="taskStatusId != null and taskStatusId != ''">
                   AND t.task_status_id = #{taskStatusId}
               </if>
-              <if test="startDate != null and startDate != ''">
+              <if test="startDate != null ">
                   AND t.start_date &gt;= #{startDate}
               </if>
-              <if test="endDate != null and endDate != ''">
-                  AND t.end_date &lt;= #{endDate}
+              <if test="endDate != null ">
+                  AND t.due_date &lt;= #{endDate}
               </if>
               <if test="priorityCode != null and priorityCode != ''">
                   AND t.priority_code = #{priorityCode}

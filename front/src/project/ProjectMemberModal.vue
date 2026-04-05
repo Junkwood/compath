@@ -182,6 +182,7 @@
                     type="radio"
                     v-model="selectedRole"
                     :value="role.roleId"
+                    :disabled="role.checked"
                     class="form-radio text-indigo-500 w-3.5 h-3.5"
                   />
                   <span class="text-xs text-gray-700 dark:text-gray-300">{{
@@ -226,14 +227,8 @@
                 <tr>
                   <th class="px-2 py-3 text-center">ID</th>
                   <th class="px-2 py-3 text-center">이름</th>
-                  <th class="px-2 py-3 text-center">직군그룹</th>
-                  <!-- 프로젝트 그룹일 때만 역할 헤더 표시 -->
-                  <th
-                    v-if="form.groupType === 'C2'"
-                    class="px-2 py-3 text-center"
-                  >
-                    역할
-                  </th>
+                  <th class="px-2 py-3 text-center">그룹</th>
+                  <th class="px-2 py-3 text-center">역할</th>
                   <th class="px-2 py-3 text-center">취소</th>
                 </tr>
               </thead>
@@ -242,10 +237,7 @@
               >
                 <tr v-if="groupMembers.length === 0">
                   <!-- 프로젝트면 5칸, 직군이면 4칸 병합 -->
-                  <td
-                    :colspan="form.groupType === 'C2' ? 5 : 4"
-                    class="px-2 py-8 text-center text-gray-400"
-                  >
+                  <td :colspan="5" class="px-2 py-8 text-center text-gray-400">
                     추가된 구성원이 없습니다.
                   </td>
                 </tr>
@@ -258,11 +250,10 @@
                   <td class="px-2 py-3">{{ member.name }}</td>
                   <td class="px-2 py-3">{{ member.groupName }}</td>
                   <!-- 프로젝트 그룹일 때만 역할 데이터 표시 -->
-                  <td
-                    v-if="form.groupType === 'C1'"
-                    class="px-2 py-3 font-medium text-indigo-500"
-                  >
-                    {{ member.roleName }}
+                  <td class="px-2 py-3 font-medium text-indigo-500">
+                    <span v-for="(role, index) in member.roleName" key="index"
+                      >{{ role }}
+                    </span>
                   </td>
                   <td class="px-2 py-3">
                     <button
@@ -284,8 +275,9 @@
           <!-- 8. 최종 그룹 생성 버튼 -->
           <div class="mt-5 flex justify-end">
             <button
+              v-if="groupMembers.length !== 0"
               class="btn bg-indigo-900 hover:bg-indigo-800 text-white min-w-[120px]"
-              @click="memberInsert"
+              @click="memberInserting"
             >
               구성원 추가
             </button>
@@ -297,19 +289,20 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, defineProps } from "vue";
-import { useRouter } from "vue-router";
-import { useEmpStore } from "../stores/empSJW";
+import { ref, computed, watch, onMounted, defineProps, defineEmits } from "vue";
 import { useRoleStore } from "../stores/roleSJW";
 import { useAuthStore } from "../stores/auth";
 import { useProjectKJHStore } from "../stores/projectKJH";
 import api from "../utils/api";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   memberList: Array,
+  generalGroupList: Array,
+  projectGroupList: Array,
 });
-const router = useRouter();
-const empStore = useEmpStore();
+const emit = defineEmits(["memberInsert"]);
+
 const roleStore = useRoleStore();
 const authStore = useAuthStore();
 const projectStore = useProjectKJHStore();
@@ -337,52 +330,36 @@ const groupMembers = ref([]); // 오른쪽 창으로 넘어간 구성원들
 // ── 임시 더미 데이터 (백엔드에서 사원 목록을 가져온다고 가정) ──
 const allUsers = ref([]); // 직군그룹
 const allPjGroupMem = ref([]); // 프로젝트 그룹
-
+let nowGroup = computed(() => {
+  return form.value.groupType == "C1" ? allUsers.value : allPjGroupMem.value; // 현재 선택된 그룹 유형
+});
 // ── Computed ──
 // 검색 + 이미 오른쪽에 추가된 멤버는 왼쪽 리스트에서 제외
 const filteredUsers = computed(() => {
   const q = userSearchQuery.value.trim().toLowerCase();
-  if (form.value.groupType == "C1") {
-    return allUsers.value.filter(user => {
-      // 이미 구성원에 포함되었는지 확인
-      const isAlreadyAdded = groupMembers.value.some(
-        m => m.userId === user.userId,
-      );
-      if (isAlreadyAdded) return false;
-
-      // 검색 필터
-      if (!q) {
-        expandedGroups.value.length = 0;
+  return nowGroup.value.filter((user) => {
+    // 이미 구성원에 포함되었는지 확인
+    const isAlreadyAdded = groupMembers.value.some((m) => {
+      console.log(m);
+      console.log(user);
+      if (m.userId === user.userId) {
         return true;
       }
-
-      return (
-        user.name.includes(q) ||
-        String(user.userId).includes(q) ||
-        user.groupName.toLowerCase().includes(q)
-      );
     });
-  } else {
-    return allPjGroupMem.value.filter(user => {
-      // 이미 구성원에 포함되었는지 확인
-      const isAlreadyAdded = groupMembers.value.some(
-        m => m.userId === user.userId,
-      );
-      if (isAlreadyAdded) return false;
+    if (isAlreadyAdded) return false;
 
-      // 검색 필터
-      if (!q) {
-        expandedGroups.value.length = 0;
-        return true;
-      }
+    // 검색 필터
+    if (!q) {
+      expandedGroups.value.length = 0;
+      return true;
+    }
 
-      return (
-        user.name.includes(q) ||
-        String(user.userId).includes(q) ||
-        user.groupName.toLowerCase().includes(q)
-      );
-    });
-  }
+    return (
+      user.name.includes(q) ||
+      String(user.userId).includes(q) ||
+      user.groupName.toLowerCase().includes(q)
+    );
+  });
 });
 
 // ── 함수 ──
@@ -390,13 +367,34 @@ const filteredUsers = computed(() => {
 watch(
   () => form.value.groupType,
   () => {
-    console.log("그룹유형 전환");
-    // groupMembers.value = [];
+    selectedRole.value = null;
     selectedLeftUsers.value = [];
   },
 );
 
+watch(
+  () => [props.generalGroupList, props.projectGroupList, props.memberList],
+  (newVal) => {
+    console.log("새 그룹들: ", newVal);
+    allUsers.value = newVal[0];
+    allPjGroupMem.value = newVal[1];
+
+    props.memberList.forEach((mem) => {
+      // 이미 있는 구성원 제외
+      allUsers.value = allUsers.value.filter((user) => {
+        return user.userId != mem.userId;
+      });
+
+      allPjGroupMem.value = allPjGroupMem.value.filter((user) => {
+        return !(user.userId == mem.userId && user.roleId == mem.roleId);
+      });
+    });
+  },
+);
+
+// 우측 컴포넌트로 이동 함수
 const moveUsersToRight = () => {
+  let id = 0;
   if (selectedLeftUsers.value.length === 0) {
     alert("그룹 구성원을 최소 1명 이상 선택해주세요.");
     return;
@@ -409,74 +407,57 @@ const moveUsersToRight = () => {
     }
   }
 
-  const newMembers = selectedLeftUsers.value
-    .map(userId => {
-      const user = allUsers.value.find(u => u.userId === userId);
-      if (!user) return null;
+  let newMembers = selectedLeftUsers.value.map((userId) => {
+    let user = null;
+    let roleObj = null;
 
-      // ✅ roleId로 roleName 찾아서 같이 저장
-      const roleObj = roles.value.find(r => r.roleId === selectedRole.value);
+    user = nowGroup.value.find((u) => u.userId === userId);
+    console.log(user);
+    roleObj = roles.value.find(
+      (r) =>
+        r.roleId ==
+        (form.value.groupType == "C1" ? selectedRole.value : user.roleId),
+    );
 
-      return {
-        userId: user.userId,
-        name: user.name,
-        groupName: user.groupName,
-        roleId: form.value.groupType === "C2" ? selectedRole.value : null,
-        roleName:
-          form.value.groupType === "C1" ? (roleObj?.roleName ?? "-") : null,
-      };
-    })
-    .filter(Boolean);
+    if (!user) return null;
 
-  groupMembers.value.push(...newMembers);
+    let count = 0;
+
+    return {
+      userId: user.userId,
+      name: user.name,
+      groupName: user.groupName,
+      roleId: form.value.groupType === "C1" ? selectedRole.value : user.roleId,
+      roleName:
+        form.value.groupType === "C1" ? roleObj.roleName : user.roleName,
+
+      groupType: user.groupType,
+    };
+  });
+
   selectedLeftUsers.value = [];
   selectedRole.value = null;
+  newMembers = newMembers.filter((n) => n !== null);
+  newMembers.length > 0 ? groupMembers.value.push(...newMembers) : "";
 };
 
-const removeMember = userId => {
+const removeMember = (userId) => {
   // 오른쪽 리스트에서 삭제 (삭제되면 자동으로 왼쪽 리스트에 다시 나타남)
-  groupMembers.value = groupMembers.value.filter(m => m.userId !== userId);
-};
-
-const memberInsert = async () => {
-  if (form.value.groupType === "C2" && groupMembers.value.length === 0) {
-    alert("그룹 구성원을 최소 1명 이상 추가해주세요.");
-    return;
-  }
-
-  const payload = {
-    groupName: form.value.groupName,
-    groupType: form.value.groupType,
-    description: form.value.description,
-    members: groupMembers.value.map(m => ({
-      userId: m.userId,
-      roleId: m.roleId,
-    })),
-    createdBy: authStore.user.userId,
-  };
-
-  console.log("Submit Data:", payload);
-  const response = await api.post("/group", payload);
-  const result = response.data;
-  if (result == "Y") {
-    alert("그룹이 성공적으로 생성되었습니다.");
-  } else {
-    alert("그룹생성에 실패했습니다.");
-  }
+  groupMembers.value = groupMembers.value.filter((m) => m.userId !== userId);
 };
 
 // 1. 데이터를 직군(groupName)별로 묶어주는 Computed
 const groupedUsers = computed(() => {
   const groups = {};
 
-  -filteredUsers.value.forEach(user => {
+  filteredUsers.value.forEach((user) => {
     if (!groups[user.groupName]) {
       groups[user.groupName] = [];
     }
     groups[user.groupName].push(user);
   });
   // 객체를 배열 형태로 변환 (템플릿에서 v-for 돌리기 쉽게)
-  return Object.keys(groups).map(key => ({
+  return Object.keys(groups).map((key) => ({
     groupName: key,
     users: groups[key],
   }));
@@ -485,47 +466,50 @@ const groupedUsers = computed(() => {
 // 2. 현재 펼쳐진 그룹 목록 관리
 const expandedGroups = ref([]); // 기본으로 열어둘 그룹 이름 지정 (빈 배열 [] 이면 모두 닫힘)
 
-const toggleGroup = groupName => {
+const toggleGroup = (groupName) => {
   if (expandedGroups.value.includes(groupName)) {
-    expandedGroups.value = expandedGroups.value.filter(g => g !== groupName);
+    expandedGroups.value = expandedGroups.value.filter((g) => g !== groupName);
   } else {
     expandedGroups.value.push(groupName);
   }
 };
 
 // 💡 꿀팁: 사용자가 검색어를 입력하면 숨겨진 그룹을 자동으로 다 펼쳐줍니다!
-watch(userSearchQuery, newVal => {
+watch(userSearchQuery, (newVal) => {
   if (newVal.trim() !== "") {
     // 검색어 입력 시 매칭된 모든 그룹 펼치기
-    expandedGroups.value = groupedUsers.value.map(g => g.groupName);
+    expandedGroups.value = groupedUsers.value.map((g) => g.groupName);
   }
 });
 
 // 3. 부모 체크박스 (전체 선택/해제) 로직
 // 해당 직군의 '모든' 유저가 선택되었는지 확인
-const isGroupChecked = group => {
+const isGroupChecked = (group) => {
   if (group.users.length === 0) return false;
-  return group.users.every(u => selectedLeftUsers.value.includes(u.userId));
+  return group.users.every((u) => selectedLeftUsers.value.includes(u.userId));
 };
 
 // 부모 체크박스를 눌렀을 때 실행
 const toggleGroupSelection = (group, event) => {
+  console.log(group);
   const isChecked = event.target.checked;
+
   if (isChecked) {
-    group.users.forEach(u => {
+    group.users.forEach((u) => {
       if (!selectedLeftUsers.value.includes(u.userId)) {
         selectedLeftUsers.value.push(u.userId); // ← userId만 push
       }
     });
   } else {
-    const groupUserIds = group.users.map(u => u.userId);
+    const groupUserIds = group.users.map((u) => u.userId);
     selectedLeftUsers.value = selectedLeftUsers.value.filter(
-      userId => !groupUserIds.includes(userId),
+      (userId) => !groupUserIds.includes(userId),
     );
   }
 };
+
 // ── 검색어 하이라이트 기능 ──
-const highlight = text => {
+const highlight = (text) => {
   const q = userSearchQuery.value.trim();
   if (!q || !text) return text; // 검색어가 없으면 그냥 원본 반환
 
@@ -536,14 +520,36 @@ const highlight = text => {
     '<mark class="bg-yellow-100 dark:bg-yellow-800 text-inherit rounded px-0.5">$1</mark>',
   );
 };
-onMounted(async () => {
-  await empStore.getEmpList4Group();
-  allUsers.value = empStore.empList4Group;
 
-  // 이미 있는 구성원 제외
-  props.memberList.forEach(mem => {
-    allUsers.value = allUsers.value.filter(user => user.userId != mem.userId);
+// 초기화
+const reset = () => {
+  roles.value.forEach((ro) => {
+    ro.checked = false;
   });
+
+  groupMembers.value.length = 0;
+};
+
+// 구성원 추가
+const memberInserting = async () => {
+  const result = await Swal.fire({
+    title: "정말 구성원을 추가하시겠습니까?",
+    text: "추가된 구성원은 구성원 목록에서 확인 가능합니다.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "추가",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  emit("memberInsert", groupMembers.value);
+  reset();
+};
+onMounted(async () => {
+  await projectStore.getGeneralGroupMem();
+  allUsers.value = projectStore.generalGroupMem;
 
   await roleStore.getRoleList();
   roles.value = roleStore.roleList;
@@ -551,5 +557,21 @@ onMounted(async () => {
   // 프로젝트 그룹 멤버들 조회
   await projectStore.getProjectGroupMem();
   allPjGroupMem.value = projectStore.projectGroupMem;
+
+  props.memberList.forEach((mem) => {
+    // 이미 있는 구성원 제외
+    allUsers.value = allUsers.value.filter((user) => {
+      return user.userId != mem.userId;
+    });
+
+    allPjGroupMem.value = allPjGroupMem.value.filter((user) => {
+      return !(user.userId == mem.userId && user.roleId == mem.roleId);
+    });
+  });
 });
 </script>
+<style>
+.swal2-container {
+  z-index: 9999 !important;
+}
+</style>

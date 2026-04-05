@@ -18,7 +18,6 @@ public class TaskControllerKJH {
     // 목록 조회
     @GetMapping("/api/tasks")
     public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto){
-
         return service.getAllTasks(dto);
     }
 
