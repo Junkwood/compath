@@ -44,11 +44,11 @@
               <select v-model="filteredList.user">
                 <option value="전체">전체</option>
                 <option
-                  :value="userId"
-                  v-for="userId in assigneeUserIdList"
-                  :key="userId"
+                  :value="userName"
+                  v-for="userName in assigneeUserIdList"
+                  :key="userName"
                 >
-                  {{ userId }}
+                  {{ userName}}
                 </option>
               </select>
               <span class="select-arrow">▾</span>
@@ -303,14 +303,10 @@ const route = useRoute();
 const router = useRouter();
 const taskReportStore = useTaskReport();
 
-// URL 파라미터에서 프로젝트 ID 가져오기
 const projectId = route.params.projectId;
-
-// 사이드바 및 상태 변수
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
 
-// 검색 필터 데이터
 const filteredList = ref({
   title: "전체",
   user: "전체",
@@ -320,7 +316,7 @@ const filteredList = ref({
 });
 const searchKeyword = ref("");
 
-// 테이블 및 페이지네이션 관련
+const allData = ref([]);        
 const filterList = ref([]);
 const listLength = ref(0);
 const workPageSize = ref(0);
@@ -338,31 +334,26 @@ const formatDate = (dateStr) => {
   return dateStr.toString().substring(0, 10);
 };
 
-// 테이블 헤더 (고정)
 const thList = [
-  "담당자",
-  "프로젝트명",
-  "업무명",
-  "업무유형",
-  "시작일",
-  "마감일",
-  "업무 기간",
-  "진척도",
+  "담당자", "프로젝트명", "업무명", "업무유형",
+  "시작일", "마감일", "업무 기간", "진척도",
 ];
 
-// 1. 목록 조회 로직 (검색 API 호출)
+// 페이지에 맞게 slice
+const slicePage = (data) => {
+  const start = (workPage.value - 1) * listNum.value;
+  const end = start + listNum.value;
+  filterList.value = data.slice(start, end);
+};
+
 const filteringList = async () => {
   listLoading.value = true;
 
-  // 동적쿼리랑 매핑
   const params = {
     projectId: projectId,
-    title:
-      filteredList.value.title !== "전체"
-        ? filteredList.value.title
-        : searchKeyword.value || null,
-    assigneeUserId:
-      filteredList.value.user !== "전체" ? filteredList.value.user : null,
+    title: filteredList.value.title !== "전체" ? filteredList.value.title : searchKeyword.value || null,
+    assigneeUserId: filteredList.value.user !== "전체" ? filteredList.value.user : null,
+    taskTypeId: filteredList.value.type !== "전체" ? filteredList.value.type : null,
     startDate: filteredList.value.start || null,
     dueDate: filteredList.value.end || null,
   };
@@ -370,25 +361,14 @@ const filteringList = async () => {
   try {
     const data = await taskReportStore.fetchReportList(params);
     if (data) {
-      filterList.value = data; // 실제 서비스 시에는 페이징 처리가 된 list를 할당
+      allData.value = data;              
       listLength.value = data.length;
-      workPageSize.value = data.length;
-      if (
-        !params.title &&
-        !params.assigneeUserId &&
-        !params.startDate &&
-        !params.endDate
-      ) {
-        titleList.value = [
-          ...new Set(data.map((t) => t.title).filter(Boolean)),
-        ];
-        assigneeUserIdList.value = [
-          ...new Set(data.map((t) => t.userName).filter(Boolean)),
-        ];
-        taskTypeList.value = [
-          ...new Set(data.map((t) => t.typeName).filter(Boolean)),
-        ];
-      }
+      workPageSize.value = data.length;   
+      slicePage(data);                  
+
+      titleList.value = [...new Set(data.map((t) => t.title).filter(Boolean))];
+      assigneeUserIdList.value = [...new Set(data.map((t) => t.userName).filter(Boolean))];
+      taskTypeList.value = [...new Set(data.map((t) => t.typeName).filter(Boolean))];
     }
   } catch (error) {
     console.error("데이터 조회 중 오류 발생:", error);
@@ -401,50 +381,33 @@ onBeforeMount(async () => {
   await filteringList();
 });
 
-// 2. 초기화 로직
 const resetForm = () => {
-  filteredList.value = {
-    title: "전체",
-    user: "전체",
-    type: "전체",
-    start: "",
-    end: "",
-  };
+  filteredList.value = { title: "전체", user: "전체", type: "전체", start: "", end: "" };
   searchKeyword.value = "";
   workPage.value = 1;
   filteringList();
 };
 
-// 3. 페이지 변경 시
+// ✅ 페이지 변경 시 API 재호출 없이 slice만
 const handleCurrentChange = (page) => {
   workPage.value = page;
-  filteringList();
+  slicePage(allData.value);
 };
 
-// 4. 체크박스 전체 선택/해제
 const isAllChecked = computed(
-  () =>
-    filterList.value.length > 0 &&
-    selectedTaskIds.value.length === filterList.value.length,
+  () => filterList.value.length > 0 && selectedTaskIds.value.length === filterList.value.length,
 );
 
 const toggleAllCheckbox = (e) => {
-  selectedTaskIds.value = e.target.checked
-    ? filterList.value.map((t) => t.taskId)
-    : [];
+  selectedTaskIds.value = e.target.checked ? filterList.value.map((t) => t.taskId) : [];
 };
 
-// 5. 상세 페이지 이동
 const goDetail = (taskId) => {
-  router.push({ name: "TaskDetail", params: { taskId } }); // 라우터 설정에 맞춰 수정
+  router.push({ name: "TaskDetail", params: { taskId } });
 };
-// 내보내기
-const exportExcel = () => {
-  // TODO: 선택된 항목 Excel 다운로드
-};
-const exportPdf = () => {
-  // TODO: 선택된 항목 PDF 다운로드
-};
+
+const exportExcel = () => {};
+const exportPdf = () => {};
 </script>
 <style scoped>
 /* ── 필터 카드 ── */
