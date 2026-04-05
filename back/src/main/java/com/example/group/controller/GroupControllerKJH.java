@@ -22,4 +22,9 @@ public class GroupControllerKJH {
         return groupService.getAllgroupMembers(id,name);
     }
 
+    // 프로젝트 그룹 멤버들
+    @GetMapping("/api/projectgroup/members")
+    public List<GroupDTOKJH> getAllProjectMem() {
+        return groupService.getProjectgroupMembers();
+    }
 }

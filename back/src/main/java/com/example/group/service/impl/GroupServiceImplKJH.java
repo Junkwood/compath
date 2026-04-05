@@ -22,4 +22,10 @@ public class GroupServiceImplKJH implements GroupServiceKJH {
     public List<GroupDTOKJH> getAllgroupMembers(Integer id, String name) {
         return mapper.getAllgroupMembers(id, name);
     }
+
+    // 프로젝트 그룹 멤버들
+    @Override
+    public List<GroupDTOKJH> getProjectgroupMembers() {
+        return mapper.getProjectgroupMembers();
+    }
 }

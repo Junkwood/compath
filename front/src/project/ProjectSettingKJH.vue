@@ -171,12 +171,18 @@
   />
   <ProjectMemberModal
     v-model="MemberModalOpen"
+    @member-cancel="closeMemberMdoal"
+    @member-insert="memberInsert"
+    :memberList="memberList"
+  />
+  <!-- <ProjectMemberModal
+    v-model="MemberModalOpen"
     :groupList="groupList"
     :memberList="memberList"
     :roleList="roleList"
     @member-cancel="closeMemberMdoal"
     @member-insert="memberInsert"
-  />
+  /> -->
 </template>
 
 <script setup>
@@ -254,7 +260,7 @@ const closeModifyMdoal = () => {
 };
 
 // 설정 모달창 수정 버튼
-const modifyProject = async (form) => {
+const modifyProject = async form => {
   const payload = {
     projectId: form.projectId,
     projectName: form.projectName,
@@ -277,42 +283,43 @@ const modifyProject = async (form) => {
 
 // 구성원 추가 버튼
 const openMemberModal = () => {
+  console.log("모달오픈");
   MemberModalOpen.value = true;
 };
 
 // 구성원 모달 취소 버튼
-const closeMemberMdoal = () => {
-  MemberModalOpen.value = false;
-};
+// const closeMemberMdoal = () => {
+//   MemberModalOpen.value = false;
+// };
 
-// 구성원 모달 추가 버튼
-const memberInsert = async (value) => {
-  console.log(value);
-  let list = [];
-  value.forEach(async (val) => {
-    list.push({
-      userId: val.id,
-      projectId: id,
-      roleId: val.role,
-    });
-  });
+// // 구성원 모달 추가 버튼
+// const memberInsert = async value => {
+//   console.log(value);
+//   let list = [];
+//   value.forEach(async val => {
+//     list.push({
+//       userId: val.id,
+//       projectId: id,
+//       roleId: val.role,
+//     });
+//   });
 
-  console.log(list);
-  await projectStore.registerProjectMem(list);
+//   console.log(list);
+//   await projectStore.registerProjectMem(list);
 
-  closeMemberMdoal();
-};
+//   closeMemberMdoal();
+// };
 
 // 삭제 버튼
-const handleDelete = async (val) => {
+const handleDelete = async val => {
   console.log(val);
-  // await projectStore.removeMem(val);
-  // memberList.value = projectStore.remainMem;
+  await projectStore.removeMem(val);
+  memberList.value = projectStore.remainMem;
 };
 
 watch(
   () => projectStore.insertedList,
-  (newVal) => {
+  newVal => {
     console.log("구성원추가후 ", newVal);
 
     memberList.value = projectStore.insertedList;

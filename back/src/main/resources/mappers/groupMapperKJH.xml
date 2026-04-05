@@ -11,10 +11,26 @@
         JOIN users u ON gm.user_id = u.user_id
         <if test="id != null">
         WHERE g.group_id = #{id} AND g.group_type = 'C1'
+            AND gm.is_active = 'O1' AND gm.is_primary = 'Y' AND u.is_active='O1'
         </if>
         <if test="name != null">
             WHERE u.user_name = #{name} AND g.group_type = 'C1'
+            AND gm.is_active = 'O1' AND gm.is_primary = 'Y' AND u.is_active='O1'
         </if>
         ORDER BY gm.group_id
     </select>
+    <select id="getProjectgroupMembers">
+        SELECT  u.user_id,
+                u.user_name AS name,
+                g.group_name,
+                g.group_id,
+                r.role_name
+        FROM group_members gm
+        JOIN groups g ON gm.group_id = g.group_id
+        JOIN roles r ON gm.role_id = r.role_id
+        JOIN users u ON gm.user_id = u.user_id
+        WHERE g.group_type = 'C2' AND g.is_active = 'O1' AND u.is_active = 'O1'
+        ORDER BY gm.group_id
+    </select>
+
 </mapper>

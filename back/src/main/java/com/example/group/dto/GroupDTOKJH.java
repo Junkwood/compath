@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GroupDTOKJH {
     Integer userId;
-    String userName;
+    String name;
     Integer groupId;
+    String groupName;
+    String roleName;
 }
