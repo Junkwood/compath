@@ -5,6 +5,8 @@ export const useNoticeStore = defineStore("notice", {
   state: () => ({
     registeredNotice: {},
     noticeInfo: {},
+    filterList: [],
+    pagingList: [],
   }),
   getters: {},
   actions: {
@@ -39,6 +41,28 @@ export const useNoticeStore = defineStore("notice", {
         .then((res) => {
           this.registeredNotice = res.data;
           console.log("수정완료", this.registeredNotice);
+        });
+    },
+
+    // 공지사항 목록 필터링 조건들
+    async getFilterList(obj) {
+      await axios //
+        .get("/api/notice/listFilter", {
+          params: obj,
+        })
+        .then((res) => {
+          this.filterList = res.data;
+        });
+    },
+
+    // 공지사항 목록 페이지네이션
+    async getPagingList(obj) {
+      await axios //
+        .get("/api/notice/listPaging", {
+          params: obj,
+        })
+        .then((res) => {
+          this.pagingList = res.data;
         });
     },
   },

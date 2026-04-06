@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -24,7 +25,7 @@ public class NoticeDTO { // 공지사항
     private String isDeleted;
     private Integer isEditorUserId;
 
-    @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
 
@@ -32,22 +33,31 @@ public class NoticeDTO { // 공지사항
 //    프로젝트 테이블
     private String projectName;
 
-    @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd ", timezone = "Asia/Seoul")
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
-    @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
 //    역할 테이블
     private String roleName;
+    private String roleId;
 
 //    유저 테이블
     private String userName;
+    private Integer userId;
 
 //    공통코드
     private String pinnedName;
+
+//    페이지네이션
+    private Integer taskCounts; //  총 건수
+    private Integer startNum = 1;
+    private Integer endNum = 10;
+    private Integer num;
+    private String search;
 
 
 

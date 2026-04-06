@@ -70,4 +70,59 @@
         </if>
         WHERE notice_id = #{noticeId}
     </update>
+
+<!--    공지사항 작성자 목록(필터링 조건)-->
+    <select id="getFilterUser">
+        SELECT DISTINCT(u.user_name),
+               u.user_id
+        FROM notices n
+        JOIN users u ON n.created_by = u.user_id
+        JOIN projects p ON n.project_id = p.project_id
+        WHERE (p.parent_project_id = #{id} OR n.project_id = #{id} AND u.is_active = 'O1')
+    </select>
+
+<!--    공지사항 카테고리 목록(필터링 조건)-->
+    <select id="getFilterCategroy">
+        SELECT DISTINCT(r.role_name),
+               r.role_id
+        FROM notices n
+        JOIN roles r ON r.role_id = n.category
+        JOIN projects p ON n.project_id = p.project_id
+        WHERE (p.parent_project_id = 1 OR n.project_id = 1) AND r.is_active = 'O1'
+    </select>
+
+<!--    공지사항 전체 목록-->
+    <select id="getAllNotices" >
+        SELECT b.*
+        FROM  (SELECT ROWNUM AS num, A.*
+        FROM (SELECT COUNT(*) OVER() AS task_counts,
+                     n.title,
+                     u.user_name,
+                     n.created_at,
+                     n.is_pinned,
+                     n.notice_id
+              FROM notices n
+              JOIN projects p ON n.project_id = p.project_id
+              JOIN users u ON n.created_by = u.user_id
+              WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
+        <if test=" userId!= null and userId != ''">
+            AND n.created_by = #{userId}
+        </if>
+        <if test="category != null and category != ''">
+            AND n.category = #{category}
+        </if>
+        <if test="startDate != null ">
+            AND n.created_at &gt;= #{startDate}
+        </if>
+        <if test="endDate != null ">
+            AND n.created_at &lt;= #{endDate}
+        </if>
+        <if test="search != null and search != ''">
+            AND n.title LIKE '%' || #{search} || '%'
+        </if>
+        ORDER BY n.created_at DESC) A
+        WHERE ROWNUM BETWEEN 1 AND #{endNum})b
+        WHERE b.num >= #{startNum}
+    </select>
+
 </mapper>
