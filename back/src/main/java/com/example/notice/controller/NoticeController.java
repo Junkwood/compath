@@ -24,5 +24,10 @@ public class NoticeController {
         return service.getNoticeById(id);
     }
 
+    // 공지사항 수정
+    @PutMapping("/notice/update")
+    public NoticeDTO modifyNotice(@RequestBody NoticeDTO dto){
+        return service.modifyNotice(dto);
+    }
 
 }

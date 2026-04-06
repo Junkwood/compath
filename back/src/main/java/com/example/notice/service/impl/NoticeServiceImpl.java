@@ -28,10 +28,23 @@ public class NoticeServiceImpl implements NoticeService {
         return mapper.getNoticeById(id);
     }
 
+    // 공지사항 단건 조회
     @Override
     public NoticeDTO getNoticeById(Integer id) {
         return mapper.getNoticeById(id);
     }
 
-    //
+    // 공지사항 수정
+    @Override
+    public NoticeDTO modifyNotice(NoticeDTO dto) {
+        // 수정
+        mapper.modifyNotice(dto);
+
+        // 검색할 id 뽑아내기
+        int id = dto.getNoticeId();
+
+        return mapper.getNoticeById(id);
+    }
+
+
 }

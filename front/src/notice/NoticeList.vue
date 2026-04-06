@@ -281,7 +281,7 @@ const thList = ["번호", "제목", "작성자", "등록일"];
 const goResister = () => {
   router.push({
     name: "noticeRegister",
-    params: { projectId: projectId, noticeId: null },
+    params: { projectId: projectId },
   });
 };
 

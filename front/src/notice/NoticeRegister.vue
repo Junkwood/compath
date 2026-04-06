@@ -11,7 +11,7 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            공지사항 생성
+            {{ isModified == false ? "공지사항 생성" : "공지사항 수정" }}
           </h1>
           <el-form
             ref="ruleFormRef"
@@ -83,7 +83,8 @@
                   <label>
                     <input
                       type="checkbox"
-                      :value="form.emerency"
+                      :value="form.isPinned"
+                      :checked="form.isPinned"
                       @change="checkedBox($event)"
                     />
                     🚨 긴급
@@ -117,15 +118,19 @@
               </div>
 
               <div class="flex justify-between">
-                <button @click="goBack" class="btn-navy">← 목록으로</button>
+                <button @click="goBack" type="button" class="btn-navy">
+                  ← 목록으로
+                </button>
                 <div class="flex gap-2">
-                  <button @click="resetForm" class="btn-red">초기화</button>
+                  <button @click="resetForm" type="button" class="btn-red">
+                    초기화
+                  </button>
                   <button
                     type="button"
                     @click="submitForm(ruleFormRef)"
                     class="btn-green"
                   >
-                    공지사항 등록
+                    {{ isModified == false ? "등록" : "수정" }}
                   </button>
                 </div>
               </div>
@@ -155,6 +160,7 @@ const noticeStore = useNoticeStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
+const noticeId = route.params.noticeId;
 const userInfo = ref(); // 글 작성자 정보
 const roles = ref([
   // 전체 역할 정보
@@ -170,31 +176,57 @@ const form = reactive({
   date: "",
   title: "",
   content: "",
-  emerency: false,
+  isPinned: false,
 }); // 작성내용 담을 곳
+
+let isModified = ref(false); // 수정, 생성 구분
 
 // 긴급 체크시
 const checkedBox = (event) => {
   console.log("targetvalue", event.target.checked);
-  form.emerency = event.target.checked;
-  console.log(form.emerency);
+  form.isPinned = event.target.checked;
+  console.log(form.isPinned);
 };
 
 // 공지사항 생성 버튼
 const submitForm = async (formEl) => {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      // 공지사항 등록
       console.log(form);
-      let obj = {
-        projectId: id,
-        title: form.title,
-        content: form.content,
-        isPinned: form.emerency == true ? "O1" : "O2",
-        category: form.roleId,
-        createdBy: userInfo.value.userId,
-      };
-      await noticeStore.registerNotice(obj);
+      // 공지사항 등록
+      if (!isModified.value) {
+        let obj = {
+          projectId: id,
+          title: form.title,
+          content: form.content,
+          isPinned: form.isPinned == true ? "O1" : "O2",
+          category: form.roleId,
+          createdBy: userInfo.value.userId,
+        };
+        await noticeStore.registerNotice(obj);
+      } else {
+        // 공지사항 수정
+        let obj = {
+          noticeId: noticeId,
+          title: form.title,
+          content: form.content,
+          isPinned: form.emerency == true ? "O1" : "O2",
+          category: form.roleId,
+          isEditorUserId: userInfo.value.userId,
+        };
+        await noticeStore.modifyNotice(obj);
+      }
+
+      router.push({
+        name: "noticeDetail",
+        params: {
+          projectId: id,
+          noticeId:
+            isModified == true
+              ? noticeId
+              : noticeStore.registeredNotice.noticeId,
+        },
+      });
     } else {
       // 안내 메세지 나옴
       console.log("error submit!", fields);
@@ -203,19 +235,35 @@ const submitForm = async (formEl) => {
 };
 
 onBeforeMount(async () => {
-  await noticeStore.getNoticeById();
-
-  console.log(route.params.noticeId);
+  // 생성일 때
   userInfo.value = authStore.user; // 작성자 정보 받아오기
+
   form.author = userInfo.value.name;
 
   form.date = changeDate(new Date()); // 작성 당일 날짜 생성
 
   await roleStore.getRoleList();
   roles.value = roleStore.roleList; // 전체 역할정보
+
+  if (noticeId !== "" && noticeId !== undefined && noticeId !== null) {
+    console.log(noticeId);
+    // 수정일때
+    isModified.value = true;
+    await noticeStore.getNoticeById(noticeId);
+    let noticeInfo = noticeStore.noticeInfo;
+
+    // 폼에 대입
+    form.roleId = noticeInfo.category;
+    form.author = noticeInfo.userName;
+    form.date = noticeInfo.createdAt;
+    form.title = noticeInfo.title;
+    form.content = noticeInfo.content;
+    form.isPinned = noticeInfo.isPinned == "O1" ? true : false;
+  }
 });
 
 const goBack = () => {
+  console.log(id);
   router.push({
     name: "noticeList",
     params: { projectId: id },

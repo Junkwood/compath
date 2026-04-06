@@ -10,7 +10,7 @@ export const useNoticeStore = defineStore("notice", {
   actions: {
     // 공지사항 등록
     async registerNotice(obj) {
-      console.log("전송전 데이터: ", obj);
+      console.log("등록전 데이터: ", obj);
 
       await axios //
         .post("/api/notice/register", obj) //
@@ -27,6 +27,18 @@ export const useNoticeStore = defineStore("notice", {
         .then((res) => {
           this.noticeInfo = res.data;
           console.log("조회완료", this.noticeInfo);
+        });
+    },
+
+    // 공지사항 수정
+    async modifyNotice(obj) {
+      console.log("수정전 데이터: ", obj);
+
+      await axios //
+        .put("/api/notice/update", obj) //
+        .then((res) => {
+          this.registeredNotice = res.data;
+          console.log("수정완료", this.registeredNotice);
         });
     },
   },

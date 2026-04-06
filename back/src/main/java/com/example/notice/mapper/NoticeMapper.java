@@ -13,4 +13,7 @@ public interface NoticeMapper {
 
 //  공지사항 단건 조회
   public NoticeDTO getNoticeById(Integer id);
+
+//  공지사항 수정
+  public int modifyNotice(NoticeDTO dto);
 }

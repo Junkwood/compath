@@ -19,7 +19,7 @@
                             created_by,
                             created_at,
                             project_id,
-                            is_pinned
+                            is_pinned,
                             is_deleted)
         VALUES(#{noticeId},
                #{category},
@@ -53,7 +53,21 @@
         JOIN roles r ON r.role_id = n.category
         JOIN common_code c ON n.is_pinned = c.code_value
         JOIN users u ON u.user_id = n.created_by
-        WHERE n.is_deleted = 'O1'
+        WHERE n.is_deleted = 'O1' AND n.notice_id = #{id}
     </select>
 
+<!--    공지사항 수정-->
+    <update id="modifyNotice">
+        UPDATE notices
+        SET category = #{category},
+            title = #{title},
+            content = #{content},
+            updated_at = SYSDATE,
+            editor_user_id = #{isEditorUserId},
+            is_pinned = #{isPinned}
+        <if test="isDeleted != null and isDeleted != ''">
+            ,is_deleted = #{isDeleted}
+        </if>
+        WHERE notice_id = #{noticeId}
+    </update>
 </mapper>
