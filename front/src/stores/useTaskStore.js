@@ -48,12 +48,11 @@ export const useTaskStore = defineStore("task", () => {
   const form = ref({ ...initialForm });
 
   //  초기화 (등록용)
-  const initCreate = async (projectId) => {
+  const initCreate = async (projectId,  parentTaskId = null) => {
     resetForm();
     const res = await api.get("/task-total-info", {
       params: { projectId },
     });
-
     const {
       userList: uList,
       taskTypeList: tList,
@@ -106,6 +105,17 @@ export const useTaskStore = defineStore("task", () => {
     }
 
     await loadCommonCodes();
+
+    if (parentTaskId) {
+    const parentRes = await api.get(`/tasks/${parentTaskId}`);
+    const parent = parentRes.data;
+    form.value.taskTypeId = parent.taskTypeId;
+    form.value.assigneeUserId = parent.assigneeUserId;
+    form.value.assigneeName = parent.assigneeName;
+    form.value.parentTaskId = parentTaskId;
+    form.value.milestoneId = parent.milestoneId;
+    form.value.milestone = milestoneList.value.find(m => m.value === parent.milestoneId)?.name ?? '';
+    }
   };
   // 초기화 (수정용)
   const initEdit = async (taskId) => {
