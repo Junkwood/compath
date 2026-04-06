@@ -44,6 +44,9 @@
             </div>
 
             <div class="proj-title-right">
+              <el-button class="back-btn" @click="handleGoBack">
+                돌아가기
+              </el-button>
               <el-button class="task-create-btn" @click="handleCreateTask">
                 업무 생성
               </el-button>
@@ -219,6 +222,12 @@ const fetchSubInfo = async () => {
   }
 };
 
+//뒤로돌아가기 
+const handleGoBack = () => {
+  console.log("go back rootProjectId:", rootProjectId);
+
+  router.push(`/project/dashboard/${rootProjectId}`);
+};
 
 const taskSummaryData = ref([
   { type: "개발", total: 13, inProgress: 9, done: 0, rejected: 1, sum: 23 },
@@ -260,7 +269,12 @@ const graphData = ref([
 ]);
 
 const handleCreateTask = () => {
-  console.log("업무 생성");
+  router.push({
+    name: "taskRegister",
+    params: {
+      projectId: subProjectId,
+    },
+  });
 };
 
 const handleSubProjectSetting = () => {
@@ -306,8 +320,8 @@ onMounted(() => {
 ──────────────────────────────────────────── */
 .proj-title-row {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -321,8 +335,8 @@ onMounted(() => {
 .proj-name-row {
   display: flex;
   align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
+  gap: 12px;
 }
 
 .proj-name {
@@ -340,20 +354,20 @@ onMounted(() => {
 .proj-title-right {
   display: flex;
   align-items: center;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .task-create-btn,
 .setting-btn {
-  background: #f1f5f9;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
+  background: #f1f5f9;
   color: #475569;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 8px;
-  height: 36px;
-  padding: 0 14px;
 }
 
 .task-create-btn:hover,
@@ -389,8 +403,8 @@ onMounted(() => {
 ──────────────────────────────────────────── */
 .card {
   background: #fff;
-  border-radius: 20px;
   border: 1px solid #edf2f7;
+  border-radius: 20px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
   overflow: hidden;
 }
@@ -416,16 +430,16 @@ onMounted(() => {
 ──────────────────────────────────────────── */
 .sub-header-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 6px;
 }
 
 .sub-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .sub-title {
@@ -436,8 +450,8 @@ onMounted(() => {
 
 .sub-period-inline {
   font-size: 13px;
-  color: #64748b;
   font-weight: 500;
+  color: #64748b;
 }
 
 .sub-name-box {
@@ -462,12 +476,16 @@ onMounted(() => {
   color: #334155;
 }
 
+.task-list-section {
+  padding-bottom: 4px;
+}
+
 /* ────────────────────────────────────────────
-   내부 박스
+   내부 박스 공통
 ──────────────────────────────────────────── */
 .inner-table-wrap,
 .inner-list-wrap {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   overflow: hidden;
@@ -482,13 +500,12 @@ onMounted(() => {
 }
 
 /* ────────────────────────────────────────────
-   업무 현황 테이블
+   테이블 공통
 ──────────────────────────────────────────── */
 .status-table :deep(.el-table),
 .task-list-table :deep(.el-table) {
   border: none !important;
   font-size: 12px;
-  cursor: pointer;
 }
 
 .status-table :deep(.el-table__inner-wrapper::before),
@@ -496,13 +513,6 @@ onMounted(() => {
 .task-list-table :deep(.el-table__inner-wrapper::before),
 .task-list-table :deep(.el-table::before) {
   display: none;
-}
-
-.status-table :deep(th.el-table__cell) {
-  background: #f8fafc !important;
-  color: #475569;
-  font-weight: 700;
-  border-bottom: 1px solid #e5e7eb !important;
 }
 
 .status-table :deep(td.el-table__cell),
@@ -522,31 +532,31 @@ onMounted(() => {
   color: #334155;
 }
 
-:deep(.task-list-table .el-table__body .el-table__row) {
-  cursor: pointer;
+.status-table :deep(th.el-table__cell) {
+  background: #f8fafc !important;
+  color: #475569;
+  font-weight: 700;
+  border-bottom: 1px solid #e5e7eb !important;
 }
 
-/* ────────────────────────────────────────────
-   업무 목록
-──────────────────────────────────────────── */
-.task-list-section {
-  padding-bottom: 4px;
+.task-list-table :deep(.el-table__body .el-table__row) {
+  cursor: pointer;
 }
 
 .task-pl {
   font-size: 12px;
-  color: #64748b;
   font-weight: 600;
+  color: #64748b;
 }
 
 /* ────────────────────────────────────────────
    우측 카드 타이틀
 ──────────────────────────────────────────── */
 .side-title {
+  margin-bottom: 18px;
   font-size: 15px;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 18px;
 }
 
 /* ────────────────────────────────────────────
@@ -559,6 +569,10 @@ onMounted(() => {
 }
 
 .manager-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -566,10 +580,6 @@ onMounted(() => {
   color: #1d4ed8;
   font-size: 16px;
   font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
   box-shadow: inset 0 0 0 1px rgba(191, 219, 254, 0.9);
 }
 
@@ -592,41 +602,41 @@ onMounted(() => {
   justify-content: center;
   height: 24px;
   padding: 0 10px;
+  border: 1px solid #bfdbfe;
   border-radius: 999px;
   background: #dbeafe;
   color: #1d4ed8;
   font-size: 11px;
   font-weight: 700;
-  border: 1px solid #bfdbfe;
 }
 
 /* ────────────────────────────────────────────
    그래프 카드
 ──────────────────────────────────────────── */
-.graph-body {
+.graph-body,
+.graph-placeholder {
   min-height: 310px;
 }
 
 .graph-placeholder {
-  width: 100%;
-  height: 100%;
-  min-height: 310px;
-  border-radius: 16px;
-  background: linear-gradient(to bottom, #fbfdff, #f8fbff);
-  border: 1px dashed #dbe2ea;
-  padding: 22px 16px 16px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 22px 16px 16px;
+  border: 1px dashed #dbe2ea;
+  border-radius: 16px;
+  background: linear-gradient(to bottom, #fbfdff, #f8fbff);
 }
 
 .graph-bars {
-  width: 100%;
-  height: 100%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
   align-items: end;
+  gap: 14px;
+  width: 100%;
+  height: 100%;
 }
 
 .graph-item {
@@ -639,14 +649,14 @@ onMounted(() => {
 }
 
 .graph-bar-wrap {
+  display: flex;
+  align-items: flex-end;
   width: 100%;
   max-width: 42px;
   height: 210px;
-  background: #e5e7eb;
   border-radius: 999px;
+  background: #e5e7eb;
   overflow: hidden;
-  display: flex;
-  align-items: flex-end;
 }
 
 .graph-bar {
@@ -660,15 +670,15 @@ onMounted(() => {
 
 .graph-label {
   font-size: 12px;
-  color: #475569;
   font-weight: 700;
+  color: #475569;
   text-align: center;
 }
 
 .graph-value {
   font-size: 11px;
-  color: #94a3b8;
   font-weight: 600;
+  color: #94a3b8;
 }
 
 /* ────────────────────────────────────────────
