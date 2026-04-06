@@ -2,15 +2,15 @@ package com.example.task.mapper;
 
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
-import com.example.task.entity.TaskEntityKJH;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface TaskMapperKJH {
   // 업무 목록
-  public List<TaskEntityKJH> getAllTasks(String id, String pid);
+  public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto);
 
   // 프로젝트 이름
   public TaskListDTOKJH getProjectName(Integer id);
@@ -38,4 +38,13 @@ public interface TaskMapperKJH {
 
    // 활동내역 목록조회
    public List<TaskDetailDTOKJH> getTimeLog(Integer id);
+
+
+//
+//  백에서 페이지네이션 도전
+//  업무 총 건수
+  public int getAllTaskCount(Integer id);
+
+//  필터링 조건들 조회(PL/SQL)
+  public void getAllFilterList(Map<String, Object> params);
 }

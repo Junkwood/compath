@@ -3,8 +3,8 @@ import axios from "axios";
 
 export const usetaskKJHStore = defineStore("taskKJH", {
   state: () => ({
-    projectName: null,
     taskAllList: [],
+    filterInfo: [],
     taskDetail: {},
     timeEntriesList: [],
     activityList: [],
@@ -17,8 +17,20 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     },
 
     // 프로젝트별 전체 업무 목록
-    async getAllTask(id) {
-      this.taskAllList = (await axios.get("/api/tasks/" + id)).data;
+    async getAllTask(obj) {
+      console.log(obj);
+      this.taskAllList = (
+        await axios.get("/api/tasks", {
+          params: obj,
+        })
+      ).data;
+
+      console.log("조회 성공: ", this.taskAllList);
+    },
+
+    // 필터링 조건들 호출(PL/SQL)
+    async getAllFilterInfo(id) {
+      this.filterInfo = (await axios.get("/api/tasksFilters/" + id)).data;
     },
 
     // 업무 상세 정보

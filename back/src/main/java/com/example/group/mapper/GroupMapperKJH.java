@@ -9,6 +9,9 @@ import java.util.List;
 
 @Mapper
 public interface GroupMapperKJH {
-    List<GroupDTOKJH> getAllgroupMembers(Integer id, String name);
+    // 직군 그룹별멤버
+    List<GroupDTOKJH> getAllForGroup();
 
+    // 프로젝트 그룹 멤버
+    List<GroupDTOKJH> getProjectgroupMembers();
 }
