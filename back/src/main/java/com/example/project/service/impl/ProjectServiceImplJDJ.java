@@ -35,6 +35,12 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
         return projectMapperJDJ.getPlList();
     }
 
+    //하위프로젝트 생성 시 그 프로젝트의 role이 PL인 사람 불러오기
+    @Override
+    public List<ProjectRolePlListDto> getPlRoleList(int projectId) {
+        return projectMapperJDJ.getPlRoleList(projectId);
+    }
+
     //프로젝트 개별 대쉬보드-----------------------------------------------
     //프로젝트 단건조회
     @Override
@@ -52,6 +58,10 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
     @Override
     public void registerSubProject(ProjectSubCreateDtoJDJ dto) {
         projectMapperJDJ.registerSubProject(dto);
+
+        if (dto.getMilestoneId() != null) {
+            projectMapperJDJ.registerMilestoneMapping(dto);
+        }
     }
 
 

@@ -52,19 +52,23 @@
                 AND (t.project_id = #{projectId} OR p.parent_project_id = #{projectId})
             </if>
             <if test="title != null and title != ''">
-                AND t.title LIKE '%' || #{title} || '%'
+                AND (
+                t.title LIKE '%' || #{title} || '%'
+                OR u.user_name LIKE '%' || #{title} || '%'
+                OR t2.type_name LIKE '%' || #{title} || '%'
+                )
             </if>
             <if test="assigneeUserId != null">
                 AND t.assignee_user_id = #{assigneeUserId}
             </if>
-            <if test="taskTypeId != null">
-                AND t.task_type_id = #{taskTypeId}
+            <if test="typeName != null and typeName != ''">
+                AND t2.type_name = #{typeName}
             </if>
-            <if test="startDate != null">
-                AND t.start_date <![CDATA[ >= ]]> #{startDate}
+            <if test="startDate != null and startDate != ''">
+                AND t.start_date >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
             </if>
-            <if test="dueDate != null">
-                AND t.due_date <![CDATA[ <= ]]> #{dueDate}
+            <if test="dueDate != null and dueDate != ''">
+                AND t.due_date <![CDATA[ <= ]]> TO_DATE(#{dueDate}, 'YYYY-MM-DD')
             </if>
         </where>
         ORDER BY t.start_date DESC

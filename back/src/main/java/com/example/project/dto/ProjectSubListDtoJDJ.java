@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProjectSubListDtoJDJ {
+    private String rootProjectName;
     private Integer projectId;
     private String projectName;
     private Integer plUserId;

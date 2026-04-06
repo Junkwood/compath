@@ -127,7 +127,7 @@
                   </el-button>
                 </div>
                 <div class="sub-project-body">
-                  <template v-if="pagedMilestones.length > 0">
+                  <template v-if="currentMilestone">
                     <div class="sub-project-group">
                       <div class="sub-project-stage-title">
                         마일스톤
@@ -136,7 +136,7 @@
 
                       <div class="sub-project-table-wrap">
                           <el-table
-                            :data="currentMilestone.projects"
+                            :data="currentMilestone.projects || []"
                             class="sub-project-table"
                             style="width: 100%"
                             :show-header="false"
@@ -188,14 +188,14 @@
                     >
                       <div
                         class="member-avatar"
-                        :style="{ backgroundColor: getAvatarColor(member.groupName) }"
+                        :style="{ backgroundColor: getAvatarColor(member.roleName) }"
                       >
                         {{ member.userName?.charAt(0) }}
                       </div>
                       <div class="member-info">
                         <span class="member-name">{{ member.userName }}</span>
-                        <span class="member-role-badge" :class="getRoleClass(member.groupName)">
-                          {{ member.groupName }}
+                        <span class="member-role-badge" :class="getRoleClass(member.roleName)">
+                          {{ member.roleName }}
                         </span>
                       </div>
                     </div>
@@ -254,6 +254,14 @@
     :isEditMode="isMemoEditMode"
     @submitted="handleMemoSubmitted"
   />
+
+<ProjectSubCreateModal
+  v-model="createSubProjectModalOpen"
+  :project-id="projectInfo.projectId"
+  :parent-project-name="projectInfo.projectName"
+  :parent-start-date="projectInfo.startDate"
+  :parent-end-date="projectInfo.endDate"
+/>
 </template>
 
 <script setup>
@@ -266,11 +274,18 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectMemoModal from "../project/ProjectMemoModal.vue";
 import { useAuthStore } from "../stores/auth";
+import ProjectSubCreateModal from '../project/ProjectSubCreateModal.vue' 
 
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(false);
+
+const createSubProjectModalOpen = ref(false)
+
+const handleAddSubProject = () =>{
+  createSubProjectModalOpen.value=true;
+}
 
 // ── 업무 현황  ────────────────────────────
 const taskSummaryData = ref([]);
@@ -331,6 +346,7 @@ const handleEditMemo = (memo) => {
   memoModalVisible.value = true;
 };
 
+//메모 목록조회
 const fetchMemoList = async () => {
   try {
     const projectId = route.params.projectId;
@@ -346,11 +362,13 @@ const fetchMemoList = async () => {
   }
 };
 
+//메모클래스 (색상)
 const getMemoColorClass = (index) => {
   const colorClasses = ["memo-blue", "memo-yellow", "memo-pink", "memo-green"];
   return colorClasses[index % colorClasses.length];
 };
 
+//메모삭제
 const handleDeleteMemo = async (memoId) => {
   const result = await Swal.fire({
     title: "메모를 삭제할까요?",
@@ -391,6 +409,7 @@ const handleDeleteMemo = async (memoId) => {
   }
 };
 
+//메모등록
 const handleMemoSubmitted = async (payload) => {
   try {
     const projectId = route.params.projectId;
@@ -449,6 +468,7 @@ const fetchProjectDetail = async () => {
 const subProjects = ref([]);
 const milestonePage = ref(1);
 
+//하위 프로젝트 목록
 const fetchSubProject = async () => {
   try {
     const projectId = route.params.projectId;
@@ -460,6 +480,7 @@ const fetchSubProject = async () => {
   }
 };
 
+//하위 프로젝트 목록 - 페이지네이션
 const pagedMilestones = computed(() => {
   const map = new Map();
 
@@ -484,9 +505,11 @@ const pagedMilestones = computed(() => {
   return Array.from(map.values());
 });
 
-const currentMilestone = computed(
-  () => pagedMilestones.value[milestonePage.value - 1] || null
-);
+const currentMilestone = computed(() => {
+  if (pagedMilestones.value.length === 0) return null;
+  const safeIndex = Math.min(milestonePage.value - 1, pagedMilestones.value.length - 1);
+  return pagedMilestones.value[safeIndex];
+});
 
 // ── 이벤트 핸들러 ──────────────────────────────
 const handleProjectSetting = () => {
@@ -498,12 +521,15 @@ const handleProjectSetting = () => {
 
 const handleViewTasks = () => {};
 const handleNoticeClick = () => {};
-const handleAddSubProject = () => {};
 
+
+//하위프로젝트 테이블 행 클릭시 하위프로젝트 대쉬보드로 진입
 const handleSubProjectRowClick = (row) => {
   router.push({
     name: "subProjectDashboard",
-    params: { projectId: row.projectId },
+    params: { subProjectId: row.projectId, 
+              rootProjectId: route.params.projectId,
+     },
   });
 };
 
@@ -523,21 +549,21 @@ const subCellStyle = () => ({
   height: "36px",
 });
 
-const getRoleClass = (groupName) => {
-  if (!groupName) return "role-dev";
-  if (groupName.includes("PM")) return "role-pm";
-  if (groupName.includes("PL")) return "role-pl";
-  if (groupName.includes("QA")) return "role-qa";
-  if (groupName.includes("관리")) return "role-mgr";
+const getRoleClass = (roleName) => {
+  if (!roleName) return "role-dev";
+  if (roleName.includes("PM")) return "role-pm";
+  if (roleName.includes("PL")) return "role-pl";
+  if (roleName.includes("QA")) return "role-qa";
+  if (roleName.includes("관리")) return "role-mgr";
   return "role-dev";
 };
 
-const getAvatarColor = (groupName) => {
-  if (!groupName) return "#10b981";
-  if (groupName.includes("PM")) return "#3b82f6";
-  if (groupName.includes("PL")) return "#8b5cf6";
-  if (groupName.includes("QA")) return "#ef4444";
-  if (groupName.includes("관리")) return "#6366f1";
+const getAvatarColor = (roleName) => {
+  if (!roleName) return "#10b981";
+  if (roleName.includes("PM")) return "#3b82f6";
+  if (roleName.includes("PL")) return "#8b5cf6";
+  if (roleName.includes("QA")) return "#ef4444";
+  if (roleName.includes("관리")) return "#6366f1";
   return "#10b981";
 };
 

@@ -14,16 +14,35 @@
       label-position="left"
     >
       <!-- 프로젝트 명 -->
+      <el-form-item label="상위프로젝트">
+         <el-input :model-value="parentProjectName" readonly disabled/>
+      </el-form-item>
+
+      <el-form-item label="마일스톤" prop="milestoneId">
+        <el-select
+          v-model="form.milestoneId"
+          placeholder="마일스톤 선택"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="milestone in milestoneOptions"
+            :key="milestone.milestoneId"
+            :label="milestone.milestoneName"
+            :value="milestone.milestoneId"
+          />
+        </el-select>
+      </el-form-item>
+
       <el-form-item label="하위프로젝트 명" prop="projectName">
         <el-input v-model="form.projectName" placeholder="" />
       </el-form-item>
 
-      <!-- 프로젝트 식별자 + 총괄PL -->
+      <!-- 프로젝트 식별자 + PL -->
       <el-form-item label="하위프로젝트 식별자" prop="projectCode">
         <div class="row-fields">
           <el-input v-model="form.projectCode" placeholder="" style="flex: 1" />
           <div class="pl-field">
-            <span class="pl-label">총괄PL</span>
+            <span class="pl-label">하위PL</span>
             <el-select
               v-model="form.plUserId"
               placeholder="선택"
@@ -72,6 +91,18 @@
           placeholder=""
         />
       </el-form-item>
+
+      <el-form-item label="공개 여부">
+        <div class="switch-row">
+          <el-switch v-model="form.isPublic" />
+          <span class="switch-desc">
+            모든 사용자에게 공개<br />
+            <span class="switch-sub"
+              >공개된 프로젝트는 누구나 조회할 수 있습니다.</span
+            >
+          </span>
+        </div>
+      </el-form-item>
     </el-form>
 
     <!-- 푸터 버튼 -->
@@ -90,12 +121,21 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import axios from 'axios'
+import { useAuthStore } from "../stores/auth";
+
+const authStore = useAuthStore();
+
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
+  projectId: { type: Number, required: true },
+  parentProjectName: { type: String, default: '' },
+  parentStartDate: { type: String, default: '' },
+  parentEndDate: { type: String, default: '' },
 })
+
 const emit = defineEmits(['update:modelValue', 'submitted'])
 
 const visible = computed({
@@ -103,16 +143,33 @@ const visible = computed({
   set: (v) => emit('update:modelValue', v),
 })
 
+//마일스톤 목록용 select 데이터 (api 재사용)
+const milestoneOptions = ref([])
 
-// ── PL 옵션 (백엔드 연결 시 API로 교체) ──
+const fetchMilestoneList = async () => {
+  try {
+    const res = await axios.get(`/api/MilestoneTab/${props.projectId}`)
+    milestoneOptions.value = res.data
+  } catch (err) {
+    console.error('마일스톤 목록 조회 실패:', err)
+    milestoneOptions.value = []
+  }
+}
+
+// ── PL 옵션 (프젝 구성원중 role이 pl인 사람만 가져오기)
 const plOptions = ref([]);
 
 const fetchPlList = async()=>{
-  const res = await axios.get('/api/ProjectPlList')
-  console.log(res.data);
-  plOptions.value=res.data;
+  try{
+      console.log('props.projectId:', props.projectId)
+      const res = await axios.get(`/api/ProjectRolePlList/${props.projectId}`)
+      plOptions.value=res.data;
+  } catch(err){
+    console.error('PL 목록 조회 실패 : ', err)
+    console.error('응답 데이터 : ', err.response?.data)
+    plOptions.value=[];
+  }
 }
-
 
 const formRef   = ref(null)
 const submitting = ref(false)
@@ -122,6 +179,7 @@ const defaultForm = () => ({
   projectName: '',
   projectCode: '',
   plUserId: null,
+  milestoneId:null,
   startDate: '',
   endDate: '',
   description: '',
@@ -134,8 +192,8 @@ const form = reactive(defaultForm())
 const rules = {
   projectName: [{ required: true, message: '프로젝트 명을 입력하세요', trigger: 'blur' }],
   projectCode: [{ required: true, message: '프로젝트 식별자를 입력하세요', trigger: 'blur' }],
-  userId: [{ required: true, message: '총괄PL을 선택하세요', trigger: 'blur' }],
-
+  plUserId: [{ required: true, message: '총괄PL을 선택하세요', trigger: 'blur' }],
+  milestoneId: [{ required: true, message: '마일스톤을 선택하세요', trigger: 'change' }],
 }
 
 const handleClose = () => {
@@ -153,18 +211,20 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
-    const payload = {
-      projectName: form.projectName,
-      identifier: form.projectCode,
-      plUserId: form.plUserId,
-      startDate: form.startDate,
-      endDate: form.endDate,
-      description: form.description,
-      useMilestone: form.useMilestone ? 'O1' : 'O2',
-      isPublic: form.isPublic ? 'O1' : 'O2',
-    }
+        const payload = {
+              parentProjectId: props.projectId,
+              milestoneId: form.milestoneId,
+              projectName: form.projectName,
+              description: form.description,
+              startDate: form.startDate,
+              endDate: form.endDate,
+              identifier: form.projectCode,
+              subPlUserId: form.plUserId,
+              isPublic: form.isPublic ? 'P1' : 'P2',
+              userId: authStore.user?.userId,
+        }
 
-    await axios.post('/api/ProjectRegister', payload)
+    await axios.post('/api/ProjectSubRegister', payload)    
     visible.value = false
     handleReset()
     emit('submitted')
@@ -175,9 +235,15 @@ const handleSubmit = async () => {
   }
 }
 
-onMounted(() => {
-  fetchPlList()
-})
+watch(
+  () => visible.value,
+  (newVal) => {
+    if (newVal) {
+      fetchPlList()
+      fetchMilestoneList()
+    }
+  }
+)
 </script>
 
 <style scoped>

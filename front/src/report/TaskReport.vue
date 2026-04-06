@@ -2,36 +2,27 @@
   <div class="flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-    <div
-      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
-    >
-      <!-- Header -->
-      <Header
-        :sidebarOpen="sidebarOpen"
-        @toggle-sidebar="sidebarOpen = !sidebarOpen"
-      />
+    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+      <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" />
 
       <!-- 페이지 타이틀 -->
       <div class="col-span-full xl:col-span-8 mx-8 mt-3 mb-0">
         <header class="pt-4 border-b border-gray-100 dark:border-gray-700/60">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            업무 보고서
-          </h1>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">업무 보고서</h1>
         </header>
       </div>
 
       <!-- 검색 필터 영역 -->
       <div class="filter-card mx-8 mt-4 mb-0">
         <div class="filter-row">
+
           <!-- 업무명 -->
           <div class="filter-item">
             <label class="filter-label">업무명</label>
             <div class="select-wrap">
               <select v-model="filteredList.title">
                 <option value="전체">전체</option>
-                <option :value="title" v-for="title in titleList" :key="title">
-                  {{ title }}
-                </option>
+                <option :value="title" v-for="title in titleList" :key="title">{{ title }}</option>
               </select>
               <span class="select-arrow">▾</span>
             </div>
@@ -43,12 +34,8 @@
             <div class="select-wrap">
               <select v-model="filteredList.user">
                 <option value="전체">전체</option>
-                <option
-                  :value="userName"
-                  v-for="userName in assigneeUserIdList"
-                  :key="userName"
-                >
-                  {{ userName}}
+                <option :value="item.assigneeUserId" v-for="item in assigneeList" :key="item.assigneeUserId">
+                  {{ item.userName }}
                 </option>
               </select>
               <span class="select-arrow">▾</span>
@@ -61,8 +48,8 @@
             <div class="select-wrap">
               <select v-model="filteredList.type">
                 <option value="전체">전체</option>
-                <option :value="type" v-for="type in taskTypeList" :key="type">
-                  {{ type }}
+                <option :value="item.typeName" v-for="item in taskTypeList" :key="item.typeName">
+                  {{ item.typeName }}
                 </option>
               </select>
               <span class="select-arrow">▾</span>
@@ -72,21 +59,13 @@
           <!-- 시작일 -->
           <div class="filter-item">
             <label class="filter-label">시작일</label>
-            <input
-              v-model="filteredList.start"
-              type="date"
-              class="filter-input"
-            />
+            <input v-model="filteredList.start" type="date" class="filter-input" />
           </div>
 
           <!-- 종료일 -->
           <div class="filter-item">
             <label class="filter-label">종료일</label>
-            <input
-              v-model="filteredList.end"
-              type="date"
-              class="filter-input"
-            />
+            <input v-model="filteredList.end" type="date" class="filter-input" />
           </div>
 
           <!-- 검색어 -->
@@ -94,19 +73,8 @@
             <label class="filter-label">검색어</label>
             <div class="search-wrap">
               <svg class="search-icon" viewBox="0 0 20 20" fill="none">
-                <circle
-                  cx="9"
-                  cy="9"
-                  r="6"
-                  stroke="#9ca3af"
-                  stroke-width="1.8"
-                />
-                <path
-                  d="M14 14l3 3"
-                  stroke="#9ca3af"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
+                <circle cx="9" cy="9" r="6" stroke="#9ca3af" stroke-width="1.8" />
+                <path d="M14 14l3 3" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" />
               </svg>
               <input
                 v-model="searchKeyword"
@@ -120,76 +88,42 @@
 
           <!-- 버튼 -->
           <div class="filter-actions">
-            <button type="button" @click="resetForm()" class="btn-reset">
-              초기화
-            </button>
-            <button type="button" @click="filteringList()" class="btn-search">
-              검색
-            </button>
+            <button type="button" @click="resetForm()" class="btn-reset">초기화</button>
+            <button type="button" @click="filteringList()" class="btn-search">검색</button>
           </div>
         </div>
       </div>
+
       <!-- 목록 영역 -->
-      <div
-        class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl m-8 mt-4"
-      >
+      <div class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl m-8 mt-4">
+
         <!-- 내보내기 버튼 + 총 건수 -->
         <div class="flex items-center justify-between px-5 pt-4 pb-2">
-          <span class="count-badge" v-if="filterList.length > 0"
-            >총 {{ listLength }}건</span
-          >
+          <span class="count-badge" v-if="filterList.length > 0">총 {{ listLength }}건</span>
           <span v-else></span>
           <div class="flex gap-2">
-            <button
-              type="button"
-              @click="exportExcel()"
-              class="btn-export btn-export--excel"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path
-                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8.5 17l-1.5-2.5L5.5 17H4l2.2-3.3L4.1 10.5h1.5l1.4 2.3 1.4-2.3H10L8 13.7 10.1 17H8.5zm5.5 0h-1.3l-2.5-6.5H11l1.8 4.8 1.8-4.8H16L13.5 17h.5z"
-                />
+            <button type="button" @click="exportExcel()" class="btn-export btn-export--excel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8.5 17l-1.5-2.5L5.5 17H4l2.2-3.3L4.1 10.5h1.5l1.4 2.3 1.4-2.3H10L8 13.7 10.1 17H8.5zm5.5 0h-1.3l-2.5-6.5H11l1.8 4.8 1.8-4.8H16L13.5 17h.5z"/>
               </svg>
               Excel
             </button>
-            <button
-              type="button"
-              @click="exportPdf()"
-              class="btn-export btn-export--pdf"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path
-                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM7 15.5c0 .8-.6 1.5-1.5 1.5H5v1.5H3.5V12H5.5c.9 0 1.5.7 1.5 1.5v2zm4.5 1c0 .8-.6 1.5-1.5 1.5H8V12h2c.9 0 1.5.7 1.5 1.5v3zm4-3H14v1h1.5v1H14v1.5H12.5V12H15.5v1.5z"
-                />
-                <path d="M5 13.5v2h.5v-2H5zm3 0v3h.5v-3H8z" />
+            <button type="button" @click="exportPdf()" class="btn-export btn-export--pdf">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM7 15.5c0 .8-.6 1.5-1.5 1.5H5v1.5H3.5V12H5.5c.9 0 1.5.7 1.5 1.5v2zm4.5 1c0 .8-.6 1.5-1.5 1.5H8V12h2c.9 0 1.5.7 1.5 1.5v3zm4-3H14v1h1.5v1H14v1.5H12.5V12H15.5v1.5z"/>
+                <path d="M5 13.5v2h.5v-2H5zm3 0v3h.5v-3H8z"/>
               </svg>
               PDF
             </button>
           </div>
         </div>
+
         <!-- 테이블 -->
         <table class="table-auto w-full dark:text-gray-300">
-          <thead
-            class="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs"
-          >
+          <thead class="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs">
             <tr>
-              <!-- 체크박스 헤더 -->
               <th class="p-2 w-10">
-                <input
-                  type="checkbox"
-                  @change="toggleAllCheckbox"
-                  :checked="isAllChecked"
-                />
+                <input type="checkbox" @change="toggleAllCheckbox" :checked="isAllChecked" />
               </th>
               <th class="p-2" v-for="th in thList" :key="th">
                 <div class="text-center">{{ th }}</div>
@@ -197,9 +131,7 @@
             </tr>
           </thead>
 
-          <tbody
-            class="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60"
-          >
+          <tbody class="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60">
             <!-- 로딩 -->
             <tr v-if="listLoading">
               <td :colspan="thList.length + 1" class="text-center py-10">
@@ -215,49 +147,22 @@
                 class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
               >
                 <td class="p-2 text-center w-10">
-                  <input
-                    type="checkbox"
-                    :value="task.taskId"
-                    v-model="selectedTaskIds"
-                  />
+                  <input type="checkbox" :value="task.taskId" v-model="selectedTaskIds" />
                 </td>
-                <td class="p-2">
-                  <div class="text-center">{{ task.userName }}</div>
-                </td>
-                <td class="p-2 w-40">
-                  <div class="text-center">{{ task.projectName }}</div>
-                </td>
+                <td class="p-2"><div class="text-center">{{ task.userName }}</div></td>
+                <td class="p-2 w-40"><div class="text-center">{{ task.projectName }}</div></td>
                 <td class="p-2 w-80">
-                  <div
-                    class="text-center text-blue-600 dark:text-blue-400 cursor-pointer hover:underline"
-                    @click="goDetail(task.taskId)"
-                  >
+                  <div class="text-center text-blue-600 dark:text-blue-400 cursor-pointer hover:underline" @click="goDetail(task.taskId)">
                     {{ task.title }}
                   </div>
                 </td>
-                <td class="p-2 w-24">
-                  <div class="text-center">{{ task.typeName }}</div>
-                </td>
-                <td class="p-2">
-                  <div class="text-center">
-                    {{ formatDate(task.startDate) }}
-                  </div>
-                </td>
-                <td class="p-2">
-                  <div class="text-center">{{ formatDate(task.dueDate) }}</div>
-                </td>
-                <td class="p-2 w-28">
-                  <div class="text-center">{{ task.workHours }}시간</div>
-                </td>
+                <td class="p-2 w-24"><div class="text-center">{{ task.typeName }}</div></td>
+                <td class="p-2"><div class="text-center">{{ formatDate(task.startDate) }}</div></td>
+                <td class="p-2"><div class="text-center">{{ formatDate(task.dueDate) }}</div></td>
+                <td class="p-2 w-28"><div class="text-center">{{ task.workHours }}시간</div></td>
                 <td class="p-2 w-48">
                   <div class="progress-wrap">
-                    <el-progress
-                      :percentage="task.progressRate"
-                      :stroke-width="8"
-                      :show-text="false"
-                      color="#2563eb"
-                      style="flex: 1"
-                    />
+                    <el-progress :percentage="task.progressRate" :stroke-width="8" :show-text="false" color="#2563eb" style="flex: 1" />
                     <span class="progress-text">{{ task.progressRate }}%</span>
                   </div>
                 </td>
@@ -292,20 +197,33 @@
 </template>
 
 <script setup>
-import { onBeforeMount } from "vue";
+import { onBeforeMount, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ref, computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useTaskReport } from "../stores/TaskReport";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import NanumGothicBase64 from "../assets/fonts/NanumGothic.js";
 
 const route = useRoute();
 const router = useRouter();
 const taskReportStore = useTaskReport();
 
+const { allData, filterList, listLength, workPageSize, titleList, assigneeList, taskTypeList } =
+  storeToRefs(taskReportStore);
+
 const projectId = route.params.projectId;
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
+const workPage = ref(1);
+const listNum = ref(10);
+const nowPage = ref(1);
+const real = ref(true);
+const selectedTaskIds = ref([]);
+const searchKeyword = ref("");
 
 const filteredList = ref({
   title: "전체",
@@ -314,71 +232,32 @@ const filteredList = ref({
   start: "",
   end: "",
 });
-const searchKeyword = ref("");
 
-const allData = ref([]);        
-const filterList = ref([]);
-const listLength = ref(0);
-const workPageSize = ref(0);
-const workPage = ref(1);
-const listNum = ref(10);
-const selectedTaskIds = ref([]);
-const nowPage = ref(1);
-const real = ref(true);
-const titleList = ref([]);
-const assigneeUserIdList = ref([]);
-const taskTypeList = ref([]);
+const thList = ["담당자", "프로젝트명", "업무명", "업무유형", "시작일", "마감일", "업무 기간", "진척도"];
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
   return dateStr.toString().substring(0, 10);
 };
 
-const thList = [
-  "담당자", "프로젝트명", "업무명", "업무유형",
-  "시작일", "마감일", "업무 기간", "진척도",
-];
-
-// 페이지에 맞게 slice
-const slicePage = (data) => {
-  const start = (workPage.value - 1) * listNum.value;
-  const end = start + listNum.value;
-  filterList.value = data.slice(start, end);
-};
-
 const filteringList = async () => {
   listLoading.value = true;
-
   const params = {
     projectId: projectId,
     title: filteredList.value.title !== "전체" ? filteredList.value.title : searchKeyword.value || null,
     assigneeUserId: filteredList.value.user !== "전체" ? filteredList.value.user : null,
-    taskTypeId: filteredList.value.type !== "전체" ? filteredList.value.type : null,
+    typeName: filteredList.value.type !== "전체" ? filteredList.value.type : null,
     startDate: filteredList.value.start || null,
     dueDate: filteredList.value.end || null,
   };
-
-  try {
-    const data = await taskReportStore.fetchReportList(params);
-    if (data) {
-      allData.value = data;              
-      listLength.value = data.length;
-      workPageSize.value = data.length;   
-      slicePage(data);                  
-
-      titleList.value = [...new Set(data.map((t) => t.title).filter(Boolean))];
-      assigneeUserIdList.value = [...new Set(data.map((t) => t.userName).filter(Boolean))];
-      taskTypeList.value = [...new Set(data.map((t) => t.typeName).filter(Boolean))];
-    }
-  } catch (error) {
-    console.error("데이터 조회 중 오류 발생:", error);
-  } finally {
-    listLoading.value = false;
-  }
+  await taskReportStore.fetchReportList(params, workPage.value, listNum.value);
+  listLoading.value = false;
 };
 
 onBeforeMount(async () => {
-  await filteringList();
+  listLoading.value = true;
+  await taskReportStore.fetchReportList({ projectId }, 1, listNum.value, true);
+  listLoading.value = false;
 });
 
 const resetForm = () => {
@@ -388,14 +267,13 @@ const resetForm = () => {
   filteringList();
 };
 
-// ✅ 페이지 변경 시 API 재호출 없이 slice만
 const handleCurrentChange = (page) => {
   workPage.value = page;
-  slicePage(allData.value);
+  taskReportStore.slicePage(page, listNum.value);
 };
 
 const isAllChecked = computed(
-  () => filterList.value.length > 0 && selectedTaskIds.value.length === filterList.value.length,
+  () => filterList.value.length > 0 && selectedTaskIds.value.length === filterList.value.length
 );
 
 const toggleAllCheckbox = (e) => {
@@ -406,9 +284,63 @@ const goDetail = (taskId) => {
   router.push({ name: "TaskDetail", params: { taskId } });
 };
 
-const exportExcel = () => {};
-const exportPdf = () => {};
+// 체크된 것만 or 전체
+const exportData = computed(() => {
+  if (selectedTaskIds.value.length === 0) return allData.value;
+  return allData.value.filter((task) => selectedTaskIds.value.includes(task.taskId));
+});
+
+const exportExcel = () => {
+  const rows = exportData.value.map((task) => ({
+    담당자: task.userName,
+    프로젝트명: task.projectName,
+    업무명: task.title,
+    업무유형: task.typeName,
+    시작일: formatDate(task.startDate),
+    마감일: formatDate(task.dueDate),
+    "업무 기간(시간)": task.workHours,
+    "진척도(%)": task.progressRate,
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "업무보고서");
+  XLSX.writeFile(wb, "업무보고서.xlsx");
+};
+
+const exportPdf = () => {
+  const doc = new jsPDF({ orientation: "landscape" });
+
+  doc.addFileToVFS("NanumGothic.ttf", NanumGothicBase64);
+  doc.addFont("NanumGothic.ttf", "NanumGothic", "normal");
+  doc.setFont("NanumGothic", "normal");
+  doc.setFontSize(14);
+  doc.text("업무 보고서", 14, 15);
+
+  const headers = [["담당자", "프로젝트명", "업무명", "업무유형", "시작일", "마감일", "기간(h)", "진척도"]];
+  const body = exportData.value.map((task) => [
+    task.userName,
+    task.projectName,
+    task.title,
+    task.typeName,
+    formatDate(task.startDate),
+    formatDate(task.dueDate),
+    task.workHours,
+    `${task.progressRate}%`,
+  ]);
+
+  autoTable(doc, {
+    head: headers,
+    body: body,
+    startY: 20,
+    styles: { fontSize: 9, font: "NanumGothic" },
+    headStyles: { fillColor: [51, 65, 85], font: "NanumGothic", fontStyle: "normal" },
+    didParseCell: (data) => { data.cell.styles.font = "NanumGothic"; },
+  });
+
+  doc.save("업무보고서.pdf");
+};
 </script>
+
 <style scoped>
 /* ── 필터 카드 ── */
 .filter-card {
@@ -418,14 +350,12 @@ const exportPdf = () => {};
   padding: 16px 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
-
 .filter-row {
   display: flex;
   align-items: flex-end;
   gap: 12px;
   flex-wrap: wrap;
 }
-
 .filter-item {
   display: flex;
   flex-direction: column;
@@ -433,12 +363,10 @@ const exportPdf = () => {};
   min-width: 120px;
   flex: 1;
 }
-
 .filter-item--wide {
   flex: 2;
   min-width: 180px;
 }
-
 .filter-label {
   font-size: 0.72rem;
   font-weight: 600;
@@ -446,11 +374,7 @@ const exportPdf = () => {};
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-
-/* ── Select ── */
-.select-wrap {
-  position: relative;
-}
+.select-wrap { position: relative; }
 .select-wrap select {
   appearance: none;
   width: 100%;
@@ -461,9 +385,7 @@ const exportPdf = () => {};
   color: #374151;
   background: #f9fafb;
   cursor: pointer;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
 }
 .select-wrap select:focus {
@@ -480,8 +402,6 @@ const exportPdf = () => {};
   font-size: 0.75rem;
   pointer-events: none;
 }
-
-/* ── Date input ── */
 .filter-input {
   padding: 8px 10px;
   border: 1px solid #d1d5db;
@@ -491,29 +411,15 @@ const exportPdf = () => {};
   background: #f9fafb;
   outline: none;
   width: 100%;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 .filter-input:focus {
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
   background: #fff;
 }
-
-/* ── 검색어 ── */
-.search-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.search-icon {
-  position: absolute;
-  left: 10px;
-  width: 16px;
-  height: 16px;
-  pointer-events: none;
-}
+.search-wrap { position: relative; display: flex; align-items: center; }
+.search-icon { position: absolute; left: 10px; width: 16px; height: 16px; pointer-events: none; }
 .search-input {
   width: 100%;
   padding: 8px 10px 8px 32px;
@@ -523,24 +429,14 @@ const exportPdf = () => {};
   color: #374151;
   background: #f9fafb;
   outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 .search-input:focus {
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
   background: #fff;
 }
-
-/* ── 버튼 ── */
-.filter-actions {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  padding-bottom: 1px;
-}
-
+.filter-actions { display: flex; gap: 8px; align-items: flex-end; padding-bottom: 1px; }
 .btn-reset {
   padding: 8px 16px;
   background: #f3f4f6;
@@ -553,11 +449,7 @@ const exportPdf = () => {};
   transition: all 0.15s;
   white-space: nowrap;
 }
-.btn-reset:hover {
-  background: #e5e7eb;
-  color: #374151;
-}
-
+.btn-reset:hover { background: #e5e7eb; color: #374151; }
 .btn-search {
   padding: 8px 20px;
   background: #334155;
@@ -570,11 +462,7 @@ const exportPdf = () => {};
   transition: background 0.15s;
   white-space: nowrap;
 }
-.btn-search:hover {
-  background: #1e293b;
-}
-
-/* ── Excel / PDF 버튼 ── */
+.btn-search:hover { background: #1e293b; }
 .btn-export {
   display: inline-flex;
   align-items: center;
@@ -587,24 +475,10 @@ const exportPdf = () => {};
   cursor: pointer;
   transition: all 0.15s;
 }
-.btn-export--excel {
-  background: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
-}
-.btn-export--excel:hover {
-  background: #dcfce7;
-}
-.btn-export--pdf {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-}
-.btn-export--pdf:hover {
-  background: #fee2e2;
-}
-
-/* ── 총 건수 배지 ── */
+.btn-export--excel { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.btn-export--excel:hover { background: #dcfce7; }
+.btn-export--pdf { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.btn-export--pdf:hover { background: #fee2e2; }
 .count-badge {
   display: inline-flex;
   align-items: center;
@@ -615,11 +489,7 @@ const exportPdf = () => {};
   font-weight: 700;
   border-radius: 999px;
 }
-
-/* ── 테이블 ── */
-table {
-  border-collapse: collapse;
-}
+table { border-collapse: collapse; }
 thead th {
   font-size: 0.72rem;
   font-weight: 700;
@@ -630,36 +500,10 @@ thead th {
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
 }
-tbody tr {
-  border-bottom: 1px solid #f3f4f6;
-  transition: background 0.1s;
-}
-tbody tr:hover {
-  background: #f8faff;
-}
-tbody td {
-  padding: 10px 8px;
-  font-size: 0.875rem;
-  color: #374151;
-}
-
-/* ── 진척도 ── */
-.progress-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.progress-text {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #2563eb;
-  white-space: nowrap;
-}
-
-/* ── 페이지네이션 ── */
-.pagination-wrap {
-  display: flex;
-  justify-content: center;
-  padding: 16px 0;
-}
+tbody tr { border-bottom: 1px solid #f3f4f6; transition: background 0.1s; }
+tbody tr:hover { background: #f8faff; }
+tbody td { padding: 10px 8px; font-size: 0.875rem; color: #374151; }
+.progress-wrap { display: flex; align-items: center; gap: 8px; }
+.progress-text { font-size: 0.8rem; font-weight: 700; color: #2563eb; white-space: nowrap; }
+.pagination-wrap { display: flex; justify-content: center; padding: 16px 0; }
 </style>

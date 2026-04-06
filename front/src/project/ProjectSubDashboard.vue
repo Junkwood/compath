@@ -18,8 +18,25 @@
           <!-- 상단 타이틀 -->
           <div class="mb-6 proj-title-row">
             <div class="proj-title-left">
+
+                          <div class="proj-title-left">
+              <h2
+                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
+              >
+                하위 프로젝트 대시보드
+              </h2>
               <div class="proj-name-row">
-                <span class="proj-name">【{{ subProjectInfo.projectName }}】</span>
+                <span class="proj-name"
+                  >최상위 프로젝트 【 {{ projectInfo.projectName }} 】</span
+                >
+                <span class="proj-period"
+                  >{{ projectInfo.startDate }} - {{ projectInfo.endDate }}</span
+                >
+              </div>
+            </div>
+
+              <div class="proj-name-row">
+                <span class="proj-name">하위 프로젝트【{{ subProjectInfo.projectName }}】</span>
                 <span class="proj-period">
                   {{ subProjectInfo.startDate }} - {{ subProjectInfo.endDate }}
                 </span>
@@ -27,6 +44,9 @@
             </div>
 
             <div class="proj-title-right">
+              <el-button class="back-btn" @click="handleGoBack">
+                돌아가기
+              </el-button>
               <el-button class="task-create-btn" @click="handleCreateTask">
                 업무 생성
               </el-button>
@@ -87,11 +107,12 @@
                       style="width: 100%"
                       :show-header="false"
                       :cell-style="taskListCellStyle"
+                      @row-click="handleTaskRowClick"
                     >
                       <el-table-column prop="title" min-width="260" />
                       <el-table-column label="" width="120" align="right">
                         <template #default="{ row }">
-                          <span class="task-pl">PL {{ row.plName }}</span>
+                          <span class="task-pl">PL {{ row.userName }}</span>
                         </template>
                       </el-table-column>
                     </el-table>
@@ -153,8 +174,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import api from "../utils/api"
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -163,18 +185,49 @@ const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(false);
 
-// 지금은 mock 데이터
-// 나중에 route.params.projectId 로 API 붙이면 됨
-const subProjectId = route.params.projectId;
+const subProjectId = route.params.subProjectId;
+const rootProjectId = route.params.rootProjectId;
 
-const subProjectInfo = ref({
-  projectId: subProjectId,
-  projectName: "요구사항-공통관리",
-  startDate: "2026/03/19",
-  endDate: "2026/04/24",
-  managerName: "김관리",
-  managerRole: "PM",
+//상단 제목용 (루뜨프로젝트 이름)
+const projectInfo = ref({
+  projectId: null,
+  projectName: "",
+  startDate: "",
+  endDate: "",
 });
+
+const fetchProjectDetail = async () => {
+  try {
+    const res = await api.get(`/ProjectDetail/${rootProjectId}`);
+    projectInfo.value = res.data;
+  } catch (err) {
+    console.error("프로젝트 상세 조회 실패:", err);
+  }
+};
+
+//하위프로젝트 정보
+const subProjectInfo = ref({
+  projectId: null,
+  projectName: "",
+  startDate:"",
+  endDate:"",
+})
+
+const fetchSubInfo = async () => {
+  try {
+    const res = await api.get(`/ProjectDetail/${subProjectId}`);
+    subProjectInfo.value = res.data;
+  } catch (err) {
+    console.error("하위프로젝트 상세 조회 실패:", err);
+  }
+};
+
+//뒤로돌아가기 
+const handleGoBack = () => {
+  console.log("go back rootProjectId:", rootProjectId);
+
+  router.push(`/project/dashboard/${rootProjectId}`);
+};
 
 const taskSummaryData = ref([
   { type: "개발", total: 13, inProgress: 9, done: 0, rejected: 1, sum: 23 },
@@ -184,13 +237,29 @@ const taskSummaryData = ref([
   { type: "다스트", total: 5, inProgress: 0, done: 0, rejected: 0, sum: 2 },
 ]);
 
-const taskList = ref([
-  { title: "요구사항 분석 및 산출물", plName: "김피엘" },
-  { title: "화면 설계", plName: "윤피엘" },
-  { title: "로그인 기능 구현", plName: "강피엘" },
-  { title: "메인 대시보드 구현", plName: "김피엘" },
-  { title: "자유게시판 구현", plName: "박피엘" },
-]);
+//하단 업무목록 테이블
+const taskList = ref([]);
+
+const fetchTaskList = async () => {
+  try {
+    const res = await api.get(`/SubProjectTaskList/${subProjectId}`);
+    taskList.value = res.data;
+  } catch (err) {
+    console.error("하위프로젝트 업무목록 조회 실패:", err);
+    taskList.value = [];
+  }
+};
+
+//하단 업무목록 클릭시 상세로 이동
+const handleTaskRowClick = (row) => {
+  router.push({
+    name: "taskDetail",
+    params: {
+      projectId: subProjectId,
+      taskId: row.taskId,
+    },
+  });
+};
 
 const graphData = ref([
   { label: "개발", raw: 23, value: 72 },
@@ -200,7 +269,12 @@ const graphData = ref([
 ]);
 
 const handleCreateTask = () => {
-  console.log("업무 생성");
+  router.push({
+    name: "taskRegister",
+    params: {
+      projectId: subProjectId,
+    },
+  });
 };
 
 const handleSubProjectSetting = () => {
@@ -231,6 +305,13 @@ const taskListCellStyle = () => ({
   height: "38px",
   borderBottom: "1px solid #d1d5db",
 });
+
+onMounted(() => {
+  fetchProjectDetail();
+  fetchSubInfo();
+  fetchTaskList();
+});
+
 </script>
 
 <style scoped>
@@ -239,8 +320,8 @@ const taskListCellStyle = () => ({
 ──────────────────────────────────────────── */
 .proj-title-row {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -254,8 +335,8 @@ const taskListCellStyle = () => ({
 .proj-name-row {
   display: flex;
   align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
+  gap: 12px;
 }
 
 .proj-name {
@@ -273,20 +354,20 @@ const taskListCellStyle = () => ({
 .proj-title-right {
   display: flex;
   align-items: center;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .task-create-btn,
 .setting-btn {
-  background: #f1f5f9;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
+  background: #f1f5f9;
   color: #475569;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 8px;
-  height: 36px;
-  padding: 0 14px;
 }
 
 .task-create-btn:hover,
@@ -322,8 +403,8 @@ const taskListCellStyle = () => ({
 ──────────────────────────────────────────── */
 .card {
   background: #fff;
-  border-radius: 20px;
   border: 1px solid #edf2f7;
+  border-radius: 20px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
   overflow: hidden;
 }
@@ -349,16 +430,16 @@ const taskListCellStyle = () => ({
 ──────────────────────────────────────────── */
 .sub-header-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 6px;
 }
 
 .sub-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .sub-title {
@@ -369,8 +450,8 @@ const taskListCellStyle = () => ({
 
 .sub-period-inline {
   font-size: 13px;
-  color: #64748b;
   font-weight: 500;
+  color: #64748b;
 }
 
 .sub-name-box {
@@ -395,12 +476,16 @@ const taskListCellStyle = () => ({
   color: #334155;
 }
 
+.task-list-section {
+  padding-bottom: 4px;
+}
+
 /* ────────────────────────────────────────────
-   내부 박스
+   내부 박스 공통
 ──────────────────────────────────────────── */
 .inner-table-wrap,
 .inner-list-wrap {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   overflow: hidden;
@@ -415,7 +500,7 @@ const taskListCellStyle = () => ({
 }
 
 /* ────────────────────────────────────────────
-   업무 현황 테이블
+   테이블 공통
 ──────────────────────────────────────────── */
 .status-table :deep(.el-table),
 .task-list-table :deep(.el-table) {
@@ -428,13 +513,6 @@ const taskListCellStyle = () => ({
 .task-list-table :deep(.el-table__inner-wrapper::before),
 .task-list-table :deep(.el-table::before) {
   display: none;
-}
-
-.status-table :deep(th.el-table__cell) {
-  background: #f8fafc !important;
-  color: #475569;
-  font-weight: 700;
-  border-bottom: 1px solid #e5e7eb !important;
 }
 
 .status-table :deep(td.el-table__cell),
@@ -454,27 +532,31 @@ const taskListCellStyle = () => ({
   color: #334155;
 }
 
-/* ────────────────────────────────────────────
-   업무 목록
-──────────────────────────────────────────── */
-.task-list-section {
-  padding-bottom: 4px;
+.status-table :deep(th.el-table__cell) {
+  background: #f8fafc !important;
+  color: #475569;
+  font-weight: 700;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.task-list-table :deep(.el-table__body .el-table__row) {
+  cursor: pointer;
 }
 
 .task-pl {
   font-size: 12px;
-  color: #64748b;
   font-weight: 600;
+  color: #64748b;
 }
 
 /* ────────────────────────────────────────────
    우측 카드 타이틀
 ──────────────────────────────────────────── */
 .side-title {
+  margin-bottom: 18px;
   font-size: 15px;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 18px;
 }
 
 /* ────────────────────────────────────────────
@@ -487,6 +569,10 @@ const taskListCellStyle = () => ({
 }
 
 .manager-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -494,10 +580,6 @@ const taskListCellStyle = () => ({
   color: #1d4ed8;
   font-size: 16px;
   font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
   box-shadow: inset 0 0 0 1px rgba(191, 219, 254, 0.9);
 }
 
@@ -520,41 +602,41 @@ const taskListCellStyle = () => ({
   justify-content: center;
   height: 24px;
   padding: 0 10px;
+  border: 1px solid #bfdbfe;
   border-radius: 999px;
   background: #dbeafe;
   color: #1d4ed8;
   font-size: 11px;
   font-weight: 700;
-  border: 1px solid #bfdbfe;
 }
 
 /* ────────────────────────────────────────────
    그래프 카드
 ──────────────────────────────────────────── */
-.graph-body {
+.graph-body,
+.graph-placeholder {
   min-height: 310px;
 }
 
 .graph-placeholder {
-  width: 100%;
-  height: 100%;
-  min-height: 310px;
-  border-radius: 16px;
-  background: linear-gradient(to bottom, #fbfdff, #f8fbff);
-  border: 1px dashed #dbe2ea;
-  padding: 22px 16px 16px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 22px 16px 16px;
+  border: 1px dashed #dbe2ea;
+  border-radius: 16px;
+  background: linear-gradient(to bottom, #fbfdff, #f8fbff);
 }
 
 .graph-bars {
-  width: 100%;
-  height: 100%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
   align-items: end;
+  gap: 14px;
+  width: 100%;
+  height: 100%;
 }
 
 .graph-item {
@@ -567,14 +649,14 @@ const taskListCellStyle = () => ({
 }
 
 .graph-bar-wrap {
+  display: flex;
+  align-items: flex-end;
   width: 100%;
   max-width: 42px;
   height: 210px;
-  background: #e5e7eb;
   border-radius: 999px;
+  background: #e5e7eb;
   overflow: hidden;
-  display: flex;
-  align-items: flex-end;
 }
 
 .graph-bar {
@@ -588,15 +670,15 @@ const taskListCellStyle = () => ({
 
 .graph-label {
   font-size: 12px;
-  color: #475569;
   font-weight: 700;
+  color: #475569;
   text-align: center;
 }
 
 .graph-value {
   font-size: 11px;
-  color: #94a3b8;
   font-weight: 600;
+  color: #94a3b8;
 }
 
 /* ────────────────────────────────────────────

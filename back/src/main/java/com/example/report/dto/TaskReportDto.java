@@ -28,8 +28,8 @@ public class TaskReportDto {
     String content;
     Integer assigneeUserId;
     Integer progressRate;
-    Date startDate;
-    Date dueDate;
+    String startDate;
+    String dueDate;
     Integer estimatedHours;
     String actualHours;
     String isDeleted;
