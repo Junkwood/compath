@@ -254,7 +254,10 @@ const handleSubmit = async () => {
   try {
     await store.createTask();
     alert("등록 완료!");
-    router.push("/tasks");
+   router.push({
+      name: "taskList",
+      params: { projectId: id }, 
+    });
   } catch (e) {
     alert(e.message || "등록에 실패했습니다. 입력값을 확인해 주세요.");
   }

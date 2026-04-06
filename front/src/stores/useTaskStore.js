@@ -356,7 +356,7 @@ export const useTaskStore = defineStore("task", () => {
   const createTask = async () => {
     validateForm();
     const payload = buildPayload();
-    await axios.post("/api/tasks", payload);
+    await api.post("/tasks", payload);
   };
 
   // ───────────── 수정 ─────────────
