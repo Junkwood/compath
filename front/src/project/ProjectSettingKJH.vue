@@ -109,7 +109,7 @@
           </button>
         </div>
       </div>
-      <div class="card main-col mx-8 mt-4">
+      <div class="card main-col mx-8 mt-4 mb-30">
         <!-- Table -->
 
         <el-table
@@ -158,6 +158,11 @@
               </el-button>
             </template>
           </el-table-column>
+          <template #empty>
+            <div style="padding: 20px; text-align: center">
+              <el-empty description="추가된 구성원이 없습니다." />
+            </div>
+          </template>
         </el-table>
       </div>
     </div>
@@ -171,11 +176,11 @@
   />
   <ProjectMemberModal
     v-model="MemberModalOpen"
-    :groupList="groupList"
-    :memberList="memberList"
-    :roleList="roleList"
     @member-cancel="closeMemberMdoal"
     @member-insert="memberInsert"
+    :memberList="memberList"
+    :generalGroupList="generalGroupList"
+    :projectGroupList="projectGroupList"
   />
 </template>
 
@@ -188,6 +193,8 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectModifyModal from "./ProjectModifyModal.vue";
 import ProjectMemberModal from "./ProjectMemberModal.vue";
+
+import Swal from "sweetalert2";
 
 const route = useRoute();
 const taskStore = usetaskKJHStore();
@@ -217,8 +224,8 @@ const id = route.params.id;
 const ModifyProjectModalOpen = ref(false); // 수정 모달
 const MemberModalOpen = ref(false); // 구성원 추가 모달
 const memberList = ref([]); // 구성원 테이블
-const groupList = ref([]);
-const roleList = ref([]);
+const generalGroupList = ref([]);
+const projectGroupList = ref([]);
 
 onBeforeMount(async () => {
   // 프로젝트명
@@ -234,13 +241,13 @@ onBeforeMount(async () => {
   await projectStore.getAllMembers(id);
   memberList.value = projectStore.memberList;
 
-  // 그룹정보
-  await projectStore.getAllGroups();
-  groupList.value = projectStore.groupList;
+  // 직군 그룹정보
+  await projectStore.getGeneralGroupMem();
+  generalGroupList.value = projectStore.generalGroupMem;
 
-  // 역할 정보
-  await projectStore.getAllRoles();
-  roleList.value = projectStore.roleList;
+  // 프로젝트 그룹 정보
+  await projectStore.getProjectGroupMem();
+  projectGroupList.value = projectStore.projectGroupMem;
 });
 
 // 수정버튼
@@ -277,6 +284,7 @@ const modifyProject = async (form) => {
 
 // 구성원 추가 버튼
 const openMemberModal = () => {
+  console.log("모달오픈");
   MemberModalOpen.value = true;
 };
 
@@ -291,13 +299,12 @@ const memberInsert = async (value) => {
   let list = [];
   value.forEach(async (val) => {
     list.push({
-      userId: val.id,
+      userId: val.userId,
       projectId: id,
-      roleId: val.role,
+      roleId: val.roleId,
     });
   });
 
-  console.log(list);
   await projectStore.registerProjectMem(list);
 
   closeMemberMdoal();
@@ -306,15 +313,24 @@ const memberInsert = async (value) => {
 // 삭제 버튼
 const handleDelete = async (val) => {
   console.log(val);
-  // await projectStore.removeMem(val);
-  // memberList.value = projectStore.remainMem;
+  const result = await Swal.fire({
+    title: "정말 구성원을 삭제하시겠습니까?",
+    text: "삭제된 구성원은 목록에서 확인 불가능합니다.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "삭제",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+  await projectStore.removeMem(val);
+  memberList.value = projectStore.remainMem;
 };
 
 watch(
   () => projectStore.insertedList,
-  (newVal) => {
-    console.log("구성원추가후 ", newVal);
-
+  () => {
     memberList.value = projectStore.insertedList;
   },
 );

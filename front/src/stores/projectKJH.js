@@ -13,6 +13,8 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     insertedList: [],
     roleList: [],
     remainMem: [],
+    projectGroupMem: [],
+    generalGroupMem: [],
   }),
   getters: {},
   actions: {
@@ -55,19 +57,6 @@ export const useProjectKJHStore = defineStore("projectKJH", {
       this.groupList = result.data;
     },
 
-    // 그룹 멤버 조회
-    async getAllGroupMem(id, name) {
-      let result = await axios //
-        .get("/api/group/members", {
-          params: {
-            id: id,
-            name: name,
-          },
-        });
-
-      this.groupMem = result.data;
-    },
-
     // 그룹 하나 조회
     async getGroupsById(id) {
       let result = await axios //
@@ -100,7 +89,7 @@ export const useProjectKJHStore = defineStore("projectKJH", {
       this.roleList = result.data;
     },
 
-    // 역할 전체 조회
+    // 구성원 삭제
     async removeMem(obj) {
       console.log("구성원 삭제전", obj);
       let result = await axios //
@@ -112,6 +101,19 @@ export const useProjectKJHStore = defineStore("projectKJH", {
           },
         });
       this.remainMem = result.data;
+    },
+
+    // 프로젝트 그룹 및 멤버 조회
+    async getProjectGroupMem() {
+      let result = await axios.get("/api/projectgroup/members");
+      console.log(result);
+      this.projectGroupMem = result.data;
+    },
+
+    // 직군 그룹 및 멤버 조회
+    async getGeneralGroupMem() {
+      let result = await axios.get("/api/group/members");
+      this.generalGroupMem = result.data;
     },
   },
 });

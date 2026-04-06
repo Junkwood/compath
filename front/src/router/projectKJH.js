@@ -6,6 +6,7 @@ const projectRoutes1 = [
   },
 
   {
+    // 프로젝트 설정
     path: "/project/setting/:id",
     name: "projectSetting",
     component: () => import("../project/ProjectSettingKJH.vue"),

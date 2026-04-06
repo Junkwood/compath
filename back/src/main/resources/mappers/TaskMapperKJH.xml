@@ -3,6 +3,31 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.task.mapper.TaskMapperKJH">
+
+    <resultMap id="titleMap" type="com.example.task.dto.TaskListDTOKJH">
+        <result property="title" column="title" />
+        <result property="taskId" column="task_id" />
+    </resultMap>
+    <resultMap id="userNameMap" type="com.example.task.dto.TaskListDTOKJH">
+        <result property="userName" column="user_name" />
+        <result property="assigneeUserId" column="assignee_user_id" />
+    </resultMap>
+    <resultMap id="typeNameMap" type="com.example.task.dto.TaskListDTOKJH">
+        <result property="typeName" column="type_name" />
+        <result property="taskTypeId" column="task_type_id" />
+    </resultMap>
+    <resultMap id="statusNameMap" type="com.example.task.dto.TaskListDTOKJH">
+        <result property="statusName" column="status_name" />
+        <result property="taskStatusId" column="task_status_id" />
+    </resultMap>
+    <resultMap id="priorityMap" type="com.example.task.dto.TaskListDTOKJH">
+        <result property="codeName" column="CODE_NAME" />
+        <result property="priorityCode" column="priority_code" />
+    </resultMap>
+    <resultMap id="projectNameMap" type="com.example.task.dto.TaskListDTOKJH">
+        <result property="projectName" column="PROJECT_NAME" />
+        <result property="projectId" column="project_id" />
+    </resultMap>
     <sql id="task">
         task_id,
         parent_task_id,
@@ -31,31 +56,55 @@
 
 <!--    업무목록-->
     <select id="getAllTasks" >
-        SELECT t.task_id,
-               t.parent_task_id,
-               t.milestone_id,
-               t.task_type_id,
-               t.task_status_id,
-               t.title,
-               t.content,
-               t.assignee_user_id,
-               u.user_name,
-               t.priority_code,
-               c.code_name,
-               t.progress_rate,
-               t.start_date,
-               t.due_date,
-               p.project_name,
-               t2.type_name,
-               t3.status_name
-        FROM tasks t
-        JOIN projects p ON t.project_id = p.project_id
-        JOIN task_types t2 ON t.task_type_id = t2.task_type_id
-        JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
-        JOIN common_code c ON t.priority_code = c.code_value
-        JOIN users u ON t.assignee_user_id = u.user_id
-        WHERE t.project_id = #{id} OR p.parent_project_id = #{pid}
-        ORDER BY p.project_name
+        SELECT b.*
+        FROM  (SELECT ROWNUM AS num, A.*
+        FROM (SELECT COUNT(*) OVER() AS task_counts,
+                t.title,
+                t.content,
+                t.assignee_user_id,
+                t.task_id,
+                u.user_name,
+                c.code_name,
+                t.progress_rate,
+                t.start_date,
+                t.due_date,
+                p.project_name,
+                t2.type_name,
+                t3.status_name
+              FROM tasks t
+              JOIN projects p ON t.project_id = p.project_id
+              JOIN task_types t2 ON t.task_type_id = t2.task_type_id
+              JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
+              JOIN common_code c ON t.priority_code = c.code_value
+              JOIN users u ON t.assignee_user_id = u.user_id
+              WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
+              <if test="taskId != null and taskId != ''">
+                  AND t.task_id = #{taskId}
+              </if>
+              <if test="assigneeUserId != null and assigneeUserId != ''">
+                  AND t.assignee_user_id = #{assigneeUserId}
+              </if>
+              <if test="taskTypeId != null and taskTypeId != ''">
+                  AND t.task_type_id = #{taskTypeId}
+              </if>
+              <if test="taskStatusId != null and taskStatusId != ''">
+                  AND t.task_status_id = #{taskStatusId}
+              </if>
+              <if test="startDate != null ">
+                  AND t.start_date &gt;= #{startDate}
+              </if>
+              <if test="endDate != null ">
+                  AND t.due_date &lt;= #{endDate}
+              </if>
+              <if test="priorityCode != null and priorityCode != ''">
+                  AND t.priority_code = #{priorityCode}
+              </if>
+              <if test="parentProjectId != null and parentProjectId != ''and parentProjectId != projectId">
+                  AND p.project_id = #{parentProjectId}
+              </if>
+              ORDER BY p.project_name) A
+              WHERE ROWNUM BETWEEN 1 AND #{endNum})b
+        WHERE b.num >= #{startNum}
     </select>
 
 <!--    프로젝트 이름-->
@@ -188,5 +237,19 @@
                JOIN users u ON a.actor_user_id = u.user_id
                WHERE target_type = 'time_entries' AND t.task_id = #{id}
                ORDER BY t.created_at DESC) A
+    </select>
+
+<!--    필터링 정보들(PL/SQL)-->
+    <!--업무 조회 pl/sql-->
+    <select id="getAllFilterList" statementType="CALLABLE">
+        {CALL SP_GET_TASK_FILTERING_INFO(
+        #{projectId, mode=IN, jdbcType=INTEGER},
+        #{taskTitleList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=titleMap},
+        #{userNameList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=userNameMap},
+        #{taskTypeList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=typeNameMap},
+        #{taskStatusList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=statusNameMap},
+        #{taskPriorityList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=priorityMap},
+        #{smallProjectList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=projectNameMap}
+        )}
     </select>
 </mapper>
