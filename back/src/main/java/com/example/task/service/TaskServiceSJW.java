@@ -1,8 +1,6 @@
 package com.example.task.service;
 
-import com.example.task.dto.TaskListDashDtoJDJ;
 import com.example.task.dto.TaskStatusDTOSJW;
-import com.example.task.dto.TaskSummaryDtoJDJ;
 
 import java.util.List;
 
