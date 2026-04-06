@@ -38,9 +38,28 @@
     </update>
     <insert id="registerTaskStatus">
         INSERT INTO task_statuses(
+        TASK_STATUS_ID,
+        STATUS_NAME,
+        DESCRIPTION,
+        IS_ACTIVE,
+        IS_FINAL,
+        CREATED_AT,
+        CREATED_BY
         )
         VALUES(
+        task_status_seq.NEXTVAL,
+        #{statusName},
+        #{description},
+        #{isActive},
+        #{isFinal},
+        SYSDATE,
+        #{userId}
         )
 
     </insert>
+    <select id="checkDup">
+        Select count(*)
+        FROM task_statuses
+        WHERE status_name =#{statusName}
+    </select>
 </mapper>

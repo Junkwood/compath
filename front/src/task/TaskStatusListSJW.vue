@@ -128,7 +128,35 @@
     >
       <!-- 상태명 -->
       <el-form-item label="상태명" prop="statusName">
-        <el-input v-model="form.statusName" placeholder="상태명을 입력하세요" />
+        <div style="display: flex; gap: 8px; width: 100%">
+          <el-input
+            v-model="form.statusName"
+            placeholder="상태명을 입력하세요"
+            style="flex: 1"
+            @input="onStatusNameInput"
+          />
+          <el-button class="btn-register" @click="checkDuplicate"
+            >중복 확인</el-button
+          >
+        </div>
+        <p
+          v-if="isNameChecked"
+          style="font-size: 12px; margin-top: 4px"
+          :style="{ color: isNameValid ? '#16a34a' : '#dc2626' }"
+        >
+          {{
+            isNameValid
+              ? "사용 가능한 상태명입니다."
+              : "이미 사용 중인 상태명입니다."
+          }}
+        </p>
+        <!-- 수정 모드에서 이름 그대로면 안내 -->
+        <p
+          v-if="isOriginalName && !isNameChecked"
+          style="font-size: 12px; margin-top: 4px; color: #9ca3af"
+        >
+          기존 상태명과 동일합니다.
+        </p>
       </el-form-item>
 
       <!-- 설명 -->
@@ -256,6 +284,9 @@ const rules = reactive({
 const handleCreate = () => {
   isEditMode.value = false;
   Object.assign(form, defaultForm());
+  isNameChecked.value = false;
+  isNameValid.value = false;
+  originalStatusName.value = "";
   modalVisible.value = true;
   nextTick(() => formRef.value?.clearValidate());
 };
@@ -270,6 +301,9 @@ const handleEdit = (row) => {
     isFinal: row.isFinal,
     isActive: row.isActive,
   });
+  isNameChecked.value = false;
+  isNameValid.value = false;
+  originalStatusName.value = row.statusName;
   modalVisible.value = true;
   nextTick(() => formRef.value?.clearValidate());
 };
@@ -376,6 +410,8 @@ const handleReset = () => {
       ? { statusName: "", description: "", isFinal: "N", isActive: "Y" }
       : defaultForm(),
   );
+  isNameChecked.value = false;
+  isNameValid.value = false;
   formRef.value?.clearValidate();
 };
 
@@ -383,7 +419,23 @@ const handleReset = () => {
 const handleSubmit = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
   if (!valid) return;
-
+  // ✅ 중복 확인 체크
+  if (!isOriginalName.value && !isNameChecked.value) {
+    Swal.fire({
+      icon: "warning",
+      title: "상태명 중복 확인을 해주세요.",
+      confirmButtonColor: "#2563eb",
+    });
+    return;
+  }
+  if (!isOriginalName.value && !isNameValid.value) {
+    Swal.fire({
+      icon: "warning",
+      title: "이미 사용 중인 상태명입니다.",
+      confirmButtonColor: "#2563eb",
+    });
+    return;
+  }
   submitting.value = true;
   try {
     if (isEditMode.value) {
@@ -416,7 +468,51 @@ const handleSubmit = async () => {
     submitting.value = false;
   }
 };
+// ── 중복 확인 상태 ──
+const isNameChecked = ref(false);
+const isNameValid = ref(false);
+const originalStatusName = ref("");
 
+const isOriginalName = computed(
+  () => isEditMode.value && form.statusName === originalStatusName.value,
+);
+
+// 상태명 입력 시 중복 확인 초기화
+const onStatusNameInput = () => {
+  if (!isOriginalName.value) {
+    isNameChecked.value = false;
+    isNameValid.value = false;
+  }
+};
+
+// 중복 확인
+const checkDuplicate = async () => {
+  if (!form.statusName.trim()) {
+    Swal.fire({
+      icon: "warning",
+      title: "상태명을 입력해주세요.",
+      confirmButtonColor: "#2563eb",
+    });
+    return;
+  }
+  // 수정 모드에서 기존 이름 그대로면 스킵
+  if (isOriginalName.value) {
+    isNameValid.value = true;
+    isNameChecked.value = true;
+    return;
+  }
+  try {
+    const res = await statusStore.checkDuplicate(form.statusName);
+    isNameValid.value = res; // true = 사용가능, false = 중복
+    isNameChecked.value = true;
+  } catch {
+    Swal.fire({
+      icon: "error",
+      title: "중복 확인 실패",
+      confirmButtonColor: "#2563eb",
+    });
+  }
+};
 // ── 초기 로드 ──
 onMounted(async () => {
   isLoading.value = true;

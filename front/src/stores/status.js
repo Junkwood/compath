@@ -32,6 +32,7 @@ export const useStatusStore = defineStore("status", () => {
   // ── 등록 ──
   async function createStatus(form) {
     try {
+      form.userId = authStore.user.userId;
       const res = await api.post("/taskStatus", form);
       return res.data;
     } catch (err) {

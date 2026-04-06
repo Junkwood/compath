@@ -62,7 +62,26 @@ public class TaskServiceImplSJW implements TaskServiceSJW {
 
     @Override
     public Boolean registerTaskStatus(TaskStatusDTOSJW taskStatus) {
+        if(taskStatus.getIsActive().equals("Y")){
+            taskStatus.setIsActive("O1");
+        }else{
+            taskStatus.setIsActive("O2");
+        }
+        if(taskStatus.getIsFinal().equals("Y")){
+            taskStatus.setIsFinal("O1");
+        }else{
+            taskStatus.setIsFinal("O2");
+        }
         Integer result = taskMapper.registerTaskStatus(taskStatus);
+        if(result > 0){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Boolean checkDup(String name) {
+        Integer result = taskMapper.checkDup(name);
         if(result > 0){
             return true;
         }
