@@ -25,5 +25,6 @@ public class RoleDTOSJW {
     private String isActive;
     private String userType;
     private List<PermissionDTOSJW> permissions;
+    private List<Integer> permissionIds;
 
 }

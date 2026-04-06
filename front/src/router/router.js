@@ -1,11 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import bulletinRoutes from "./bulletin.js";
-import empRoutes from "./emp.js";
-import groupRoutes from "./group.js";
+import adminRoutes from "./admin.js";
 import meetingRoutes from "./meeting.js";
 import projectRoutes from "./project.js";
 import reportRoutes from "./report.js";
-import roleRoutes from "./roleSJW.js";
 import taskRoutes1 from "./taskJJW.js";
 import taskRoutes from "./taskKJH.js";
 import { useAuthStore } from "../stores/auth.js";
@@ -45,12 +43,10 @@ const router = createRouter({
     },
 
     ...bulletinRoutes,
-    ...empRoutes,
-    ...groupRoutes,
+    ...adminRoutes,
     ...meetingRoutes,
     ...projectRoutes,
     ...reportRoutes,
-    ...roleRoutes,
     ...taskRoutes,
     ...taskRoutes1,
     ...projectRoutes1,
