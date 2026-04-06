@@ -255,8 +255,13 @@
     @submitted="handleMemoSubmitted"
   />
 
-  <ProjectSubCreateModal v-model="createSubProjectModalOpen" />
-
+<ProjectSubCreateModal
+  v-model="createSubProjectModalOpen"
+  :project-id="projectInfo.projectId"
+  :parent-project-name="projectInfo.projectName"
+  :parent-start-date="projectInfo.startDate"
+  :parent-end-date="projectInfo.endDate"
+/>
 </template>
 
 <script setup>
