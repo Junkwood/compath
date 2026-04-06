@@ -11,277 +11,278 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
 
-      <div class="col-span-full xl:col-span-8 mx-8 mt-3 mb-0">
-        <header class="pt-4 border-b border-gray-100 dark:border-gray-700/60">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            [{{ name }}]
-            <span class="text-base">
-              {{ projectStartDate }} ~ {{ projectendDate }}</span
-            >
-          </h1>
-        </header>
-      </div>
-      <div class="grid grid-cols-12 gap-4 mx-8 mb-2">
-        <div
-          class="text-lg font-bold text-gray-800 dark:text-gray-100 col-start-1 col-end-4"
-        >
-          <h2>프로젝트 전체 업무 목록</h2>
-        </div>
-        <div class="col col-end-14">
-          <el-button class="new-project-btn" @click="goResister()">
-            + &nbsp; 업무 생성
-          </el-button>
-        </div>
-      </div>
-      <div
-        class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mx-8 mb-0 p-4"
-      >
-        <!-- <div
-          class="w-full max-w-full bg-neutral-primary-soft p-3 border border-default rounded-base shadow-xs"
-        > -->
-        <form action="#">
-          <div class="grid grid-cols-4 gap-4">
-            <div class="mb-4">
-              <label
-                for="taskName"
-                class="block mb-2.5 text-sm font-medium text-heading"
-                >업무명</label
+      <main class="grow">
+        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+          <!-- projectDashboard.vue와 동일한 제목 영역 -->
+          <div class="mb-6 proj-title-row flex justify-between">
+            <div class="proj-title-left">
+              <h2
+                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
               >
-              <select
-                class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.taskId"
-              >
-                <option value="">전체</option>
-                <option
-                  :value="title.taskId"
-                  v-for="title in filterInfo.taskTitleList"
-                >
-                  {{ title.title }}
-                </option>
-              </select>
+                프로젝트 업무 목록
+              </h2>
+
+              <div class="proj-name-row">
+                <span class="proj-name">【 {{ name }} 】</span>
+                <span class="proj-period">
+                  {{ projectStartDate }} ~ {{ projectendDate }}
+                </span>
+              </div>
             </div>
-            <div class="mb-4">
-              <label
-                for="password"
-                class="block mb-2.5 text-sm font-medium text-heading"
-                >담당자 이름</label
-              >
-              <select
-                class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.assigneeUserId"
-              >
-                <option value="">전체</option>
-                <option
-                  :value="user.assigneeUserId"
-                  v-for="user in filterInfo.userNameList"
-                >
-                  {{ user.userName }}
-                </option>
-              </select>
-            </div>
-            <div class="mb-4">
-              <label
-                for="password"
-                class="block mb-2.5 text-sm font-medium text-heading"
-                >업무 유형</label
-              >
-              <select
-                class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.taskTypeId"
-              >
-                <option value="">전체</option>
-                <option
-                  :value="type.taskTypeId"
-                  v-for="type in filterInfo.taskTypeList"
-                >
-                  {{ type.typeName }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label
-                for="password"
-                class="block mb-2.5 text-sm font-medium text-heading"
-                >업무 상태</label
-              >
-              <select
-                class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.taskStatusId"
-              >
-                <option value="">전체</option>
-                <option
-                  :value="status.taskStatusId"
-                  v-for="status in filterInfo.taskStatusList"
-                >
-                  {{ status.statusName }}
-                </option>
-              </select>
+            <div class="self-end">
+              <el-button class="new-project-btn" @click="goResister()">
+                + &nbsp; 업무 생성
+              </el-button>
             </div>
           </div>
-          <div class="grid grid-cols-4 gap-4">
-            <div>
-              <label
-                for="password"
-                class="block mb-2.5 text-sm font-medium text-heading"
-                >시작일</label
-              >
-              <input
-                v-model="filteredList.startDate"
-                type="date"
-                class="input w-full"
-              />
-            </div>
-            <div>
-              <label
-                for="password"
-                class="block mb-2.5 text-sm font-medium text-heading"
-                >종료일</label
-              >
-              <input
-                v-model="filteredList.endDate"
-                type="date"
-                class="input w-full"
-              />
-            </div>
-            <div>
-              <label
-                for="password"
-                class="block mb-2.5 text-sm font-medium text-heading"
-                >우선순위</label
-              >
-              <select
-                class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.priorityCode"
-              >
-                <option value="">전체</option>
-                <option
-                  :value="priority.priorityCode"
-                  v-for="priority in filterInfo.taskPriorityList"
-                >
-                  {{ priority.codeName }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label
-                for="password"
-                class="block mb-2.5 text-sm font-medium text-heading"
-                >하위 프로젝트명</label
-              >
-              <select
-                class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 bm-2 shadow-xs placeholder:text-body"
-                v-model="filteredList.parentProjectId"
-              >
-                <option value="">전체</option>
-                <option
-                  :value="small.projectId"
-                  v-for="small in filterInfo.smallProjectList"
-                >
-                  {{ small.projectName }}
-                </option>
-              </select>
-            </div>
+          <div
+            class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mb-0 p-4"
+          >
+            <form action="#">
+              <div class="grid grid-cols-4 gap-4">
+                <div class="mb-4">
+                  <label
+                    for="taskName"
+                    class="block mb-2.5 text-sm font-medium text-heading"
+                    >업무명</label
+                  >
+                  <select
+                    class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                    v-model="filteredList.taskId"
+                  >
+                    <option value="">전체</option>
+                    <option
+                      :value="title.taskId"
+                      v-for="title in filterInfo.taskTitleList"
+                    >
+                      {{ title.title }}
+                    </option>
+                  </select>
+                </div>
+                <div class="mb-4">
+                  <label
+                    for="password"
+                    class="block mb-2.5 text-sm font-medium text-heading"
+                    >담당자 이름</label
+                  >
+                  <select
+                    class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                    v-model="filteredList.assigneeUserId"
+                  >
+                    <option value="">전체</option>
+                    <option
+                      :value="user.assigneeUserId"
+                      v-for="user in filterInfo.userNameList"
+                    >
+                      {{ user.userName }}
+                    </option>
+                  </select>
+                </div>
+                <div class="mb-4">
+                  <label
+                    for="password"
+                    class="block mb-2.5 text-sm font-medium text-heading"
+                    >업무 유형</label
+                  >
+                  <select
+                    class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                    v-model="filteredList.taskTypeId"
+                  >
+                    <option value="">전체</option>
+                    <option
+                      :value="type.taskTypeId"
+                      v-for="type in filterInfo.taskTypeList"
+                    >
+                      {{ type.typeName }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    for="password"
+                    class="block mb-2.5 text-sm font-medium text-heading"
+                    >업무 상태</label
+                  >
+                  <select
+                    class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                    v-model="filteredList.taskStatusId"
+                  >
+                    <option value="">전체</option>
+                    <option
+                      :value="status.taskStatusId"
+                      v-for="status in filterInfo.taskStatusList"
+                    >
+                      {{ status.statusName }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-4 gap-4">
+                <div>
+                  <label
+                    for="password"
+                    class="block mb-2.5 text-sm font-medium text-heading"
+                    >시작일</label
+                  >
+                  <input
+                    v-model="filteredList.startDate"
+                    type="date"
+                    class="input w-full"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="password"
+                    class="block mb-2.5 text-sm font-medium text-heading"
+                    >종료일</label
+                  >
+                  <input
+                    v-model="filteredList.endDate"
+                    type="date"
+                    class="input w-full"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="password"
+                    class="block mb-2.5 text-sm font-medium text-heading"
+                    >우선순위</label
+                  >
+                  <select
+                    class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+                    v-model="filteredList.priorityCode"
+                  >
+                    <option value="">전체</option>
+                    <option
+                      :value="priority.priorityCode"
+                      v-for="priority in filterInfo.taskPriorityList"
+                    >
+                      {{ priority.codeName }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    for="password"
+                    class="block mb-2.5 text-sm font-medium text-heading"
+                    >하위 프로젝트명</label
+                  >
+                  <select
+                    class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 bm-2 shadow-xs placeholder:text-body"
+                    v-model="filteredList.parentProjectId"
+                  >
+                    <option value="">전체</option>
+                    <option
+                      :value="small.projectId"
+                      v-for="small in filterInfo.smallProjectList"
+                    >
+                      {{ small.projectName }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex flex-row-reverse gap-2 mt-2">
+                <button type="button" @click="filteringList()" class="btn-navy">
+                  검색
+                </button>
+                <button type="button" @click="resetForm()" class="btn-red">
+                  초기화
+                </button>
+              </div>
+            </form>
           </div>
-          <div class="flex flex-row-reverse gap-2 mt-2">
-            <button type="button" @click="filteringList()" class="btn-navy">
-              검색
-            </button>
-            <button type="button" @click="resetForm()" class="btn-red">
-              초기화
-            </button>
-          </div>
-        </form>
-      </div>
-      <div
-        class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl m-8 mt-4"
-      >
-        <div>
-          <div class="flex flex-row-reverse">
-            <span class="member-role-badge my-2">총 {{ listLength }}건 </span>
-          </div>
-          <!-- Table -->
-          <table class="table-auto w-full dark:text-gray-300">
-            <!-- Table header -->
-            <thead
-              class="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs"
-            >
-              <tr>
-                <th class="p-2" v-for="th in thList">
-                  <div class="text-center">{{ th }}</div>
-                </th>
-              </tr>
-            </thead>
-            <!-- Table body -->
-            <tbody
-              class="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60"
-            >
-              <tr v-if="listLoading">
-                <td :colspan="thList.length" class="text-center py-10">
-                  <h5 class="text-gray-500">⌛로딩중입니다.</h5>
-                </td>
-              </tr>
-              <template v-if="!listLoading && listLength > 0">
-                <tr
-                  v-for="task in taskList"
-                  :key="task.id"
-                  @click="goDetail(task.taskId)"
+          <div
+            class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mt-4"
+          >
+            <div>
+              <div class="flex flex-row-reverse">
+                <span class="member-role-badge my-2"
+                  >총 {{ listLength }}건
+                </span>
+              </div>
+              <!-- Table -->
+              <table class="table-auto w-full dark:text-gray-300">
+                <!-- Table header -->
+                <thead
+                  class="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs"
                 >
-                  <td class="p-2 w-80">
-                    <div class="text-left">
-                      {{ task.title }}
-                    </div>
-                  </td>
-                  <td class="p-2">
-                    <div class="text-center">
-                      {{ task.userName }}
-                    </div>
-                  </td>
-                  <td class="p-2 w-24">
-                    <div class="text-center">
-                      {{ task.statusName }}
-                    </div>
-                  </td>
-                  <td class="p-2 w-18">
-                    <div class="text-center">
-                      {{ task.typeName }}
-                    </div>
-                  </td>
-                  <td class="p-2 w-18">
-                    <div class="text-center">
-                      {{ task.codeName }}
-                    </div>
-                  </td>
-                  <td class="p-2">
-                    <div class="progress-wrap">
-                      <el-progress
-                        :percentage="task.progressRate"
-                        :stroke-width="8"
-                        :show-text="false"
-                        color="#2563eb"
-                        style="flex: 1"
-                      />
-                      <span class="progress-text"
-                        >{{ task.progressRate }}%</span
-                      >
-                    </div>
-                  </td>
-                  <td class="p-2">
-                    <div class="text-center">
-                      {{ task.startDate }}
-                    </div>
-                  </td>
-                  <td class="p-2">
-                    <div class="text-center">
-                      {{ task.dueDate }}
-                    </div>
-                  </td>
-                  <td class="p-2 w-80">
-                    <div class="text-left">
-                      {{ task.projectName }}
-                    </div>
-                  </td>
-                </tr>
-                <!-- <el-popover :visible="visible" placement="top" :width="180">
+                  <tr>
+                    <th class="p-2" v-for="th in thList">
+                      <div class="text-center">{{ th }}</div>
+                    </th>
+                  </tr>
+                </thead>
+                <!-- Table body -->
+                <tbody
+                  class="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60"
+                >
+                  <tr v-if="listLoading">
+                    <td :colspan="thList.length" class="text-center py-10">
+                      <h5 class="text-gray-500">⌛로딩중입니다.</h5>
+                    </td>
+                  </tr>
+                  <template v-if="!listLoading && listLength > 0">
+                    <tr
+                      v-for="task in taskList"
+                      :key="task.id"
+                      @click="goDetail(task.taskId)"
+                    >
+                      <td class="p-2 w-80">
+                        <div class="text-left">
+                          {{ task.title }}
+                        </div>
+                      </td>
+                      <td class="p-2">
+                        <div class="text-center">
+                          {{ task.userName }}
+                        </div>
+                      </td>
+                      <td class="p-2 w-24">
+                        <div class="text-center">
+                          {{ task.statusName }}
+                        </div>
+                      </td>
+                      <td class="p-2 w-18">
+                        <div class="text-center">
+                          {{ task.typeName }}
+                        </div>
+                      </td>
+                      <td class="p-2 w-18">
+                        <div class="text-center">
+                          {{ task.codeName }}
+                        </div>
+                      </td>
+                      <td class="p-2">
+                        <div class="progress-wrap">
+                          <el-progress
+                            :percentage="task.progressRate"
+                            :stroke-width="8"
+                            :show-text="false"
+                            color="#2563eb"
+                            style="flex: 1"
+                          />
+                          <span class="progress-text"
+                            >{{ task.progressRate }}%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="p-2">
+                        <div class="text-center">
+                          {{ task.startDate }}
+                        </div>
+                      </td>
+                      <td class="p-2">
+                        <div class="text-center">
+                          {{ task.dueDate }}
+                        </div>
+                      </td>
+                      <td class="p-2 w-80">
+                        <div class="text-left">
+                          {{ task.projectName }}
+                        </div>
+                      </td>
+                    </tr>
+                    <!-- <el-popover :visible="visible" placement="top" :width="180">
                   <p>Are you sure to delete this?</p>
                   <div style="text-align: right; margin: 0">
                     <el-button size="small" text @click="visible = false"
@@ -299,28 +300,30 @@
                     <el-button @click="visible = true">Delete</el-button>
                   </template>
                 </el-popover> -->
-              </template>
+                  </template>
 
-              <tr v-else-if="listLoading == false && listLength == 0">
-                <td :colspan="thList.length" class="text-center py-10">
-                  <h5 class="text-gray-500">업무가 존재하지 않습니다</h5>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="pagination-wrap">
-            <el-pagination
-              :current-page="nowPage"
-              :page-size="listNum"
-              :total="listLength"
-              :hide-on-single-page="real"
-              @current-change="handleCurrentChange"
-              layout="prev, pager, next"
-              background
-            />
+                  <tr v-else-if="listLoading == false && listLength == 0">
+                    <td :colspan="thList.length" class="text-center py-10">
+                      <h5 class="text-gray-500">업무가 존재하지 않습니다</h5>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="pagination-wrap">
+                <el-pagination
+                  :current-page="nowPage"
+                  :page-size="listNum"
+                  :total="listLength"
+                  :hide-on-single-page="real"
+                  @current-change="handleCurrentChange"
+                  layout="prev, pager, next"
+                  background
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   </div>
 </template>
@@ -329,6 +332,7 @@
 import { onBeforeMount, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
@@ -411,7 +415,6 @@ onBeforeMount(async () => {
 const handleCurrentChange = async (val) => {
   console.log("페이징", val);
   nowPage.value = val;
-  listLoading.value = true;
 
   let start = (val - 1) * listNum.value + 1;
   let end = val * listNum.value;
@@ -423,15 +426,37 @@ const handleCurrentChange = async (val) => {
     endNum: end,
     ...filteredList.value,
   };
-  await taskStore.getAllTask(obj);
-  taskList.value = taskStore.taskAllList;
-  listLength.value =
-    taskList.value.length == 0 ? 0 : taskList.value[0].taskCounts;
+  Swal.fire({
+    title: "잠시만 기다려주세요...",
+    html: "데이터를 불러오는 중입니다.",
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    showCancelButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+
+  try {
+    await taskStore.getAllTask(obj);
+    Swal.close();
+
+    taskList.value = taskStore.taskAllList;
+
+    listLength.value =
+      taskList.value.length == 0 ? 0 : taskList.value[0].taskCounts;
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "알수 없는 이유로 데이터를 가져오지 못했습니다.",
+    });
+  } finally {
+    Swal.close();
+  }
 
   if (listLength.value > 0) {
     await changeDateType(taskList.value);
   }
-  listLoading.value = false;
 };
 
 // 업무생성 버튼
@@ -487,6 +512,40 @@ const changeDateType = (val) => {
 };
 </script>
 <style scoped>
+/* 상단 */
+.proj-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.proj-title-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proj-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proj-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.proj-period {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
 /* 하단 버튼 */
 .btn-navy {
   height: 38px;

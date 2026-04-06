@@ -291,9 +291,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, defineProps, defineEmits } from "vue";
 import { useRoleStore } from "../stores/roleSJW";
-import { useAuthStore } from "../stores/auth";
-import { useProjectKJHStore } from "../stores/projectKJH";
-import api from "../utils/api";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -304,8 +301,6 @@ const props = defineProps({
 const emit = defineEmits(["memberInsert"]);
 
 const roleStore = useRoleStore();
-const authStore = useAuthStore();
-const projectStore = useProjectKJHStore();
 
 // ── 상태 변수 ──
 const form = ref({
@@ -548,26 +543,8 @@ const memberInserting = async () => {
   reset();
 };
 onMounted(async () => {
-  await projectStore.getGeneralGroupMem();
-  allUsers.value = projectStore.generalGroupMem;
-
   await roleStore.getRoleList();
   roles.value = roleStore.roleList;
-
-  // 프로젝트 그룹 멤버들 조회
-  await projectStore.getProjectGroupMem();
-  allPjGroupMem.value = projectStore.projectGroupMem;
-
-  props.memberList.forEach((mem) => {
-    // 이미 있는 구성원 제외
-    allUsers.value = allUsers.value.filter((user) => {
-      return user.userId != mem.userId;
-    });
-
-    allPjGroupMem.value = allPjGroupMem.value.filter((user) => {
-      return !(user.userId == mem.userId && user.roleId == mem.roleId);
-    });
-  });
 });
 </script>
 <style>
