@@ -16,12 +16,20 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <!-- 페이지 타이틀 -->
-          <div class="mb-6">
-            <h1
-              class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
-            >
-              업무 상세
-            </h1>
+          <div class="mb-6 proj-title-row">
+            <div class="proj-title-left">
+              <h2
+                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
+              >
+                업무 상세
+              </h2>
+              <div class="proj-name-row">
+                <span class="proj-name">【 {{ taskInfo.projectName }} 】</span>
+                <span class="proj-period">
+                  {{ taskInfo.startDate }} - {{ taskInfo.dueDate }}
+                </span>
+              </div>
+            </div>
           </div>
 
           <!-- ────────── 상단: 업무 통합 현황 + 우측 카드 ────────── -->
@@ -202,7 +210,7 @@
                         prop="taskDesc"
                         label="작업 내용"
                         min-width="550"
-                        align="center"
+                        align="left"
                       />
                     </el-table>
                     <div class="pagination-wrap">
@@ -250,27 +258,11 @@
                   <span class="card-title">소요시간</span>
                 </div>
                 <div class="task-body">
-                  <div class="h-20 place-self-center leading-20">
+                  <div class="h-32 place-self-center leading-20">
                     <span class="total-number"
                       >{{ taskInfo.actualHours }} 시간</span
                     >
                   </div>
-                  <ul class="dot-list">
-                    <li
-                      v-for="item in timeEntriesList"
-                      :key="item.label"
-                      class="dot-item"
-                    >
-                      <div class="dot-left">
-                        <span
-                          class="dot"
-                          :style="{ backgroundColor: item.color }"
-                        />
-                        <span class="dot-label">{{ item.label }}</span>
-                      </div>
-                      <span class="dot-count">{{ item.count }}</span>
-                    </li>
-                  </ul>
                 </div>
               </div>
 
@@ -360,10 +352,14 @@ onBeforeMount(async () => {
   await taskStore.getTaskById(taskId.value);
 
   taskInfo.value = { ...taskStore.taskDetail };
+  taskInfo.value.createdAt = taskInfo.value.createdAt.substr(0, 10);
 
   // 상위 프로젝트가 없을 때 구분
   if (taskInfo.value.parentProjectName != null) {
-    taskPjList.value = [taskInfo.value.parentProjectName, taskInfo.projectName];
+    taskPjList.value = [
+      taskInfo.value.parentProjectName,
+      taskInfo.value.projectName,
+    ];
   } else {
     taskPjList.value = [taskInfo.value.projectName];
   }
@@ -549,6 +545,39 @@ const cellStyle = () => ({
 }
 
 /* ── 나의 업무 현황 / 새 소식 ── */
+
+.proj-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.proj-title-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.proj-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proj-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.proj-period {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
 .progress-body {
   padding: 16px 20px;
   display: flex;
@@ -750,5 +779,11 @@ const cellStyle = () => ({
 /* 진척도 */
 :depp(.demo-progress .el-progress--circle) {
   margin-right: 15px;
+}
+:deep(.el-table thead th:nth-child(5)) {
+  padding-left: 15px;
+}
+:deep(.el-table .el-table__cell:nth-child(5)) {
+  padding-left: 15px;
 }
 </style>

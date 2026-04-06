@@ -25,7 +25,7 @@ public interface TaskMapperKJH {
   public int getSumTimeById(Integer id);
 
   // 소요시간 등록 건 조회(소요시간 등록 후)
-  public String getRecentRegisteredTime();
+  public String getRecentRegisteredTime(Integer id);
 
   // 소요시간 등록으로 인한 합 수정
   public int modifyActualTime(Integer hours, Integer id);
