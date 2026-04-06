@@ -41,6 +41,7 @@
         u.user_name,
         t2.type_name,
         t.progress_rate,
+        t.actual_hours,
         t.start_date,
         t.due_date
         FROM tasks t

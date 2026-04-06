@@ -230,15 +230,22 @@
                 </div>
               </div>
             </div>
-            <div class="flex justify-between">
-              <button @click="goBack" class="btn-navy">← 목록으로</button>
-              <div class="flex gap-2">
-                <button @click="resetForm" class="btn-red">초기화</button>
-                <button @click="handleSubmit" class="btn-green">
-                  수정 완료
-                </button>
-              </div>
+          <!-- 하위업무 생성 버튼 - 반려+담당자일 때만 -->
+          <div class="flex justify-between">
+            <button @click="goBack" class="btn-navy">← 목록으로</button>
+            <div class="flex gap-2">
+              <!-- ✅ 하위업무 생성 버튼 -->
+              <button
+                v-if="canCreateSubTask"
+                @click="goCreateSubTask"
+                class="btn-sub"
+              >
+                + 하위업무 생성
+              </button>
+              <button @click="resetForm" class="btn-red" :disabled="isTerminated">초기화</button>
+              <button @click="handleSubmit" class="btn-green" :disabled="isTerminated">수정 완료</button>
             </div>
+          </div>
           </div>
         </div>
       </main>
@@ -248,6 +255,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { computed } from "vue";
 import Swal from "sweetalert2";
 import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
@@ -285,6 +293,28 @@ const {
 onMounted(async () => {
   await store.initEdit(route.params.taskId);
 });
+
+// 현재 로그인 유저가 담당자인지
+const isAssignee = computed(() =>
+  Number(form.value.assigneeUserId) === Number(authStore.user?.userId || authStore.user?.id)
+);
+
+// 반려(4) + 담당자일 때만 하위업무 버튼 노출
+const canCreateSubTask = computed(
+  () => Number(form.value.taskStatusId) === 4 && isAssignee.value
+);
+
+// 종료(6) 시 전체 폼 잠금
+const isTerminated = computed(() => Number(form.value.taskStatusId) === 6);
+
+const goCreateSubTask = () => {
+  router.push({
+    name: "taskCreate",
+    params: { projectId: form.value.subProjectId || form.value.projectId },
+    query: { parentTaskId: form.value.taskId },
+  });
+};
+
 
 const handleSubmit = async () => {
   const taskId = route.params.taskId;
@@ -333,6 +363,22 @@ const goBack = () => router.back();
 }
 :deep(textarea.input) {
   border-radius: 10px !important;
+}
+.btn-sub {
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #7c3aed;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+}
+.btn-sub:hover {
+  background: #6d28d9;
 }
 .btn-select {
   height: 38px;
