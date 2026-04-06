@@ -7,8 +7,8 @@
       >
         <!-- 로고 -->
         <div class="flex items-center gap-2">
-          <div class="w-15 h-10 rounded-lg flex items-center justify-center">
-            <img src="../images/comPath.png" alt="ComPath" />
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+            <img src="../images/whiteBgComPath.png" alt="ComPath" />
           </div>
           <span class="text-white font-semibold text-lg tracking-tight"
             >ComPath</span

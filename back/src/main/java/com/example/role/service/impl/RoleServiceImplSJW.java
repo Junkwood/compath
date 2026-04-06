@@ -34,25 +34,74 @@ public class RoleServiceImplSJW implements RoleServiceSJW {
     public List<PermissionDTOSJW> getAllPermission() {
         return roleMapper.getAllPermission();
     }
+
     @Transactional
     @Override
     public RoleDTOSJW registerRole(RoleDTOSJW role) {
-        roleMapper.registerRole(role);
+        Integer result = roleMapper.registerRole(role);
+        if (result > 0) {
+            Integer roleId = role.getRoleId();
+            List<Integer> permissionIds = role.getPermissionIds();
+            if (permissionIds != null) {
+                permissionIds.forEach(permissionId -> {
+                    PermissionDTOSJW permission = new PermissionDTOSJW();
+                    permission.setRoleId(roleId);
+                    permission.setPermissionId(permissionId);
+                    roleMapper.registerRolePermission(permission);
+                });
+            }
+
+        }
         return role;
     }
+
     @Transactional
     @Override
     public RoleDTOSJW modifyRole(RoleDTOSJW role) {
+        // 해당 role_id의 기존 role_permission 다 삭제
         roleMapper.deleteRolePermissionByRoleId(role.getRoleId());
-        //수정하는 매퍼 실행
+        //roles수정하는 매퍼 실행
+        Integer result = roleMapper.modifyRole(role);
+        //role_permission 재등록
+        if (result > 0) {
+            Integer roleId = role.getRoleId();
+            List<Integer> permissionIds = role.getPermissionIds();
+            if (permissionIds != null) {
+                permissionIds.forEach(permissionId -> {
+                    PermissionDTOSJW permission = new PermissionDTOSJW();
+                    permission.setRoleId(roleId);
+                    permission.setPermissionId(permissionId);
+                    roleMapper.registerRolePermission(permission);
+                });
+            }
+        }
         return role;
     }
+
     @Transactional
     @Override
     public Boolean deleteRole(Integer roleId) {
         roleMapper.deleteRolePermissionByRoleId(roleId);
         Integer result = roleMapper.deleteRoleById(roleId);
-        if(result>0){
+        if (result > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Boolean modifyRoleActivation(RoleDTOSJW role) {
+        RoleDTOSJW roleDTO = new RoleDTOSJW();
+        roleDTO.setRoleId(role.getRoleId());
+        log.error(role.toString());
+        if (role.getIsActive().equals("Y")) {
+            roleDTO.setIsActive("O1");
+        } else {
+            roleDTO.setIsActive("O2");
+        }
+        log.error(roleDTO.toString());
+        Integer result = roleMapper.modifyRole(roleDTO);
+        if (result > 0) {
             return true;
         }
         return false;

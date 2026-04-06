@@ -14,5 +14,14 @@ export const useRoleStore = defineStore("role", {
     async getPermissionList() {
       return await api.get("/permission/list");
     },
+    async changeRoleStatus(roleId, isActive) {
+      console.log(roleId, isActive);
+      const response = await api.put("/role/activation", {
+        roleId: roleId,
+        isActive: isActive,
+      });
+      const result = response.data;
+      return result;
+    },
   },
 });

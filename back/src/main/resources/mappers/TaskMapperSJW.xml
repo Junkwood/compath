@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.task.mapper.TaskMapperSJW">
+    <select id="getTaskStatuses">
+        SELECT
+        TASK_STATUS_ID,
+        STATUS_NAME,
+        DESCRIPTION,
+        active(IS_ACTIVE) as IS_ACTIVE,
+        CREATED_AT,
+        UPDATED_AT,
+        CREATED_BY,
+        EDITOR_USER_ID,
+        active(IS_FINAL) as IS_FINAL
+        FROM task_statuses
+    </select>
+    <update id="modifyTaskStatus">
+        UPDATE task_statuses
+        <set>
+            <if test="statusName !=null and statusName != ''">
+                status_name=#{statusName},
+            </if>
+            <if test="description !=null and description != ''">
+                description=#{description},
+            </if>
+            <if test="isActive !=null and isActive != ''">
+                is_active=#{isActive},
+            </if>
+            <if test="isFinal !=null and isFinal != ''">
+                is_final=#{isFinal},
+            </if>
+            EDITOR_USER_ID = #{userId},
+            updated_at = SYSDATE
+        </set>
+        WHERE task_status_id = #{taskStatusId}
+    </update>
+    <insert id="registerTaskStatus">
+        INSERT INTO task_statuses(
+        )
+        VALUES(
+        )
+
+    </insert>
+</mapper>

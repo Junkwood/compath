@@ -18,18 +18,27 @@ public class RoleControllerSJW {
     public List<RoleDTOSJW> getAllRoles() {
         return roleService.getAll();
     }
+
     @GetMapping("/api/permission/list")
     public List<PermissionDTOSJW> getAllPermission() {
         return roleService.getAllPermission();
     }
+
     @PostMapping("/api/role")
     public RoleDTOSJW registerRole(@RequestBody RoleDTOSJW role) {
         return roleService.registerRole(role);
     }
+
     @PutMapping("/api/role")
-        public RoleDTOSJW modifyRole(@RequestBody RoleDTOSJW role) {
+    public RoleDTOSJW modifyRole(@RequestBody RoleDTOSJW role) {
         return roleService.modifyRole(role);
     }
+
+    @PutMapping("/api/role/activation")
+    public Boolean modifyRoleActivation(@RequestBody RoleDTOSJW role) {
+        return roleService.modifyRoleActivation(role);
+    }
+
     @DeleteMapping("/api/role")
     public Boolean deleteRole(Integer roleId) {
         return roleService.deleteRole(roleId);

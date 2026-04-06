@@ -184,11 +184,11 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive, nextTick } from "vue";
-import axios from "axios";
 import Swal from "sweetalert2"; // 💡 SweetAlert2 Import
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useRoleStore } from "../stores/roleSJW";
+import api from "../utils/api";
 
 const sidebarOpen = ref(false);
 const roleStore = useRoleStore();
@@ -407,10 +407,8 @@ const handleEdit = (row) => {
 
 // ── 활성화 토글 ──
 const handleToggle = async (row) => {
-  try {
-    // TODO: PUT /api/role/:roleId/status
-    await roleStore.changeRoleStatus(row.roleId);
-  } catch {
+  const result = await roleStore.changeRoleStatus(row.roleId, row.isActive);
+  if (!result) {
     row.isActive = row.isActive === "Y" ? "N" : "Y";
     // 💡 에러 알림 SweetAlert2 적용
     Swal.fire({
@@ -442,7 +440,7 @@ const handleSubmit = async () => {
 
   submitting.value = true;
   try {
-    const payload = {
+    let payload = {
       roleName: form.roleName,
       description: form.description,
       isActive: form.isActive,
@@ -451,10 +449,12 @@ const handleSubmit = async () => {
 
     if (isEditMode.value) {
       // PUT /api/role/:roleId → { roleName, isActive, permissionIds }
-      await axios.put(`/api/role/${form.roleId}`, payload);
+      payload.roleId = form.roleId;
+      await api.put("/role", payload);
     } else {
       // POST /api/role → { roleName, isActive, permissionIds }
-      await axios.post("/api/role", payload);
+      console.log(payload);
+      await api.post("/role", payload);
     }
 
     modalVisible.value = false;

@@ -48,14 +48,64 @@
         -- 권한이 없는 역할도 가져와야 하므로 무조건 LEFT JOIN
         LEFT JOIN role_permissions rp ON r.ROLE_ID = rp.ROLE_ID
         LEFT JOIN permissions p ON rp.PERMISSION_ID = p.PERMISSION_ID
-
-        WHERE r.IS_ACTIVE = 'O1'
         ORDER BY r.ROLE_ID, p.PERMISSION_ID
     </select>
     <insert id="registerRole" parameterType="com.example.role.dto.RoleDTOSJW">
-
+        <selectKey keyProperty="roleId" resultType="int" order="BEFORE">
+            SELECT role_seq.NEXTVAL FROM dual
+        </selectKey>
+    INSERT INTO roles (
+        ROLE_ID,
+        ROLE_NAME,
+        DESCRIPTION,
+        IS_ACTIVE,
+        CREATED_AT
+        )
+        VALUES (
+        #{roleId},
+        #{roleName},
+        #{description},
+        'O1',
+        SYSDATE
+        )
     </insert>
-    <select id="getAllPermission" parameterType="com.example.role.dto.PermissionDTOSJW">
+    <insert id="registerRolePermission" parameterType="com.example.role.dto.PermissionDTOSJW">
+        <selectKey keyProperty="rolePermissionId" resultType="int" order="BEFORE">
+        SELECT role_permissions_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO role_permissions(
+        ROLE_PERMISSION_ID,
+        ROLE_ID,
+        PERMISSION_ID,
+        CREATED_AT
+        )
+        VALUES (
+        #{rolePermissionId},
+        #{roleId},
+        #{permissionId},
+        SYSDATE
+        )
+    </insert>
+    <update id="modifyRole" parameterType="com.example.role.dto.RoleDTOSJW">
+        UPDATE roles
+        <set>
+            <if test="roleName != null and roleName != ''">
+                role_name = #{roleName},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="isActive != null and isActive != ''">
+                is_active = #{isActive},
+            </if>
+            <if test="userId != null">
+                editor_user_id = #{userId},
+            </if>
+            updated_at = SYSDATE
+        </set>
+        WHERE role_id = #{roleId}
+    </update>
+    <select id="getAllPermission">
         select * from permissions
     </select>
     <delete id="deleteRolePermissionByRoleId">
