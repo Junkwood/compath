@@ -289,12 +289,15 @@ onMounted(async () => {
 const handleSubmit = async () => {
   const taskId = route.params.taskId;
   const editorUserId = authStore.user?.userId || authStore.user?.id;
-
+  const projectId = form.value.projectId; 
   try {
     const isSuccess = await store.updateTask(taskId, editorUserId);
 
     if (isSuccess) {
-      router.push("/tasks");
+      router.push({
+        name: "taskDetail",
+        params: { projectId: projectId, taskId: taskId },
+      });
     }
   } catch (e) {
     Swal.fire("실패", e.message, "error");
@@ -308,10 +311,8 @@ const goBack = () => router.back();
 :deep(.input) {
   border-radius: 10px !important;
   border: 1px solid #e2e8f0 !important;
-  background: #f8fafc !important;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  background: #ffffff !important;  /* ← 흰색으로 */
+  transition: border-color 0.2s, box-shadow 0.2s;
   font-size: 13px;
 }
 :deep(.input:focus) {
@@ -321,7 +322,7 @@ const goBack = () => router.back();
   outline: none;
 }
 :deep(.input:disabled) {
-  background: #f1f5f9 !important;
+  background: #f1f5f9 !important;  
   color: #475569 !important;
 }
 :deep(select.input) {
