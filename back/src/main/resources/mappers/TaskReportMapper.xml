@@ -52,10 +52,13 @@
                 AND (t.project_id = #{projectId} OR p.parent_project_id = #{projectId})
             </if>
             <if test="title != null and title != ''">
-                AND t.title LIKE CONCAT('%', #{title}, '%')
+                AND t.title LIKE '%' || #{title} || '%'
             </if>
             <if test="assigneeUserId != null">
                 AND t.assignee_user_id = #{assigneeUserId}
+            </if>
+            <if test="taskTypeId != null">
+                AND t.task_type_id = #{taskTypeId}
             </if>
             <if test="startDate != null">
                 AND t.start_date <![CDATA[ >= ]]> #{startDate}

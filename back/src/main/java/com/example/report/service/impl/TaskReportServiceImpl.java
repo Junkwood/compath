@@ -6,6 +6,8 @@ import com.example.report.service.TaskReportService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.github.pagehelper.PageHelper;
+
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ public class TaskReportServiceImpl implements TaskReportService {
 
     @Override
     public List<TaskReportDto> getReportAll(TaskReportDto dto) {
+//        PageHelper.startPage(page, size);
         return taskReportMapper.getReportAll(dto);
     }
 }
