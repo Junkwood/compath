@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class GroupMemListDtoJDJ {
     private String userName;
-    private String groupName;
-
+    private String roleName;
+    private Integer userId;
 }

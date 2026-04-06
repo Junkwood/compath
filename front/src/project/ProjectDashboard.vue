@@ -188,14 +188,14 @@
                     >
                       <div
                         class="member-avatar"
-                        :style="{ backgroundColor: getAvatarColor(member.groupName) }"
+                        :style="{ backgroundColor: getAvatarColor(member.roleName) }"
                       >
                         {{ member.userName?.charAt(0) }}
                       </div>
                       <div class="member-info">
                         <span class="member-name">{{ member.userName }}</span>
-                        <span class="member-role-badge" :class="getRoleClass(member.groupName)">
-                          {{ member.groupName }}
+                        <span class="member-role-badge" :class="getRoleClass(member.roleName)">
+                          {{ member.roleName }}
                         </span>
                       </div>
                     </div>
@@ -254,6 +254,9 @@
     :isEditMode="isMemoEditMode"
     @submitted="handleMemoSubmitted"
   />
+
+  <ProjectSubCreateModal v-model="createSubProjectModalOpen" />
+
 </template>
 
 <script setup>
@@ -266,11 +269,18 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectMemoModal from "../project/ProjectMemoModal.vue";
 import { useAuthStore } from "../stores/auth";
+import ProjectSubCreateModal from '../project/ProjectSubCreateModal.vue' 
 
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(false);
+
+const createSubProjectModalOpen = ref(false)
+
+const handleAddSubProject = () =>{
+  createSubProjectModalOpen.value=true;
+}
 
 // ── 업무 현황  ────────────────────────────
 const taskSummaryData = ref([]);
@@ -331,6 +341,7 @@ const handleEditMemo = (memo) => {
   memoModalVisible.value = true;
 };
 
+//메모 목록조회
 const fetchMemoList = async () => {
   try {
     const projectId = route.params.projectId;
@@ -346,6 +357,7 @@ const fetchMemoList = async () => {
   }
 };
 
+//메모클래스 (색상)
 const getMemoColorClass = (index) => {
   const colorClasses = ["memo-blue", "memo-yellow", "memo-pink", "memo-green"];
   return colorClasses[index % colorClasses.length];
@@ -504,7 +516,7 @@ const handleProjectSetting = () => {
 
 const handleViewTasks = () => {};
 const handleNoticeClick = () => {};
-const handleAddSubProject = () => {};
+
 
 //하위프로젝트 테이블 행 클릭시 하위프로젝트 대쉬보드로 진입
 const handleSubProjectRowClick = (row) => {
@@ -532,21 +544,21 @@ const subCellStyle = () => ({
   height: "36px",
 });
 
-const getRoleClass = (groupName) => {
-  if (!groupName) return "role-dev";
-  if (groupName.includes("PM")) return "role-pm";
-  if (groupName.includes("PL")) return "role-pl";
-  if (groupName.includes("QA")) return "role-qa";
-  if (groupName.includes("관리")) return "role-mgr";
+const getRoleClass = (roleName) => {
+  if (!roleName) return "role-dev";
+  if (roleName.includes("PM")) return "role-pm";
+  if (roleName.includes("PL")) return "role-pl";
+  if (roleName.includes("QA")) return "role-qa";
+  if (roleName.includes("관리")) return "role-mgr";
   return "role-dev";
 };
 
-const getAvatarColor = (groupName) => {
-  if (!groupName) return "#10b981";
-  if (groupName.includes("PM")) return "#3b82f6";
-  if (groupName.includes("PL")) return "#8b5cf6";
-  if (groupName.includes("QA")) return "#ef4444";
-  if (groupName.includes("관리")) return "#6366f1";
+const getAvatarColor = (roleName) => {
+  if (!roleName) return "#10b981";
+  if (roleName.includes("PM")) return "#3b82f6";
+  if (roleName.includes("PL")) return "#8b5cf6";
+  if (roleName.includes("QA")) return "#ef4444";
+  if (roleName.includes("관리")) return "#6366f1";
   return "#10b981";
 };
 

@@ -249,7 +249,6 @@ try {
   }
 };
 
-
 const loadingProjects=ref(false);
 const projectError = ref('');
 const projectList = ref([]);

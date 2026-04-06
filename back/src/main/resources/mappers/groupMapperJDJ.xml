@@ -2,16 +2,20 @@
 <mapper namespace="com.example.group.mapper.GroupMapperJDJ">
     <select id="getGroupMemList" resultType="GroupMemListDtoJDJ">
         SELECT
-            U.USER_NAME,
-            G.GROUP_NAME
-        FROM USERS U
-        JOIN PROJECT_MEMBERS PM
+            U.USER_ID AS userId,
+            U.USER_NAME AS userName,
+            LISTAGG(R.ROLE_NAME, ', ') WITHIN GROUP (ORDER BY R.ROLE_NAME) AS roleName
+        FROM PROJECT_MEMBERS PM
+        JOIN USERS U
             ON U.USER_ID = PM.USER_ID
-        JOIN GROUP_MEMBERS GM
-            ON GM.USER_ID = U.USER_ID
-        JOIN GROUPS G
-            ON G.GROUP_ID = GM.GROUP_ID
+        JOIN PROJECT_MEMBER_ROLES PMR
+            ON PMR.PROJECT_MEMBER_ID = PM.PROJECT_MEMBER_ID
+        JOIN ROLES R
+            ON R.ROLE_ID = PMR.ROLE_ID
         WHERE PM.PROJECT_ID = #{projectId}
+            AND PM.IS_ACTIVE = 'O1'
+        GROUP BY U.USER_ID, U.USER_NAME
+        ORDER BY U.USER_ID
     </select>
 
 </mapper>

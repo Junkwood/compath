@@ -23,7 +23,7 @@
         <div class="row-fields">
           <el-input v-model="form.projectCode" placeholder="" style="flex: 1" />
           <div class="pl-field">
-            <span class="pl-label">총괄PL</span>
+            <span class="pl-label">하위PL</span>
             <el-select
               v-model="form.plUserId"
               placeholder="선택"
