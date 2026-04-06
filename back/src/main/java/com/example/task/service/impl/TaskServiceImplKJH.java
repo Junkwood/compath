@@ -2,15 +2,13 @@ package com.example.task.service.impl;
 
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
-import com.example.task.entity.TaskEntityKJH;
 import com.example.task.mapper.TaskMapperKJH;
 import com.example.task.service.TaskServiceKJH;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -20,10 +18,31 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
     private final TaskMapperKJH mapper;
 
     @Override
-    public List<TaskListDTOKJH> getAllTasks(String id, String pid) {
-        List<TaskEntityKJH> list = mapper.getAllTasks(id, pid);
+    public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto) {
+        List<TaskListDTOKJH> list = mapper.getAllTasks(dto);
+        if(!list.isEmpty()) {
+            return list;
+        } else {
+            return Collections.emptyList();
+        }
 
-        return list.stream().map(TaskListDTOKJH::fromTaskEntity).collect(Collectors.toList());
+    }
+
+    // 필터링 조건 조회(PL/SQL)
+    public Map<String, Object> getAllFiterInfo(Integer id) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("projectId", id);
+        mapper.getAllFilterList(params);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("taskTitleList", params.get("taskTitleList"));
+        result.put("userNameList", params.get("userNameList"));
+        result.put("taskTypeList", params.get("taskTypeList"));
+        result.put("taskStatusList", params.get("taskStatusList"));
+        result.put("taskPriorityList", params.get("taskPriorityList"));
+        result.put("smallProjectList", params.get("smallProjectList"));
+
+        return result;
     }
 
     @Override
@@ -73,4 +92,6 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
     public List<TaskDetailDTOKJH> getTimeLog(Integer id) {
         return mapper.getTimeLog(id);
     }
+
+    //
 }

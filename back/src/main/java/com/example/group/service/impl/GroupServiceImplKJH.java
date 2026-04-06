@@ -19,7 +19,13 @@ public class GroupServiceImplKJH implements GroupServiceKJH {
     private final GroupMapperKJH mapper;
 
     @Override
-    public List<GroupDTOKJH> getAllgroupMembers(Integer id, String name) {
-        return mapper.getAllgroupMembers(id, name);
+    public List<GroupDTOKJH> getAllForGroup() {
+        return mapper.getAllForGroup();
+    }
+
+    // 프로젝트 그룹 멤버들
+    @Override
+    public List<GroupDTOKJH> getProjectgroupMembers() {
+        return mapper.getProjectgroupMembers();
     }
 }

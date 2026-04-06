@@ -2,12 +2,12 @@ package com.example.task.controller;
 
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
-import com.example.task.entity.TaskEntityKJH;
 import com.example.task.service.TaskServiceKJH;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,9 +16,15 @@ public class TaskControllerKJH {
     private final TaskServiceKJH service;
 
     // 목록 조회
-    @GetMapping("/api/tasks/{id}")
-    public List<TaskListDTOKJH> getAllTasks(@PathVariable String id){
-        return service.getAllTasks(id, id);
+    @GetMapping("/api/tasks")
+    public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto){
+        return service.getAllTasks(dto);
+    }
+
+    // 필터링 조건 조회
+    @GetMapping("/api/tasksFilters/{id}")
+    public Map<String, Object> getAllFilterInfo(@PathVariable Integer id) {
+        return service.getAllFiterInfo(id);
     }
 
     // 프로젝트 이름 조회
@@ -50,4 +56,6 @@ public class TaskControllerKJH {
     public List<TaskDetailDTOKJH> getTaskActivityLogs(@PathVariable Integer id) {
         return service.getTimeLog(id);
     }
+
+
 }

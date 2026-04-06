@@ -1,6 +1,5 @@
 package com.example.report.controller;
 
-
 import com.example.report.dto.TaskReportDto;
 import com.example.report.service.TaskReportService;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +16,7 @@ public class TaskReportController {
 
     @ResponseBody
     @GetMapping("/taskReport")
-    public List<TaskReportDto> list (@ModelAttribute TaskReportDto dto){
-        return  taskReportService.getReportAll(dto);
+    public List<TaskReportDto> list(@ModelAttribute TaskReportDto dto) {
+        return taskReportService.getReportAll(dto);
     }
-
 }

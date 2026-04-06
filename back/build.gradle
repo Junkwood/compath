@@ -25,6 +25,9 @@ repositories {
 }
 
 dependencies {
+    //페이지 네이션
+    implementation 'com.github.pagehelper:pagehelper-spring-boot-starter:2.1.0'
+
     // Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
@@ -63,6 +66,8 @@ dependencies {
     // 테스트 환경에서도 시큐리티 기능을 쓰려면 추가
     testImplementation 'org.springframework.security:spring-security-test'
 }
+
+
 
 tasks.named('test') {
     useJUnitPlatform()

@@ -49,11 +49,14 @@
               >
               <select
                 class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.title"
+                v-model="filteredList.taskId"
               >
-                <option value="전체">전체</option>
-                <option :value="title" v-for="title in titleList">
-                  {{ title }}
+                <option value="">전체</option>
+                <option
+                  :value="title.taskId"
+                  v-for="title in filterInfo.taskTitleList"
+                >
+                  {{ title.title }}
                 </option>
               </select>
             </div>
@@ -65,11 +68,14 @@
               >
               <select
                 class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.user"
+                v-model="filteredList.assigneeUserId"
               >
-                <option value="전체">전체</option>
-                <option :value="userId" v-for="userId in assigneeUserIdList">
-                  {{ userId }}
+                <option value="">전체</option>
+                <option
+                  :value="user.assigneeUserId"
+                  v-for="user in filterInfo.userNameList"
+                >
+                  {{ user.userName }}
                 </option>
               </select>
             </div>
@@ -81,11 +87,14 @@
               >
               <select
                 class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.type"
+                v-model="filteredList.taskTypeId"
               >
-                <option value="전체">전체</option>
-                <option :value="type" v-for="type in taskTypeList">
-                  {{ type }}
+                <option value="">전체</option>
+                <option
+                  :value="type.taskTypeId"
+                  v-for="type in filterInfo.taskTypeList"
+                >
+                  {{ type.typeName }}
                 </option>
               </select>
             </div>
@@ -97,11 +106,14 @@
               >
               <select
                 class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.status"
+                v-model="filteredList.taskStatusId"
               >
-                <option value="전체">전체</option>
-                <option :value="status" v-for="status in statusList">
-                  {{ status }}
+                <option value="">전체</option>
+                <option
+                  :value="status.taskStatusId"
+                  v-for="status in filterInfo.taskStatusList"
+                >
+                  {{ status.statusName }}
                 </option>
               </select>
             </div>
@@ -114,7 +126,7 @@
                 >시작일</label
               >
               <input
-                v-model="filteredList.start"
+                v-model="filteredList.startDate"
                 type="date"
                 class="input w-full"
               />
@@ -126,7 +138,7 @@
                 >종료일</label
               >
               <input
-                v-model="filteredList.end"
+                v-model="filteredList.endDate"
                 type="date"
                 class="input w-full"
               />
@@ -139,11 +151,14 @@
               >
               <select
                 class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                v-model="filteredList.priority"
+                v-model="filteredList.priorityCode"
               >
-                <option value="전체">전체</option>
-                <option :value="priority" v-for="priority in priorityList">
-                  {{ priority }}
+                <option value="">전체</option>
+                <option
+                  :value="priority.priorityCode"
+                  v-for="priority in filterInfo.taskPriorityList"
+                >
+                  {{ priority.codeName }}
                 </option>
               </select>
             </div>
@@ -155,11 +170,14 @@
               >
               <select
                 class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 bm-2 shadow-xs placeholder:text-body"
-                v-model="filteredList.small"
+                v-model="filteredList.parentProjectId"
               >
-                <option value="전체">전체</option>
-                <option :value="small" v-for="small in smallProjectList">
-                  {{ small }}
+                <option value="">전체</option>
+                <option
+                  :value="small.projectId"
+                  v-for="small in filterInfo.smallProjectList"
+                >
+                  {{ small.projectName }}
                 </option>
               </select>
             </div>
@@ -178,7 +196,7 @@
         class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl m-8 mt-4"
       >
         <div>
-          <div class="flex flex-row-reverse" v-if="filterList.length > 0">
+          <div class="flex flex-row-reverse">
             <span class="member-role-badge my-2">총 {{ listLength }}건 </span>
           </div>
           <!-- Table -->
@@ -202,9 +220,9 @@
                   <h5 class="text-gray-500">⌛로딩중입니다.</h5>
                 </td>
               </tr>
-              <template v-if="filterList.length > 0">
+              <template v-if="!listLoading && listLength > 0">
                 <tr
-                  v-for="task in filterList"
+                  v-for="task in taskList"
                   :key="task.id"
                   @click="goDetail(task.taskId)"
                 >
@@ -263,21 +281,38 @@
                     </div>
                   </td>
                 </tr>
+                <!-- <el-popover :visible="visible" placement="top" :width="180">
+                  <p>Are you sure to delete this?</p>
+                  <div style="text-align: right; margin: 0">
+                    <el-button size="small" text @click="visible = false"
+                      >cancel</el-button
+                    >
+                    <el-button
+                      size="small"
+                      type="primary"
+                      @click="visible = false"
+                    >
+                      confirm
+                    </el-button>
+                  </div>
+                  <template #reference>
+                    <el-button @click="visible = true">Delete</el-button>
+                  </template>
+                </el-popover> -->
               </template>
 
-              <tr v-else-if="filterList.length == 0 && listLoading == false">
+              <tr v-else-if="listLoading == false && listLength == 0">
                 <td :colspan="thList.length" class="text-center py-10">
                   <h5 class="text-gray-500">업무가 존재하지 않습니다</h5>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div class="pagination-wrap" v-if="workPageSize / listNum > 1">
+          <div class="pagination-wrap">
             <el-pagination
-              v-model:current-page="workPage"
               :current-page="nowPage"
               :page-size="listNum"
-              :total="workPageSize"
+              :total="listLength"
               :hide-on-single-page="real"
               @current-change="handleCurrentChange"
               layout="prev, pager, next"
@@ -311,12 +346,7 @@ const filterList = ref([]);
 let name = ref(); // 프로젝트명
 let projectStartDate = ref(); // 프로젝트 날짜
 let projectendDate = ref(); // 프로젝트 날짜
-let titleList = ref([]); // 업무명 목록
-let assigneeUserIdList = ref([]); // 담당자 목록
-let statusList = ref([]); // 업무 상태 목록
-let taskTypeList = ref([]); // 업무 유형 목록
-let priorityList = ref([]); // 우선순위 목록
-let smallProjectList = ref([]); // 하위프로젝트 목록
+const visible = ref(false);
 
 let thList = ref([
   "업무명",
@@ -330,20 +360,20 @@ let thList = ref([
   "프로젝트명",
 ]);
 
+let filterInfo = ref([]);
+
 let filteredList = ref({
-  title: "전체",
-  user: "전체",
-  type: "전체",
-  status: "전체",
-  start: null,
-  end: null,
-  priority: "전체",
-  small: "전체",
+  taskId: "",
+  assigneeUserId: "",
+  taskTypeId: "",
+  taskStatusId: "",
+  startDate: null,
+  endDate: null,
+  priorityCode: "",
+  parentProjectId: "",
 });
 
-const workPage = ref(1);
 const listNum = ref(10);
-const workPageSize = ref(0);
 const real = ref(true);
 const nowPage = ref(1);
 
@@ -357,224 +387,51 @@ onBeforeMount(async () => {
 
   // 프로젝트 이름 조회
   await taskStore.getProjectName(id);
-
-  name.value = taskStore.projectName.projectName;
-  projectStartDate.value = changeDate(taskStore.projectName.startDate);
-  projectendDate.value = changeDate(taskStore.projectName.startDate);
-  console.log("프로젝트명 ", name.value);
+  const projectInfo = taskStore.projectName;
+  name.value = projectInfo.projectName;
+  projectStartDate.value = projectInfo.startDate;
+  projectendDate.value = projectInfo.startDate;
 
   // 전체 목록 조회
-  await taskStore.getAllTask(id);
+  let obj = { projectId: id, parentProjectId: id };
+  await taskStore.getAllTask(obj);
 
   listLoading.value = false;
 
   taskList.value = taskStore.taskAllList;
+  listLength.value = taskList.value[0].taskCounts;
 
-  for (let i = 0; i < taskList.value.length; i++) {
-    // 날짜 형식 변경
-    if (taskList.value[i].startDate != null) {
-      taskList.value[i].startDate = changeDate(taskList.value[i].startDate);
-    } else {
-      taskList.value[i].startDate = "-";
-    }
-    if (taskList.value[i].dueDate != null) {
-      taskList.value[i].dueDate = changeDate(taskList.value[i].dueDate);
-    } else {
-      taskList.value[i].dueDate = "-";
-    }
-
-    // 필터링 조건들 구분
-    // 업무명
-    if (titleList.value.length < 1) {
-      titleList.value.push(taskList.value[i].title);
-    } else if (titleList.value.indexOf(taskList.value[i].title) == -1) {
-      titleList.value.push(taskList.value[i].title);
-    }
-
-    // 담당자명
-    if (taskList.value[i].userName != null) {
-      if (assigneeUserIdList.value.length < 1) {
-        assigneeUserIdList.value.push(taskList.value[i].userName);
-      } else if (
-        assigneeUserIdList.value.indexOf(taskList.value[i].userName) == -1
-      ) {
-        assigneeUserIdList.value.push(taskList.value[i].userName);
-      }
-    }
-
-    // 업무유형 목록
-    if (taskTypeList.value.length < 1) {
-      taskTypeList.value.push(taskList.value[i].typeName);
-    } else if (taskTypeList.value.indexOf(taskList.value[i].typeName) == -1) {
-      taskTypeList.value.push(taskList.value[i].typeName);
-    }
-
-    // 업무상태 목록
-    if (statusList.value.length < 1) {
-      statusList.value.push(taskList.value[i].statusName);
-    } else if (statusList.value.indexOf(taskList.value[i].statusName) == -1) {
-      statusList.value.push(taskList.value[i].statusName);
-    }
-
-    // 업무상태 목록
-    if (priorityList.value.length < 1) {
-      priorityList.value.push(taskList.value[i].codeName);
-    } else if (priorityList.value.indexOf(taskList.value[i].codeName) == -1) {
-      priorityList.value.push(taskList.value[i].codeName);
-    }
-
-    // 하위 프로젝트 목록
-    if (
-      smallProjectList.value.length < 1 &&
-      taskList.value[i].projectName != name.value
-    ) {
-      smallProjectList.value.push(taskList.value[i].projectName);
-    } else if (
-      smallProjectList.value.indexOf(taskList.value[i].projectName) == -1 &&
-      taskList.value[i].projectName != name.value
-    ) {
-      smallProjectList.value.push(taskList.value[i].projectName);
-    }
-  }
-  console.log("업무 목록", taskList.value);
-
-  listLength.value = taskList.value.length;
-
-  await paging(taskList);
+  changeDateType(taskList.value);
+  // 필터링 조건 조회
+  await taskStore.getAllFilterInfo(id);
+  filterInfo.value = taskStore.filterInfo;
 });
 
-// 업무명 필터링
-let filterFinishList = ref([]);
-
-const filteringList = () => {
-  console.log(taskList.value);
-
-  filterFinishList.value = taskList.value;
-
-  console.log(filterList.value);
-
-  // 업무명
-  if (filteredList.value.title != "전체") {
-    filterFinishList.value = filterFinishList.value.filter((li) => {
-      return li.title === filteredList.value.title;
-    });
-  }
-
-  // 담당자
-  if (filteredList.value.user != "전체") {
-    filterFinishList.value = filterFinishList.value.filter((li) => {
-      return li.userName === filteredList.value.user;
-    });
-  }
-
-  // 업무유형
-  if (filteredList.value.type != "전체") {
-    filterFinishList.value = filterFinishList.value.filter((li) => {
-      return li.typeName === filteredList.value.type;
-    });
-  }
-
-  // 업무상태
-  if (filteredList.value.status != "전체") {
-    filterFinishList.value = filterFinishList.value.filter((li) => {
-      return li.statusName === filteredList.value.status;
-    });
-  }
-
-  // 우선순위
-  if (filteredList.value.priority != "전체") {
-    filterFinishList.value = filterFinishList.value.filter((li) => {
-      return li.codeName === filteredList.value.priority;
-    });
-  }
-
-  // 프로젝트 명
-  if (filteredList.value.small != "전체") {
-    filterFinishList.value = filterFinishList.value.filter((li) => {
-      return li.projectName === filteredList.value.small;
-    });
-  }
-
-  // 시작일
-  if (filteredList.value.start != null && filteredList.value.end == null) {
-    filterFinishList.value = filterFinishList.value.filter((li) => {
-      return li.startDate >= filteredList.value.start;
-    });
-  } else if (
-    filteredList.value.start != null &&
-    filteredList.value.end != null
-  ) {
-    filterFinishList.value = filterFinishList.value.filter((li) => {
-      return (
-        li.startDate >= filteredList.value.start &&
-        li.dueDate <= filteredList.value.end
-      );
-    });
-  } else if (
-    filteredList.value.start == null &&
-    filteredList.value.end != null
-  ) {
-    filterFinishList.value = filterFinishList.value.filter((li) => {
-      return li.dueDate <= filteredList.value.end;
-    });
-  }
-
-  console.log(filterFinishList.value);
-
-  listLength.value = filterFinishList.value.length;
-  // 페이지 네이션
-  paging(filterFinishList);
-};
-
 // 페이지네이션
-const handleCurrentChange = (val) => {
-  let selectedList = ref([]);
-  let answer = ref([]);
-  if (filterFinishList.value.length > 0) {
-    answer.value = filterFinishList.value;
-    listLength.value = filterFinishList.value.length;
-  } else {
-    answer.value = taskList.value;
-    listLength.value = taskList.value.length;
-  }
-  if (val > 1) {
-    let startNum = (val - 1) * listNum.value;
-    let endNum = val * listNum.value;
-    for (let i = startNum; i < endNum; i++) {
-      if (answer.value[i] == null) {
-        break;
-      }
-      selectedList.value.push(answer.value[i]);
-    }
-    filterList.value = selectedList.value;
-    console.log(filterList.value);
-  } else {
-    for (let i = 0; i < listNum.value; i++) {
-      console.log(answer.value[i]);
-      selectedList.value.push(answer.value[i]);
-    }
-    filterList.value = selectedList.value;
-  }
-};
+const handleCurrentChange = async (val) => {
+  console.log("페이징", val);
+  nowPage.value = val;
+  listLoading.value = true;
 
-const paging = (a) => {
-  let paginglist = ref([]);
-  for (let i = 0; i < listNum.value; i++) {
-    if (a.value[i] == null) {
-      break;
-    }
-    paginglist.value.push(a.value[i]);
+  let start = (val - 1) * listNum.value + 1;
+  let end = val * listNum.value;
+
+  // 페이지 변환 목록 조회
+  let obj = {
+    projectId: id,
+    startNum: start,
+    endNum: end,
+    ...filteredList.value,
+  };
+  await taskStore.getAllTask(obj);
+  taskList.value = taskStore.taskAllList;
+  listLength.value =
+    taskList.value.length == 0 ? 0 : taskList.value[0].taskCounts;
+
+  if (listLength.value > 0) {
+    await changeDateType(taskList.value);
   }
-  workPageSize.value = a.value.length;
-
-  console.log(paginglist.value);
-
-  filterList.value = paginglist.value;
-  // 페이지 네이션
-
-  if (workPageSize.value / listNum > 1) {
-    real.value = false;
-  }
+  listLoading.value = false;
 };
 
 // 업무생성 버튼
@@ -582,21 +439,26 @@ const goResister = () => {
   router.push({ name: "taskRegister" });
 };
 
+// 검색 버튼
+const filteringList = async () => {
+  await handleCurrentChange(1);
+};
+
 // 초기화 버튼
 const resetForm = async () => {
-  workPage.value = 1;
-  await paging(taskList);
-
+  // 필터링 조건 초기화
   filteredList.value = {
-    title: "전체",
-    user: "전체",
-    type: "전체",
-    status: "전체",
-    start: null,
-    end: null,
-    priority: "전체",
-    small: "전체",
+    taskId: "",
+    assigneeUserId: "",
+    taskTypeId: "",
+    taskStatusId: "",
+    startDate: null,
+    endDate: null,
+    priorityCode: "",
+    parentProjectId: "",
   };
+
+  await handleCurrentChange(1);
 
   console.log("업무목록", filterList.value.length);
 };
@@ -605,6 +467,23 @@ const resetForm = async () => {
 const goDetail = (val) => {
   console.log(val);
   router.push({ name: "taskDetail", params: { taskId: val } });
+};
+
+// 날짜 null 일 경우 형식 변경
+const changeDateType = (val) => {
+  for (let i = 0; i < val.length; i++) {
+    // 날짜 형식 변경
+    if (val[i].startDate != null) {
+      val[i].startDate = changeDate(val[i].startDate);
+    } else {
+      val[i].startDate = "-";
+    }
+    if (val[i].dueDate != null) {
+      val[i].dueDate = changeDate(val[i].dueDate);
+    } else {
+      val[i].dueDate = "-";
+    }
+  }
 };
 </script>
 <style scoped>
@@ -733,5 +612,10 @@ const goDetail = (val) => {
 :deep(th:nth-child(9) .text-center) {
   text-align: left;
   padding-left: 15px;
+}
+tbody tr:hover {
+  background-color: #f9fafb; /* 살짝 밝은 회색으로 강조 */
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 </style>

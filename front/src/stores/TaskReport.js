@@ -10,7 +10,6 @@ export const useTaskReport = defineStore("TaskReport", {
         const response = await api.get("/taskReport", { params });
         this.reportList = response.data;
         this.totalCount = response.data.length;
-
         return response.data;
       } catch (error) {
         console.error("보고서 로딩 실패:", error);
