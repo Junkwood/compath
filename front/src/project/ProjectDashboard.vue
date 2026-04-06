@@ -127,7 +127,7 @@
                   </el-button>
                 </div>
                 <div class="sub-project-body">
-                  <template v-if="pagedMilestones.length > 0">
+                  <template v-if="currentMilestone">
                     <div class="sub-project-group">
                       <div class="sub-project-stage-title">
                         마일스톤
@@ -136,7 +136,7 @@
 
                       <div class="sub-project-table-wrap">
                           <el-table
-                            :data="currentMilestone.projects"
+                            :data="currentMilestone.projects || []"
                             class="sub-project-table"
                             style="width: 100%"
                             :show-header="false"
@@ -351,6 +351,7 @@ const getMemoColorClass = (index) => {
   return colorClasses[index % colorClasses.length];
 };
 
+//메모삭제
 const handleDeleteMemo = async (memoId) => {
   const result = await Swal.fire({
     title: "메모를 삭제할까요?",
@@ -391,6 +392,7 @@ const handleDeleteMemo = async (memoId) => {
   }
 };
 
+//메모등록
 const handleMemoSubmitted = async (payload) => {
   try {
     const projectId = route.params.projectId;
@@ -449,6 +451,7 @@ const fetchProjectDetail = async () => {
 const subProjects = ref([]);
 const milestonePage = ref(1);
 
+//하위 프로젝트 목록
 const fetchSubProject = async () => {
   try {
     const projectId = route.params.projectId;
@@ -460,6 +463,7 @@ const fetchSubProject = async () => {
   }
 };
 
+//하위 프로젝트 목록 - 페이지네이션
 const pagedMilestones = computed(() => {
   const map = new Map();
 
@@ -484,9 +488,11 @@ const pagedMilestones = computed(() => {
   return Array.from(map.values());
 });
 
-const currentMilestone = computed(
-  () => pagedMilestones.value[milestonePage.value - 1] || null
-);
+const currentMilestone = computed(() => {
+  if (pagedMilestones.value.length === 0) return null;
+  const safeIndex = Math.min(milestonePage.value - 1, pagedMilestones.value.length - 1);
+  return pagedMilestones.value[safeIndex];
+});
 
 // ── 이벤트 핸들러 ──────────────────────────────
 const handleProjectSetting = () => {
@@ -500,10 +506,13 @@ const handleViewTasks = () => {};
 const handleNoticeClick = () => {};
 const handleAddSubProject = () => {};
 
+//하위프로젝트 테이블 행 클릭시 하위프로젝트 대쉬보드로 진입
 const handleSubProjectRowClick = (row) => {
   router.push({
     name: "subProjectDashboard",
-    params: { projectId: row.projectId },
+    params: { subProjectId: row.projectId, 
+              rootProjectId: route.params.projectId,
+     },
   });
 };
 

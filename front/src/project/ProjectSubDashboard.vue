@@ -18,8 +18,25 @@
           <!-- 상단 타이틀 -->
           <div class="mb-6 proj-title-row">
             <div class="proj-title-left">
+
+                          <div class="proj-title-left">
+              <h2
+                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
+              >
+                하위 프로젝트 대시보드
+              </h2>
               <div class="proj-name-row">
-                <span class="proj-name">【{{ subProjectInfo.projectName }}】</span>
+                <span class="proj-name"
+                  >최상위 프로젝트 【 {{ projectInfo.projectName }} 】</span
+                >
+                <span class="proj-period"
+                  >{{ projectInfo.startDate }} - {{ projectInfo.endDate }}</span
+                >
+              </div>
+            </div>
+
+              <div class="proj-name-row">
+                <span class="proj-name">하위 프로젝트【{{ subProjectInfo.projectName }}】</span>
                 <span class="proj-period">
                   {{ subProjectInfo.startDate }} - {{ subProjectInfo.endDate }}
                 </span>
@@ -87,11 +104,12 @@
                       style="width: 100%"
                       :show-header="false"
                       :cell-style="taskListCellStyle"
+                      @row-click="handleTaskRowClick"
                     >
                       <el-table-column prop="title" min-width="260" />
                       <el-table-column label="" width="120" align="right">
                         <template #default="{ row }">
-                          <span class="task-pl">PL {{ row.plName }}</span>
+                          <span class="task-pl">PL {{ row.userName }}</span>
                         </template>
                       </el-table-column>
                     </el-table>
@@ -153,8 +171,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import api from "../utils/api"
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -163,18 +182,43 @@ const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(false);
 
-// 지금은 mock 데이터
-// 나중에 route.params.projectId 로 API 붙이면 됨
-const subProjectId = route.params.projectId;
+const subProjectId = route.params.subProjectId;
+const rootProjectId = route.params.rootProjectId;
 
-const subProjectInfo = ref({
-  projectId: subProjectId,
-  projectName: "요구사항-공통관리",
-  startDate: "2026/03/19",
-  endDate: "2026/04/24",
-  managerName: "김관리",
-  managerRole: "PM",
+//상단 제목용 (루뜨프로젝트 이름)
+const projectInfo = ref({
+  projectId: null,
+  projectName: "",
+  startDate: "",
+  endDate: "",
 });
+
+const fetchProjectDetail = async () => {
+  try {
+    const res = await api.get(`/ProjectDetail/${rootProjectId}`);
+    projectInfo.value = res.data;
+  } catch (err) {
+    console.error("프로젝트 상세 조회 실패:", err);
+  }
+};
+
+//하위프로젝트 정보
+const subProjectInfo = ref({
+  projectId: null,
+  projectName: "",
+  startDate:"",
+  endDate:"",
+})
+
+const fetchSubInfo = async () => {
+  try {
+    const res = await api.get(`/ProjectDetail/${subProjectId}`);
+    subProjectInfo.value = res.data;
+  } catch (err) {
+    console.error("하위프로젝트 상세 조회 실패:", err);
+  }
+};
+
 
 const taskSummaryData = ref([
   { type: "개발", total: 13, inProgress: 9, done: 0, rejected: 1, sum: 23 },
@@ -184,13 +228,29 @@ const taskSummaryData = ref([
   { type: "다스트", total: 5, inProgress: 0, done: 0, rejected: 0, sum: 2 },
 ]);
 
-const taskList = ref([
-  { title: "요구사항 분석 및 산출물", plName: "김피엘" },
-  { title: "화면 설계", plName: "윤피엘" },
-  { title: "로그인 기능 구현", plName: "강피엘" },
-  { title: "메인 대시보드 구현", plName: "김피엘" },
-  { title: "자유게시판 구현", plName: "박피엘" },
-]);
+//하단 업무목록 테이블
+const taskList = ref([]);
+
+const fetchTaskList = async () => {
+  try {
+    const res = await api.get(`/SubProjectTaskList/${subProjectId}`);
+    taskList.value = res.data;
+  } catch (err) {
+    console.error("하위프로젝트 업무목록 조회 실패:", err);
+    taskList.value = [];
+  }
+};
+
+//하단 업무목록 클릭시 상세로 이동
+const handleTaskRowClick = (row) => {
+  router.push({
+    name: "taskDetail",
+    params: {
+      projectId: subProjectId,
+      taskId: row.taskId,
+    },
+  });
+};
 
 const graphData = ref([
   { label: "개발", raw: 23, value: 72 },
@@ -231,6 +291,13 @@ const taskListCellStyle = () => ({
   height: "38px",
   borderBottom: "1px solid #d1d5db",
 });
+
+onMounted(() => {
+  fetchProjectDetail();
+  fetchSubInfo();
+  fetchTaskList();
+});
+
 </script>
 
 <style scoped>
@@ -421,6 +488,7 @@ const taskListCellStyle = () => ({
 .task-list-table :deep(.el-table) {
   border: none !important;
   font-size: 12px;
+  cursor: pointer;
 }
 
 .status-table :deep(.el-table__inner-wrapper::before),
@@ -452,6 +520,10 @@ const taskListCellStyle = () => ({
   padding-left: 12px !important;
   padding-right: 12px !important;
   color: #334155;
+}
+
+:deep(.task-list-table .el-table__body .el-table__row) {
+  cursor: pointer;
 }
 
 /* ────────────────────────────────────────────
