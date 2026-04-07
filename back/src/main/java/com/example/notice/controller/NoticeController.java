@@ -5,6 +5,9 @@ import com.example.notice.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -24,5 +27,21 @@ public class NoticeController {
         return service.getNoticeById(id);
     }
 
+    // 공지사항 수정
+    @PutMapping("/notice/update")
+    public NoticeDTO modifyNotice(@RequestBody NoticeDTO dto){
+        return service.modifyNotice(dto);
+    }
 
+    // 필터링 조건들
+    @GetMapping("/notice/listFilter")
+    public Map<String, Object> getNoticeFilter(NoticeDTO dto ) {
+        return service.getNoticeFilter(dto);
+    }
+
+    // 페이징 목록
+    @GetMapping("/notice/listPaging")
+    public List<NoticeDTO> getPagingNotice(NoticeDTO dto ) {
+        return service.getPagingNotice(dto);
+    }
 }

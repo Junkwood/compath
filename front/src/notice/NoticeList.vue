@@ -39,36 +39,36 @@
           <!-- 검색 필터 영역 -->
           <div class="filter-card mt-4 mb-0">
             <div class="filter-row">
-              <!-- 업무명 -->
+              <!-- 작성자 -->
               <div class="filter-item">
                 <label class="filter-label">작성자</label>
                 <div class="select-wrap">
-                  <select v-model="filteredList.title">
-                    <option value="전체">전체</option>
+                  <select v-model="filteredList.userId">
+                    <option value="">전체</option>
                     <option
-                      :value="title"
-                      v-for="title in titleList"
-                      :key="title"
+                      :value="user.userId"
+                      v-for="user in filterList.userList"
+                      :key="user.userId"
                     >
-                      {{ title }}
+                      {{ user.userName }}
                     </option>
                   </select>
                   <span class="select-arrow">▾</span>
                 </div>
               </div>
 
-              <!-- 담당자 -->
+              <!-- 카테고리 -->
               <div class="filter-item">
                 <label class="filter-label">카테고리</label>
                 <div class="select-wrap">
-                  <select v-model="filteredList.user">
-                    <option value="전체">전체</option>
+                  <select v-model="filteredList.category">
+                    <option value="">전체</option>
                     <option
-                      :value="userName"
-                      v-for="userName in assigneeUserIdList"
-                      :key="userName"
+                      :value="category.roleId"
+                      v-for="category in filterList.categoryList"
+                      :key="category.roleId"
                     >
-                      {{ userName }}
+                      {{ category.roleName }}
                     </option>
                   </select>
                   <span class="select-arrow">▾</span>
@@ -79,7 +79,7 @@
               <div class="filter-item">
                 <label class="filter-label">시작일</label>
                 <input
-                  v-model="filteredList.start"
+                  v-model="filteredList.startDate"
                   type="date"
                   class="filter-input"
                 />
@@ -89,7 +89,7 @@
               <div class="filter-item">
                 <label class="filter-label">종료일</label>
                 <input
-                  v-model="filteredList.end"
+                  v-model="filteredList.endDate"
                   type="date"
                   class="filter-input"
                 />
@@ -115,18 +115,18 @@
                   />
                 </svg>
                 <input
-                  v-model="searchKeyword"
+                  v-model="filteredList.search"
                   type="text"
                   placeholder="프로젝트명을 입력해주세요."
                   class="search-input"
-                  @keyup.enter="filteringList()"
+                  @keyup.enter="handleCurrentChange()"
                 />
               </div>
               <!-- 버튼 -->
               <div class="filter-actions flex flex-row-reverse">
                 <button
                   type="button"
-                  @click="filteringList()"
+                  @click="handleCurrentChange()"
                   class="btn-search"
                 >
                   검색
@@ -143,10 +143,7 @@
           >
             <!-- 내보내기 버튼 + 총 건수 -->
             <div class="flex flex-row-reverse items-center px-5 pt-2 pb-2">
-              <span class="count-badge flex flex" v-if="filterList.length > 0"
-                >총 {{ listLength }}건</span
-              >
-              <span v-else></span>
+              <span class="count-badge flex flex">총 {{ listLength }}건</span>
             </div>
             <!-- 테이블 -->
             <table class="table-auto w-full dark:text-gray-300">
@@ -171,34 +168,35 @@
                 </tr>
 
                 <!-- 데이터 있을 때 -->
-                <template v-if="filterList.length > 0 && !listLoading">
+                <template v-else-if="!listLoading && listLength > 0">
                   <tr
-                    v-for="task in filterList"
-                    :key="task.taskId"
+                    @click="goDetail(notice)"
+                    v-for="notice in pagingList"
+                    :key="notice.num"
                     class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
                   >
                     <td class="p-2 w-30">
-                      <div class="text-center"></div>
+                      <div class="text-center">{{ notice.num }}</div>
                     </td>
                     <td class="p-2">
-                      <div class="text-center">{{ task.projectName }}</div>
+                      <div class="text-center">{{ notice.title }}</div>
                     </td>
                     <td class="p-2 w-70">
                       <div class="text-center cursor-pointer">
-                        {{ task.userName }}
+                        {{ notice.userName }}
                       </div>
                     </td>
 
                     <td class="p-2 w-70">
                       <div class="text-center">
-                        {{ formatDate(task.startDate) }}
+                        {{ notice.createdAt }}
                       </div>
                     </td>
                   </tr>
                 </template>
 
                 <!-- 데이터 없을 때 -->
-                <tr v-else-if="filterList.length === 0 && !listLoading">
+                <tr v-else>
                   <td :colspan="thList.length + 1" class="text-center py-10">
                     <h5 class="text-gray-500">업무가 존재하지 않습니다.</h5>
                   </td>
@@ -206,13 +204,11 @@
               </tbody>
             </table>
 
-            <!-- 페이지네이션 -->
-            <div class="pagination-wrap" v-if="workPageSize / listNum > 1">
+            <div class="pagination-wrap">
               <el-pagination
-                v-model:current-page="workPage"
                 :current-page="nowPage"
                 :page-size="listNum"
-                :total="workPageSize"
+                :total="listLength"
                 :hide-on-single-page="real"
                 @current-change="handleCurrentChange"
                 layout="prev, pager, next"
@@ -229,156 +225,135 @@
 <script setup>
 import { onBeforeMount } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ref, computed } from "vue";
-import { useTaskReport } from "../stores/TaskReport";
+import { ref } from "vue";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
+import { useNoticeStore } from "../stores/notice";
+import Swal from "sweetalert2";
+import NoticeDetail from "./NoticeDetail.vue";
 
 const route = useRoute();
 const router = useRouter();
-const taskReportStore = useTaskReport();
 const taskStore = usetaskKJHStore();
+const noticeStore = useNoticeStore();
 
 const projectId = route.params.projectId;
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
 
 const filteredList = ref({
-  title: "전체",
-  user: "전체",
-  type: "전체",
-  start: "",
-  end: "",
+  category: "",
+  userId: "",
+  startDate: "",
+  endDate: "",
+  search: "",
 });
+const pagingList = ref([]);
 const searchKeyword = ref("");
-
-const allData = ref([]);
 const filterList = ref([]);
 const listLength = ref(0);
-const workPageSize = ref(0);
 const workPage = ref(1);
 const listNum = ref(10);
-const selectedTaskIds = ref([]);
 const nowPage = ref(1);
 const real = ref(true);
-const titleList = ref([]);
-const assigneeUserIdList = ref([]);
-const taskTypeList = ref([]);
 
 let name = ref(); // 프로젝트명
 let projectStartDate = ref(); // 프로젝트 날짜
 let projectendDate = ref(); // 프로젝트 날짜
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return "-";
-  return dateStr.toString().substring(0, 10);
-};
-
 const thList = ["번호", "제목", "작성자", "등록일"];
+
+// 페이지네이션
+const handleCurrentChange = async (val) => {
+  val = val == undefined ? 1 : val;
+  console.log("페이징", val);
+  nowPage.value = val;
+
+  let start = (val - 1) * listNum.value + 1;
+  let end = val * listNum.value;
+
+  // 페이지 변환 목록 조회
+  let obj = {
+    projectId: projectId,
+    startNum: start,
+    endNum: end,
+    ...filteredList.value,
+  };
+  Swal.fire({
+    title: "잠시만 기다려주세요...",
+    html: "데이터를 불러오는 중입니다.",
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    showCancelButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+
+  try {
+    await noticeStore.getPagingList(obj);
+    Swal.close();
+
+    pagingList.value = noticeStore.pagingList;
+
+    listLength.value =
+      pagingList.value.length == 0 ? 0 : pagingList.value[0].taskCounts;
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "알수 없는 이유로 데이터를 가져오지 못했습니다.",
+    });
+  } finally {
+    Swal.close();
+  }
+};
 
 // 공지 생성 버튼
 const goResister = () => {
   router.push({
     name: "noticeRegister",
-    params: { projectId: projectId, noticeId: null },
+    params: { projectId: projectId },
   });
 };
 
-// 페이지에 맞게 slice
-const slicePage = (data) => {
-  const start = (workPage.value - 1) * listNum.value;
-  const end = start + listNum.value;
-  filterList.value = data.slice(start, end);
-};
-
-const filteringList = async () => {
-  listLoading.value = true;
-
-  const params = {
-    projectId: projectId,
-    title:
-      filteredList.value.title !== "전체"
-        ? filteredList.value.title
-        : searchKeyword.value || null,
-    assigneeUserId:
-      filteredList.value.user !== "전체" ? filteredList.value.user : null,
-    taskTypeId:
-      filteredList.value.type !== "전체" ? filteredList.value.type : null,
-    startDate: filteredList.value.start || null,
-    dueDate: filteredList.value.end || null,
-  };
-
-  try {
-    const data = await taskReportStore.fetchReportList(params);
-    if (data) {
-      allData.value = data;
-      listLength.value = data.length;
-      workPageSize.value = data.length;
-      slicePage(data);
-
-      titleList.value = [...new Set(data.map((t) => t.title).filter(Boolean))];
-      assigneeUserIdList.value = [
-        ...new Set(data.map((t) => t.userName).filter(Boolean)),
-      ];
-      taskTypeList.value = [
-        ...new Set(data.map((t) => t.typeName).filter(Boolean)),
-      ];
-    }
-  } catch (error) {
-    console.error("데이터 조회 중 오류 발생:", error);
-  } finally {
-    listLoading.value = false;
-  }
+// 테이블 열 클릭시
+const goDetail = (tr) => {
+  console.log(tr);
+  router.push({
+    name: "noticeDetail",
+    params: { projectId: projectId, noticeId: tr.noticeId },
+  });
 };
 
 onBeforeMount(async () => {
-  await filteringList();
-
+  listLoading.value = true;
   await taskStore.getProjectName(projectId);
   const projectInfo = taskStore.projectName;
   name.value = projectInfo.projectName; // 프로젝트 이름
   projectStartDate.value = projectInfo.startDate;
-  projectendDate.value = projectInfo.startDate;
+  projectendDate.value = projectInfo.endDate;
+
+  let obj = { projectId: projectId, parentProjectId: projectId };
+  await noticeStore.getFilterList(obj);
+  filterList.value = noticeStore.filterList;
+  pagingList.value = noticeStore.filterList.noticeList;
+  listLength.value = filterList.value.noticeList[0].taskCounts;
+  listLoading.value = false;
 });
 
 const resetForm = () => {
   filteredList.value = {
-    title: "전체",
-    user: "전체",
-    type: "전체",
-    start: "",
-    end: "",
+    category: "",
+    userId: "",
+    startDate: "",
+    endDate: "",
+    search: "",
   };
   searchKeyword.value = "";
   workPage.value = 1;
-  filteringList();
+  handleCurrentChange(1);
 };
-
-// ✅ 페이지 변경 시 API 재호출 없이 slice만
-const handleCurrentChange = (page) => {
-  workPage.value = page;
-  slicePage(allData.value);
-};
-
-const isAllChecked = computed(
-  () =>
-    filterList.value.length > 0 &&
-    selectedTaskIds.value.length === filterList.value.length,
-);
-
-const toggleAllCheckbox = (e) => {
-  selectedTaskIds.value = e.target.checked
-    ? filterList.value.map((t) => t.taskId)
-    : [];
-};
-
-const goDetail = (taskId) => {
-  router.push({ name: "TaskDetail", params: { taskId } });
-};
-
-const exportExcel = () => {};
-const exportPdf = () => {};
 </script>
 <style scoped>
 /*  상단 */
