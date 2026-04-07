@@ -142,7 +142,7 @@
         JOIN task_types t2 ON t.task_type_id = t2.task_type_id
         JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
         JOIN common_code c ON t.priority_code = c.code_value
-        JOIN users u ON t.assignee_user_id = u.user_id
+        LEFT JOIN users u ON t.assignee_user_id = u.user_id
         WHERE t.task_id = #{id}
     </select>
 

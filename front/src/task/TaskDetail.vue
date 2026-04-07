@@ -312,6 +312,7 @@ import { usetaskKJHStore } from "../stores/taksKJH";
 import { useAuthStore } from "../stores/auth";
 import { Clock } from "@element-plus/icons-vue";
 import TaskActualTimeModal from "./TaskActualTimeModal.vue";
+import { changeDate } from "../utils/commonFunc";
 
 const taskStore = usetaskKJHStore();
 const authStore = useAuthStore();
@@ -352,7 +353,7 @@ onBeforeMount(async () => {
   await taskStore.getTaskById(taskId.value);
 
   taskInfo.value = { ...taskStore.taskDetail };
-  taskInfo.value.createdAt = taskInfo.value.createdAt.substr(0, 10);
+  taskInfo.value.createdAt = changeDate(taskInfo.value.createdAt);
 
   // 상위 프로젝트가 없을 때 구분
   if (taskInfo.value.parentProjectName != null) {

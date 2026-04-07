@@ -350,7 +350,6 @@ const filterList = ref([]);
 let name = ref(); // 프로젝트명
 let projectStartDate = ref(); // 프로젝트 날짜
 let projectendDate = ref(); // 프로젝트 날짜
-const visible = ref(false);
 
 let thList = ref([
   "업무명",
@@ -398,15 +397,16 @@ onBeforeMount(async () => {
 
   // 전체 목록 조회
   let obj = { projectId: id, parentProjectId: id };
-  await taskStore.getAllTask(obj);
+  await handleCurrentChange(1);
 
   listLoading.value = false;
 
-  taskList.value = taskStore.taskAllList;
-  listLength.value =
-    taskList.value.length > 0 ? taskList.value[0].taskCounts : 0;
+  // taskList.value = taskStore.taskAllList;
+  // listLength.value =
+  //   taskList.value.length > 0 ? taskList.value[0].taskCounts : 0;
 
-  changeDateType(taskList.value);
+  // changeDateType(taskList.value);
+
   // 필터링 조건 조회
   await taskStore.getAllFilterInfo(id);
   filterInfo.value = taskStore.filterInfo;
@@ -517,6 +517,7 @@ const goDetail = (val) => {
 
 // 날짜 null 일 경우 형식 변경
 const changeDateType = (val) => {
+  console.log(val);
   for (let i = 0; i < val.length; i++) {
     // 날짜 형식 변경
     if (val[i].startDate != null) {
