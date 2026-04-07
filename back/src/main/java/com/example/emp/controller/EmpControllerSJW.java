@@ -16,39 +16,40 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class EmpControllerSJW {
     private final EmpServiceSJW empService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
 
-    @GetMapping("/api/emp/list")
+    @GetMapping("/admin/emp")
     public List<EmpDTOSJW> getAll() {
         return empService.getAll();
     }
-    @GetMapping("/api/emp/list/group")
-    public List<EmpVOSJW> getAllForGroup() {
-        return empService.getAllForGroup();
-    }
-    @GetMapping("/api/emp/info/{id}")
-    public EmpVOSJW getById(@PathVariable Integer id) {
-        return empService.getById(id);
-    }
-    @GetMapping("/api/emp/status/{id}")
-    public String modifyStatusById(@PathVariable Integer id) {
-        return empService.modifyStatusById(id);
-    }
-    @PostMapping("/api/emp")
+    @PostMapping("/admin/emp")
     public Integer register(@RequestBody EmpVOSJW emp) {
     return empService.registerEmp(emp);
     }
-    @PostMapping("/api/login")
+    @GetMapping("/admin/emp/group")
+    public List<EmpVOSJW> getAllForGroup() {
+        return empService.getAllForGroup();
+    }
+    @GetMapping("/admin/emp/{id}")
+    public EmpVOSJW getById(@PathVariable Integer id) {
+        return empService.getById(id);
+    }
+    @PutMapping("/admin/emp/{id}/status")
+    public String modifyStatusById(@PathVariable Integer id) {
+        return empService.modifyStatusById(id);
+    }
+    @PutMapping("/admin/emp/{id}")
+    public Boolean update(@RequestBody EmpVOSJW emp,@PathVariable Integer id) {
+        return  empService.modifyEmpById(emp,id);
+    }
+    @PostMapping("/login")
     public EmpVOSJW login(@RequestBody EmpVOSJW emp) {
         return  empService.login(emp);
     }
-    @PutMapping("/api/emp")
-    public Boolean update(@RequestBody EmpVOSJW emp) {
-        return  empService.modifyEmpById(emp);
-    }
-    @PostMapping("/api/email/sendCode")
+    @PostMapping("/email/sendCode")
     public ResponseEntity<Map<String, Object>> sendEmail(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         Integer userId = Integer.valueOf(request.get("userId"));
@@ -59,7 +60,7 @@ public class EmpControllerSJW {
         response.put("message", "인증번호가 발송되었습니다.");
         return ResponseEntity.ok(response);
     }
-    @PostMapping("/api/email/verifyCode")
+    @PostMapping("/email/verifyCode")
     public ResponseEntity<Map<String, Object>> verifyCode(@RequestBody Map<String, String> request) {
         Integer code = Integer.valueOf( request.get("code"));
         Integer emailId = Integer.valueOf( request.get("emailId"));

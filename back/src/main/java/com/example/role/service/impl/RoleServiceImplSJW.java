@@ -29,7 +29,15 @@ public class RoleServiceImplSJW implements RoleServiceSJW {
     public List<RoleDTOSJW> getAll() {
         return roleMapper.getAll();
     }
+    @Override
+    public List<RoleDTOSJW> getActiveRoles(){
+        return roleMapper.getActiveRoles();
+    }
+    @Override
+    public RoleDTOSJW getRole(Integer roleId) {
 
+        return roleMapper.getRole(roleId);
+    }
     @Override
     public List<PermissionDTOSJW> getAllPermission() {
         return roleMapper.getAllPermission();
@@ -38,6 +46,11 @@ public class RoleServiceImplSJW implements RoleServiceSJW {
     @Transactional
     @Override
     public RoleDTOSJW registerRole(RoleDTOSJW role) {
+        if(role.getIsActive().equals("Y")){
+            role.setIsActive("O1");
+        }else{
+            role.setIsActive("O2");
+        }
         Integer result = roleMapper.registerRole(role);
         if (result > 0) {
             Integer roleId = role.getRoleId();
@@ -60,6 +73,12 @@ public class RoleServiceImplSJW implements RoleServiceSJW {
     public RoleDTOSJW modifyRole(RoleDTOSJW role) {
         // 해당 role_id의 기존 role_permission 다 삭제
         roleMapper.deleteRolePermissionByRoleId(role.getRoleId());
+        //is_active의 값을 평문에서 설계된 코드로 변환
+        if(role.getIsActive().equals("Y")){
+            role.setIsActive("O1");
+        }else{
+            role.setIsActive("O2");
+        }
         //roles수정하는 매퍼 실행
         Integer result = roleMapper.modifyRole(role);
         //role_permission 재등록
@@ -80,9 +99,9 @@ public class RoleServiceImplSJW implements RoleServiceSJW {
 
     @Transactional
     @Override
-    public Boolean deleteRole(Integer roleId) {
+    public Boolean removeRole(Integer roleId) {
         roleMapper.deleteRolePermissionByRoleId(roleId);
-        Integer result = roleMapper.deleteRoleById(roleId);
+        Integer result = roleMapper.removeRole(roleId);
         if (result > 0) {
             return true;
         }
@@ -90,9 +109,9 @@ public class RoleServiceImplSJW implements RoleServiceSJW {
     }
 
     @Override
-    public Boolean modifyRoleActivation(RoleDTOSJW role) {
+    public Boolean modifyRoleActivation(RoleDTOSJW role,Integer roleId) {
         RoleDTOSJW roleDTO = new RoleDTOSJW();
-        roleDTO.setRoleId(role.getRoleId());
+        roleDTO.setRoleId(roleId);
         log.error(role.toString());
         if (role.getIsActive().equals("Y")) {
             roleDTO.setIsActive("O1");
@@ -106,6 +125,8 @@ public class RoleServiceImplSJW implements RoleServiceSJW {
         }
         return false;
     }
+
+
 
 
 }

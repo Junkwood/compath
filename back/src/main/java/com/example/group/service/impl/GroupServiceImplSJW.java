@@ -7,6 +7,7 @@ import com.example.group.entity.GroupVOSJW;
 import com.example.group.mapper.GroupMapperSJW;
 import com.example.group.service.GroupServiceSJW;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GroupServiceImplSJW implements GroupServiceSJW {
@@ -73,6 +74,7 @@ public class GroupServiceImplSJW implements GroupServiceSJW {
     @Transactional
     public GroupDTOSJW modifyGroup(GroupDTOSJW group) {
 
+        log.error("🚨 프론트에서 넘어온 멤버 수: " + group.getMembers().size());
         // 1. 그룹 기본 정보 수정
         groupMapper.modifyGroup(group);
         if(group.getMembers() != null ) {

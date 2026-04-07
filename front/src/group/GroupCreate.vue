@@ -456,7 +456,7 @@ export default {
         return;
       }
       const name = form.value.groupName;
-      const response = await api.get(`/group/dup/${name}`);
+      const response = await api.get(`/admin/group/dup/${name}`);
       const result = response.data;
       console.log(result);
       if (result == "Y") {
@@ -531,7 +531,7 @@ export default {
       };
 
       console.log("Submit Data:", payload);
-      const response = await api.post("/group", payload);
+      const response = await api.post("/admin/group", payload);
       const result = response.data;
       if (result == "Y") {
         alert("그룹이 성공적으로 생성되었습니다.");
@@ -621,8 +621,8 @@ export default {
     onMounted(async () => {
       await empStore.getEmpList4Group();
       allUsers.value = empStore.empList4Group;
-      await roleStore.getRoleList();
-      roles.value = roleStore.roleList;
+      await roleStore.getActiveRoleList();
+      roles.value = roleStore.activeRoleList;
     });
     return {
       sidebarOpen,

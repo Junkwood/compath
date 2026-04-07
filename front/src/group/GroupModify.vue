@@ -570,7 +570,7 @@ export default {
         isNameChecked.value = true;
         return;
       }
-      const res = await api.get(`/group/dup/${form.value.groupName}`);
+      const res = await api.get(`/admin/group/dup/${form.value.groupName}`);
       isNameValid.value = res.data === "Y";
       isNameChecked.value = true;
     };
@@ -604,7 +604,8 @@ export default {
       };
 
       try {
-        await api.put(`/group`, payload);
+        console.log(payload);
+        await api.put(`/admin/group/${form.value.groupId}`, payload);
         alert("그룹이 성공적으로 수정되었습니다.");
         router.push(`/admin/group/info/${form.value.groupId}`); // 상세 페이지로 복귀
       } catch {
@@ -621,11 +622,11 @@ export default {
         // 1. 공통 코드성 데이터 로드 (사원 목록, 역할 목록)
         await Promise.all([
           empStore.getEmpList4Group(),
-          roleStore.getRoleList(),
+          roleStore.getActiveRoleList(),
         ]);
 
         allUsers.value = empStore.empList4Group;
-        roles.value = roleStore.roleList;
+        roles.value = roleStore.activeRoleList;
         if (roles.value.length > 0) selectedRole.value = roles.value[0].roleId;
 
         // 2. 💡 더미 데이터 대신 실제 DB에서 그룹 상세 정보 로드

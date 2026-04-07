@@ -32,7 +32,7 @@
           <div class="pl-field">
             <span class="pl-label">직군 그룹</span>
             <el-select
-              v-model="form.groupId"
+              v-model="form.primaryGroupId"
               placeholder="선택"
               style="width: 160px"
             >
@@ -166,6 +166,11 @@ watch(
   () => props.modelValue,
   async (isOpen) => {
     if (isOpen) {
+      console.log("1. 넘어온 그룹ID:", props.editData.primaryGroupId);
+      console.log(
+        "2. 현재 옵션 목록:",
+        plOptions.value.map((g) => g.groupId),
+      );
       if (isEditMode.value) {
         // ⭐ 수정 모드
         Object.assign(form, {
@@ -173,7 +178,7 @@ watch(
           name: props.editData.name,
           email: props.editData.email,
           userType: props.editData.userType,
-          groupId: props.editData.groupId?.toString() || "",
+          primaryGroupId: props.editData.primaryGroupId?.toString() || "",
           password: "",
           passwordc: "",
         });
@@ -222,8 +227,8 @@ const handleSubmit = async () => {
   submitting.value = true;
   try {
     if (isEditMode.value) {
-      form.groupIds = [...form.groupId];
-      form.primaryGroupId = form.groupId;
+      form.groupIds = [...form.primaryGroupId];
+      form.primaryGroupId = form.primaryGroupId;
       await empStore.updateEmp(form);
     } else {
       await empStore.registerEmp(form);
