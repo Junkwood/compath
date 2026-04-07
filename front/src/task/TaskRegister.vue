@@ -57,7 +57,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1"
-                  >담당자 지정<span class="text-red-500">*</span></label
+                  >담당자 지정 <span class="text-red-500">*</span></label
                 >
                 <div class="flex gap-2">
                   <input

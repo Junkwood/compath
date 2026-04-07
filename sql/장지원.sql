@@ -105,7 +105,7 @@ FROM project_members pm
 JOIN users u ON pm.user_id = u.user_id
 JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
 JOIN roles r ON pmr.role_id = r.role_id
-WHERE pm.project_id = '2'
+WHERE pm.project_id = '1'
 AND pm.is_active = 'O1';
 ---------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
@@ -142,19 +142,20 @@ BEGIN
        OR parent_project_id = v_target_project_id;
 
     -- 유저 
-	OPEN userList FOR
-	SELECT
-	    u.user_id,
-	    u.user_name,
-	    r.role_name
-	FROM project_members pm
-	JOIN users u ON pm.user_id = u.user_id
-	JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
-	JOIN roles r ON pmr.role_id = r.role_id
-	WHERE pm.project_id = v_target_project_id  -- p_project_id → v_target_project_id
-	AND pm.is_active = 'O1';
-
-    -- 업무 유형 
+OPEN userList FOR
+SELECT 
+    u.user_id                        AS user_id,
+    u.user_name                      AS user_name,
+    NVL(r.role_name, '일반')         AS role_name
+FROM users u
+LEFT JOIN project_members pm ON u.user_id = pm.user_id 
+    -- 수정: v_target_project_id가 있을 때만 해당 프로젝트 역할을 가져오되, 
+    -- NULL인 경우에도 유저 목록은 나와야 함
+    AND pm.project_id = NVL(v_target_project_id, pm.project_id) 
+    AND pm.is_active = 'O1'
+LEFT JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+LEFT JOIN roles r ON pmr.role_id = r.role_id
+WHERE u.is_active = 'O1';-- 업무 유형 
     OPEN taskTypeList FOR SELECT task_type_id, type_name FROM task_types WHERE is_active = 'O1';
 
     -- 마일스톤 

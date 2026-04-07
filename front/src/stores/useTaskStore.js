@@ -83,7 +83,7 @@ export const useTaskStore = defineStore("task", () => {
       name: u.userName,
       value: u.userId,
       // userType: u.userType,
-      userType: u.roleName,
+      userType: u.userType,
     }));
 
     taskTypeList.value = tList;
@@ -169,8 +169,7 @@ export const useTaskStore = defineStore("task", () => {
     userList.value = uList.map((u) => ({
       name: u.userName,
       value: u.userId,
-      // userType: u.userType,
-      userType: u.roleName,
+      userType: u.userType,
     }));
     milestoneList.value = rawMilestoneList.map((m) => ({
       name: m.milestoneName,

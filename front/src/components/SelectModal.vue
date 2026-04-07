@@ -28,14 +28,17 @@
             <span class="text-sm text-gray-700">{{
               item.name || item.codeName
             }}</span>
-            <!-- ✅ 이름 추가 -->
             <span
               v-if="item.userType"
               :class="[
                 'text-xs font-semibold px-2 py-0.5 rounded-full',
-                item.userType === 'M1'
+                item.userType === 'PM'
                   ? 'bg-blue-100 text-blue-600'
-                  : 'bg-green-100 text-green-600',
+                  : item.userType === 'PL'
+                    ? 'bg-purple-100 text-purple-600'
+                    : item.userType === '개발자'
+                      ? 'bg-green-100 text-green-600'
+                      : 'bg-gray-100 text-gray-500',
               ]"
             >
               {{ item.userType }}
@@ -134,5 +137,12 @@ const selectItem = (item) => {
     userType: item.userType,
   });
   modalOpenModel.value = false;
+};
+
+const getRoleClass = (roleType) => {
+  const role = (roleType ?? "").toUpperCase();
+  if (role === "PM") return "bg-blue-100 text-blue-600";
+  if (role === "PL") return "bg-purple-100 text-purple-600";
+  return "bg-green-100 text-green-600"; // 일반 멤버 등
 };
 </script>

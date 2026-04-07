@@ -12,5 +12,5 @@ public class UserDtoJJW {
     private Long userId;
     private String userName;
     private String userType;
-    private String roleName;
+//    private String roleName;
 }
