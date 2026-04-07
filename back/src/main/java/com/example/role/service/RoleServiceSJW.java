@@ -14,7 +14,11 @@ public interface RoleServiceSJW {
 
     RoleDTOSJW modifyRole(RoleDTOSJW role);
 
-    Boolean deleteRole(Integer roleId);
+    Boolean removeRole(Integer roleId);
 
-    Boolean modifyRoleActivation(RoleDTOSJW role);
+    Boolean modifyRoleActivation(RoleDTOSJW role,Integer roleId);
+
+    RoleDTOSJW getRole(Integer roleId);
+
+    List<RoleDTOSJW> getActiveRoles();
 }

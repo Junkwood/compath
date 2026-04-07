@@ -12,31 +12,37 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/admin")
 public class GroupControllerSJW {
     private final GroupServiceSJW groupService;
 
-    @GetMapping("/api/group/list")
+    @GetMapping("/group")
     public List<GroupVOSJW> getAll() {
         return groupService.getAll();
     }
-    @GetMapping("/api/group/list/active")
-    public List<GroupDTOSJW> getAllGroupForEmpRegister() {
-        return groupService.getAllGroupForEmpRegister();
-    }
-    @GetMapping("/api/group/info/{id}")
-    public GroupDTOSJW getById(@PathVariable Integer id) {
-        return groupService.getById(id);
-    }
-    @GetMapping("/api/group/dup/{name}")
-    public String dup(@PathVariable String name) {
-        return groupService.checkDuplicatedName(name);
-    }
-    @PostMapping("/api/group")
+
+    @PostMapping("/group")
     public String register(@RequestBody GroupDTOSJW group) {
         return groupService.registerGroup(group);
     }
-    @PutMapping("/api/group")
-    public GroupDTOSJW update(@RequestBody GroupDTOSJW group) {
+
+    @PutMapping("/group/{groupId}")
+    public GroupDTOSJW update(@RequestBody GroupDTOSJW group,@PathVariable Integer groupId) {
         return groupService.modifyGroup(group);
+    }
+
+    @GetMapping("/group/active")
+    public List<GroupDTOSJW> getAllGroupForEmpRegister() {
+        return groupService.getAllGroupForEmpRegister();
+    }
+
+    @GetMapping("/group/{id}")
+    public GroupDTOSJW getById(@PathVariable Integer id) {
+        return groupService.getById(id);
+    }
+
+    @GetMapping("/group/dup/{name}")
+    public String dup(@PathVariable String name) {
+        return groupService.checkDuplicatedName(name);
     }
 }

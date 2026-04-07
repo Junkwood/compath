@@ -83,8 +83,11 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
     }
     @Transactional
     @Override
-    public Boolean modifyEmpById(EmpVOSJW vo) {
-// 1. 유저 정보 업데이트
+    public Boolean modifyEmpById(EmpVOSJW vo, Integer userId) {
+        if(empMapper.getById(userId)==null){
+            return false;
+        }
+    // 1. 유저 정보 업데이트
         if (vo.getPassword() != null && !vo.getPassword().isEmpty()) {
             vo.setPassword(encoder.encode(vo.getPassword()));
         }

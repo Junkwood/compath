@@ -1,3 +1,4 @@
+import RoleForm from "../role/RoleForm.vue";
 const adminRoutes = [
   {
     // 업무 상태 목록
@@ -6,10 +7,28 @@ const adminRoutes = [
     component: () => import("../task/TaskStatusListSJW.vue"),
   },
   {
+    // 업무 유형 목록
+    path: "/admin/task/type",
+    name: "taskTypeList",
+    component: () => import("../task/TaskTypeListSJW.vue"),
+  },
+  {
     //역할 목록
     path: "/admin/role",
-    name: "role",
-    component: () => import("../role/RoleLIst.vue"),
+    name: "roleList",
+    component: () => import("../role/RoleList.vue"),
+  },
+  {
+    //역할 등록
+    path: "/admin/role/register",
+    name: "roleRegister",
+    component: RoleForm,
+  },
+  {
+    //역할 수정
+    path: "/admin/role/modify/:id",
+    name: "roleModify",
+    component: RoleForm,
   },
   {
     //로그인페이지

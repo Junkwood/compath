@@ -9,7 +9,7 @@ export const useStatusStore = defineStore("status", () => {
   // ── 목록 조회 ──
   async function getStatusList() {
     try {
-      const res = await api.get("/taskStatus");
+      const res = await api.get("/admin/taskStatus");
       console.log(res);
       statusList.value = res.data;
     } catch (err) {
@@ -21,7 +21,7 @@ export const useStatusStore = defineStore("status", () => {
   // ── 단건 조회 ──
   async function getStatus(taskStatusId) {
     try {
-      const res = await api.get(`/taskStatus/${taskStatusId}`);
+      const res = await api.get(`/admin/taskStatus/${taskStatusId}`);
       return res.data;
     } catch (err) {
       console.error("상태 조회 실패:", err);
@@ -33,7 +33,7 @@ export const useStatusStore = defineStore("status", () => {
   async function createStatus(form) {
     try {
       form.userId = authStore.user.userId;
-      const res = await api.post("/taskStatus", form);
+      const res = await api.post("/admin/taskStatus", form);
       return res.data;
     } catch (err) {
       console.error("상태 등록 실패:", err);
@@ -44,7 +44,11 @@ export const useStatusStore = defineStore("status", () => {
   // ── 수정 ──
   async function updateStatus(form) {
     try {
-      const res = await api.put(`/taskStatus/modifiy`, form);
+      console.log(form);
+      const res = await api.put(
+        `/admin/taskStatus/modify/${form.taskStatusId}`,
+        form,
+      );
       return res.data;
     } catch (err) {
       console.error("상태 수정 실패:", err);
@@ -56,7 +60,7 @@ export const useStatusStore = defineStore("status", () => {
   async function changeStatus(row) {
     try {
       console.log(authStore.user.userId);
-      const res = await api.put(`/taskStatus/modify/isActive`, {
+      const res = await api.put(`/admin/taskStatus/modify/isActive`, {
         taskStatusId: row.taskStatusId,
         isActive: row.isActive,
         userId: authStore.user.userId,
@@ -75,7 +79,7 @@ export const useStatusStore = defineStore("status", () => {
   async function changeFinal(row) {
     try {
       console.log(authStore.user.userId);
-      const res = await api.put(`/taskStatus/modify/isFinal`, {
+      const res = await api.put(`/admin/taskStatus/modify/isFinal`, {
         taskStatusId: row.taskStatusId,
         isFinal: row.isFinal,
         userId: authStore.user.userId,
@@ -90,6 +94,17 @@ export const useStatusStore = defineStore("status", () => {
       throw err;
     }
   }
+  // 상태명 중복 체크
+  async function checkDuplicate(statusName) {
+    try {
+      const res = await api.get(`/admin/taskStatus/checkDup/${statusName}`);
+      const result = res.data;
+      return result;
+    } catch (e) {
+      console.log(`중복 확인 실패 : ${e}`);
+      throw e;
+    }
+  }
 
   return {
     statusList,
@@ -99,5 +114,6 @@ export const useStatusStore = defineStore("status", () => {
     updateStatus,
     changeStatus,
     changeFinal,
+    checkDuplicate,
   };
 });

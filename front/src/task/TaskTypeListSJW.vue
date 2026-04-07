@@ -17,16 +17,16 @@
             <h1
               class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
             >
-              업무 상태 관리
+              업무 유형 관리
             </h1>
           </div>
 
           <!-- 카드 -->
           <div class="card">
             <div class="card-header">
-              <span class="card-title">상태 목록</span>
+              <span class="card-title">유형 목록</span>
               <el-button class="btn-register" @click="handleCreate">
-                + &nbsp; 상태 등록
+                + &nbsp; 유형 등록
               </el-button>
             </div>
 
@@ -37,8 +37,8 @@
               :header-cell-style="headerStyle"
               :cell-style="cellStyle"
             >
-              <!-- 상태명 -->
-              <el-table-column label="상태명" align="center" width="160">
+              <!-- 유형명 -->
+              <el-table-column label="유형명" align="center" width="160">
                 <template #default="{ row }">
                   <span class="status-name">{{ row.statusName }}</span>
                 </template>
@@ -111,10 +111,10 @@
     </div>
   </div>
 
-  <!-- 상태 등록/수정 모달 -->
+  <!-- 유형 등록/수정 모달 -->
   <el-dialog
     v-model="modalVisible"
-    :title="isEditMode ? '상태 수정' : '상태 등록'"
+    :title="isEditMode ? '유형 수정' : '유형 등록'"
     width="480px"
     :close-on-click-modal="false"
     @close="handleModalClose"
@@ -127,11 +127,11 @@
       label-width="120px"
       label-position="left"
     >
-      <el-form-item label="상태명" prop="statusName">
+      <el-form-item label="유형명" prop="statusName">
         <div style="display: flex; gap: 8px; width: 100%">
           <el-input
             v-model="form.statusName"
-            placeholder="상태명을 입력하세요"
+            placeholder="유형명을 입력하세요"
             style="flex: 1"
             @input="onStatusNameInput"
           />
@@ -145,19 +145,19 @@
           v-if="isOriginalName"
           style="font-size: 12px; margin-top: 4px; color: #9ca3af"
         >
-          기존 상태명과 동일합니다.
+          기존 유형명과 동일합니다.
         </p>
         <p
           v-else-if="dupValid === true"
           style="font-size: 12px; margin-top: 4px; color: #16a34a"
         >
-          사용 가능한 상태명입니다.
+          사용 가능한 유형명입니다.
         </p>
         <p
           v-else-if="dupValid === false"
           style="font-size: 12px; margin-top: 4px; color: #dc2626"
         >
-          이미 사용 중인 상태명입니다.
+          이미 사용 중인 유형명입니다.
         </p>
         <p
           v-else-if="dupMessage"
@@ -173,7 +173,7 @@
           v-model="form.description"
           type="textarea"
           :rows="3"
-          placeholder="상태에 대한 설명을 입력하세요 (선택)"
+          placeholder="유형에 대한 설명을 입력하세요 (선택)"
         />
       </el-form-item>
 
@@ -186,7 +186,7 @@
             inactive-value="N"
           />
           <span class="switch-desc">
-            이 상태가 업무의 최종 완료 단계입니까?<br />
+            이 유형가 업무의 최종 완료 단계입니까?<br />
             <span class="switch-sub"
               >완료 단계로 설정하면 업무가 종료 처리됩니다.</span
             >
@@ -204,7 +204,7 @@
           />
           <span class="switch-desc">
             {{
-              form.isActive === "Y" ? "사용 중입니다." : "미사용 상태입니다."
+              form.isActive === "Y" ? "사용 중입니다." : "미사용 유형입니다."
             }}
           </span>
         </div>
@@ -223,7 +223,7 @@
             :loading="submitting"
             @click="handleSubmit"
           >
-            {{ isEditMode ? "수정 완료" : "상태 등록" }}
+            {{ isEditMode ? "수정 완료" : "유형 등록" }}
           </el-button>
         </div>
       </div>
@@ -265,7 +265,7 @@ const cellStyle = () => ({
   borderBottom: "1px solid #f1f5f9",
 });
 
-// ── 모달 상태 ──
+// ── 모달 유형 ──
 const modalVisible = ref(false);
 const submitting = ref(false);
 const formRef = ref(null);
@@ -283,8 +283,8 @@ const form = reactive(defaultForm());
 
 const rules = reactive({
   statusName: [
-    { required: true, message: "상태명을 입력하세요", trigger: "blur" },
-    { max: 100, message: "상태명은 100자 이하로 입력하세요", trigger: "blur" },
+    { required: true, message: "유형명을 입력하세요", trigger: "blur" },
+    { max: 100, message: "유형명은 100자 이하로 입력하세요", trigger: "blur" },
   ],
 });
 
@@ -314,7 +314,7 @@ const handleToggle = async (row) => {
   const action = row.isActive === "Y" ? "활성화" : "비활성화";
 
   const result = await Swal.fire({
-    title: `상태를 ${action}하시겠습니까?`,
+    title: `유형를 ${action}하시겠습니까?`,
     text: `"${row.statusName}"`,
     icon: "question",
     showCancelButton: true,
@@ -346,7 +346,7 @@ const handleToggle = async (row) => {
     Swal.fire({
       icon: "error",
       title: "처리 실패",
-      text: "상태 변경에 실패했습니다. 다시 시도해주세요.",
+      text: "유형 변경에 실패했습니다. 다시 시도해주세요.",
       confirmButtonColor: "#2563eb",
     });
     await statusStore.getStatusList();
@@ -391,7 +391,7 @@ const handleCheck = async (row) => {
     Swal.fire({
       icon: "error",
       title: "처리 실패",
-      text: "상태 변경에 실패했습니다. 다시 시도해주세요.",
+      text: "유형 변경에 실패했습니다. 다시 시도해주세요.",
       confirmButtonColor: "#2563eb",
     });
     await statusStore.getStatusList();
@@ -423,7 +423,7 @@ const handleSubmit = async () => {
   if (!isOriginalName.value && !isNameChecked.value) {
     Swal.fire({
       icon: "warning",
-      title: "상태명 중복 확인을 해주세요.",
+      title: "유형명 중복 확인을 해주세요.",
       confirmButtonColor: "#2563eb",
     });
     return;
@@ -431,7 +431,7 @@ const handleSubmit = async () => {
   if (!isOriginalName.value && !isNameValid.value) {
     Swal.fire({
       icon: "warning",
-      title: "이미 사용 중인 상태명입니다.",
+      title: "이미 사용 중인 유형명입니다.",
       confirmButtonColor: "#2563eb",
     });
     return;
@@ -468,7 +468,7 @@ const handleSubmit = async () => {
     submitting.value = false;
   }
 };
-// ── 중복 확인 상태 ──
+// ── 중복 확인 유형 ──
 const isNameChecked = ref(false);
 const isNameValid = ref(false);
 const originalStatusName = ref("");
@@ -478,7 +478,7 @@ const isOriginalName = computed(
   () => isEditMode.value && form.statusName === originalStatusName.value,
 );
 
-// 상태명 입력 시 중복 확인 초기화
+// 유형명 입력 시 중복 확인 초기화
 const onStatusNameInput = () => {
   if (!isOriginalName.value) {
     isNameChecked.value = false;
@@ -506,7 +506,7 @@ const checkDuplicate = async () => {
     dupValid.value = null;
   }
 };
-// 💡 모달이 화면에서 완전히 사라질 때 모든 상태를 '백지화' 합니다.
+// 💡 모달이 화면에서 완전히 사라질 때 모든 유형를 '백지화' 합니다.
 const handleModalClosed = () => {
   // 1. 폼 데이터 완전 초기화
   Object.assign(form, defaultForm());

@@ -12,7 +12,11 @@ public interface RoleMapperSJW {
     List<PermissionDTOSJW> getAllPermission();
     Integer registerRole(RoleDTOSJW role);
     void deleteRolePermissionByRoleId(Integer roleId);
-    Integer deleteRoleById(Integer roleId);
+    Integer removeRole(Integer roleId);
     void registerRolePermission(PermissionDTOSJW permission);
     Integer modifyRole(RoleDTOSJW role);
+
+    RoleDTOSJW getRole(Integer roleId);
+
+    List<RoleDTOSJW> getActiveRoles();
 }

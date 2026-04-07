@@ -14,7 +14,7 @@ public interface EmpServiceSJW {
     String modifyStatusById(Integer id);
     Integer registerEmp(EmpVOSJW emp);
     EmpVOSJW login(EmpVOSJW emp);
-    Boolean modifyEmpById(EmpVOSJW emp);
+    Boolean modifyEmpById(EmpVOSJW emp,Integer id);
     Integer sendEmail(String email,Integer userId);
     Boolean verifyCode(Integer code, Integer emailId);
 }

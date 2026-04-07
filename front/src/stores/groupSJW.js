@@ -10,12 +10,12 @@ export const useGroupStore = defineStore("group", {
   getters: {},
   actions: {
     async getActiveGroupList() {
-      await api.get("/group/list/active").then((response) => {
+      await api.get("/admin/group/active").then((response) => {
         this.activeGroupList = response.data;
       });
     },
     async getGroupList() {
-      const response = await api.get("/group/list");
+      const response = await api.get("/admin/group");
       this.groupList = response.data;
       return this.groupList;
     },
@@ -32,7 +32,7 @@ export const useGroupStore = defineStore("group", {
         isActive: value,
         editorUserId: editorUserId,
       };
-      const response = await api.put("/group", group);
+      const response = await api.put("/admin/group", group);
       const result = response.data;
       if (result.isActive == null) {
         return false;
@@ -42,7 +42,7 @@ export const useGroupStore = defineStore("group", {
       }
     },
     async getGroupInfo(id) {
-      const response = await api.get("/group/info/" + id);
+      const response = await api.get("/admin/group/" + id);
       const result = response.data;
       this.group = result;
       return this.group;

@@ -16,11 +16,12 @@
         <collection property="permissions" ofType="com.example.role.dto.PermissionDTOSJW">
             <id property="permissionId" column="PERM_ID"/>
             <result property="permissionName" column="PERM_NAME"/>
-            <result property="permissionCode" column="PERM_CODE"/>
             <result property="description" column="PERM_DESC"/>
             <result property="permissionUrl" column="PERM_URL"/>
             <result property="permissionMethod" column="PERM_METHOD"/>
             <result property="createdAt" column="PERM_CREATED_AT"/>
+            <result property="permissionGroupId" column="PERM_GROUP_ID"/>
+            <result property="permissionGroupName" column="PERM_GROUP_NAME"/>
         </collection>
     </resultMap>
 
@@ -38,12 +39,12 @@
         -- [권한 컬럼] 중복 방지를 위해 PERM_ 접두사 별칭 사용
         p.PERMISSION_ID AS PERM_ID,
         p.PERMISSION_NAME AS PERM_NAME,
-        p.PERMISSION_CODE AS PERM_CODE,
         p.DESCRIPTION AS PERM_DESC,
         p.PERMISSION_URL AS PERM_URL,
         p.PERMISSION_METHOD AS PERM_METHOD,
-        p.CREATED_AT AS PERM_CREATED_AT
-
+        p.CREATED_AT AS PERM_CREATED_AT,
+        p.permission_group_id AS PERM_GROUP_ID,
+        p.permission_group_name AS PERM_GROUP_NAME
         FROM roles r
         -- 권한이 없는 역할도 가져와야 하므로 무조건 LEFT JOIN
         LEFT JOIN role_permissions rp ON r.ROLE_ID = rp.ROLE_ID
@@ -114,4 +115,57 @@
     <delete id="deleteRoleById">
         DELETE FROM roles WHERE role_id = #{roleId}
     </delete>
+    <select id="getRole" resultMap="RoleWithPermissionsMap">
+        SELECT
+        -- [역할 컬럼]
+        r.ROLE_ID,
+        r.ROLE_NAME,
+        r.DESCRIPTION,
+        active(r.IS_ACTIVE) AS IS_ACTIVE,
+        r.CREATED_AT,
+        r.UPDATED_AT,
+        r.EDITOR_USER_ID,
+
+        -- [권한 컬럼] 중복 방지를 위해 PERM_ 접두사 별칭 사용
+        p.PERMISSION_ID AS PERM_ID,
+        p.PERMISSION_NAME AS PERM_NAME,
+        p.DESCRIPTION AS PERM_DESC,
+        p.PERMISSION_URL AS PERM_URL,
+        p.PERMISSION_METHOD AS PERM_METHOD,
+        p.CREATED_AT AS PERM_CREATED_AT,
+        p.permission_group_id AS PERM_GROUP_ID,
+        p.permission_group_name AS PERM_GROUP_NAME
+        FROM roles r
+        LEFT JOIN role_permissions rp ON r.ROLE_ID = rp.ROLE_ID
+        LEFT JOIN permissions p ON rp.PERMISSION_ID = p.PERMISSION_ID
+        WHERE r.role_id = #{roleId}
+        ORDER BY p.PERMISSION_ID
+    </select>
+    <select id="getActiveRoles" resultMap="RoleWithPermissionsMap">
+        SELECT
+        -- [역할 컬럼]
+        r.ROLE_ID,
+        r.ROLE_NAME,
+        r.DESCRIPTION,
+        active(r.IS_ACTIVE) AS IS_ACTIVE,
+        r.CREATED_AT,
+        r.UPDATED_AT,
+        r.EDITOR_USER_ID,
+
+        -- [권한 컬럼] 중복 방지를 위해 PERM_ 접두사 별칭 사용
+        p.PERMISSION_ID AS PERM_ID,
+        p.PERMISSION_NAME AS PERM_NAME,
+        p.DESCRIPTION AS PERM_DESC,
+        p.PERMISSION_URL AS PERM_URL,
+        p.PERMISSION_METHOD AS PERM_METHOD,
+        p.CREATED_AT AS PERM_CREATED_AT,
+        p.permission_group_id AS PERM_GROUP_ID,
+        p.permission_group_name AS PERM_GROUP_NAME
+        FROM roles r
+        LEFT JOIN role_permissions rp ON r.ROLE_ID = rp.ROLE_ID
+        LEFT JOIN permissions p ON rp.PERMISSION_ID = p.PERMISSION_ID
+        WHERE r.is_active='O1'
+        ORDER BY r.ROLE_ID, p.PERMISSION_ID
+    </select>
+
 </mapper>

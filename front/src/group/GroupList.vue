@@ -454,9 +454,10 @@ export default {
       router.push({ name: "groupInfo", params: { id: id } });
     };
     const handleUpdateGroup = async (groupId) => {
-      const group = await groupStore.getGroup(groupId);
+      const group = await groupStore.getGroupInfo(groupId);
       selectedGroup.value = { ...group };
       createGroupOpen.value = true;
+      router.push(`/admin/group/modify/${groupId}`);
     };
 
     const handleToggle = async (group) => {
