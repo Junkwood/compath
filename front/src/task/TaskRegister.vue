@@ -225,6 +225,9 @@ const route = useRoute();
 const sidebarOpen = ref(false);
 const store = useTaskStore();
 const id = route.params.projectId;
+const parentTaskId = route.query.parentTaskId;
+const isSubTask = computed(() => !!parentTaskId);
+
 
 const {
   form,
@@ -246,8 +249,18 @@ const {
   resetForm,
 } = store;
 
+// 하위업무일 때 업무상태 필터
+const filteredStatusList = computed(() => {
+  if (!isSubTask.value) return statusList.value;
+  return statusList.value.filter(item => {
+    const num = Number(String(item.codeValue).replace(/[^0-9]/g, ''));
+    return [1, 2].includes(num);
+  });
+});
+
+
 onMounted(async () => {
-  await store.initCreate(route.params.projectId || route.query.projectId);
+  await store.initCreate(route.params.projectId || route.query.projectId, parentTaskId);
 });
 
 const handleSubmit = async () => {

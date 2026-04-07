@@ -159,7 +159,8 @@
                 <td class="p-2 w-24"><div class="text-center">{{ task.typeName }}</div></td>
                 <td class="p-2"><div class="text-center">{{ formatDate(task.startDate) }}</div></td>
                 <td class="p-2"><div class="text-center">{{ formatDate(task.dueDate) }}</div></td>
-                <td class="p-2 w-28"><div class="text-center">{{ task.workHours }}시간</div></td>
+                <td class="p-2 w-28"><div class="text-center">{{ task.actualHours != null ? task.actualHours + '시간' : '-' }}</div>
+</td>
                 <td class="p-2 w-48">
                   <div class="progress-wrap">
                     <el-progress :percentage="task.progressRate" :stroke-width="8" :show-text="false" color="#2563eb" style="flex: 1" />
@@ -298,7 +299,7 @@ const exportExcel = () => {
     업무유형: task.typeName,
     시작일: formatDate(task.startDate),
     마감일: formatDate(task.dueDate),
-    "업무 기간(시간)": task.workHours,
+    "업무 기간(시간)": task.actualHours ?? task.estimatedHours ?? '-',
     "진척도(%)": task.progressRate,
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
@@ -324,7 +325,7 @@ const exportPdf = () => {
     task.typeName,
     formatDate(task.startDate),
     formatDate(task.dueDate),
-    task.workHours,
+    task.actualHours ?? task.estimatedHours ?? '-',
     `${task.progressRate}%`,
   ]);
 
