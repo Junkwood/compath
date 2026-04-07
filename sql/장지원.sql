@@ -5,10 +5,23 @@ SELECT * FROM projects;
 SELECT * FROM tasks;
 
 SELECT * FROM task_types;
+SELECT * FROM task_statuses;
+
+UPDATE task_statuses 
+SET DESCRIPTION = 'G5' 
+WHERE TASK_STATUS_ID = 5;
+
+
+
 SELECT * FROM milestones;
 SELECT * FROM milestone_mapping;
 SELECT * FROM task_rejections;
 SELECT * FROM common_code;
+
+UPDATE common_code
+SET CODE_VALUE = 'G5'
+WHERE CODE_VALUE = 'G6' AND GROUP_VALUE = '0G';
+
 
 -- 특정 프로젝트 마일스톤 조회
 SELECT m.milestone_id, m.milestone_name
@@ -77,7 +90,7 @@ SET
 WHERE task_id = 10080;
 
 -- 데이터 삭제
-DELETE FROM tasks WHERE task_id = '10108';
+DELETE FROM COMMON_CODE  WHERE code_value = 'G5';
 ---------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
     p_task_id      IN  NUMBER,
@@ -86,7 +99,8 @@ CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
     projectList    OUT SYS_REFCURSOR,
     userList       OUT SYS_REFCURSOR,
     taskTypeList   OUT SYS_REFCURSOR,
-    milestoneList  OUT SYS_REFCURSOR
+    milestoneList  OUT SYS_REFCURSOR,
+    statusList     OUT SYS_REFCURSOR
 ) AS
     v_target_project_id NUMBER;
 BEGIN
@@ -122,6 +136,14 @@ BEGIN
     SELECT milestone_id, milestone_name FROM milestones
     WHERE project_id = v_target_project_id
        OR project_id = (SELECT parent_project_id FROM projects WHERE project_id = v_target_project_id);
+    
+    --업무 상태
+    OPEN statusList FOR
+    SELECT task_status_id, status_name, is_final
+    FROM task_statuses
+    WHERE is_active = 'O1'
+    	ORDER BY task_status_id;
+
 END;
 ------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE SP_REJECT_TASK_COMPLETE (

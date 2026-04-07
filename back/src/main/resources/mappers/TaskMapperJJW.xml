@@ -4,6 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.task.mapper.TaskMapperJJW">
 
+    <!-- ───────────── ResultMap ───────────── -->
     <resultMap id="taskResultMap" type="com.example.task.dto.TaskReqDtoJJW">
         <id property="taskId" column="TASK_ID" />
         <result property="title" column="TITLE" />
@@ -21,7 +22,8 @@
         <result property="milestoneId" column="MILESTONE_ID" />
         <result property="projectId" column="PROJECT_ID" />
         <result property="assigneeUserId" column="ASSIGNEE_USER_ID" />
-        <result property="assigneeName" column="ASSIGNEENAME" /> </resultMap>
+        <result property="assigneeName" column="ASSIGNEENAME" />
+    </resultMap>
 
     <resultMap id="projectMap" type="com.example.project.dto.ProjectDtoJJW">
         <id property="projectId" column="PROJECT_ID" />
@@ -46,196 +48,163 @@
         <result property="milestoneName" column="MILESTONE_NAME" />
     </resultMap>
 
-    <!--업무 생성-->
+    <resultMap id="statusMap" type="map">
+        <result property="taskStatusId" column="TASK_STATUS_ID"/>
+        <result property="statusName" column="STATUS_NAME"/>
+        <result property="isFinal" column="IS_FINAL"/>
+    </resultMap>
+
+    <!-- ───────────── 업무 등록 ───────────── -->
     <insert id="insert" parameterType="TaskReqDtoJJW">
         <selectKey keyProperty="taskId" resultType="int" order="BEFORE">
             SELECT task_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO tasks (
-        task_id,
-        project_id,
-        parent_task_id,
-        milestone_id,
-        task_type_id,
-        task_status_id,
-        title,
-        content,
-        assignee_user_id,
-        priority_code,
-        est_start_date,
-        est_end_date,
-        start_date,
-        due_date,
-        estimated_hours,
-        progress_rate,
-        created_at
+        task_id, project_id, parent_task_id, milestone_id,
+        task_type_id, task_status_id, title, content,
+        assignee_user_id, priority_code, est_start_date, est_end_date,
+        start_date, due_date, estimated_hours, progress_rate, created_at
         ) VALUES (
-        #{taskId},
-        #{projectId},
-        #{parentTaskId},
-        #{milestoneId},
-        #{taskTypeId},
-        #{taskStatusId},
-        #{title},
-        #{content},
-        #{assigneeUserId},
-        #{priorityCode},
-        #{estStartDate},
-        #{estEndDate},
-        #{startDate},
-        #{dueDate},
-        #{estimatedHours},
-        #{progressRate},
-        sysdate
+        #{taskId}, #{projectId}, #{parentTaskId}, #{milestoneId},
+        #{taskTypeId}, #{taskStatusId}, #{title}, #{content},
+        #{assigneeUserId}, #{priorityCode}, #{estStartDate}, #{estEndDate},
+        #{startDate}, #{dueDate}, #{estimatedHours}, #{progressRate}, SYSDATE
         )
     </insert>
 
-    <!--반려 사유 모달 저장-->
-    <insert id="insert1" parameterType="TaskRejectDtoJJW">
-        INSERT INTO task_rejections (
-        task_rejection_id,
-        task_id,
-        rejection_reason,
-        rejected_by,
-        rejection_date
-        ) VALUES (
-        task_rejection_seq.NEXTVAL,
-        #{taskId},
-        #{rejectionReason},
-        #{rejectedBy},
-        SYSDATE
-        )
-    </insert>
+    <!-- ───────────── 업무 수정 ───────────── -->
+    <update id="updateTask" parameterType="TaskReqDtoJJW">
+        UPDATE tasks
+        SET title          = #{title},
+        content        = #{content},
+        task_status_id = #{taskStatusId},
+        priority_code  = #{priorityCode},
+        assignee_user_id = #{assigneeUserId},
+        progress_rate  = #{progressRate},
+        actual_hours   = #{actualHours},
+        start_date     = #{startDate},
+        due_date       = #{dueDate},
+        updated_at     = SYSDATE,
+        editor_user_id = #{editorUserId}
+        WHERE task_id = #{taskId}
+    </update>
 
-    <!--반려 사유 상태 업데이트-->
     <update id="updateTaskStatus">
         UPDATE tasks
         SET task_status_id = #{status}
         WHERE task_id = #{taskId}
     </update>
 
-    <!--업무 수정-->
-    <update id="updateTask" parameterType="TaskReqDtoJJW">
-        UPDATE tasks
-        SET title = #{title},
-        content = #{content},
-        task_status_id = #{taskStatusId},
-        priority_code = #{priorityCode},
-        assignee_user_id = #{assigneeUserId},
-        progress_rate = #{progressRate},
-        actual_hours = #{actualHours},
-        start_date = #{startDate},
-        due_date = #{dueDate},
-        updated_at = SYSDATE,
-        editor_user_id = #{editorUserId}
-        WHERE task_id = #{taskId}
-    </update>
+    <!-- ───────────── 반려 ───────────── -->
+    <insert id="insert1" parameterType="TaskRejectDtoJJW">
+        INSERT INTO task_rejections (
+        task_rejection_id, task_id, rejection_reason, rejected_by, rejection_date
+        ) VALUES (
+        task_rejection_seq.NEXTVAL, #{taskId}, #{rejectionReason}, #{rejectedBy}, SYSDATE
+        )
+    </insert>
 
-    <!--업무 조회 pl/sql-->
+    <!-- ───────────── 업무 조회 ───────────── -->
+    <!-- 프로시저 -->
     <select id="getTaskTotalInfo" statementType="CALLABLE">
         {CALL SP_GET_TASK_TOTAL_INFO(
-        #{taskId, mode=IN, jdbcType=INTEGER},
-        #{projectId, mode=IN, jdbcType=INTEGER},
-        #{taskDetail, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=taskResultMap},
-        #{projectList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=projectMap},
-        #{userList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=userMap},
+        #{taskId,       mode=IN,  jdbcType=INTEGER},
+        #{projectId,    mode=IN,  jdbcType=INTEGER},
+        #{taskDetail,   mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=taskResultMap},
+        #{projectList,  mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=projectMap},
+        #{userList,     mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=userMap},
         #{taskTypeList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=typeMap},
-        #{milestoneList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=milestoneMap}
+        #{milestoneList,mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=milestoneMap},
+        #{statusList,   mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=statusMap}
         )}
     </select>
 
-
-    <!-- 업무 상세 조회-->
+    <!-- 업무 단건 조회 -->
     <select id="getTaskById" resultType="com.example.task.dto.TaskReqDtoJJW">
         SELECT
-        t.task_id as taskId,
-        t.project_id as projectId,
-        t.task_type_id as taskTypeId,
+        t.task_id          AS taskId,
+        t.project_id       AS projectId,
+        t.task_type_id     AS taskTypeId,
         t.title,
         t.content,
-        t.assignee_user_id as assigneeUserId,
-        u.user_name as assigneeName,
-        t.task_status_id as taskStatusId,
-        t.priority_code as priorityCode,
-        t.milestone_id as milestoneId,
-        t.start_date as startDate,
-        t.due_date as dueDate,
-        t.actual_hours as actualHours,
-        t.progress_rate as progressRate,
-        t.est_start_date as estStartDate,
-        t.est_end_date as estEndDate,
-        t.estimated_hours  as estimatedHours
+        t.assignee_user_id AS assigneeUserId,
+        u.user_name        AS assigneeName,
+        t.task_status_id   AS taskStatusId,
+        t.priority_code    AS priorityCode,
+        t.milestone_id     AS milestoneId,
+        t.start_date       AS startDate,
+        t.due_date         AS dueDate,
+        t.actual_hours     AS actualHours,
+        t.progress_rate    AS progressRate,
+        t.est_start_date   AS estStartDate,
+        t.est_end_date     AS estEndDate,
+        t.estimated_hours  AS estimatedHours
         FROM tasks t
         LEFT JOIN users u ON t.assignee_user_id = u.user_id
         WHERE t.task_id = #{taskId}
     </select>
 
+    <!-- 업무 전체 조회 -->
     <select id="getTaskAll" resultType="com.example.task.dto.TaskReqDtoJJW">
-        SELECT
-        t.*,
-        u.user_name AS assigneeName
+        SELECT t.*, u.user_name AS assigneeName
         FROM tasks t
         LEFT JOIN users u ON t.assignee_user_id = u.user_id
     </select>
 
-    <!-- 프로젝트 목록 조회 -->
+    <!-- ───────────── 공통 목록 조회 ───────────── -->
+    <!-- 프로젝트 목록 -->
     <select id="getProjectList" resultType="com.example.project.dto.ProjectDtoJJW">
         SELECT project_id, project_name, parent_project_id
         FROM projects
         WHERE status = 'F1'
     </select>
 
-    <!-- 담당자(유저) 목록 조회 -->
-    <select id="getUserList" resultType="com.example.task.dto.UserDtoJJW">
+    <!-- 프로젝트 상세 -->
+    <select id="getProjectDetail" parameterType="Integer" resultType="ProjectDtoJJW">
         SELECT
-        user_id AS userId,
-        user_name AS userName
+        curr.PROJECT_ID       AS projectId,
+        curr.PROJECT_NAME     AS projectName,
+        parent.PROJECT_ID     AS parentProjectId,
+        parent.PROJECT_NAME   AS parentProjectName,
+        CASE WHEN curr.PARENT_PROJECT_ID IS NULL
+        THEN curr.PROJECT_NAME
+        ELSE parent.PROJECT_NAME
+        END AS displayProjectName,
+        CASE WHEN curr.PARENT_PROJECT_ID IS NULL
+        THEN NULL
+        ELSE curr.PROJECT_NAME
+        END AS displaySubProjectName
+        FROM projects curr
+        LEFT JOIN projects parent ON curr.PARENT_PROJECT_ID = parent.PROJECT_ID
+        WHERE curr.PROJECT_ID = #{projectId}
+    </select>
+
+    <!-- 담당자 목록 -->
+    <select id="getUserList" resultType="com.example.task.dto.UserDtoJJW">
+        SELECT user_id AS userId, user_name AS userName
         FROM users
         WHERE is_active = 'O1' AND user_type = 'M2'
     </select>
 
-    <!-- 업무유형 목록 조회 -->
+    <!-- 업무유형 목록 -->
     <select id="getTaskType" resultType="com.example.task.dto.TaskTypeDtoJJW">
         SELECT task_type_id, type_name
         FROM task_types
         WHERE is_active = 'O1'
     </select>
 
-    <!-- 업무상태 목록 조회 -->
+    <!-- 업무상태 목록 -->
     <select id="getTaskStatus" resultType="com.example.task.dto.TaskStatusDtoJJW">
         SELECT task_status_id, status_name
         FROM task_statuses
         WHERE is_active = 'O1'
     </select>
 
-    <!-- 마일스톤 목록 조회 -->
+    <!-- 마일스톤 목록 -->
     <select id="getMilestone" resultType="com.example.milestone.dto.MilestoneDtoJJW">
-        SELECT
-        m.milestone_id AS milestoneId,
-        m.milestone_name AS milestoneName
+        SELECT m.milestone_id AS milestoneId, m.milestone_name AS milestoneName
         FROM milestones m
         WHERE m.project_id = #{projectId}
     </select>
 
-    <!-- 프로젝트 상세 조회-->
-    <select id="getProjectDetail" parameterType="Integer" resultType="ProjectDtoJJW">
-        SELECT
-        curr.PROJECT_ID as projectId,
-        curr.PROJECT_NAME as projectName,
-        parent.PROJECT_ID as parentProjectId,
-        parent.PROJECT_NAME as parentProjectName,
-
-        CASE
-        WHEN curr.PARENT_PROJECT_ID IS NULL THEN curr.PROJECT_NAME
-        ELSE parent.PROJECT_NAME
-        END as displayProjectName,
-
-        CASE
-        WHEN curr.PARENT_PROJECT_ID IS NULL THEN NULL
-        ELSE curr.PROJECT_NAME
-        END as displaySubProjectName
-        FROM projects curr
-        LEFT JOIN projects parent ON curr.PARENT_PROJECT_ID = parent.PROJECT_ID
-        WHERE curr.PROJECT_ID = #{projectId}
-    </select>
 </mapper>

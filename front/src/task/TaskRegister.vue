@@ -107,11 +107,11 @@
                   <select v-model="form.taskStatusId" class="input flex-1">
                     <option value="">업무 상태를 선택하세요</option>
                     <option
-                      v-for="item in statusList"
-                      :key="item.codeValue"
-                      :value="item.codeValue"
+                      v-for="item in filteredStatusList"
+                      :key="item.taskStatusId"
+                      :value="item.taskStatusId"
                     >
-                      {{ item.codeName }}
+                      {{ item.statusName }}
                     </option>
                   </select>
                   <button class="btn-confirm">확인</button>
@@ -212,7 +212,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import Sidebar from "../partials/Sidebar.vue";
@@ -226,14 +226,14 @@ const sidebarOpen = ref(false);
 const store = useTaskStore();
 const id = route.params.projectId;
 const parentTaskId = route.query.parentTaskId;
-const isSubTask = computed(() => !!parentTaskId);
 
+const isSubTask = computed(() => !!route.query.parentTaskId);
 
 const {
   form,
   taskTypeList,
   priorityList,
-  statusList,
+  filteredStatusList,
   milestoneList,
   userList,
   userModal,
@@ -249,38 +249,27 @@ const {
   resetForm,
 } = store;
 
-// 하위업무일 때 업무상태 필터
-const filteredStatusList = computed(() => {
-  if (!isSubTask.value) return statusList.value;
-  return statusList.value.filter(item => {
-    const num = Number(String(item.codeValue).replace(/[^0-9]/g, ''));
-    return [1, 2].includes(num);
-  });
-});
-
-
 onMounted(async () => {
-  await store.initCreate(route.params.projectId || route.query.projectId, parentTaskId);
+  await store.initCreate(
+    route.params.projectId || route.query.projectId,
+    parentTaskId,
+  );
 });
 
 const handleSubmit = async () => {
   try {
     await store.createTask();
     alert("등록 완료!");
-   router.push({
+    router.push({
       name: "taskList",
-      params: { projectId: id }, 
+      params: { projectId: id },
     });
   } catch (e) {
     alert(e.message || "등록에 실패했습니다. 입력값을 확인해 주세요.");
   }
 };
 
-const goBack = () =>
-  router.push({
-    name: "taskList",
-    params: { projectId: id },
-  });
+const goBack = () => router.back();
 </script>
 
 <style scoped>

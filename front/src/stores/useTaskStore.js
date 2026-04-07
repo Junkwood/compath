@@ -4,25 +4,44 @@ import api from "../utils/api";
 import Swal from "sweetalert2";
 
 export const useTaskStore = defineStore("task", () => {
-  //  공통 코드 목록
+  // 상태
   const taskTypeList = ref([]);
   const priorityList = ref([]);
   const statusList = ref([]);
   const milestoneList = ref([]);
   const userList = ref([]);
   const rejectReason = ref("");
-
-  // 마일스톤 존재 여부
-  const hasMilestone = computed(() => milestoneList.value.length > 0);
-
-  // 모달 상태
+  const originalForm = ref(null);
+  const isOriginallyTerminated = ref(false);
+  const actualHours = ref("");
   const userModal = ref(false);
   const milestoneModal = ref(false);
 
-  //  소요시간 (수정 전용)
-  const actualHours = ref("");
+  // computed
+  // 마일스톤 존재 여부
+  const hasMilestone = computed(() => milestoneList.value.length > 0);
 
-  //  Form
+  // 종료 상태 ID
+  const finishedIds = computed(() =>
+    (statusList.value ?? [])
+      .filter((s) => s.isFinal === "O1")
+      .map((s) => s.taskStatusId),
+  );
+
+  // 등록 시 시작전/진행중만, 수정 시 전체
+  const filteredStatusList = computed(() => {
+    if (form.value.taskId) return statusList.value;
+    return statusList.value.filter((s) => [1, 2].includes(s.taskStatusId));
+  });
+
+  // 소요시간/진척도 표시 여부
+  const isCompletedStatus = computed(
+    () =>
+      finishedIds.value.includes(Number(form.value.taskStatusId)) ||
+      Number(form.value.taskStatusId) === 3,
+  );
+
+  // ───────────── Form ─────────────
   const initialForm = {
     projectId: "",
     subProjectId: "",
@@ -43,28 +62,27 @@ export const useTaskStore = defineStore("task", () => {
     estEndDate: "",
     estTime: "",
     progressRate: "",
+    parentTaskId: "",
   };
 
   const form = ref({ ...initialForm });
 
-  //  초기화 (등록용)
-  const initCreate = async (projectId,  parentTaskId = null) => {
+  //초기화 (등록용)
+  const initCreate = async (projectId, parentTaskId = null) => {
     resetForm();
-    const res = await api.get("/task-total-info", {
-      params: { projectId },
-    });
+    const res = await api.get("/task-total-info", { params: { projectId } });
     const {
       userList: uList,
       taskTypeList: tList,
       milestoneList: mList,
       projectList: pList,
+      statusList: rawStatusList,
     } = res.data;
 
-    // 기초 리스트
     userList.value = uList.map((u) => ({ name: u.userName, value: u.userId }));
     taskTypeList.value = tList;
+    statusList.value = rawStatusList;
 
-    // 마일스톤 리스트 매핑 및 초기값
     milestoneList.value = mList.map((m) => ({
       name: m.milestoneName,
       value: m.milestoneId,
@@ -77,25 +95,19 @@ export const useTaskStore = defineStore("task", () => {
       form.value.milestone = "등록된 마일스톤 없음";
     }
 
-    // 2. 프로젝트 정보
     if (pList && pList.length > 0) {
       const currentProj = pList.find((proj) => proj.projectId == projectId);
-
       if (currentProj) {
-        // 만약 현재 프로젝트가 하위 프로젝트일때
         if (currentProj.parentProjectId) {
           const parentProj = pList.find(
             (p) => p.projectId == currentProj.parentProjectId,
           );
-          form.value.projectName = parentProj
-            ? parentProj.projectName
-            : "상위 프로젝트 없음";
+          form.value.projectName =
+            parentProj?.projectName ?? "상위 프로젝트 없음";
           form.value.projectId = currentProj.parentProjectId;
-
           form.value.subProjectName = currentProj.projectName;
           form.value.subProjectId = currentProj.projectId;
         } else {
-          // 현재 프로젝트가 상위 프로젝트일때
           form.value.projectName = currentProj.projectName;
           form.value.projectId = currentProj.projectId;
           form.value.subProjectName = "";
@@ -104,56 +116,56 @@ export const useTaskStore = defineStore("task", () => {
       }
     }
 
-    await loadCommonCodes();
+    // 우선순위만 공통코드에서
+    const codeRes = await api.get("/code", { params: { groupValue: ["0H"] } });
+    priorityList.value = codeRes.data.c0H;
 
     if (parentTaskId) {
-    const parentRes = await api.get(`/tasks/${parentTaskId}`);
-    const parent = parentRes.data;
-    form.value.taskTypeId = parent.taskTypeId;
-    form.value.assigneeUserId = parent.assigneeUserId;
-    form.value.assigneeName = parent.assigneeName;
-    form.value.parentTaskId = parentTaskId;
-    form.value.milestoneId = parent.milestoneId;
-    form.value.milestone = milestoneList.value.find(m => m.value === parent.milestoneId)?.name ?? '';
+      const parentRes = await api.get("/task-total-info", {
+        params: { taskId: parentTaskId },
+      });
+      const parent = parentRes.data.taskDetail[0];
+      form.value.taskTypeId = parent.taskTypeId;
+      form.value.assigneeUserId = parent.assigneeUserId;
+      form.value.assigneeName = parent.assigneeName;
+      form.value.parentTaskId = Number(parentTaskId);
+      form.value.milestoneId = parent.milestoneId;
+      form.value.milestone =
+        milestoneList.value.find((m) => m.value === parent.milestoneId)?.name ??
+        form.value.milestone;
     }
   };
+
   // 초기화 (수정용)
   const initEdit = async (taskId) => {
     resetForm();
 
-    // 프로시저 한 번 호출로 전부 조회
-    const res = await api.get("/task-total-info", {
-      params: { taskId },
-    });
-
+    const res = await api.get("/task-total-info", { params: { taskId } });
     const {
       taskDetail,
       projectList,
       userList: uList,
       taskTypeList: rawTypeList,
-      milestoneList,
+      milestoneList: rawMilestoneList,
+      statusList: rawStatusList,
     } = res.data;
 
     const d = taskDetail[0];
     const pd = projectList;
 
-    const codeRes = await api.get("/code", {
-      params: { groupValue: ["0H", "0G"] },
-    });
+    // 우선순위만 공통코드에서
+    const codeRes = await api.get("/code", { params: { groupValue: ["0H"] } });
     priorityList.value = codeRes.data.c0H;
-    statusList.value = codeRes.data.c0G;
 
+    // 업무상태는 프로시저에서
+    statusList.value = rawStatusList;
     taskTypeList.value = rawTypeList;
-    userList.value = uList.map((u) => ({
-      name: u.userName,
-      value: u.userId,
-    }));
-    milestoneList.value = milestoneList.map((m) => ({
+    userList.value = uList.map((u) => ({ name: u.userName, value: u.userId }));
+    milestoneList.value = rawMilestoneList.map((m) => ({
       name: m.milestoneName,
       value: m.milestoneId,
     }));
 
-    // 프로젝트 정보 세팅
     const parentProject = pd.find((p) => !p.parentProjectId) ?? pd[0];
     const subProject = pd.find((p) => p.parentProjectId);
 
@@ -170,19 +182,15 @@ export const useTaskStore = defineStore("task", () => {
       dueDate: d.dueDate?.split("T")[0] ?? "",
       estTime: d.estimatedHours ? `${d.estimatedHours}시간` : "0시간",
       milestone:
-        milestoneList.value.find((m) => m.value === d.milestoneId)?.name ??
-        "마일스톤 없음",
+        rawMilestoneList.find((m) => m.milestoneId === d.milestoneId)
+          ?.milestoneName ?? "마일스톤 없음",
     };
-  };
 
-  //  공통 코드 로드(우선순위, 상태)
-  const loadCommonCodes = async () => {
-    const codeRes = await api.get("/code", {
-      params: { groupValue: ["0H", "0G"] },
-    });
-
-    priorityList.value = codeRes.data.c0H;
-    statusList.value = codeRes.data.c0G;
+    originalForm.value = { ...form.value };
+    isOriginallyTerminated.value =
+      (rawStatusList ?? []).find(
+        (s) => s.taskStatusId === Number(d.taskStatusId),
+      )?.isFinal === "O1";
   };
 
   //  담당자
@@ -193,24 +201,20 @@ export const useTaskStore = defineStore("task", () => {
   const selectUser = (val) => {
     const selectedName =
       typeof val === "object" ? val.name || val.userName : val;
-
     const found = userList.value.find(
       (u) => u.name === selectedName || u.userName === selectedName,
     );
-
     if (found) {
       form.value.assigneeName = found.name || found.userName;
       form.value.assigneeUserId = found.value || found.userId;
-
-      // 선택 후 모달 닫기
       userModal.value = false;
     }
-  }; // 마일스톤
+  };
+
+  // 마일스톤
   const fetchMilestones = async (pId) => {
     if (!pId) return;
-    const res = await api.get("/taskMileStone", {
-      params: { projectId: pId },
-    });
+    const res = await api.get("/taskMileStone", { params: { projectId: pId } });
     milestoneList.value = res.data.map((m) => ({
       name: m.milestoneName,
       value: m.milestoneId,
@@ -233,7 +237,7 @@ export const useTaskStore = defineStore("task", () => {
     form.value.milestoneId = val.value;
   };
 
-  // 우선순위
+  //  우선순위
   const onPriorityChange = () => {
     const val = form.value.priorityCode;
     const today = new Date();
@@ -247,51 +251,45 @@ export const useTaskStore = defineStore("task", () => {
     }
 
     const dateStr = today.toISOString().split("T")[0];
-
-    form.value.estEndDate = dateStr; // 등록용
-    form.value.dueDate = dateStr; // 수정용
-
+    form.value.estEndDate = dateStr;
+    form.value.dueDate = dateStr;
     calcEstTime();
   };
-  //추정시간
+
+  // 추정시간
   const calcEstTime = () => {
     if (
       form.value.taskId &&
       form.value.estTime &&
       form.value.estTime !== "0시간"
-    ) {
+    )
       return;
-    }
 
     const sDate = form.value.startDate || form.value.estStartDate;
     const eDate = form.value.dueDate || form.value.estEndDate;
 
     if (sDate && eDate) {
-      const start = new Date(sDate);
-      const end = new Date(eDate);
-      const diffTime = end - start;
-      const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-      if (days > 0) {
-        form.value.estTime = `${days * 8}시간`;
-      }
+      const days =
+        Math.ceil((new Date(eDate) - new Date(sDate)) / (1000 * 60 * 60 * 24)) +
+        1;
+      if (days > 0) form.value.estTime = `${days * 8}시간`;
     }
-  }; // 업무상태 → 소요시간 자동계산 (수정 전용)
+  };
+
+  //업무상태 변경 시 소요시간 자동계산
   watch(
     () => form.value.taskStatusId,
     (newVal) => {
       const status = Number(newVal);
-      const isFinished = [3, 6].includes(status); // 완료(3) 또는 종료(6)
+      const isFinished = finishedIds.value.includes(status) || status === 3;
 
       if (isFinished) {
-        const sDate = form.value.startDate;
-        const eDate = form.value.dueDate;
-
-        if (sDate && eDate) {
-          const start = new Date(sDate);
-          const end = new Date(eDate);
+        const { startDate, dueDate } = form.value;
+        if (startDate && dueDate) {
           const diffDays =
-            Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            Math.round(
+              (new Date(dueDate) - new Date(startDate)) / (1000 * 60 * 60 * 24),
+            ) + 1;
           actualHours.value = `${Math.max(1, diffDays) * 8}시간`;
           form.value.progressRate = 100;
         }
@@ -301,24 +299,39 @@ export const useTaskStore = defineStore("task", () => {
     },
   );
 
-  // ───────────── 폼 초기화 (프로젝트 정보 유지) ─────────────
-  const resetForm = () => {
+  //  폼 초기화
+  const resetForm = (mode = "create") => {
+    if (mode === "edit" && originalForm.value) {
+      form.value = { ...originalForm.value };
+      actualHours.value = "";
+      return;
+    }
     const saved = {
       projectId: form.value.projectId,
       subProjectId: form.value.subProjectId,
       projectName: form.value.projectName,
       subProjectName: form.value.subProjectName,
+      ...(form.value.parentTaskId
+        ? {
+            parentTaskId: form.value.parentTaskId,
+            taskTypeId: form.value.taskTypeId,
+            assigneeUserId: form.value.assigneeUserId,
+            assigneeName: form.value.assigneeName,
+            milestoneId: form.value.milestoneId,
+            milestone: form.value.milestone,
+          }
+        : {}),
     };
     form.value = { ...initialForm, ...saved };
     actualHours.value = "";
   };
 
-  // ───────────── payload 공통 빌더 ─────────────
+  // payload 빌더
   const buildPayload = () => {
     const status = Number(
       String(form.value.taskStatusId).replace(/[^0-9]/g, ""),
     );
-    const isFinished = [3, 6].includes(status);
+    const isFinished = finishedIds.value.includes(status) || status === 3;
 
     const payload = {
       ...form.value,
@@ -342,20 +355,18 @@ export const useTaskStore = defineStore("task", () => {
     } else {
       payload.actualHours = null;
       payload.actual_hours = null;
-
       payload.progressRate = Number(form.value.progressRate) || 0;
       form.value.actualHours = null;
       form.value.actual_hours = null;
-
       actualHours.value = "";
     }
     return payload;
   };
-  // ───────────── 등록 전 유효성 검사 ─────────────
+
+  // 유효성 검사
   const validateForm = () => {
-    if (hasMilestone.value && !form.value.milestoneId) {
+    if (hasMilestone.value && !form.value.milestoneId)
       throw new Error("마일스톤을 선택해 주세요.");
-    }
     if (!form.value.taskTypeId) throw new Error("업무 유형을 선택해 주세요.");
     if (!form.value.title?.trim()) throw new Error("업무명을 입력해 주세요.");
     if (!form.value.taskStatusId) throw new Error("업무 상태를 선택해 주세요.");
@@ -365,15 +376,14 @@ export const useTaskStore = defineStore("task", () => {
   // ───────────── 등록 ─────────────
   const createTask = async () => {
     validateForm();
-    const payload = buildPayload();
-    await api.post("/tasks", payload);
+    await api.post("/tasks", buildPayload());
   };
 
   // ───────────── 수정 ─────────────
   const updateTask = async (taskId, editorUserId) => {
     const status = Number(form.value.taskStatusId);
 
-    // 1. 반려 처리 (상태 4)
+    // 반려 처리
     if (status === 4) {
       const { value: text, isConfirmed } = await Swal.fire({
         title: "업무 반려",
@@ -384,16 +394,13 @@ export const useTaskStore = defineStore("task", () => {
         cancelButtonText: "취소",
         inputValidator: (value) => !value && "반려 사유는 필수입니다!",
       });
-
       if (!isConfirmed) return false;
-
-      // 반려 사유 서버 전송 및 업무 수정 병행
       rejectReason.value = text;
       await rejectTask(taskId, editorUserId);
     }
 
-    // 2. 종료 확인 (상태 6)
-    if (status === 6) {
+    // 종료 확인
+    if (finishedIds.value.includes(status)) {
       const result = await Swal.fire({
         title: "업무를 종료하시겠습니까?",
         text: "종료 후에는 상태를 변경할 수 없습니다.",
@@ -401,19 +408,16 @@ export const useTaskStore = defineStore("task", () => {
         showCancelButton: true,
         confirmButtonText: "종료 저장",
       });
-
       if (!result.isConfirmed) return false;
     }
 
-    // 3. 최종 유효성 검사 및 저장
     try {
       validateForm();
       await api.put(`/task/${taskId}`, {
         ...buildPayload(),
         taskId: Number(taskId),
-        rejectionReason: rejectReason.value, // 반려 사유 포함
+        rejectionReason: rejectReason.value,
       });
-
       await Swal.fire(
         "저장 완료",
         "업무 정보가 업데이트되었습니다.",
@@ -425,21 +429,23 @@ export const useTaskStore = defineStore("task", () => {
       return false;
     }
   };
+
   // ───────────── 반려 처리 ─────────────
   const rejectTask = async (taskId, editorUserId) => {
-    const payload = {
+    await api.post("/reject", {
       taskId: Number(taskId),
       rejectionReason: rejectReason.value,
-      rejectedBy: editorUserId, // 현재 수정하는 사람의 ID
-    };
-    await api.post("/reject", payload);
+      rejectedBy: editorUserId,
+    });
   };
 
   return {
-    rejectReason,
     form,
     actualHours,
     hasMilestone,
+    finishedIds,
+    filteredStatusList,
+    isCompletedStatus,
     taskTypeList,
     priorityList,
     statusList,
@@ -447,7 +453,9 @@ export const useTaskStore = defineStore("task", () => {
     userList,
     userModal,
     milestoneModal,
-    rejectTask,
+    originalForm,
+    isOriginallyTerminated,
+    rejectReason,
     initCreate,
     initEdit,
     openUserModal,
@@ -460,5 +468,6 @@ export const useTaskStore = defineStore("task", () => {
     resetForm,
     createTask,
     updateTask,
+    rejectTask,
   };
 });
