@@ -12,4 +12,6 @@ public interface TaskServiceSJW {
         Boolean modifyTaskStatus(TaskStatusDTOSJW taskStatus);
 
         Boolean registerTaskStatus(TaskStatusDTOSJW taskStatus);
+
+    Boolean checkDup(String name);
 }
