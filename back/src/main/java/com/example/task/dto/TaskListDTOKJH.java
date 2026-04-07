@@ -54,4 +54,7 @@ public class TaskListDTOKJH {
     private Integer startNum = 1;
     private Integer endNum = 10;
 
+//  계층형을 위해
+    private Integer level;
+
 }

@@ -449,7 +449,11 @@
                     </router-link>
 
                     <router-link
-                      to="/project/docs"
+                      v-if="currentProjectId"
+                      :to="{
+                        name: 'documentList',
+                        params: { projectId: currentProjectId },
+                      }"
                       custom
                       v-slot="{ href, navigate, isExactActive }"
                     >
