@@ -13,4 +13,6 @@ public interface TaskMapperSJW {
   Integer modifyTaskStatus(TaskStatusDTOSJW taskStatus);
 
   Integer registerTaskStatus(TaskStatusDTOSJW taskStatus);
+
+  Integer checkDup(String id);
 }

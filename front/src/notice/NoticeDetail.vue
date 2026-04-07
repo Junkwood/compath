@@ -40,8 +40,12 @@
               class="text-xl md:text-2xl text-gray-800 dark:text-gray-100 font-bold mb-8"
             >
               <h4>
-                <span v-if="noticeInfo.isPinned == 'O1' ? true : false">🚨</span
-                >{{ noticeInfo.title }}
+                {{ noticeInfo.title
+                }}<span
+                  class="text-base"
+                  v-if="noticeInfo.isPinned == 'O1' ? true : false"
+                  >[긴급🚨]</span
+                >
               </h4>
             </div>
             <div class="grid grid-cols-3 gap-6 mb-8">

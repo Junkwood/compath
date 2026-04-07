@@ -38,5 +38,9 @@ public class TaskControllerSJW {
     public Boolean registerTaskStatus(@RequestBody TaskStatusDTOSJW taskStatus){
         return taskService.registerTaskStatus(taskStatus);
     }
+    @GetMapping("/taskStatus/checkDup/{name}")
+    public Boolean checkDup(@PathVariable("name") String name){
+        return taskService.checkDup(name);
+    }
 
 }
