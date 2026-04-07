@@ -76,5 +76,17 @@ public class NoticeServiceImpl implements NoticeService {
         return mapper.getAllNotices(dto);
     }
 
+    @Override
+    public NoticeDTO modifyNoticeLock(String isDeleted,Integer noticeId) {
+
+        // 비활성으로 수정
+        mapper.modifyNoticeLock(isDeleted, noticeId);
+
+
+        // 수정 항목 조회
+        return mapper.getNoticeById(noticeId);
+
+    }
+
 
 }

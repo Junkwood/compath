@@ -371,8 +371,8 @@ let filteredList = ref({
   assigneeUserId: "",
   taskTypeId: "",
   taskStatusId: "",
-  startDate: null,
-  endDate: null,
+  startDate: "",
+  endDate: "",
   priorityCode: "",
   parentProjectId: "",
 });
@@ -403,7 +403,8 @@ onBeforeMount(async () => {
   listLoading.value = false;
 
   taskList.value = taskStore.taskAllList;
-  listLength.value = taskList.value[0].taskCounts;
+  listLength.value =
+    taskList.value.length > 0 ? taskList.value[0].taskCounts : 0;
 
   changeDateType(taskList.value);
   // 필터링 조건 조회
@@ -466,7 +467,27 @@ const goResister = () => {
 
 // 검색 버튼
 const filteringList = async () => {
-  await handleCurrentChange(1);
+  let count = 0;
+  let bool = Object.values(filteredList.value).filter((el) => {
+    count++;
+    return "" == el;
+  }).length;
+  let search = bool == count ? false : true;
+
+  if (search) {
+    await handleCurrentChange(1);
+  } else {
+    const result = await Swal.fire({
+      title: "검색조건이 입력되지 않았습니다.",
+      text: "조건을 선택 또는 입력해주세요",
+      icon: "warning",
+      showCancelButton: false,
+      confirmButtonText: "활성",
+      reverseButtons: true,
+    });
+
+    if (!result.isConfirmed) return;
+  }
 };
 
 // 초기화 버튼

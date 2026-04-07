@@ -22,4 +22,6 @@ public interface NoticeService {
     // 페이지네이션 공지사항 목록
     public List<NoticeDTO> getPagingNotice(NoticeDTO dto);
 
+    //  공지사항 비활성
+    public NoticeDTO modifyNoticeLock(String isDeleted,Integer noticeId);
 }

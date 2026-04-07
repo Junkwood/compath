@@ -11,7 +11,7 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            {{ isModified == false ? "공지사항 생성" : "공지사항 수정" }}
+            {{ isModified == false ? "문서 생성" : "문서 수정" }}
           </h1>
           <el-form
             ref="ruleFormRef"
@@ -30,7 +30,12 @@
                     prop="roleId"
                     class="block text-sm font-medium mb-1"
                   >
-                    <el-select v-model="form.roleId" class="input flex-1">
+                    <el-select
+                      v-model="form.roleId"
+                      class="input flex-1"
+                      placeholder="유형을 선택하세요"
+                    >
+                      <el-option value="전체" label="전체">전체</el-option>
                       <el-option
                         v-for="role in roles"
                         :label="role.roleName"
@@ -65,8 +70,8 @@
                   </el-form-item>
                 </div>
               </div>
-              <div class="grid grid-cols-13 gap-4">
-                <div class="col-span-12">
+              <div class="grid grid-cols-20 gap-4">
+                <div class="col-span-17">
                   <el-form-item
                     label="제목"
                     class="block text-sm font-medium mb-1"
@@ -79,15 +84,24 @@
                     />
                   </el-form-item>
                 </div>
-                <div class="self-center">
-                  <label>
+                <div class="self-center col-span-3">
+                  <label class="mx-2">
                     <input
                       type="checkbox"
                       :value="form.isPinned"
                       :checked="form.isPinned"
-                      @change="checkedBox($event)"
+                      @change="checkedPin($event)"
                     />
-                    🚨 긴급
+                    <span class="text-lg">📌</span><span>상단고정</span>
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      :value="form.isComment"
+                      :checked="form.isComment"
+                      @change="checkedComment($event)"
+                    />
+                    <span class="text-lg">🔒</span><span>댓글잠금</span>
                   </label>
                 </div>
               </div>
@@ -116,7 +130,11 @@
                   </template>
                 </el-upload>
               </div>
-
+              <!-- <div class="mb-3">
+                <el-button type="button" @click="openModal"
+                  >알림대상 선택</el-button
+                >
+              </div> -->
               <div class="flex justify-between">
                 <button @click="goBack" type="button" class="btn-navy">
                   ← 목록으로
@@ -140,6 +158,8 @@
       </main>
     </div>
   </div>
+
+  <!-- <DocumentNotificationModal v-model="modalOpen" /> -->
 </template>
 
 <script setup>
@@ -148,52 +168,52 @@ import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth";
-import { useRoleStore } from "../stores/roleSJW";
 import { useNoticeStore } from "../stores/notice";
 import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
+import { useDocumentStore } from "../stores/document";
+import DocumentNotificationModal from "./DocumentNotificationModal.vue";
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
-const roleStore = useRoleStore();
 const noticeStore = useNoticeStore();
+const documentStore = useDocumentStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
-const noticeId = route.params.noticeId;
+const documentId = route.params.documentId;
 const userInfo = ref(); // 글 작성자 정보
-const roles = ref([
-  // 전체 역할 정보
-  { roleId: 1, roleName: "PM" },
-  { roleId: 2, roleName: "상PL" },
-  { roleId: 3, roleName: "하PL" },
-  { roleId: 4, roleName: "개발" },
-  { roleId: 5, roleName: "QA" },
-]);
+const roles = ref([]);
 const form = reactive({
-  roleId: "",
+  roleId: "전체",
   author: "",
   date: "",
   title: "",
   content: "",
   isPinned: false,
+  isComment: false,
 }); // 작성내용 담을 곳
 
 let isModified = ref(false); // 수정, 생성 구분
+let modalOpen = ref(false); // 알림대상 모달창
 
-// 긴급 체크시
-const checkedBox = (event) => {
-  console.log("targetvalue", event.target.checked);
+// 상단고정 체크시
+const checkedPin = (event) => {
   form.isPinned = event.target.checked;
-  console.log(form.isPinned);
+  console.log("상단고정", form.isPinned);
+};
+
+// 댓글잠금 체크시
+const checkedComment = (event) => {
+  form.isComment = event.target.checked;
+  console.log("댓글잠금", form.isComment);
 };
 
 // 공지사항 생성 버튼
 const submitForm = async (formEl) => {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      console.log(form);
       // 공지사항 등록
       if (!isModified.value) {
         let obj = {
@@ -201,10 +221,11 @@ const submitForm = async (formEl) => {
           title: form.title,
           content: form.content,
           isPinned: form.isPinned == true ? "O1" : "O2",
-          category: form.roleId,
+          isComment: form.isComment == true ? "O2" : "O1",
+          category: form.roleId == "전체" ? null : form.roleId,
           createdBy: userInfo.value.userId,
         };
-        await noticeStore.registerNotice(obj);
+        await documentStore.registerDocument(obj);
       } else {
         const result = await Swal.fire({
           title: "정말 수정하시겠습니까?",
@@ -219,24 +240,25 @@ const submitForm = async (formEl) => {
         if (!result.isConfirmed) return;
         // 공지사항 수정
         let obj = {
-          noticeId: noticeId,
+          documentId: id,
           title: form.title,
           content: form.content,
-          isPinned: form.emerency == true ? "O1" : "O2",
-          category: form.roleId,
+          isPinned: form.isPinned == true ? "O1" : "O2",
+          isComment: form.isComment == true ? "O2" : "O1",
+          category: form.roleId == "전체" ? null : form.roleId,
           isEditorUserId: userInfo.value.userId,
         };
-        await noticeStore.modifyNotice(obj);
+        await documentStore.modifyDocument(obj);
       }
 
       router.push({
-        name: "noticeDetail",
+        name: "documentDetail",
         params: {
           projectId: id,
-          noticeId:
+          documentId:
             isModified == true
-              ? noticeId
-              : noticeStore.registeredNotice.noticeId,
+              ? documentId
+              : documentStore.registeredDocument.documentId,
         },
       });
     } else {
@@ -247,7 +269,8 @@ const submitForm = async (formEl) => {
 };
 
 onBeforeMount(async () => {
-  if (noticeId !== "" && noticeId !== undefined && noticeId !== null) {
+  if (documentId !== "" && documentId !== undefined && documentId !== null) {
+    isModified.value = true;
     Swal.fire({
       title: "잠시만 기다려주세요...",
       html: "데이터를 불러오는 중입니다.",
@@ -259,18 +282,21 @@ onBeforeMount(async () => {
       },
     });
     // 수정일때
-    isModified.value = true;
-    await noticeStore.getNoticeById(noticeId);
-    let noticeInfo = noticeStore.noticeInfo;
-    Swal.close();
+
+    await documentStore.getDocumentById(documentId);
+    let documentInfo = documentStore.documentDetail;
 
     // 폼에 대입
-    form.roleId = noticeInfo.category;
-    form.author = noticeInfo.userName;
-    form.date = noticeInfo.createdAt;
-    form.title = noticeInfo.title;
-    form.content = noticeInfo.content;
-    form.isPinned = noticeInfo.isPinned == "O1" ? true : false;
+    form.roleId =
+      documentInfo.category == null ? "전체" : documentInfo.category;
+    form.author = documentInfo.userName;
+    form.date = documentInfo.createdAt;
+    form.title = documentInfo.title;
+    form.content = documentInfo.content;
+    form.isPinned = documentInfo.isPinned == "O1" ? true : false;
+    form.isComment = documentInfo.isComment == "O1" ? false : true;
+
+    Swal.close();
   }
   // 생성일 때
   userInfo.value = authStore.user; // 작성자 정보 받아오기
@@ -283,10 +309,16 @@ onBeforeMount(async () => {
   roles.value = noticeStore.projectRoles; // 전체 역할정보
 });
 
+// 알림대상 선택
+const openModal = () => {
+  modalOpen.value = true;
+};
+
+// 목록으로 버튼
 const goBack = () => {
   console.log(id);
   router.push({
-    name: "noticeList",
+    name: "documentList",
     params: { projectId: id },
   });
 };

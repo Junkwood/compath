@@ -7,6 +7,7 @@ export const useNoticeStore = defineStore("notice", {
     noticeInfo: {},
     filterList: [],
     pagingList: [],
+    projectRoles: [],
   }),
   getters: {},
   actions: {
@@ -63,6 +64,25 @@ export const useNoticeStore = defineStore("notice", {
         })
         .then((res) => {
           this.pagingList = res.data;
+        });
+    },
+
+    // 공지사항 활성화/ 비활성화
+    async modifyNoticeLock(id, lock) {
+      await axios //
+        .put("/api/notice/updateLock/" + id + "/" + lock) //
+        .then((res) => {
+          this.registeredNotice = res.data;
+          console.log("수정완료", this.registeredNotice);
+        });
+    },
+
+    // 공지사항 수정/생성시 프로젝트 구서원에 있는 역할
+    async getProjectRoles(id) {
+      await axios //
+        .get("/api/notice/roleList/" + id) //
+        .then((res) => {
+          this.projectRoles = res.data;
         });
     },
   },
