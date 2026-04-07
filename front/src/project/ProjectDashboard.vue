@@ -520,7 +520,14 @@ const handleProjectSetting = () => {
   });
 };
 
-const handleViewTasks = () => {};
+const handleViewTasks = () => {
+  router.push({
+    name: "taskList",
+    params: {
+      projectId: route.params.projectId,
+    },
+  });
+};
 const handleNoticeClick = () => {};
 
 
