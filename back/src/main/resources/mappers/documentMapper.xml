@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.documemt.mapper.DocumentMapper">
+
+<!--    공지사항 게시글 번호-->
+    <select id="getLastNum">
+        SELECT NVL(MAX(document_id), 0) + 1
+        FROM documents
+    </select>
+
+<!--    공지사항 등록-->
+    <insert id="registerDocument">
+        INSERT INTO documents(document_id,
+                            category,
+                            title,
+                            content,
+                            created_by,
+                            created_at,
+                            project_id,
+                            is_pinned,
+                            is_deleted,
+                            is_comment)
+        VALUES(#{documentId},
+               #{category},
+               #{title},
+               #{content},
+               #{createdBy},
+               SYSDATE,
+               #{projectId},
+               #{isPinned},
+               'O2',
+               #{isComment})
+    </insert>
+
+<!--    공지사항 단건 조회-->
+    <select id="getDocumentById">
+        SELECT d.document_id,
+               d.category,
+               d.title,
+               d.content,
+               d.created_by,
+               d.created_at,
+               d.project_id,
+               d.is_pinned,
+               d.is_deleted,
+               d.is_comment,
+               p.project_name,
+               p.start_date,
+               p.end_date,
+               r.role_name,
+               u.user_name
+        FROM documents d
+        JOIN projects p ON p.project_id = d.project_id
+        LEFT JOIN roles r ON r.role_id = d.category
+        JOIN users u ON u.user_id = d.created_by
+        WHERE d.document_id = #{id}
+    </select>
+
+<!--    문서 수정-->
+    <update id="modifyDocument">
+        UPDATE documents
+        SET category = #{category},
+            title = #{title},
+            content = #{content},
+            updated_at = SYSDATE,
+            editor_user_id = #{isEditorUserId},
+            is_pinned = #{isPinned}
+        <if test="isComment != null and isComment != ''">
+            ,is_Comment = #{isComment}
+        </if>
+        <if test="isDeleted != null and isDeleted != ''">
+            ,is_deleted = #{isDeleted}
+        </if>
+        WHERE document_id = #{documentId}
+    </update>
+
+<!--    문서 작성자 목록(필터링 조건)-->
+    <select id="getFilterUser">
+        SELECT DISTINCT(u.user_name),
+               u.user_id
+        FROM documents d
+        JOIN users u ON d.created_by = u.user_id
+        JOIN projects p ON d.project_id = p.project_id
+        WHERE (p.parent_project_id = #{id} OR d.project_id = #{id} AND u.is_active = 'O1')
+    </select>
+
+<!--    공지사항 카테고리 목록(필터링 조건)-->
+    <select id="getFilterCategroy">
+        SELECT DISTINCT(r.role_name),
+               r.role_id
+        FROM documents d
+        JOIN roles r ON r.role_id = d.category
+        JOIN projects p ON d.project_id = p.project_id
+        WHERE (p.parent_project_id = #{id} OR d.project_id = #{id}) AND r.is_active = 'O1'
+    </select>
+
+<!--    공지사항 전체 목록-->
+    <select id="getAllDocuments" >
+        SELECT b.*
+        FROM  (SELECT ROWNUM AS num, A.*
+        FROM (SELECT COUNT(*) OVER() AS task_counts,
+                     d.title,
+                     u.user_name,
+                     d.created_at,
+                     d.is_pinned,
+                     d.is_deleted,
+                     d.is_comment,
+                     d.document_id,
+                     r.role_name
+              FROM documents d
+              JOIN projects p ON d.project_id = p.project_id
+              JOIN users u ON d.created_by = u.user_id
+              LEFT JOIN roles r ON d.category = r.role_id
+              WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
+              AND d.is_deleted = 'O2'
+        <if test=" userId!= null and userId != ''">
+            AND d.created_by = #{userId}
+        </if>
+        <if test="category != null and category != ''">
+            AND d.category = #{category}
+        </if>
+        <if test="startDate != null ">
+            AND d.created_at &gt;= #{startDate}
+        </if>
+        <if test="endDate != null ">
+            AND d.created_at &lt;= #{endDate}
+        </if>
+        <if test="search != null and search != ''">
+            AND d.title LIKE '%' || #{search} || '%'
+        </if>
+        ORDER BY d.is_pinned, d.created_at DESC) A
+        WHERE ROWNUM BETWEEN 1 AND #{endNum})b
+        WHERE b.num >= #{startNum}
+    </select>
+
+    <update id="modifyNoticeLock">
+        UPDATE notices
+        SET is_deleted = #{isDeleted}
+        WHERE notice_id = #{noticeId}
+    </update>
+
+</mapper>

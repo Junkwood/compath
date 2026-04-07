@@ -44,4 +44,12 @@ public class NoticeController {
     public List<NoticeDTO> getPagingNotice(NoticeDTO dto ) {
         return service.getPagingNotice(dto);
     }
+
+    // 공지사항 비활성
+    @PutMapping("/notice/updateLock/{id}/{isDeleted}")
+    public NoticeDTO modifyNoticeLock(@PathVariable String isDeleted,
+                                      @PathVariable Integer id){
+        return service.modifyNoticeLock(isDeleted, id);
+    }
+
 }

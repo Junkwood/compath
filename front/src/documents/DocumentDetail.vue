@@ -14,7 +14,7 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <el-alert
-            v-if="noticeInfo.isDeleted === 'O1'"
+            v-if="documentInfo.isDeleted === 'O1'"
             title="비활성화된 게시글입니다."
             type="warning"
             description="관리자만 열람 가능하며 일반 사용자에게는 노출되지 않습니다."
@@ -23,20 +23,20 @@
             class="mb-4"
           />
           <!-- projectDashboard.vue와 동일한 제목 영역 -->
-          <div class="mb-6 proj-title-row flex justify-between mt-5">
+          <div class="mb-6 proj-title-row flex justify-between">
             <div class="proj-title-left">
               <h2
                 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
               >
-                공지사항 상세
+                문서 상세
               </h2>
 
               <div class="proj-name-row">
                 <span class="proj-name"
-                  >【 {{ noticeInfo.projectName }} 】</span
+                  >【 {{ documentInfo.projectName }} 】</span
                 >
                 <span class="proj-period">
-                  {{ noticeInfo.startDate }} ~ {{ noticeInfo.endDate }}
+                  {{ documentInfo.startDate }} ~ {{ documentInfo.endDate }}
                 </span>
               </div>
             </div>
@@ -48,40 +48,35 @@
             <div
               class="text-xl md:text-2xl text-gray-800 dark:text-gray-100 font-bold mb-8"
             >
-              <h4>
-                {{ noticeInfo.title
-                }}<span
-                  class="text-base"
-                  v-if="noticeInfo.isPinned == 'O1' ? true : false"
-                  >[긴급🚨]</span
-                >
-              </h4>
+              <h4>{{ documentInfo.title }}</h4>
             </div>
             <div class="grid grid-cols-3 gap-6 mb-8">
               <div class="flex flex-row gap-10">
                 <label class="block text-base font-semibold mb-1"
                   >카테고리</label
                 >
-                <span>{{ noticeInfo.roleName }}</span>
+                <span>{{
+                  documentInfo.roleName == null ? "전체" : documentInfo.roleName
+                }}</span>
               </div>
               <div class="flex flex-row gap-10">
                 <label class="block text-base font-semibold mb-1">작성자</label>
-                <span>{{ noticeInfo.userName }}</span>
+                <span>{{ documentInfo.userName }}</span>
               </div>
               <div class="flex flex-row gap-10">
                 <label class="block text-base font-semibold mb-1">등록일</label>
-                <span>{{ noticeInfo.createdAt }}</span>
+                <span>{{ documentInfo.createdAt }}</span>
               </div>
             </div>
 
             <div class="mb-6">
               <label class="block text-base font-semibold mb-1"
-                >프로젝트 설명</label
+                >문서 설명</label
               >
               <textarea
                 rows="5"
                 class="input w-full"
-                :value="noticeInfo.content"
+                :value="documentInfo.content"
                 disabled
               />
             </div>
@@ -93,17 +88,8 @@
                 </button>
               </div>
               <div class="flex flex-row gap-2">
-                <button
-                  v-if="noticeInfo.isDeleted === 'O2'"
-                  @click="modifyNotice"
-                  class="btn-green"
-                >
-                  수정
-                </button>
-                <button @click="lockNotice" class="btn-red">
-                  <el-icon><Lock /></el-icon
-                  >{{ noticeInfo.isDeleted == "O1" ? "비활성 해제" : "비활성" }}
-                </button>
+                <button @click="modifyDocument" class="btn-green">수정</button>
+                <button @click="lockNotice" class="btn-red">삭제</button>
               </div>
             </div>
           </div>
@@ -117,19 +103,20 @@
 import { onBeforeMount, ref, watch } from "vue";
 import { useProjectKJHStore } from "../stores/projectKJH";
 import { useNoticeStore } from "../stores/notice";
+import { useDocumentStore } from "../stores/document";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
-import { Lock } from "@element-plus/icons-vue";
 import Swal from "sweetalert2";
 
 const route = useRoute();
 const router = useRouter();
 const noticeStore = useNoticeStore();
 const projectStore = useProjectKJHStore();
+const documentStore = useDocumentStore();
 
-const noticeInfo = ref({});
-const noticeId = route.params.noticeId;
+const documentInfo = ref({});
+const documentId = route.params.documentId;
 const projectId = route.params.projectId;
 
 const memberList = ref([]); // 구성원 테이블
@@ -138,23 +125,23 @@ const memberList = ref([]); // 구성원 테이블
 const goBack = () => {
   console.log(projectId);
   router.push({
-    name: "noticeList",
+    name: "documentList",
     params: { projectId: projectId },
   });
 };
 
 // 수정 버튼
-const modifyNotice = () => {
+const modifyDocument = () => {
   router.push({
-    name: "noticeRegister",
-    params: { projectId: projectId, noticeId: noticeId },
+    name: "documentRegister",
+    params: { projectId: projectId, documentId: documentId },
   });
 };
 
 // 비활성 및 해제 버튼
 const lockNotice = async () => {
-  let lock = noticeInfo.value.isDeleted == "O2" ? true : false;
-  let isDeleted = noticeInfo.value.isDeleted == "O2" ? "O1" : "O2";
+  let lock = documentInfo.value.isDeleted == "O2" ? true : false;
+  let isDeleted = documentInfo.value.isDeleted == "O2" ? "O1" : "O2";
 
   if (lock) {
     const result = await Swal.fire({
@@ -182,13 +169,13 @@ const lockNotice = async () => {
     if (!result.isConfirmed) return;
   }
   await noticeStore.modifyNoticeLock(noticeId, isDeleted);
-  noticeInfo.value = noticeStore.registeredNotice;
+  documentInfo.value = noticeStore.documentInfo;
 };
 
 onBeforeMount(async () => {
-  // 공지사항 및 프로젝트 정보
-  await noticeStore.getNoticeById(noticeId);
-  noticeInfo.value = noticeStore.noticeInfo;
+  // 문서 및 프로젝트 정보
+  await documentStore.getDocumentById(documentId);
+  documentInfo.value = documentStore.documentDetail;
 });
 
 watch(

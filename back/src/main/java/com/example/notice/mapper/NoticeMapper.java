@@ -27,4 +27,7 @@ public interface NoticeMapper {
 
   //  공지사항 전체목록
   public List<NoticeDTO> getAllNotices(NoticeDTO dto);
+
+//  공지사항 비활성
+  public int modifyNoticeLock(String isDeleted,Integer noticeId);
 }

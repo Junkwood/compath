@@ -13,9 +13,7 @@
       ref="sidebar"
       class="flex lg:flex! flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:w-20 lg:sidebar-expanded:!w-64 2xl:w-64! shrink-0 bg-[#1e293b] p-4 transition-all duration-200 ease-in-out"
       :class="[
-        variant === 'v2'
-          ? 'border-r border-slate-700'
-          : 'shadow-lg',
+        variant === 'v2' ? 'border-r border-slate-700' : 'shadow-lg',
         sidebarOpen ? 'translate-x-0' : '-translate-x-64',
       ]"
     >
@@ -74,7 +72,11 @@
 
           <ul class="mt-3">
             <!-- 메인 -->
-            <router-link to="/" custom v-slot="{ href, navigate, isExactActive }">
+            <router-link
+              to="/"
+              custom
+              v-slot="{ href, navigate, isExactActive }"
+            >
               <li
                 class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r transition"
                 :class="
@@ -160,14 +162,14 @@
             </router-link>
 
             <!-- 프로젝트 -->
-              <SidebarLinkGroup
-                v-if="!isMainPage"
-                v-slot="parentLink"
-                :activeCondition="
-                  currentRoute.fullPath.includes('/project/') ||
-                  currentRoute.fullPath.includes('/task/')
-                "
-              >
+            <SidebarLinkGroup
+              v-if="!isMainPage"
+              v-slot="parentLink"
+              :activeCondition="
+                currentRoute.fullPath.includes('/project/') ||
+                currentRoute.fullPath.includes('/task/')
+              "
+            >
               <li class="mb-0.5 last:mb-0">
                 <a
                   class="block text-white truncate transition pl-4 pr-3 py-2"
@@ -675,7 +677,10 @@
                         </div>
                       </a>
 
-                      <ul class="mt-1 space-y-1" :class="!taskExpanded && 'hidden'">
+                      <ul
+                        class="mt-1 space-y-1"
+                        :class="!taskExpanded && 'hidden'"
+                      >
                         <router-link
                           to="/admin/task/status"
                           custom
@@ -781,7 +786,7 @@ export default {
 
     const storedSidebarExpanded = localStorage.getItem("sidebar-expanded");
     const sidebarExpanded = ref(
-      storedSidebarExpanded === null ? false : storedSidebarExpanded === "true"
+      storedSidebarExpanded === null ? false : storedSidebarExpanded === "true",
     );
 
     const currentRoute = route;
@@ -793,7 +798,8 @@ export default {
         route.params.subProjectId ||
         null
       );
-});    const isMainPage = computed(() => route.path === "/");
+    });
+    const isMainPage = computed(() => route.path === "/");
 
     const goTaskList = () => {
       if (!currentProjectId.value) return;

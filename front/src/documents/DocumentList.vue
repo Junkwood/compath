@@ -19,7 +19,7 @@
               <h2
                 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
               >
-                프로젝트 공지사항
+                프로젝트 문서
               </h2>
 
               <div class="proj-name-row">
@@ -31,7 +31,7 @@
             </div>
             <div class="self-end">
               <el-button class="new-project-btn" @click="goResister()">
-                + &nbsp; 공지 생성
+                + &nbsp; 문서 생성
               </el-button>
             </div>
           </div>
@@ -119,12 +119,16 @@
                   type="text"
                   placeholder="프로젝트명을 입력해주세요."
                   class="search-input"
-                  @keyup.enter="searchInfo()"
+                  @keyup.enter="handleCurrentChange()"
                 />
               </div>
               <!-- 버튼 -->
               <div class="filter-actions flex flex-row-reverse">
-                <button type="button" @click="searchInfo()" class="btn-search">
+                <button
+                  type="button"
+                  @click="handleCurrentChange()"
+                  class="btn-search"
+                >
                   검색
                 </button>
                 <button type="button" @click="resetForm()" class="btn-reset">
@@ -142,46 +146,75 @@
               <span class="count-badge flex flex">총 {{ listLength }}건</span>
             </div>
             <!-- 테이블 -->
-            <table class="table-fixed w-full dark:text-gray-300">
+            <table class="table-auto w-full dark:text-gray-300">
               <thead
                 class="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs"
               >
                 <tr>
-                  <th class="p-2 w-30">번호</th>
-                  <th class="p-2">제목</th>
-                  <th class="p-2 w-50">작성자</th>
-                  <th class="p-2 w-50">등록일</th>
+                  <th class="p-2" v-for="th in thList" :key="th">
+                    <div class="text-center">{{ th }}</div>
+                  </th>
                 </tr>
               </thead>
 
               <tbody
                 class="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60"
               >
+                <!-- 로딩 -->
                 <tr v-if="listLoading">
-                  <td colspan="4" class="text-center py-10">
+                  <td :colspan="thList.length + 1" class="text-center py-10">
                     <h5 class="text-gray-500">⌛ 로딩중입니다.</h5>
                   </td>
                 </tr>
 
+                <!-- 데이터 있을 때 -->
                 <template v-else-if="!listLoading && listLength > 0">
                   <tr
-                    v-for="notice in pagingList"
-                    :key="notice.num"
-                    @click="goDetail(notice)"
+                    @click="goDetail(document)"
+                    v-for="document in pagingList"
+                    :key="document.num"
                     class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                    :class="
+                      document.isDeleted == 'O1'
+                        ? 'grayscale-[100%] blur-[4px] opacity-60'
+                        : ''
+                    "
                   >
-                    <td class="p-2 text-center">{{ notice.num }}</td>
-                    <td class="p-2 text-center">
-                      [{{ notice.roleName }}] {{ notice.title }}
+                    <td class="p-2 w-30">
+                      <div class="text-center">{{ document.num }}</div>
                     </td>
-                    <td class="p-2 text-center">{{ notice.userName }}</td>
-                    <td class="p-2 text-center">{{ notice.createdAt }}</td>
+                    <td class="p-2">
+                      <div class="text-center">
+                        [{{ document.roleName }}]{{ document.title
+                        }}<span
+                          class="text-base"
+                          v-if="document.isPinned == 'O1' ? true : false"
+                          >📌</span
+                        ><span
+                          class="text-base"
+                          v-if="document.isComment == 'O1' ? true : false"
+                          >🔒</span
+                        >
+                      </div>
+                    </td>
+                    <td class="p-2 w-70">
+                      <div class="text-center cursor-pointer">
+                        {{ document.userName }}
+                      </div>
+                    </td>
+
+                    <td class="p-2 w-70">
+                      <div class="text-center">
+                        {{ document.createdAt }}
+                      </div>
+                    </td>
                   </tr>
                 </template>
 
+                <!-- 데이터 없을 때 -->
                 <tr v-else>
-                  <td colspan="4" class="text-center py-10">
-                    <h5 class="text-gray-500">공지사항이 존재하지 않습니다.</h5>
+                  <td :colspan="thList.length + 1" class="text-center py-10">
+                    <h5 class="text-gray-500">업무가 존재하지 않습니다.</h5>
                   </td>
                 </tr>
               </tbody>
@@ -213,13 +246,14 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { useNoticeStore } from "../stores/notice";
+import { useDocumentStore } from "../stores/document";
 import Swal from "sweetalert2";
-import { Lock } from "@element-plus/icons-vue";
 
 const route = useRoute();
 const router = useRouter();
 const taskStore = usetaskKJHStore();
 const noticeStore = useNoticeStore();
+const documentStore = useDocumentStore();
 
 const projectId = route.params.projectId;
 const sidebarOpen = ref(false);
@@ -246,34 +280,6 @@ let projectStartDate = ref(); // 프로젝트 날짜
 let projectendDate = ref(); // 프로젝트 날짜
 
 const thList = ["번호", "제목", "작성자", "등록일"];
-
-// 검색버튼
-const searchInfo = async () => {
-  let search =
-    filteredList.value.category == "" &&
-    filteredList.value.userId == "" &&
-    filteredList.value.startDate == "" &&
-    filteredList.value.endDate == "" &&
-    filteredList.value.search == ""
-      ? false
-      : true;
-
-  if (search) {
-    handleCurrentChange();
-    return;
-  } else {
-    const result = await Swal.fire({
-      title: "검색조건이 입력되지 않았습니다.",
-      text: "조건을 선택 또는 입력해주세요",
-      icon: "warning",
-      showCancelButton: false,
-      confirmButtonText: "활성",
-      reverseButtons: true,
-    });
-
-    if (!result.isConfirmed) return;
-  }
-};
 
 // 페이지네이션
 const handleCurrentChange = async (val) => {
@@ -303,10 +309,13 @@ const handleCurrentChange = async (val) => {
   });
 
   try {
-    await noticeStore.getPagingList(obj);
+    await documentStore.getPagingList(obj);
     Swal.close();
 
-    pagingList.value = noticeStore.pagingList;
+    pagingList.value = documentStore.pagingList;
+    pagingList.value.forEach((li) => {
+      li.roleName = li.roleName == null ? "전체" : li.roleName;
+    });
 
     listLength.value =
       pagingList.value.length == 0 ? 0 : pagingList.value[0].taskCounts;
@@ -323,7 +332,7 @@ const handleCurrentChange = async (val) => {
 // 공지 생성 버튼
 const goResister = () => {
   router.push({
-    name: "noticeRegister",
+    name: "documentRegister",
     params: { projectId: projectId },
   });
 };
@@ -332,8 +341,8 @@ const goResister = () => {
 const goDetail = (tr) => {
   console.log(tr);
   router.push({
-    name: "noticeDetail",
-    params: { projectId: projectId, noticeId: tr.noticeId },
+    name: "documentDetail",
+    params: { projectId: projectId, documentId: tr.documentId },
   });
 };
 
@@ -355,14 +364,19 @@ onBeforeMount(async () => {
   projectendDate.value = projectInfo.endDate;
 
   let obj = { projectId: projectId, parentProjectId: projectId };
-  await noticeStore.getFilterList(obj);
-  filterList.value = noticeStore.filterList;
-  pagingList.value = noticeStore.filterList.noticeList;
-  listLength.value =
-    filterList.value.noticeList.length > 0
-      ? filterList.value.noticeList[0].taskCounts
-      : 0;
+  await documentStore.getFilterList(obj);
   Swal.close();
+
+  filterList.value = documentStore.filterList;
+  pagingList.value = documentStore.filterList.documentList;
+
+  pagingList.value.forEach((li) => {
+    li.roleName = li.roleName == null ? "전체" : li.roleName;
+  });
+  listLength.value =
+    filterList.value.documentList.length > 0
+      ? filterList.value.documentList[0].taskCounts
+      : 0;
 });
 
 const resetForm = () => {

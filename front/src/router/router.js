@@ -9,6 +9,7 @@ import taskRoutes from "./taskKJH.js";
 import { useAuthStore } from "../stores/auth.js";
 import projectRoutes1 from "./projectKJH.js";
 import noticeRoutes from "./notice.js";
+import documentRoutes from "./document.js";
 /**
  * 라우터 등록 규칙
  * - path      : 사이드바 링크와 동일하게 맞출 것
@@ -51,6 +52,7 @@ const router = createRouter({
     ...taskRoutes1,
     ...projectRoutes1,
     ...noticeRoutes,
+    ...documentRoutes,
   ],
 });
 
