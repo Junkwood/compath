@@ -64,5 +64,24 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
         }
     }
 
+    //하위프로젝트 수정용 단건조회
+    @Override
+    public ProjectSubCreateDtoJDJ getSubProjectDetail(int projectId){
+        return projectMapperJDJ.getSubProjectDetail(projectId);
+    }
+
+    //하위프로젝트 수정
+    @Override
+    public void modifySubProject(ProjectSubCreateDtoJDJ dto) {
+        projectMapperJDJ.modifySubProject(dto);
+
+        if (dto.getMilestoneMappingId() != null) {
+            projectMapperJDJ.modifyMilestoneMapping(dto);
+        } else if (dto.getMilestoneId() != null) {
+            projectMapperJDJ.registerMilestoneMapping(dto);
+        }
+    }
+
+
 
 }

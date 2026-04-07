@@ -47,19 +47,31 @@ public class ProjectControllerJDJ {
         return projectServiceJDJ.getSingleProject(projectId);
     }
 
-    //하위프로젝트 목록 조회
-    @GetMapping("/ProjectSubDetail/{parentProjectId}")
+    // 하위프로젝트 목록 조회
+    @GetMapping("/ProjectSubList/{parentProjectId}")
     public List<ProjectSubListDtoJDJ> subplist(@PathVariable Integer parentProjectId){
-            return projectServiceJDJ.getSubpList(parentProjectId);
-        }
-      
-    //하위프로젝트 생성
+        return projectServiceJDJ.getSubpList(parentProjectId);
+    }
+
+    // 하위프로젝트 생성
     @PostMapping("/ProjectSubRegister")
     public ProjectSubCreateDtoJDJ registerSubProject(@RequestBody ProjectSubCreateDtoJDJ dto){
         projectServiceJDJ.registerSubProject(dto);
         return dto;
     }
 
+    // 하위프로젝트 수정
+    @PostMapping("/ProjectSubModify")
+    public ProjectSubCreateDtoJDJ modifySubProject(@RequestBody ProjectSubCreateDtoJDJ dto){
+        projectServiceJDJ.modifySubProject(dto);
+        return dto;
+    }
+
+    // 하위프로젝트 수정용 단건조회
+    @GetMapping("/ProjectSubDetail/{projectId}")
+    public ProjectSubCreateDtoJDJ getSubProjectDetail(@PathVariable Integer projectId){
+        return projectServiceJDJ.getSubProjectDetail(projectId);
+    }
 }
 
 

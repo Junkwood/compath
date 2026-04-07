@@ -2,6 +2,8 @@ package com.example.project.dto;
 
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class ProjectSubCreateDtoJDJ {
     private Integer parentProjectId;
@@ -17,4 +19,6 @@ public class ProjectSubCreateDtoJDJ {
     private Integer userId;
     private Integer projectId;
     private Integer milestoneMappingId;
+    private LocalDate updatedAt;
+    private String editorUserId;
 }

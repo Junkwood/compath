@@ -188,4 +188,48 @@
         'M1'
         )
     </insert>
+
+    <!--하위프로젝트 수정용 조회-->
+    <select id="getSubProjectDetail" resultType="ProjectSubCreateDtoJDJ">
+        SELECT
+            P.PROJECT_ID               AS projectId,
+            P.PARENT_PROJECT_ID        AS parentProjectId,
+            P.PROJECT_NAME             AS projectName,
+            P.IDENTIFIER               AS identifier,
+            P.SUB_PL_USER_ID           AS subPlUserId,
+            TO_CHAR(P.START_DATE, 'YYYY-MM-DD') AS startDate,
+            TO_CHAR(P.END_DATE, 'YYYY-MM-DD')   AS endDate,
+            P.DESCRIPTION              AS description,
+            P.USE_MILESTONE            AS useMilestone,
+            P.IS_PUBLIC                AS isPublic,
+            MM.MILESTONE_ID            AS milestoneId,
+            MM.MILESTONE_MAPPING_ID    AS milestoneMappingId
+        FROM PROJECTS P
+        LEFT JOIN MILESTONE_MAPPING MM
+            ON MM.PROJECT_ID = P.PROJECT_ID
+        WHERE P.PROJECT_ID = #{projectId}
+    </select>
+
+    <!--하위프로젝트 수정-->
+    <update id="modifySubProject" parameterType="ProjectSubCreateDtoJDJ">
+        UPDATE PROJECTS
+        SET
+            PROJECT_NAME = #{projectName},
+            IDENTIFIER = #{identifier},
+            DESCRIPTION = #{description},
+            START_DATE = #{startDate},
+            END_DATE = #{endDate},
+            IS_PUBLIC = #{isPublic},
+            SUB_PL_USER_ID = #{subPlUserId},
+            EDITOR_USER_ID = #{userId},
+            UPDATED_AT = SYSDATE
+        WHERE PROJECT_ID = #{projectId}
+    </update>
+
+    <update id="modifyMilestoneMapping" parameterType="ProjectSubCreateDtoJDJ">
+        UPDATE MILESTONE_MAPPING
+        SET
+        MILESTONE_ID = #{milestoneId}
+        WHERE MILESTONE_MAPPING_ID = #{milestoneMappingId}
+    </update>
 </mapper>

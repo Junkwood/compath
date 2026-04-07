@@ -289,7 +289,7 @@
                     </li>
                   </router-link>
 
-                  <router-link
+                  <!-- <router-link
                     v-if="currentProjectId"
                     :to="{
                       name: 'taskRegister',
@@ -315,7 +315,7 @@
                         >
                       </a>
                     </li>
-                  </router-link>
+                  </router-link> -->
 
                   <router-link
                     to="/project/history"

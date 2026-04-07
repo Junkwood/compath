@@ -135,7 +135,7 @@
     </insert>
 
     <!--마일스톤 수정-->
-    <update id="updateMilestone" parameterType="MilestoneCreateDto">
+    <update id="modifyMilestone" parameterType="MilestoneCreateDto">
         UPDATE MILESTONES
         SET
             MILESTONE_NAME = #{milestoneName},
@@ -150,7 +150,7 @@
 
 
     <!--마일스톤 삭제 (상태값 업데이트 : E2로)-->
-    <update id="deleteMilestoneProc" statementType="CALLABLE">
+    <update id="removeMilestoneProc" statementType="CALLABLE">
         { CALL DELETE_MILESTONE_PROC(
         #{projectId, mode=IN, jdbcType=NUMERIC},
         #{milestoneId, mode=IN, jdbcType=NUMERIC},

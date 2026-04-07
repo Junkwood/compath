@@ -58,27 +58,27 @@ public class MilestoneController {
 
     //마일스톤 수정
     @PutMapping("/MilestoneUpdate/{projectId}/{milestoneId}")
-    public MilestoneCreateDto updateMilestone(
+    public MilestoneCreateDto modifyMilestone(
             @PathVariable Integer milestoneId,
             @PathVariable Integer projectId,
             @RequestBody MilestoneCreateDto dto) {
 
         dto.setMilestoneId(milestoneId);
         dto.setProjectId(projectId);
-        milestoneService.updateMilestone(dto);
+        milestoneService.modifyMilestone(dto);
         return dto;
     }
 
     //마일스톤 삭제 (상태값 업데이트 : E2로)
     @PutMapping("/MilestoneDelete/{projectId}/{milestoneId}")
-    public String deleteMilestone(
+    public String removeMilestoneProc(
             @PathVariable Integer projectId,
             @PathVariable Integer milestoneId,
             @RequestBody MilestoneCreateDto dto
     ) {
         dto.setProjectId(projectId);
         dto.setMilestoneId(milestoneId);
-        milestoneService.deleteMilestone(dto);
+        milestoneService.removeMilestoneProc(dto);
         return "마일스톤 삭제 완료";
     }
 }

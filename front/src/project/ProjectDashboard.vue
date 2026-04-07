@@ -472,11 +472,12 @@ const milestonePage = ref(1);
 const fetchSubProject = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/ProjectSubDetail/${projectId}`);
+    const res = await axios.get(`/api/ProjectSubList/${projectId}`);
     subProjects.value = res.data;
     milestonePage.value = 1;
   } catch (err) {
     console.error("하위프로젝트 조회 실패:", err);
+    subProjects.value = [];
   }
 };
 

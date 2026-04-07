@@ -26,4 +26,11 @@ public interface ProjectServiceJDJ {
 
     //하위프로젝트 생성
     void registerSubProject(ProjectSubCreateDtoJDJ dto);
+
+    //하위프로젝트 수정
+    //프로젝트테이블 수정
+    void modifySubProject(ProjectSubCreateDtoJDJ dto);
+    //수정용조회
+    ProjectSubCreateDtoJDJ getSubProjectDetail(int projectId);
+
 }

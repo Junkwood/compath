@@ -28,8 +28,8 @@ public interface MilestoneMapper {
     int registerMilestone(MilestoneCreateDto dto);
 
     //마일스톤 수정
-    int updateMilestone(MilestoneCreateDto dto);
+    int modifyMilestone(MilestoneCreateDto dto);
 
     //마일스톤 삭제 (상태값 업데이트 : E2로)
-    void deleteMilestoneProc(MilestoneCreateDto dto);
+    void removeMilestoneProc(MilestoneCreateDto dto);
 }

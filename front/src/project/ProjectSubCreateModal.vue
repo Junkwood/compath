@@ -1,9 +1,10 @@
 <template>
   <el-dialog
     v-model="visible"
-    title="하위 프로젝트 생성"
+    :title="isEditMode ? '하위 프로젝트 수정' : '하위 프로젝트 생성'"
     width="560px"
     :close-on-click-modal="false"
+    :append-to-body="true"
     @close="handleClose"
   >
     <el-form
@@ -38,13 +39,13 @@
       </el-form-item>
 
       <!-- 프로젝트 식별자 + PL -->
-      <el-form-item label="하위프로젝트 식별자" prop="projectCode">
+      <el-form-item label="하위프로젝트 식별자" prop="identifier">
         <div class="row-fields">
-          <el-input v-model="form.projectCode" placeholder="" style="flex: 1" />
+          <el-input v-model="form.identifier" placeholder="" style="flex: 1" />
           <div class="pl-field">
             <span class="pl-label">하위PL</span>
             <el-select
-              v-model="form.plUserId"
+              v-model="form.subPlUserId"
               placeholder="선택"
               style="width: 140px"
             >
@@ -112,7 +113,7 @@
         <div class="footer-right">
           <el-button class="btn-reset" @click="handleReset">↺ 초기화</el-button>
           <el-button class="btn-submit" :loading="submitting" @click="handleSubmit">
-            프로젝트 생성
+            {{ isEditMode ? '프로젝트 수정' : '프로젝트 생성' }}
           </el-button>
         </div>
       </div>
@@ -124,6 +125,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from "../stores/auth";
+import Swal from "sweetalert2";
 
 const authStore = useAuthStore();
 
@@ -134,6 +136,13 @@ const props = defineProps({
   parentProjectName: { type: String, default: '' },
   parentStartDate: { type: String, default: '' },
   parentEndDate: { type: String, default: '' },
+
+  //에딧모드일떄
+  isEditMode: { type: Boolean, default: false },
+  editData: {
+    type: Object,
+    default: () => null,
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'submitted'])
@@ -175,24 +184,29 @@ const formRef   = ref(null)
 const submitting = ref(false)
 
 //폼의 초기값
+//수정값 까지 같이 넣음
 const defaultForm = () => ({
+  projectId: null,
+  parentProjectId: props.projectId,
+  milestoneId: null,
+  milestoneMappingId: null,
   projectName: '',
-  projectCode: '',
-  plUserId: null,
-  milestoneId:null,
+  identifier: '',
+  subPlUserId: null,
   startDate: '',
   endDate: '',
   description: '',
   useMilestone: true,
   isPublic: true,
+  userId: authStore.user?.userId ?? null,
 })
 
 const form = reactive(defaultForm())
 
 const rules = {
   projectName: [{ required: true, message: '프로젝트 명을 입력하세요', trigger: 'blur' }],
-  projectCode: [{ required: true, message: '프로젝트 식별자를 입력하세요', trigger: 'blur' }],
-  plUserId: [{ required: true, message: '총괄PL을 선택하세요', trigger: 'blur' }],
+  identifier: [{ required: true, message: '프로젝트 식별자를 입력하세요', trigger: 'blur' }],
+  subPlUserId: [{ required: true, message: '하위PL을 선택하세요', trigger: 'blur' }],
   milestoneId: [{ required: true, message: '마일스톤을 선택하세요', trigger: 'change' }],
 }
 
@@ -209,29 +223,97 @@ const handleSubmit = async () => {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
 
-  submitting.value = true
-  try {
-        const payload = {
-              parentProjectId: props.projectId,
-              milestoneId: form.milestoneId,
-              projectName: form.projectName,
-              description: form.description,
-              startDate: form.startDate,
-              endDate: form.endDate,
-              identifier: form.projectCode,
-              subPlUserId: form.plUserId,
-              isPublic: form.isPublic ? 'P1' : 'P2',
-              userId: authStore.user?.userId,
-        }
+  const payload = {
+    projectId: form.projectId,
+    parentProjectId: props.projectId,
+    milestoneId: form.milestoneId,
+    milestoneMappingId: form.milestoneMappingId,
+    projectName: form.projectName,
+    identifier: form.identifier,
+    subPlUserId: form.subPlUserId,
+    startDate: form.startDate,
+    endDate: form.endDate,
+    description: form.description,
+    useMilestone: form.useMilestone,
+    isPublic: form.isPublic ? 'P1' : 'P2',
+    userId: authStore.user?.userId,
+  }
 
-    await axios.post('/api/ProjectSubRegister', payload)    
+  try {
+    if (props.isEditMode) {
+      const result = await Swal.fire({
+        title: "수정하시겠습니까?",
+        text: "하위프로젝트 정보를 수정합니다.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "수정",
+        cancelButtonText: "취소",
+        reverseButtons: true,
+        customClass: {
+           popup: "subproject-swal-popup"
+         }
+      })
+
+      if (!result.isConfirmed) return
+    }
+
+    submitting.value = true
+
+    if (props.isEditMode) {
+      await axios.post('/api/ProjectSubModify', payload)
+
+      await Swal.fire({
+        title: "수정되었습니다.",
+        icon: "success",
+        confirmButtonText: "확인",
+      })
+    } else {
+      await axios.post('/api/ProjectSubRegister', payload)
+
+      await Swal.fire({
+        title: "생성되었습니다.",
+        icon: "success",
+        confirmButtonText: "확인",
+      })
+    }
+
     visible.value = false
     handleReset()
     emit('submitted')
+
   } catch (err) {
-    console.error('프로젝트 등록 실패:', err)
+    console.error(props.isEditMode ? '프로젝트 수정 실패:' : '프로젝트 등록 실패:', err)
+
+    await Swal.fire({
+      title: props.isEditMode ? "수정 실패" : "생성 실패",
+      text: "처리 중 오류가 발생했습니다.",
+      icon: "error",
+      confirmButtonText: "확인",
+    })
   } finally {
     submitting.value = false
+  }
+}
+
+const fillForm = () => {
+  if (props.isEditMode && props.editData) {
+    Object.assign(form, {
+      projectId: props.editData.projectId ?? null,
+      parentProjectId: props.projectId,
+      milestoneId: props.editData.milestoneId ?? null,
+      milestoneMappingId: props.editData.milestoneMappingId ?? null,
+      projectName: props.editData.projectName ?? '',
+      identifier: props.editData.identifier ?? '',
+      subPlUserId: props.editData.subPlUserId ?? null,
+      startDate: props.editData.startDate ?? '',
+      endDate: props.editData.endDate ?? '',
+      description: props.editData.description ?? '',
+      useMilestone: props.editData.useMilestone ?? true,
+      isPublic: props.editData.isPublic === 'P1',
+      userId: authStore.user?.userId ?? null,
+    })
+  } else {
+    Object.assign(form, defaultForm())
   }
 }
 
@@ -241,12 +323,22 @@ watch(
     if (newVal) {
       fetchPlList()
       fetchMilestoneList()
+      fillForm()
     }
   }
 )
 </script>
 
-<style scoped>
+<style>
+
+.swal2-container {
+  z-index: 99999 !important;
+}
+
+.swal2-popup {
+  z-index: 100000 !important;
+}
+
 /* 인라인 필드 묶음 */
 .row-fields {
   display: flex;

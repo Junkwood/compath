@@ -29,5 +29,14 @@ public interface ProjectMapperJDJ {
     //하위프로젝트 생성
     int registerSubProject(ProjectSubCreateDtoJDJ dto);
     int registerMilestoneMapping(ProjectSubCreateDtoJDJ dto);
+
+    //하위프로젝트 수정
+    //프로젝트테이블 수정
+    int modifySubProject(ProjectSubCreateDtoJDJ dto);
+    //매핑테이블수정
+    void modifyMilestoneMapping(ProjectSubCreateDtoJDJ dto);
+    //수정용조회
+    ProjectSubCreateDtoJDJ getSubProjectDetail(int projectId);
+
 }
 

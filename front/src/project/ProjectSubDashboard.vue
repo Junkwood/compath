@@ -51,7 +51,7 @@
                 업무 생성
               </el-button>
               <el-button class="setting-btn" @click="handleSubProjectSetting">
-                ⚙ 하위프로젝트 설정
+                ⚙ 하위프로젝트 수정
               </el-button>
             </div>
           </div>
@@ -171,12 +171,22 @@
       </main>
     </div>
   </div>
+
+<ProjectSubCreateModal
+  v-model="subProjectModalOpen"
+  :projectId="rootProjectId"
+  :parentProjectName="projectInfo.projectName"
+  :isEditMode="true"
+  :editData="editData"
+  @submitted="handleSubProjectUpdated"
+/>
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "../utils/api"
+import ProjectSubCreateModal from "../project/ProjectSubCreateModal.vue"
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -187,6 +197,16 @@ const sidebarOpen = ref(false);
 
 const subProjectId = route.params.subProjectId;
 const rootProjectId = route.params.rootProjectId;
+
+//하위프로젝트 수정 모달
+const subProjectModalOpen = ref(false)
+const editData = ref(null)
+
+//하위프로젝트 수정 후 모달 닫으면 화면 갱신되게
+const handleSubProjectUpdated = async () => {
+  await fetchSubInfo()
+  subProjectModalOpen.value = false
+}
 
 //상단 제목용 (루뜨프로젝트 이름)
 const projectInfo = ref({
@@ -277,9 +297,15 @@ const handleCreateTask = () => {
   });
 };
 
-const handleSubProjectSetting = () => {
-  console.log("하위프로젝트 설정");
-};
+const handleSubProjectSetting = async () => {
+  try {
+    const res = await api.get(`/ProjectSubDetail/${subProjectId}`)
+    editData.value = res.data
+    subProjectModalOpen.value = true
+  } catch (err) {
+    console.error("하위프로젝트 수정용 상세 조회 실패:", err)
+  }
+}
 
 const tableHeaderStyle = () => ({
   background: "#f3f4f6",
