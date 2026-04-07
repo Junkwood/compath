@@ -11,4 +11,6 @@ public class UserDtoJJW {
     // 담당자 선택 팝업용
     private Long userId;
     private String userName;
+    private String userType;
+    private String roleName;
 }

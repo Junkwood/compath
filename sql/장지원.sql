@@ -4,6 +4,10 @@ SELECT * FROM users;
 SELECT * FROM projects;
 SELECT * FROM tasks;
 
+SELECT * FROM groups;
+SELECT * FROM roles;
+SELECT * FROM project_members;
+
 SELECT * FROM task_types;
 SELECT * FROM task_statuses;
 
@@ -21,6 +25,10 @@ SELECT * FROM common_code;
 UPDATE common_code
 SET CODE_VALUE = 'G5'
 WHERE CODE_VALUE = 'G6' AND GROUP_VALUE = '0G';
+
+UPDATE tasks 
+SET task_status_id = '3'
+WHERE Task_id ='10127';
 
 
 -- 특정 프로젝트 마일스톤 조회
@@ -91,6 +99,14 @@ WHERE task_id = 10080;
 
 -- 데이터 삭제
 DELETE FROM COMMON_CODE  WHERE code_value = 'G5';
+
+SELECT pm.*, u.user_name, r.role_name
+FROM project_members pm
+JOIN users u ON pm.user_id = u.user_id
+JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+JOIN roles r ON pmr.role_id = r.role_id
+WHERE pm.project_id = '2'
+AND pm.is_active = 'O1';
 ---------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
     p_task_id      IN  NUMBER,
@@ -126,7 +142,17 @@ BEGIN
        OR parent_project_id = v_target_project_id;
 
     -- 유저 
-    OPEN userList FOR SELECT user_id, user_name FROM users WHERE is_active = 'O1';
+	OPEN userList FOR
+	SELECT
+	    u.user_id,
+	    u.user_name,
+	    r.role_name
+	FROM project_members pm
+	JOIN users u ON pm.user_id = u.user_id
+	JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+	JOIN roles r ON pmr.role_id = r.role_id
+	WHERE pm.project_id = v_target_project_id  -- p_project_id → v_target_project_id
+	AND pm.is_active = 'O1';
 
     -- 업무 유형 
     OPEN taskTypeList FOR SELECT task_type_id, type_name FROM task_types WHERE is_active = 'O1';

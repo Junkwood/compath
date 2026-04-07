@@ -11,7 +11,7 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            업무 생성
+            {{ isSubTask ? "하위업무 생성" : "업무 생성" }}
           </h1>
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
             <div class="grid grid-cols-2 gap-6 mb-6">
@@ -169,7 +169,7 @@
                 <input
                   type="date"
                   v-model="form.estStartDate"
-                  @change="calcEstTime"
+                  @change="calcEstTime(true)"
                   class="input w-full"
                 />
               </div>
@@ -180,7 +180,7 @@
                 <input
                   type="date"
                   v-model="form.estEndDate"
-                  @change="calcEstTime"
+                  @change="calcEstTime(true)"
                   class="input w-full"
                 />
                 <p class="text-xs text-gray-400 mt-1">

@@ -36,6 +36,7 @@
     <resultMap id="userMap" type="com.example.task.dto.UserDtoJJW">
         <id property="userId" column="USER_ID" />
         <result property="userName" column="USER_NAME" />
+        <result property="userType" column="ROLE_NAME" />
     </resultMap>
 
     <resultMap id="typeMap" type="com.example.task.dto.TaskTypeDtoJJW">

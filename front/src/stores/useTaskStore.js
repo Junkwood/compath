@@ -4,7 +4,7 @@ import api from "../utils/api";
 import Swal from "sweetalert2";
 
 export const useTaskStore = defineStore("task", () => {
-  // 상태
+  // ───────────── 상태 ─────────────
   const taskTypeList = ref([]);
   const priorityList = ref([]);
   const statusList = ref([]);
@@ -17,11 +17,11 @@ export const useTaskStore = defineStore("task", () => {
   const userModal = ref(false);
   const milestoneModal = ref(false);
 
-  // computed
+  // ───────────── computed ─────────────
   // 마일스톤 존재 여부
   const hasMilestone = computed(() => milestoneList.value.length > 0);
 
-  // 종료 상태 ID
+  // 종료 상태 ID 목록 (IS_FINAL = 'O1')
   const finishedIds = computed(() =>
     (statusList.value ?? [])
       .filter((s) => s.isFinal === "O1")
@@ -34,7 +34,7 @@ export const useTaskStore = defineStore("task", () => {
     return statusList.value.filter((s) => [1, 2].includes(s.taskStatusId));
   });
 
-  // 소요시간/진척도 표시 여부
+  // 소요시간/진척도 표시 여부 (개발완료=3 또는 종료)
   const isCompletedStatus = computed(
     () =>
       finishedIds.value.includes(Number(form.value.taskStatusId)) ||
@@ -67,7 +67,7 @@ export const useTaskStore = defineStore("task", () => {
 
   const form = ref({ ...initialForm });
 
-  //초기화 (등록용)
+  // ───────────── 초기화 (등록용) ─────────────
   const initCreate = async (projectId, parentTaskId = null) => {
     resetForm();
     const res = await api.get("/task-total-info", { params: { projectId } });
@@ -79,7 +79,13 @@ export const useTaskStore = defineStore("task", () => {
       statusList: rawStatusList,
     } = res.data;
 
-    userList.value = uList.map((u) => ({ name: u.userName, value: u.userId }));
+    userList.value = uList.map((u) => ({
+      name: u.userName,
+      value: u.userId,
+      // userType: u.userType,
+      userType: u.roleName,
+    }));
+
     taskTypeList.value = tList;
     statusList.value = rawStatusList;
 
@@ -136,7 +142,7 @@ export const useTaskStore = defineStore("task", () => {
     }
   };
 
-  // 초기화 (수정용)
+  // ───────────── 초기화 (수정용) ─────────────
   const initEdit = async (taskId) => {
     resetForm();
 
@@ -160,7 +166,12 @@ export const useTaskStore = defineStore("task", () => {
     // 업무상태는 프로시저에서
     statusList.value = rawStatusList;
     taskTypeList.value = rawTypeList;
-    userList.value = uList.map((u) => ({ name: u.userName, value: u.userId }));
+    userList.value = uList.map((u) => ({
+      name: u.userName,
+      value: u.userId,
+      // userType: u.userType,
+      userType: u.roleName,
+    }));
     milestoneList.value = rawMilestoneList.map((m) => ({
       name: m.milestoneName,
       value: m.milestoneId,
@@ -193,7 +204,7 @@ export const useTaskStore = defineStore("task", () => {
       )?.isFinal === "O1";
   };
 
-  //  담당자
+  // ───────────── 담당자 ─────────────
   const openUserModal = () => {
     userModal.value = true;
   };
@@ -211,7 +222,7 @@ export const useTaskStore = defineStore("task", () => {
     }
   };
 
-  // 마일스톤
+  // ───────────── 마일스톤 ─────────────
   const fetchMilestones = async (pId) => {
     if (!pId) return;
     const res = await api.get("/taskMileStone", { params: { projectId: pId } });
@@ -237,7 +248,7 @@ export const useTaskStore = defineStore("task", () => {
     form.value.milestoneId = val.value;
   };
 
-  //  우선순위
+  // ───────────── 우선순위 ─────────────
   const onPriorityChange = () => {
     const val = form.value.priorityCode;
     const today = new Date();
@@ -253,20 +264,22 @@ export const useTaskStore = defineStore("task", () => {
     const dateStr = today.toISOString().split("T")[0];
     form.value.estEndDate = dateStr;
     form.value.dueDate = dateStr;
-    calcEstTime();
+    calcEstTime(true);
   };
 
-  // 추정시간
-  const calcEstTime = () => {
+  // ───────────── 추정시간 ─────────────
+  const calcEstTime = (force = false) => {
     if (
+      !force &&
       form.value.taskId &&
       form.value.estTime &&
       form.value.estTime !== "0시간"
     )
       return;
 
-    const sDate = form.value.startDate || form.value.estStartDate;
-    const eDate = form.value.dueDate || form.value.estEndDate;
+    const isEditMode = !!form.value.taskId;
+    const sDate = isEditMode ? form.value.startDate : form.value.estStartDate;
+    const eDate = isEditMode ? form.value.dueDate : form.value.estEndDate;
 
     if (sDate && eDate) {
       const days =
@@ -275,8 +288,7 @@ export const useTaskStore = defineStore("task", () => {
       if (days > 0) form.value.estTime = `${days * 8}시간`;
     }
   };
-
-  //업무상태 변경 시 소요시간 자동계산
+  // ───────────── 업무상태 변경 시 소요시간 자동계산 ─────────────
   watch(
     () => form.value.taskStatusId,
     (newVal) => {
@@ -299,7 +311,7 @@ export const useTaskStore = defineStore("task", () => {
     },
   );
 
-  //  폼 초기화
+  // ───────────── 폼 초기화 ─────────────
   const resetForm = (mode = "create") => {
     if (mode === "edit" && originalForm.value) {
       form.value = { ...originalForm.value };
@@ -326,7 +338,7 @@ export const useTaskStore = defineStore("task", () => {
     actualHours.value = "";
   };
 
-  // payload 빌더
+  // ───────────── payload 빌더 ─────────────
   const buildPayload = () => {
     const status = Number(
       String(form.value.taskStatusId).replace(/[^0-9]/g, ""),
@@ -363,7 +375,7 @@ export const useTaskStore = defineStore("task", () => {
     return payload;
   };
 
-  // 유효성 검사
+  // ───────────── 유효성 검사 ─────────────
   const validateForm = () => {
     if (hasMilestone.value && !form.value.milestoneId)
       throw new Error("마일스톤을 선택해 주세요.");

@@ -24,9 +24,23 @@
           @click="selectItem(item)"
           class="px-3 py-2.5 hover:bg-slate-50 cursor-pointer border-b last:border-none transition-colors rounded-lg"
         >
-          <span class="text-sm text-gray-700">{{
-            item.name || item.codeName
-          }}</span>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-700">{{
+              item.name || item.codeName
+            }}</span>
+            <!-- ✅ 이름 추가 -->
+            <span
+              v-if="item.userType"
+              :class="[
+                'text-xs font-semibold px-2 py-0.5 rounded-full',
+                item.userType === 'M1'
+                  ? 'bg-blue-100 text-blue-600'
+                  : 'bg-green-100 text-green-600',
+              ]"
+            >
+              {{ item.userType }}
+            </span>
+          </div>
         </li>
       </ul>
 
@@ -106,12 +120,19 @@ const totalPages = computed(() => Math.ceil(props.items.length / perPage) || 1);
 
 const pagedList = computed(() => {
   const start = (page.value - 1) * perPage;
+  const result = props.items.slice(start, start + perPage);
+  console.log("pagedList items:", result);
+
   return props.items.slice(start, start + perPage);
 });
 
 const selectItem = (item) => {
   const displayName = item.name || item.codeName;
-  emit("select", { name: displayName, value: item.id || item.codeValue });
+  emit("select", {
+    name: displayName,
+    value: item.id || item.codeValue,
+    userType: item.userType,
+  });
   modalOpenModel.value = false;
 };
 </script>
