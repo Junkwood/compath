@@ -260,24 +260,29 @@ const submitForm = async (formEl) => {
         };
         await documentStore.registerDocument(obj);
 
-        let alarmArr = [
-          {
-            targetId: documentStore.registeredDocument.documentId,
-            title: "문서를 등록되었습니다.",
-            message: "문서를 확인해주세요",
-            createdBy: al.userId,
-          },
-        ];
+        if (documentStore.registeredDocument.documentId > 0) {
+          let alarmArr = [
+            {
+              targetId: documentStore.registeredDocument.documentId,
+              title: "문서를 등록되었습니다.",
+              message: "문서를 확인해주세요",
+              createdBy: userInfo.value.userId,
+            },
+          ];
 
-        let target = [];
+          let target = [];
 
-        alarmList.value.forEach((al) => {
-          target.push();
-        });
+          alarmList.value.forEach((al) => {
+            target.push({
+              receiverId: al.userId,
+              notificationId: "",
+            });
+          });
 
-        alarmArr.push(target);
+          alarmArr.push(target);
 
-        await documentStore.registerDocumentAlarm(alarmObj);
+          await documentStore.registerDocumentAlarm(alarmArr);
+        }
       } else {
         const result = await Swal.fire({
           title: "정말 수정하시겠습니까?",
@@ -303,16 +308,16 @@ const submitForm = async (formEl) => {
         await documentStore.modifyDocument(obj);
       }
 
-      router.push({
-        name: "documentDetail",
-        params: {
-          projectId: id,
-          documentId:
-            isModified == true
-              ? documentId
-              : documentStore.registeredDocument.documentId,
-        },
-      });
+      // router.push({
+      //   name: "documentDetail",
+      //   params: {
+      //     projectId: id,
+      //     documentId:
+      //       isModified == true
+      //         ? documentId
+      //         : documentStore.registeredDocument.documentId,
+      //   },
+      // });
     } else {
       // 안내 메세지 나옴
       console.log("error submit!", fields);

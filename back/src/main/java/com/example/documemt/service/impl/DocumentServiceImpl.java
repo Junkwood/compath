@@ -104,7 +104,9 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public int registerCommentAlarm(DocumentAlarmDTO dto) {
+    public int registerCommentAlarm(List<DocumentAlarmDTO> list) {
+
+        DocumentAlarmDTO dto = list.get(0);
 
         mapper.registerCommentAlarm(dto);
 
@@ -112,9 +114,14 @@ public class DocumentServiceImpl implements DocumentService {
 
         int id = mapper.getDocumentAlarmById(targetId);
 
-        dto.setNotification_id(id);
+        Integer result = 0;
+        for(int i=1; i<list.size(); i++) {
+            list.get(i).setNotificationId(id);
 
-        return mapper.registerAlarmTarget(dto);
+            result += mapper.registerAlarmTarget(list.get(i));
+        }
+
+        return result;
     }
 
 

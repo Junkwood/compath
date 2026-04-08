@@ -31,5 +31,5 @@ public interface DocumentService {
     public List<DocumentCommentDTO> modifyComment(DocumentCommentDTO dto);
 
     // 문서 알림 테이블 등록
-    public int registerCommentAlarm(DocumentAlarmDTO dto);
+    public int registerCommentAlarm(List<DocumentAlarmDTO> list);
 }

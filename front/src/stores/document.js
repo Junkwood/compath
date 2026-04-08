@@ -91,8 +91,9 @@ export const useDocumentStore = defineStore("document", {
 
     // 알림 등록
     async registerDocumentAlarm(arr) {
+      console.log("생성값", arr);
       await axios //
-        .post("/api/group/members", arr)
+        .post("/api/docuemnts/alarm/register", arr)
         .then((res) => {
           console.log("알림발송 및 등록 완료", res.data);
         });

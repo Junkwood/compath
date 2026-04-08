@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class DocumentAlarmDTO { // 문서
 
     //    문서 알림
-    private Integer notification_id;
+    private Integer notificationId;
     private Integer userId;
     private String userName;
     private Integer roleId;
