@@ -22,9 +22,9 @@ export const useGroupStore = defineStore("group", {
     async changeStatus(id, isActive, editorUserId) {
       let value;
       if (isActive == "Y") {
-        value = "O2";
-      } else {
         value = "O1";
+      } else {
+        value = "O2";
       }
       console.log(id, value, editorUserId);
       const group = {
@@ -32,7 +32,7 @@ export const useGroupStore = defineStore("group", {
         isActive: value,
         editorUserId: editorUserId,
       };
-      const response = await api.put("/admin/group", group);
+      const response = await api.put(`/admin/group/${id}`, group);
       const result = response.data;
       if (result.isActive == null) {
         return false;

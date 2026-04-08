@@ -16,6 +16,19 @@
         active(IS_FINAL) as IS_FINAL
         FROM task_statuses
     </select>
+    <select id="getActiveTaskStatuses">
+        SELECT
+        TASK_STATUS_ID,
+        STATUS_NAME,
+        DESCRIPTION,
+        CREATED_AT,
+        UPDATED_AT,
+        CREATED_BY,
+        EDITOR_USER_ID,
+        active(IS_FINAL) as IS_FINAL
+        FROM task_statuses
+        WHERE is_active = 'O1'
+    </select>
     <update id="modifyTaskStatus">
         UPDATE task_statuses
         <set>
@@ -75,4 +88,63 @@
         START_STATUS
         FROM task_types
     </select>
+    <select id="getActiveTaskTypes">
+        SELECT
+        TASK_TYPE_ID,
+        TYPE_NAME,
+        DESCRIPTION,
+        active(IS_ACTIVE) as IS_ACTIVE,
+        CREATED_AT,
+        UPDATED_AT,
+        CREATED_BY,
+        EDITOR_USER_ID,
+        START_STATUS
+        FROM task_types
+        WHERE is_active = 'O1'
+    </select>
+    <update id="modifyTaskType">
+        UPDATE task_types
+        <set>
+            <if test="typeName !=null and typeName !=''">
+                type_name = #{typeName},
+            </if>
+            <if test="description !=null and description !=''">
+                description = #{description},
+            </if>
+            <if test="isActive !=null and isActive !=''">
+                is_active = #{isActive},
+            </if>
+            <if test="startStatus !=null and startStatus !=''">
+                start_status = #{startStatus},
+            </if>
+            editor_user_id = #{userId},
+            updated_at = SYSDATE
+        </set>
+        WHERE task_type_id = #{taskTypeId}
+    </update>
+    <select id="checkDupType">
+        SELECT count(*)
+        FROM task_types
+        WHERE type_name = #{name}
+    </select>
+    <insert id="registerTaskType">
+        INSERT INTO task_types(
+        TASK_TYPE_ID,
+        TYPE_NAME,
+        DESCRIPTION,
+        IS_ACTIVE,
+        CREATED_AT,
+        CREATED_BY,
+        START_STATUS
+        )
+        VALUES(
+        task_type_seq.NEXTVAL,
+        #{typeName},
+        #{description},
+        #{isActive},
+        SYSDATE,
+        #{userId},
+        #{startStatus}
+        )
+    </insert>
 </mapper>

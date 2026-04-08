@@ -73,8 +73,7 @@ public class GroupServiceImplSJW implements GroupServiceSJW {
     @Override
     @Transactional
     public GroupDTOSJW modifyGroup(GroupDTOSJW group) {
-
-        log.error("🚨 프론트에서 넘어온 멤버 수: " + group.getMembers().size());
+    
         // 1. 그룹 기본 정보 수정
         groupMapper.modifyGroup(group);
         if(group.getMembers() != null ) {

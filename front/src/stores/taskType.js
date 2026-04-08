@@ -3,34 +3,25 @@ import { ref } from "vue";
 import api from "../utils/api";
 import { useAuthStore } from "./auth";
 
-export const useStatusStore = defineStore("status", () => {
-  const statusList = ref([]);
-  const activeStatusList = ref([]);
+export const useTypeStore = defineStore("taskType", () => {
+  const typeList = ref([]);
   const authStore = useAuthStore();
   // ── 목록 조회 ──
-  async function getStatusList() {
+  async function getTypeList() {
     try {
-      const res = await api.get("/admin/task/status");
-      statusList.value = res.data;
+      const res = await api.get("/admin/task/type");
+      console.log(res);
+      typeList.value = res.data;
     } catch (err) {
       console.error("상태 목록 조회 실패:", err);
       throw err;
     }
   }
-  // ── 활성 상태 목록 조회 ──
-  async function getActiveStatusList() {
-    try {
-      const res = await api.get("/admin/task/status/active");
-      activeStatusList.value = res.data;
-    } catch (err) {
-      console.error("상태 목록 조회 실패:", err);
-      throw err;
-    }
-  }
+
   // ── 단건 조회 ──
-  async function getStatus(taskStatusId) {
+  async function getType(taskTypeId) {
     try {
-      const res = await api.get(`/admin/task/status/${taskStatusId}`);
+      const res = await api.get(`/admin/task/type/${taskTypeId}`);
       return res.data;
     } catch (err) {
       console.error("상태 조회 실패:", err);
@@ -39,10 +30,10 @@ export const useStatusStore = defineStore("status", () => {
   }
 
   // ── 등록 ──
-  async function createStatus(form) {
+  async function createType(form) {
     try {
       form.userId = authStore.user.userId;
-      const res = await api.post("/admin/task/status", form);
+      const res = await api.post("/admin/task/type", form);
       return res.data;
     } catch (err) {
       console.error("상태 등록 실패:", err);
@@ -51,11 +42,13 @@ export const useStatusStore = defineStore("status", () => {
   }
 
   // ── 수정 ──
-  async function updateStatus(form) {
+  async function updateType(form) {
     try {
+      // const payload = { userId: authStore.user.userId, ...form };
       form.userId = authStore.user.userId;
+      // console.log(payload, form);
       const res = await api.put(
-        `/admin/task/status/modify/${form.taskStatusId}`,
+        `/admin/task/type/modify/${form.taskTypeId}`,
         form,
       );
       return res.data;
@@ -66,16 +59,17 @@ export const useStatusStore = defineStore("status", () => {
   }
 
   // ── 활성화 상태 토글 ──
-  async function changeStatus(row) {
+  async function toggleActive(row) {
     try {
-      const res = await api.put(`/admin/task/status/modify/isActive`, {
-        taskStatusId: row.taskStatusId,
+      console.log(authStore.user.userId);
+      const res = await api.put(`/admin/task/type/modify/isActive`, {
+        taskTypeId: row.taskTypeId,
         isActive: row.isActive,
         userId: authStore.user.userId,
       });
       // 로컬 상태도 즉시 반영
-      const target = statusList.value.find(
-        (s) => s.taskStatusId === row.taskStatusId,
+      const target = typeList.value.find(
+        (s) => s.taskTypeId === row.taskTypeId,
       );
       return res.data;
     } catch (err) {
@@ -86,14 +80,15 @@ export const useStatusStore = defineStore("status", () => {
   // ── 활성화 상태 토글 ──
   async function changeFinal(row) {
     try {
-      const res = await api.put(`/admin/task/status/modify/isFinal`, {
-        taskStatusId: row.taskStatusId,
+      console.log(authStore.user.userId);
+      const res = await api.put(`/admin/task/type/modify/isFinal`, {
+        taskTypeId: row.taskTypeId,
         isFinal: row.isFinal,
         userId: authStore.user.userId,
       });
       // 로컬 상태도 즉시 반영
-      const target = statusList.value.find(
-        (s) => s.taskStatusId === row.taskStatusId,
+      const target = typeList.value.find(
+        (s) => s.taskTypeId === row.taskTypeId,
       );
       return res.data;
     } catch (err) {
@@ -102,26 +97,24 @@ export const useStatusStore = defineStore("status", () => {
     }
   }
   // 상태명 중복 체크
-  async function checkDuplicate(statusName) {
+  async function checkDuplicate(typeName) {
     try {
-      const res = await api.get(`/admin/task/status/checkDup/${statusName}`);
+      const res = await api.get(`/admin/task/type/checkDup/${typeName}`);
       const result = res.data;
       return result;
     } catch (e) {
-      console.error(`중복 확인 실패 : ${e}`);
+      console.log(`중복 확인 실패 : ${e}`);
       throw e;
     }
   }
 
   return {
-    statusList,
-    activeStatusList,
-    getStatusList,
-    getActiveStatusList,
-    getStatus,
-    createStatus,
-    updateStatus,
-    changeStatus,
+    typeList,
+    getTypeList,
+    getType,
+    createType,
+    updateType,
+    toggleActive,
     changeFinal,
     checkDuplicate,
   };

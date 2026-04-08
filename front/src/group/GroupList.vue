@@ -1,22 +1,18 @@
 <template>
   <div class="flex h-[100dvh] overflow-hidden">
-    <!-- 1. 사이드바 -->
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <div
       class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
     >
-      <!-- 2. 헤더 -->
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
 
-      <!-- 3. 메인 콘텐츠 -->
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <!-- Page header -->
-          <div class="sm:flex sm:justify-between sm:items-center mb-8">
+          <div class="sm:flex sm:justify-between sm:items-center mb-6">
             <div class="mb-4 sm:mb-0">
               <h1
                 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
@@ -28,13 +24,12 @@
             <div
               class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2"
             >
-              <!-- 검색 -->
               <form class="relative" @submit.prevent>
                 <label for="group-search" class="sr-only">검색</label>
                 <input
                   id="group-search"
                   v-model="searchQuery"
-                  class="form-input pl-9 bg-white dark:bg-gray-800"
+                  class="form-input pl-9 bg-white dark:bg-gray-800 text-sm h-full rounded-md border-gray-300"
                   type="search"
                   placeholder="그룹명 또는 ID 검색"
                 />
@@ -44,7 +39,7 @@
                   aria-label="Search"
                 >
                   <svg
-                    class="w-4 h-4 shrink-0 fill-current text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400 ml-3 mr-2"
+                    class="w-4 h-4 shrink-0 fill-current text-gray-400 ml-3 mr-2"
                     viewBox="0 0 16 16"
                     xmlns="http://www.w3.org/2000/svg"
                   >
@@ -58,293 +53,125 @@
                 </button>
               </form>
 
-              <!-- Add button -->
-              <button
-                class="btn bg-violet-500 hover:bg-violet-600 text-white"
-                @click="handleCreateGroup()"
-              >
-                <svg
-                  class="w-4 h-4 fill-current opacity-50 shrink-0"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"
-                  />
-                </svg>
-                <span class="hidden xs:block ml-2">그룹 추가</span>
-              </button>
+              <el-button class="btn-register h-full" @click="handleCreateGroup">
+                + &nbsp; 그룹 추가
+              </el-button>
             </div>
           </div>
 
-          <!-- Table -->
-          <div
-            class="bg-white dark:bg-gray-800 shadow-lg rounded-sm border border-gray-200 dark:border-gray-700/60 relative"
-          >
-            <header class="px-5 py-4 flex items-center justify-between">
-              <h2 class="font-semibold text-gray-800 dark:text-gray-100">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">
                 전체 그룹
-                <span class="text-gray-400 dark:text-gray-500 font-medium">{{
+                <span class="text-gray-400 font-medium ml-1">{{
                   filteredGroups.length
                 }}</span>
-              </h2>
-              <div
-                class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
-              >
-                <span>페이지당</span>
+              </span>
+              <div class="flex items-center gap-2 text-sm text-gray-600">
                 <select
                   v-model="pageSize"
-                  class="form-select text-sm py-1 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                  class="form-select text-sm py-1 px-8 bg-white border-gray-200 rounded-md"
                 >
-                  <option :value="10">10개</option>
-                  <option :value="20">20개</option>
-                  <option :value="50">50개</option>
+                  <option :value="10">10개씩 보기</option>
+                  <option :value="20">20개씩 보기</option>
+                  <option :value="50">50개씩 보기</option>
                 </select>
-              </div>
-            </header>
-
-            <div>
-              <div class="overflow-x-auto">
-                <table class="table-auto w-full dark:text-gray-300">
-                  <thead
-                    class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20 border-t border-b border-gray-200 dark:border-gray-700/60"
-                  >
-                    <tr>
-                      <th
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div class="font-semibold text-center">그룹 ID</div>
-                      </th>
-                      <th
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div class="font-semibold text-center">그룹명</div>
-                      </th>
-                      <th
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div class="font-semibold text-center">그룹 유형</div>
-                      </th>
-                      <th
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div class="font-semibold text-center">그룹 설명</div>
-                      </th>
-                      <th
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div class="font-semibold text-center">총 인원</div>
-                      </th>
-                      <th
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div class="font-semibold text-center">활성화 상태</div>
-                      </th>
-                      <th
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div class="font-semibold text-center">관리</div>
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody
-                    class="text-sm divide-y divide-gray-200 dark:divide-gray-700/60"
-                  >
-                    <tr v-if="pagedGroups.length === 0">
-                      <td
-                        colspan="7"
-                        class="px-5 py-10 text-center text-gray-400 dark:text-gray-500"
-                      >
-                        검색 결과가 없습니다.
-                      </td>
-                    </tr>
-
-                    <tr v-for="group in pagedGroups" :key="group.groupId">
-                      <!-- Group ID -->
-                      <td
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                        @click="toGroupInfo(group.groupId)"
-                      >
-                        <div class="font-medium text-sky-500">
-                          #{{ group.groupId }}
-                        </div>
-                      </td>
-                      <!-- Group Name -->
-
-                      <td
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                        @click="toGroupInfo(group.groupId)"
-                      >
-                        <div
-                          class="font-medium text-gray-800 dark:text-gray-100"
-                          v-html="highlight(group.groupName)"
-                        ></div>
-                      </td>
-                      <!-- Group Type -->
-                      <td
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div
-                          class="text-center text-gray-700 dark:text-gray-300"
-                        >
-                          {{ group.groupType || "-" }}
-                        </div>
-                      </td>
-                      <!-- Description -->
-                      <td class="px-2 first:pl-5 last:pr-5 py-3 max-w-xs">
-                        <div
-                          class="text-gray-500 dark:text-gray-400 truncate"
-                          :title="group.description"
-                        >
-                          {{ group.description || "-" }}
-                        </div>
-                      </td>
-                      <!-- Member Count -->
-                      <td
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div class="text-center">
-                          <span
-                            class="font-medium text-gray-800 dark:text-gray-100"
-                            >{{ group.memberCount ?? 0 }}</span
-                          >
-                          <span class="text-gray-400 dark:text-gray-500 ml-1"
-                            >명</span
-                          >
-                        </div>
-                      </td>
-                      <!-- Status Toggle -->
-                      <td
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"
-                      >
-                        <div
-                          class="text-center flex justify-center items-center"
-                        >
-                          <label
-                            class="relative inline-flex items-center cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              class="sr-only peer"
-                              :checked="group.isActive === 'Y'"
-                              @change="handleToggle(group)"
-                            />
-                            <div
-                              class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"
-                            ></div>
-                          </label>
-                        </div>
-                      </td>
-                      <!-- Actions -->
-                      <td
-                        class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px"
-                      >
-                        <div class="space-x-1 text-center">
-                          <button
-                            class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 rounded-full"
-                            @click="handleUpdateGroup(group.groupId)"
-                          >
-                            <span class="sr-only">Edit</span>
-                            <svg
-                              class="w-8 h-8 fill-current"
-                              viewBox="0 0 32 32"
-                            >
-                              <path
-                                d="M19.7 8.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM12.6 22H10v-2.6l6-6 2.6 2.6-6 6zm7.4-7.4L17.4 12l1.6-1.6 2.6 2.6-1.6 1.6z"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
               </div>
             </div>
 
-            <!-- Pagination -->
-            <div
-              class="px-5 py-4 border-t border-gray-200 dark:border-gray-700/60"
+            <el-table
+              :data="pagedGroups"
+              style="width: 100%"
+              :header-cell-style="headerStyle"
+              :cell-style="cellStyle"
             >
-              <div
-                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-              >
-                <p
-                  class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left"
-                >
-                  전체
-                  <span class="font-medium text-gray-700 dark:text-gray-300">{{
-                    filteredGroups.length
-                  }}</span
-                  >개 중
-                  <span class="font-medium text-gray-700 dark:text-gray-300">{{
-                    rangeStart
+              <el-table-column label="그룹 ID" align="center" width="100">
+                <template #default="{ row }">
+                  <span
+                    class="font-medium text-sky-500 cursor-pointer hover:underline"
+                    @click="toGroupInfo(row.groupId)"
+                  >
+                    #{{ row.groupId }}
+                  </span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="그룹명" min-width="180">
+                <template #default="{ row }">
+                  <span
+                    class="group-name cursor-pointer hover:text-violet-600 transition-colors"
+                    v-html="highlight(row.groupName)"
+                    @click="toGroupInfo(row.groupId)"
+                  ></span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="그룹 유형" align="center" width="140">
+                <template #default="{ row }">
+                  <el-tag
+                    v-if="row.groupType"
+                    size="small"
+                    effect="light"
+                    round
+                    class="font-medium"
+                  >
+                    {{ row.groupType }}
+                  </el-tag>
+                  <span v-else class="text-gray-400">-</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="그룹 설명" min-width="250">
+                <template #default="{ row }">
+                  <span
+                    class="desc-text truncate block w-full"
+                    :title="row.description"
+                  >
+                    {{ row.description || "-" }}
+                  </span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="총 인원" align="center" width="100">
+                <template #default="{ row }">
+                  <span class="font-medium text-gray-800">{{
+                    row.memberCount ?? 0
                   }}</span>
-                  -
-                  <span class="font-medium text-gray-700 dark:text-gray-300">{{
-                    rangeEnd
-                  }}</span
-                  >번째
-                </p>
+                  <span class="text-gray-400 ml-0.5">명</span>
+                </template>
+              </el-table-column>
 
-                <div class="flex items-center justify-center gap-1">
-                  <button
-                    :disabled="currentPage === 1"
-                    @click="currentPage--"
-                    class="px-2.5 py-1.5 rounded text-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
-                  </button>
+              <el-table-column label="활성화 상태" align="center" width="140">
+                <template #default="{ row }">
+                  <el-switch
+                    v-model="row.isActive"
+                    active-value="Y"
+                    inactive-value="N"
+                    @change="handleToggle(row)"
+                  />
+                </template>
+              </el-table-column>
 
-                  <button
-                    v-for="page in visiblePages"
-                    :key="page"
-                    @click="page !== '...' && (currentPage = page)"
-                    :class="[
-                      'px-3 py-1.5 rounded text-sm border transition-colors',
-                      page === currentPage
-                        ? 'bg-violet-500 border-violet-500 text-white font-medium'
-                        : page === '...'
-                          ? 'border-transparent text-gray-400 cursor-default'
-                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700',
-                    ]"
+              <el-table-column label="관리" align="center" width="100">
+                <template #default="{ row }">
+                  <el-button
+                    class="btn-edit"
+                    @click="handleUpdateGroup(row.groupId)"
                   >
-                    {{ page }}
-                  </button>
+                    수정
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
 
-                  <button
-                    :disabled="currentPage === totalPages"
-                    @click="currentPage++"
-                    class="px-2.5 py-1.5 rounded text-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+            <div class="pagination-wrap">
+              <el-pagination
+                v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
+                :total="filteredGroups.length"
+                layout="prev, pager, next"
+                background
+              />
             </div>
           </div>
         </div>
@@ -353,145 +180,215 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { onMounted, ref, computed, watch } from "vue";
+import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useGroupStore } from "../stores/groupSJW.js";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth.js";
-export default {
-  name: "GroupList",
-  components: { Header, Sidebar },
-  setup() {
-    const router = useRouter();
-    const sidebarOpen = ref(false);
-    const createGroupOpen = ref(false);
-    const selectedGroup = ref(null);
-    const groupStore = useGroupStore();
-    const authStore = useAuthStore();
-    // ── 검색 ──
-    const searchQuery = ref("");
 
-    const filteredGroups = computed(() => {
-      const q = searchQuery.value.trim().toLowerCase();
-      if (!q) return groupStore.groupList;
-      return groupStore.groupList.filter(
-        (g) =>
-          String(g.groupId).includes(q) ||
-          g.groupName?.toLowerCase().includes(q) ||
-          g.groupType?.toLowerCase().includes(q) ||
-          g.description?.toLowerCase().includes(q) ||
-          (g.isActive === "Y" ? "활성" : "비활성").includes(q),
-      );
-    });
+const router = useRouter();
+const sidebarOpen = ref(false);
+const groupStore = useGroupStore();
+const authStore = useAuthStore();
 
-    watch(searchQuery, () => {
-      currentPage.value = 1;
-    });
+// ── 테이블 스타일 ──
+const headerStyle = () => ({
+  background: "#f8fafc",
+  color: "#64748b",
+  fontSize: "12px",
+  fontWeight: "600",
+  borderBottom: "1px solid #e2e8f0",
+});
+const cellStyle = () => ({
+  fontSize: "13px",
+  color: "#374151",
+  borderBottom: "1px solid #f1f5f9",
+});
 
-    function highlight(text) {
-      const q = searchQuery.value.trim();
-      if (!q || !text) return text;
-      const regex = new RegExp(`(${q})`, "gi");
-      return String(text).replace(
-        regex,
-        '<mark class="bg-yellow-100 dark:bg-yellow-800 text-inherit rounded px-0.5">$1</mark>',
-      );
-    }
+// ── 검색 ──
+const searchQuery = ref("");
 
-    // ── 페이지네이션 ──
-    const currentPage = ref(1);
-    const pageSize = ref(10);
+const filteredGroups = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return groupStore.groupList;
+  return groupStore.groupList.filter(
+    (g) =>
+      String(g.groupId).includes(q) ||
+      g.groupName?.toLowerCase().includes(q) ||
+      g.groupType?.toLowerCase().includes(q) ||
+      g.description?.toLowerCase().includes(q) ||
+      (g.isActive === "Y" ? "활성" : "비활성").includes(q),
+  );
+});
 
-    watch(pageSize, () => {
-      currentPage.value = 1;
-    });
+watch(searchQuery, () => {
+  currentPage.value = 1;
+});
 
-    const totalPages = computed(() =>
-      Math.max(1, Math.ceil(filteredGroups.value.length / pageSize.value)),
+function highlight(text) {
+  const q = searchQuery.value.trim();
+  if (!q || !text) return text;
+  const regex = new RegExp(`(${q})`, "gi");
+  return String(text).replace(
+    regex,
+    '<mark class="bg-yellow-200 text-inherit rounded px-0.5">$1</mark>',
+  );
+}
+
+// ── 페이지네이션 ──
+const currentPage = ref(1);
+const pageSize = ref(10);
+
+watch(pageSize, () => {
+  currentPage.value = 1;
+});
+
+const pagedGroups = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return filteredGroups.value.slice(start, start + pageSize.value);
+});
+
+// ── 액션 ──
+onMounted(async () => {
+  await groupStore.getGroupList();
+});
+
+const handleCreateGroup = () => {
+  router.push({ name: "groupRegister" });
+};
+
+const toGroupInfo = (id) => {
+  router.push({ name: "groupInfo", params: { id: id } });
+};
+
+const handleUpdateGroup = (groupId) => {
+  router.push(`/admin/group/modify/${groupId}`);
+};
+
+// 💡 SweetAlert가 적용된 통일된 토글 로직
+const handleToggle = async (row) => {
+  const prevStatus = row.isActive === "Y" ? "N" : "Y";
+  const action = row.isActive === "Y" ? "활성화" : "비활성화";
+
+  const result = await Swal.fire({
+    title: `그룹을 ${action}하시겠습니까?`,
+    text: `"${row.groupName}"`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#2563eb",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "확인",
+    cancelButtonText: "취소",
+  });
+
+  if (!result.isConfirmed) {
+    // 취소 시 스위치 원상복구
+    row.isActive = prevStatus;
+    return;
+  }
+
+  try {
+    await groupStore.changeStatus(
+      row.groupId,
+      row.isActive,
+      authStore.user.userId,
     );
 
-    const rangeStart = computed(() => {
-      if (filteredGroups.value.length === 0) return 0;
-      return (currentPage.value - 1) * pageSize.value + 1;
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: `${action} 처리되었습니다.`,
+      showConfirmButton: false,
+      timer: 2000,
     });
-
-    const rangeEnd = computed(() =>
-      Math.min(currentPage.value * pageSize.value, filteredGroups.value.length),
-    );
-
-    const pagedGroups = computed(() => {
-      const start = (currentPage.value - 1) * pageSize.value;
-      return filteredGroups.value.slice(start, start + pageSize.value);
+  } catch {
+    row.isActive = prevStatus;
+    Swal.fire({
+      icon: "error",
+      title: "처리 실패",
+      text: "상태 변경에 실패했습니다. 다시 시도해주세요.",
+      confirmButtonColor: "#2563eb",
     });
-
-    const visiblePages = computed(() => {
-      const total = totalPages.value;
-      const cur = currentPage.value;
-      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-
-      const pages = [];
-      if (cur <= 4) {
-        pages.push(1, 2, 3, 4, 5, "...", total);
-      } else if (cur >= total - 3) {
-        pages.push(1, "...", total - 4, total - 3, total - 2, total - 1, total);
-      } else {
-        pages.push(1, "...", cur - 1, cur, cur + 1, "...", total);
-      }
-      return pages;
-    });
-
-    // ── 액션 ──
-    onMounted(async () => {
-      await groupStore.getGroupList();
-    });
-
-    const handleCreateGroup = () => {
-      router.push({ name: "groupRegister" });
-    };
-    const toGroupInfo = (id) => {
-      router.push({ name: "groupInfo", params: { id: id } });
-    };
-    const handleUpdateGroup = async (groupId) => {
-      const group = await groupStore.getGroupInfo(groupId);
-      selectedGroup.value = { ...group };
-      createGroupOpen.value = true;
-      router.push(`/admin/group/modify/${groupId}`);
-    };
-
-    const handleToggle = async (group) => {
-      try {
-        await groupStore.changeStatus(
-          group.groupId,
-          group.isActive,
-          authStore.user.userId,
-        );
-      } catch {
-        alert("상태 변경에 실패했습니다.");
-      }
-    };
-
-    return {
-      sidebarOpen,
-      createGroupOpen,
-      selectedGroup,
-      groupStore,
-      searchQuery,
-      filteredGroups,
-      highlight,
-      currentPage,
-      pageSize,
-      totalPages,
-      rangeStart,
-      rangeEnd,
-      pagedGroups,
-      visiblePages,
-      handleCreateGroup,
-      handleUpdateGroup,
-      handleToggle,
-      toGroupInfo,
-    };
-  },
+  }
 };
 </script>
+
+<style scoped>
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1a1a2e;
+}
+.group-name {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+.desc-text {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* 버튼 스타일 (업무유형과 동일) */
+.btn-register {
+  background: #2563eb;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+}
+.btn-register:hover {
+  background: #1d4ed8;
+}
+
+.btn-edit {
+  background: #2563eb;
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 4px 14px;
+}
+.btn-edit:hover {
+  background: #1d4ed8;
+}
+
+:deep(.el-table) {
+  --el-table-border-color: #f1f5f9;
+  --el-table-header-bg-color: #f8fafc;
+}
+:deep(.el-table__row:hover > td) {
+  background: #f0f7ff !important;
+}
+:deep(.el-pagination.is-background .el-pager li.is-active) {
+  background-color: #2563eb;
+}
+:global(.swal2-container) {
+  z-index: 9999 !important;
+}
+</style>
