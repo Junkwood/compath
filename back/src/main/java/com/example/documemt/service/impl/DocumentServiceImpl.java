@@ -105,6 +105,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public int registerCommentAlarm(DocumentAlarmDTO dto) {
+
         mapper.registerCommentAlarm(dto);
 
         int targetId = dto.getTargetId();

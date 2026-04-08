@@ -260,15 +260,22 @@ const submitForm = async (formEl) => {
         };
         await documentStore.registerDocument(obj);
 
-        let alarmObj = [];
-        alarmList.value.forEach((al) => {
-          alarmObj.push({
+        let alarmArr = [
+          {
             targetId: documentStore.registeredDocument.documentId,
             title: "문서를 등록되었습니다.",
             message: "문서를 확인해주세요",
             createdBy: al.userId,
-          });
+          },
+        ];
+
+        let target = [];
+
+        alarmList.value.forEach((al) => {
+          target.push();
         });
+
+        alarmArr.push(target);
 
         await documentStore.registerDocumentAlarm(alarmObj);
       } else {
