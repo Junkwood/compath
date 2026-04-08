@@ -1,0 +1,92 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.alarm.mapper.NotificationMapper" >
+
+    <!--notication 등록-->
+    <insert id="registerNotification" parameterType="com.example.alarm.dto.NotificationDto">
+        <selectKey keyProperty="notificationId" resultType="int" order="BEFORE">
+            SELECT notifications_seq.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO notifications (
+        notification_id,
+        notification_type,
+        target_type,
+        target_id,
+        title,
+        message,
+        created_by,
+        created_at
+        ) VALUES (
+        #{notificationId},
+        #{notificationType},
+        #{targetType},
+        #{targetId},
+        #{title},
+        #{message},
+        #{createdBy},
+        SYSDATE
+        )
+    </insert>
+
+    <!--notificationTarget 등록-->
+    <insert id="registerNotificationTarget">
+        INSERT INTO notification_targets (
+        notification_target_no,
+        notification_id,
+        receiver_id,
+        is_read
+        )
+        VALUES (
+        notification_targets_seq.NEXTVAL,
+        #{notificationId},
+        #{receiverId},
+        'N'
+        )
+    </insert>
+    
+    <!--특정 유저 알림 목록 조회-->
+    <select id="getNotificationsByUserId" resultType="com.example.alarm.dto.NotificationDto">
+        SELECT
+        n.notification_id,
+        n.notification_type,
+        n.target_type,
+        n.target_id,
+        n.title,
+        n.message,
+        n.created_by,
+        n.created_at,
+        nt.notification_target_no,
+        nt.receiver_id,
+        nt.is_read,
+        nt.read_at
+        FROM notifications n
+        JOIN notification_targets nt
+        ON n.notification_id = nt.notification_id
+        WHERE nt.receiver_id = #{receiverId}
+        ORDER BY n.created_at DESC
+    </select>
+
+    <!--안읽은 알림 개수-->
+    <select id="countUnread" resultType="int">
+            SELECT COUNT(*)
+            FROM notification_targets
+            WHERE receiver_id = #{receiverId}
+            AND is_read = 'N'
+    </select>
+    
+    <!--단건 읽음 처리-->
+    <update id="modifyReadOne">
+        UPDATE notification_targets
+        SET is_read = 'Y',
+        read_at = SYSDATE
+        WHERE notification_target_no = #{notificationTargetNo}
+    </update>
+
+    <!--전체 읽음 처리-->
+    <update id="modifyReadAll">
+        UPDATE notification_targets
+        SET is_read = 'Y',
+        read_at = SYSDATE
+        WHERE receiver_id = #{receiverId}
+        AND is_read = 'N'
+    </update>
+</mapper>

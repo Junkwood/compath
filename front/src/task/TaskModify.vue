@@ -11,7 +11,7 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            업무 수정
+            {{ isSubTask ? "하위업무 수정" : "업무 수정" }}
           </h1>
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
             <!-- 프로젝트명 / 하위프로젝트명 - 원래부터 disabled -->
@@ -352,6 +352,8 @@ const {
 onMounted(async () => {
   await store.initEdit(route.params.taskId);
 });
+
+const isSubTask = computed(() => !!form.value.parentTaskId);
 
 // 현재 로그인 판별
 const isAssignee = computed(

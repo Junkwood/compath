@@ -16,10 +16,16 @@ export const useTaskStore = defineStore("task", () => {
   const actualHours = ref("");
   const userModal = ref(false);
   const milestoneModal = ref(false);
+  const projectList = ref([]);
 
   // ───────────── computed ─────────────
   // 마일스톤 존재 여부
   const hasMilestone = computed(() => milestoneList.value.length > 0);
+
+  //상위 프로젝트에서 하위 프로젝트 선택시
+  const subProjectList = computed(() =>
+    projectList.value.filter((p) => p.parentProjectId),
+  );
 
   // 종료 상태 ID 목록 (IS_FINAL = 'O1')
   const finishedIds = computed(() =>
@@ -88,6 +94,7 @@ export const useTaskStore = defineStore("task", () => {
 
     taskTypeList.value = tList;
     statusList.value = rawStatusList;
+    projectList.value = pList; //하위 프로젝트 가져오기
 
     milestoneList.value = mList.map((m) => ({
       name: m.milestoneName,
@@ -467,6 +474,7 @@ export const useTaskStore = defineStore("task", () => {
     originalForm,
     isOriginallyTerminated,
     rejectReason,
+    subProjectList,
     initCreate,
     initEdit,
     openUserModal,

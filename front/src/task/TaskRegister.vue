@@ -29,7 +29,27 @@
                 <label class="block text-sm font-medium mb-1"
                   >하위 프로젝트 명</label
                 >
+
+                <!-- 상위 프로젝트에서 바로 업무 생성 시 -->
+                <div v-if="!form.subProjectId" class="flex gap-2">
+                  <select v-model="form.subProjectName" class="input flex-1">
+                    <option value="">하위프로젝트를 선택하세요</option>
+                    <option
+                      v-for="item in subProjectList"
+                      :key="item.projectId"
+                      :value="item.projectName"
+                    >
+                      {{ item.displaySubProjectName }}
+                    </option>
+                  </select>
+                  <button class="btn-confirm" @click="confirmSubProject">
+                    확인
+                  </button>
+                </div>
+
+                <!-- 하위 프로젝트 있을 때-->
                 <input
+                  v-else
                   v-model="form.subProjectName"
                   disabled
                   class="input w-full"
@@ -239,6 +259,7 @@ const {
   userModal,
   milestoneModal,
   hasMilestone,
+  subProjectList,
 } = storeToRefs(store);
 const {
   openUserModal,
@@ -255,6 +276,15 @@ onMounted(async () => {
     parentTaskId,
   );
 });
+
+const confirmSubProject = () => {
+  const selected = subProjectList.value.find(
+    (p) => p.projectName === form.value.subProjectName,
+  );
+  if (selected) {
+    form.value.subProjectId = selected.projectId;
+  }
+};
 
 const handleSubmit = async () => {
   try {

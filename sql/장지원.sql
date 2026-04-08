@@ -11,6 +11,9 @@ SELECT * FROM project_members;
 SELECT * FROM task_types;
 SELECT * FROM task_statuses;
 
+SELECT * FROM  notifications;
+SELECT * FROM notification_targets;
+
 UPDATE task_statuses 
 SET DESCRIPTION = 'G5' 
 WHERE TASK_STATUS_ID = 5;
@@ -42,12 +45,20 @@ SELECT column_name FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'TASKS';
 SELECT column_name FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'PROJECTS';
 SELECT column_name FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'MILESTONE_MAPPING';
 SELECT column_name FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'TASK_REJECTIONS';
+SELECT column_name FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'NOTIFICATIONS';
+SELECT column_name FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'NOTIFICATION_TARGETS';
 
 -- 테이블 구조 변경
 ALTER TABLE tasks MODIFY (assignee_user_id NULL);
 
 -- 시퀀스 관리 (task_rejection)
 CREATE SEQUENCE task_rejection_seq
+    START WITH 1
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE SEQUENCE notifications_seq
     START WITH 1
     INCREMENT BY 1
     NOCACHE
@@ -119,13 +130,20 @@ CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
     statusList     OUT SYS_REFCURSOR
 ) AS
     v_target_project_id NUMBER;
+    v_root_project_id   NUMBER;
 BEGIN
-    -- 프로젝트 ID 결정
+    -- 프로젝트 id 결정
     IF p_task_id IS NOT NULL THEN
         SELECT project_id INTO v_target_project_id FROM tasks WHERE task_id = p_task_id;
     ELSE
         v_target_project_id := p_project_id;
     END IF;
+
+    -- 루트 프로젝트 id결정
+	SELECT NVL(parent_project_id, project_id)
+    INTO v_root_project_id
+    FROM projects
+    WHERE project_id = v_target_project_id;
 
     -- 업무 상세 
     OPEN taskDetail FOR
@@ -142,20 +160,21 @@ BEGIN
        OR parent_project_id = v_target_project_id;
 
     -- 유저 
-OPEN userList FOR
-SELECT 
-    u.user_id                        AS user_id,
-    u.user_name                      AS user_name,
-    NVL(r.role_name, '일반')         AS role_name
-FROM users u
-LEFT JOIN project_members pm ON u.user_id = pm.user_id 
-    -- 수정: v_target_project_id가 있을 때만 해당 프로젝트 역할을 가져오되, 
-    -- NULL인 경우에도 유저 목록은 나와야 함
-    AND pm.project_id = NVL(v_target_project_id, pm.project_id) 
-    AND pm.is_active = 'O1'
-LEFT JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
-LEFT JOIN roles r ON pmr.role_id = r.role_id
-WHERE u.is_active = 'O1';-- 업무 유형 
+    OPEN userList FOR
+    SELECT
+        u.user_id   AS user_id,
+        u.user_name AS user_name,
+        r.role_name AS role_name
+    FROM users u
+    JOIN project_members pm ON u.user_id = pm.user_id
+        AND pm.project_id = v_root_project_id
+        AND pm.is_active = 'O1'
+    JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+    JOIN roles r ON pmr.role_id = r.role_id
+    WHERE u.is_active = 'O1'
+      AND r.role_name = '개발자';
+    
+-- 업무 유형 
     OPEN taskTypeList FOR SELECT task_type_id, type_name FROM task_types WHERE is_active = 'O1';
 
     -- 마일스톤 
