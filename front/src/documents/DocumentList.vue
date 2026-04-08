@@ -192,7 +192,7 @@
                           >📌</span
                         ><span
                           class="text-base"
-                          v-if="document.isComment == 'O1' ? true : false"
+                          v-if="document.isComment == 'O2' ? true : false"
                           >🔒</span
                         >
                       </div>
@@ -200,6 +200,11 @@
                     <td class="p-2 w-70">
                       <div class="text-center cursor-pointer">
                         {{ document.userName }}
+                      </div>
+                    </td>
+                    <td class="p-2 w-70">
+                      <div class="text-center cursor-pointer">
+                        {{ document.count }}
                       </div>
                     </td>
 
@@ -279,7 +284,7 @@ let name = ref(); // 프로젝트명
 let projectStartDate = ref(); // 프로젝트 날짜
 let projectendDate = ref(); // 프로젝트 날짜
 
-const thList = ["번호", "제목", "작성자", "등록일"];
+const thList = ["번호", "제목", "작성자", "댓글수", "등록일"];
 
 // 페이지네이션
 const handleCurrentChange = async (val) => {

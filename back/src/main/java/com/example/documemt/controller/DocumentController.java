@@ -1,5 +1,7 @@
 package com.example.documemt.controller;
 
+import com.example.documemt.dto.DocumentAlarmDTO;
+import com.example.documemt.dto.DocumentCommentDTO;
 import com.example.documemt.dto.DocumentDTO;
 import com.example.documemt.service.DocumentService;
 import lombok.RequiredArgsConstructor;
@@ -15,19 +17,19 @@ public class DocumentController {
 
     private final DocumentService service;
 
-    // 공지사항 등록
+    // 문서 등록
     @PostMapping("/documents/register")
     public DocumentDTO registerDocument(@RequestBody DocumentDTO dto){
         return service.registerDocument(dto);
     }
 
-    // 공지사항 조회
+    // 문서 조회
     @GetMapping("/documents/Detail/{id}")
-    public DocumentDTO getDocumentById(@PathVariable Integer id) {
+    public Map<String, Object> getDocumentById(@PathVariable Integer id) {
         return service.getDocumentById(id);
     }
 
-    // 공지사항 수정
+    // 문서 수정
     @PutMapping("/docuemnts/update")
     public DocumentDTO modifyDocument(@RequestBody DocumentDTO dto){
         return service.modifyDocument(dto);
@@ -45,11 +47,30 @@ public class DocumentController {
         return service.getPagingDocuments(dto);
     }
 
-//    // 공지사항 비활성
-//    @PutMapping("/notice/updateLock/{id}/{isDeleted}")
-//    public DocumentDTO modifyNoticeLock(@PathVariable String isDeleted,
-//                                        @PathVariable Integer id){
-//        return service.modifyNoticeLock(isDeleted, id);
-//    }
+    // 문서 댓글 등록
+    @PostMapping("/documents/comments/register")
+    public List<DocumentCommentDTO> registerComment(@RequestBody DocumentCommentDTO dto){
+        return service.registerComment(dto);
+    }
+
+    // 댓글 수정
+    @PutMapping("/docuemnts/comments/update")
+    public List<DocumentCommentDTO> modifyComment(@RequestBody DocumentCommentDTO dto){
+        return service.modifyComment(dto);
+    }
+
+
+    // 알림 등록
+    @PostMapping("docuemnts/alarm/register")
+    public int registerCommentAlarm(@RequestParam(value="arr") List<DocumentAlarmDTO> arr) {
+        int result = 0;
+
+        for(DocumentAlarmDTO dto : arr) {
+            result = service.registerCommentAlarm(dto);
+        }
+        return result;
+    }
+
+
 
 }

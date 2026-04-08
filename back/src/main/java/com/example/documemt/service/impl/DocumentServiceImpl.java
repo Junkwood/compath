@@ -1,5 +1,7 @@
 package com.example.documemt.service.impl;
 
+import com.example.documemt.dto.DocumentAlarmDTO;
+import com.example.documemt.dto.DocumentCommentDTO;
 import com.example.documemt.dto.DocumentDTO;
 import com.example.documemt.mapper.DocumentMapper;
 import com.example.documemt.service.DocumentService;
@@ -18,7 +20,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     private final DocumentMapper mapper;
 
-    // 공지사항 등록
+    // 문서 등록
     @Override
     public DocumentDTO registerDocument(DocumentDTO dto) {
 
@@ -26,19 +28,24 @@ public class DocumentServiceImpl implements DocumentService {
         int id = mapper.getLastNum();
         dto.setDocumentId(id);
 
-        // 공지사항 등록
+        // 문서 등록
         mapper.registerDocument(dto);
 
         return mapper.getDocumentById(id);
     }
 
-    // 공지사항 단건 조회
+    // 문서 단건 조회
     @Override
-    public DocumentDTO getDocumentById(Integer id) {
-        return mapper.getDocumentById(id);
+    public Map<String, Object> getDocumentById(Integer id) {
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("documentInfo", mapper.getDocumentById(id));
+        result.put("commentInfo", mapper.getAllComments(id));
+
+        return result;
     }
 
-    // 공지사항 수정
+    // 문서 수정
     @Override
     public DocumentDTO modifyDocument(DocumentDTO dto) {
         // 수정
@@ -76,17 +83,37 @@ public class DocumentServiceImpl implements DocumentService {
         return mapper.getAllDocuments(dto);
     }
 
+    @Override
+    public List<DocumentCommentDTO> registerComment(DocumentCommentDTO dto) {
+        // 댓글 등록
+        mapper.registerComment(dto);
+
+        int id = dto.getDocumentId();
+
+        // 문서별 댓글 목록 조회 후 반환
+        return mapper.getAllComments(id);
+    }
 
     @Override
-    public DocumentDTO modifyNoticeLock(String isDeleted, Integer noticeId) {
+    public List<DocumentCommentDTO> modifyComment(DocumentCommentDTO dto) {
+        mapper.modifyComment(dto);
 
-        // 비활성으로 수정
-        mapper.modifyNoticeLock(isDeleted, noticeId);
+        int id = dto.getDocumentId();
 
+        return mapper.getAllComments(id);
+    }
 
-        // 수정 항목 조회
-        return mapper.getDocumentById(noticeId);
+    @Override
+    public int registerCommentAlarm(DocumentAlarmDTO dto) {
+        mapper.registerCommentAlarm(dto);
 
+        int targetId = dto.getTargetId();
+
+        int id = mapper.getDocumentAlarmById(targetId);
+
+        dto.setNotification_id(id);
+
+        return mapper.registerAlarmTarget(dto);
     }
 
 

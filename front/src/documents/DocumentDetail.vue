@@ -89,7 +89,114 @@
               </div>
               <div class="flex flex-row gap-2">
                 <button @click="modifyDocument" class="btn-green">수정</button>
-                <button @click="lockNotice" class="btn-red">삭제</button>
+                <button
+                  @click="delDocument"
+                  class="btn-red"
+                  v-if="commentList.length == 0"
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="documentInfo.isComment == 'O1'"
+            class="filter-card mt-4 mb-0"
+          >
+            <!-- 검색어 -->
+            <div class="filter-item filter-item--wide mt-3">
+              <div class="search-wrap">
+                <input
+                  v-model="comment"
+                  type="text"
+                  placeholder="댓글을 입력해주세요."
+                  class="search-input"
+                  @keyup.enter="registerComment()"
+                />
+                <div class="filter-actions">
+                  <button
+                    type="button"
+                    @click="registerComment()"
+                    class="btn-search"
+                  >
+                    등록
+                  </button>
+                </div>
+              </div>
+              <!-- 버튼 -->
+            </div>
+            <div class="comment-list" v-for="comment in commentList">
+              <div class="flex gap-4 pt-4 pb-2 border-b-2 border-gray-100">
+                <div class="flex-1">
+                  <div v-if="!modifyOpen">
+                    <div class="flex items-center gap-2 mb-1">
+                      <el-text size="large" strong>{{
+                        comment.userName
+                      }}</el-text>
+                      <el-text size="small" type="info">{{
+                        comment.createdAt
+                      }}</el-text>
+                    </div>
+                    <el-text class="block leading-relaxed">{{
+                      comment.content
+                    }}</el-text>
+
+                    <div class="flex flex-row-reverse mt-2">
+                      <el-button
+                        link
+                        type="danger"
+                        size="small"
+                        @click="removeComment(comment)"
+                        >삭제</el-button
+                      >
+                      <el-button
+                        type="button"
+                        @click="openModifyComment(comment)"
+                        link
+                        size="small"
+                        >수정</el-button
+                      >
+                    </div>
+                  </div>
+                  <div
+                    class="p-4 bg-indigo-50/50 border-2 border-indigo-200 rounded-lg transition-all"
+                    v-if="modifyOpen"
+                  >
+                    <div
+                      class="flex items-center gap-2 mb-2 text-indigo-600 font-bold text-xs"
+                    >
+                      <i class="el-icon-edit"></i> 댓글 수정 중...
+                    </div>
+
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2 mb-1">
+                        <el-text size="large" strong>{{
+                          comment.userName
+                        }}</el-text>
+                        <el-text size="small" type="info">{{
+                          comment.createdAt
+                        }}</el-text>
+                      </div>
+                      <el-input
+                        type="textarea"
+                        :autosize="{ minRows: 2 }"
+                        v-model="comment.content"
+                        class="edit-textarea"
+                      />
+                      <div class="flex flex-row-reverse mt-2 gap-1">
+                        <el-button size="small" @click="cancelModify()"
+                          >취소</el-button
+                        >
+                        <el-button
+                          type="primary"
+                          size="small"
+                          @click="modifyComment(comment)"
+                          >수정완료</el-button
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -101,9 +208,8 @@
 
 <script setup>
 import { onBeforeMount, ref, watch } from "vue";
-import { useProjectKJHStore } from "../stores/projectKJH";
-import { useNoticeStore } from "../stores/notice";
 import { useDocumentStore } from "../stores/document";
+import { useAuthStore } from "../stores/auth";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -111,15 +217,17 @@ import Swal from "sweetalert2";
 
 const route = useRoute();
 const router = useRouter();
-const noticeStore = useNoticeStore();
-const projectStore = useProjectKJHStore();
 const documentStore = useDocumentStore();
+const authStore = useAuthStore();
+const sidebarOpen = ref(false);
 
 const documentInfo = ref({});
 const documentId = route.params.documentId;
 const projectId = route.params.projectId;
 
-const memberList = ref([]); // 구성원 테이블
+const commentList = ref([]); // 댓글목록
+const comment = ref(); // 댓글
+const modifyOpen = ref(false);
 
 // 목록으로
 const goBack = () => {
@@ -138,52 +246,147 @@ const modifyDocument = () => {
   });
 };
 
-// 비활성 및 해제 버튼
-const lockNotice = async () => {
-  let lock = documentInfo.value.isDeleted == "O2" ? true : false;
-  let isDeleted = documentInfo.value.isDeleted == "O2" ? "O1" : "O2";
+// 삭제 버튼
+const delDocument = async () => {
+  const result = await Swal.fire({
+    title: "정말 삭제하시겠습니까?",
+    text: "비활성한 문서는 목록에서 보이지 않습니다.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "삭제",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
 
-  if (lock) {
+  if (!result.isConfirmed) return;
+
+  let obj = {
+    documentId: documentId,
+    isDeleted: "Q1",
+    isEditorUserId: authStore.user.userId,
+  };
+
+  await documentStore.modifyDocument(obj);
+
+  await Swal.fire({
+    title: "삭제를 완료했습니다.",
+    icon: "success",
+    confirmButtonText: "확인",
+    reverseButtons: true,
+  });
+
+  router.push({
+    name: "documentList",
+    params: { projectId: projectId },
+  });
+};
+
+// 댓글 등록
+const registerComment = async () => {
+  // 작성한 내용 없을 경우 알림창
+  if (!comment.value || comment.value == " ") {
     const result = await Swal.fire({
-      title: "정말 비활성하시겠습니까?",
-      text: "비활성한 공지사항은 목록에서 보이지 않습니다.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "비활성",
-      cancelButtonText: "취소",
+      title: "댓글을 작성해주세요",
+      icon: "error",
+      confirmButtonText: "확인",
       reverseButtons: true,
     });
 
     if (!result.isConfirmed) return;
-  } else {
-    const result = await Swal.fire({
-      title: "정말 비활성화를 해제하시겠습니까?",
-      text: "활성화된 공지사항은 목록에서 다시 보이게됩니다.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "활성화",
-      cancelButtonText: "취소",
-      reverseButtons: true,
-    });
-
-    if (!result.isConfirmed) return;
+    return;
   }
-  await noticeStore.modifyNoticeLock(noticeId, isDeleted);
-  documentInfo.value = noticeStore.documentInfo;
+
+  const result = await Swal.fire({
+    title: "댓글을 등록하시겠습니까??",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "확인",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  let user = authStore.user; // 로그인한 사람 정보
+
+  let commentInfo = {
+    // 백으로 보낼 정보
+    documentId: documentId,
+    userId: user.userId,
+    content: comment.value,
+  };
+
+  await documentStore.registerComment(commentInfo);
+  commentList.value = documentStore.registeredComment;
+  comment.value = null;
+};
+
+// 댓글 수정
+const openModifyComment = (comment) => {
+  modifyOpen.value = true;
+};
+
+const modifyComment = async (comment) => {
+  const result = await Swal.fire({
+    title: "댓글을 수정하시겠습니까??",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "확인",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  let obj = {
+    documentId: comment.documentId,
+    documentCommentId: comment.documentCommentId,
+    content: comment.content,
+    editorUserId: authStore.user.userId,
+  };
+
+  modifyOpen.value = false;
+  await documentStore.modifyComment(obj);
+
+  commentList.value = documentStore.registeredComment;
+};
+
+// 댓글 수정 취소
+const cancelModify = () => {
+  modifyOpen.value = false;
+};
+
+// 댓글 삭제
+const removeComment = async (comment) => {
+  const result = await Swal.fire({
+    title: "댓글을 삭제하시겠습니까??",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "확인",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  let obj = {
+    documentId: comment.documentId,
+    documentCommentId: comment.documentCommentId,
+    editorUserId: authStore.user.userId,
+    isDeleted: "O1",
+  };
+
+  await documentStore.modifyComment(obj);
+
+  commentList.value = documentStore.registeredComment;
 };
 
 onBeforeMount(async () => {
   // 문서 및 프로젝트 정보
   await documentStore.getDocumentById(documentId);
-  documentInfo.value = documentStore.documentDetail;
+  documentInfo.value = documentStore.documentDetail.documentInfo;
+  commentList.value = documentStore.documentDetail.commentInfo;
 });
-
-watch(
-  () => projectStore.insertedList,
-  () => {
-    memberList.value = projectStore.insertedList;
-  },
-);
 </script>
 <style scoped>
 /* 상단 */
@@ -331,5 +534,95 @@ watch(
   font-weight: 600;
   font-size: 14px;
   color: #1a1a2e;
+}
+.filter-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 120px;
+  flex: 1;
+}
+
+.filter-item--wide {
+  flex: 2;
+  min-width: 180px;
+}
+
+.filter-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── 검색어 ── */
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-input {
+  width: 100%;
+  height: 100px;
+  padding: 8px 10px 70px 8px;
+  margin-right: 3px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  color: #374151;
+  background: #f9fafb;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.search-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: #fff;
+}
+
+/* ── 버튼 ── */
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 1px;
+}
+.btn-search {
+  flex: 1;
+  padding: 8px 20px;
+  background: #334155;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  height: 100px;
+}
+.btn-search:hover {
+  background: #1e293b;
+}
+
+:deep(.el-button + .el-button) {
+  margin-left: 0px;
 }
 </style>
