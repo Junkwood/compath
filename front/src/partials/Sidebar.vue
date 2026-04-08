@@ -262,7 +262,7 @@
                       v-if="currentProjectId"
                       :to="{
                         name: 'taskList',
-                        params: { projectId: currentProjectId },
+                        params: sub,
                       }"
                       custom
                       v-slot="{ href, navigate, isExactActive }"
@@ -449,7 +449,11 @@
                     </router-link>
 
                     <router-link
-                      to="/project/docs"
+                      v-if="currentProjectId"
+                      :to="{
+                        name: 'documentList',
+                        params: { projectId: currentProjectId },
+                      }"
                       custom
                       v-slot="{ href, navigate, isExactActive }"
                     >
@@ -799,10 +803,18 @@ export default {
         null
       );
     });
+
+    const sub = computed(() => {
+      return {
+        projectId: route.params.projectId || route.params.rootProjectId,
+        subProjectId: route.params.subProjectId || null,
+      };
+    });
     const isMainPage = computed(() => route.path === "/");
 
     const goTaskList = () => {
-      if (!currentProjectId.value) return;
+      sub.value = route.params;
+      console.log(sub.value);
       router.push({
         name: "taskList",
         params: { projectId: currentProjectId.value },
@@ -861,6 +873,7 @@ export default {
       currentProjectId,
       goTaskList,
       isMainPage,
+      sub,
     };
   },
 };

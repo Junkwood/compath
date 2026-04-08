@@ -26,16 +26,20 @@
               <div class="proj-name-row">
                 <span class="proj-name">【 {{ taskInfo.projectName }} 】</span>
                 <span class="proj-period">
-                  {{ taskInfo.startDate }} - {{ taskInfo.dueDate }}
+                  {{ taskInfo.estStartDate }} - {{ taskInfo.estEndDate }}
                 </span>
               </div>
             </div>
           </div>
-
           <!-- ────────── 상단: 업무 통합 현황 + 우측 카드 ────────── -->
           <div class="dashboard-top mb-5">
             <!-- 업무 통합 현황 -->
             <div>
+              <div class="flex flex-row gap-10">
+                <button @click="goBack" type="button" class="btn-navy mb-4">
+                  ← 목록으로
+                </button>
+              </div>
               <div class="card main-col">
                 <div class="card-header">
                   <div>
@@ -49,7 +53,7 @@
                   >
                 </div>
 
-                <el-descriptions :column="2" border>
+                <el-descriptions :column="2" border class="table-inner-wrap">
                   <el-descriptions-item>
                     <template #label>
                       <div class="cell-item">상태</div>
@@ -132,46 +136,57 @@
                   default-value="first"
                 >
                   <el-tab-pane label="작업이력" name="first">
-                    <el-table
-                      v-loading="loadingProjects"
-                      :data="pagedTimeData"
-                      style="width: 100%"
-                      :header-cell-style="headerStyle"
-                      :cell-style="cellStyle"
-                    >
-                      <el-table-column
-                        prop="idx"
-                        label="번호"
-                        width="100"
-                        align="center"
-                      />
-                      <el-table-column
-                        prop="createdAt"
-                        label="일시"
-                        width="200"
-                        align="center"
-                      />
-                      <el-table-column
-                        prop="userName"
-                        label="작업자"
-                        width="200"
-                        align="center"
-                      />
-                      <el-table-column
-                        prop="taskDesc"
-                        label="내역"
-                        min-width="550"
-                        align="center"
-                      />
-                    </el-table>
-                    <div class="pagination-wrap">
-                      <el-pagination
-                        v-model:current-page="timeEntriesPage"
-                        :page-size="pagedtimeEntries"
-                        :total="timeEntriesList.length"
-                        layout="prev, pager, next"
-                        background
-                      />
+                    <div class="table-inner-wrap">
+                      <el-table
+                        v-loading="loadingProjects"
+                        :data="pagedTimeData"
+                        style="width: 100%"
+                        :header-cell-style="headerStyle"
+                        :cell-style="cellStyle"
+                      >
+                        <el-table-column
+                          prop="idx"
+                          label="번호"
+                          width="100"
+                          align="center"
+                        />
+                        <el-table-column
+                          prop="createdAt"
+                          label="일시"
+                          width="200"
+                          align="center"
+                        />
+                        <el-table-column
+                          prop="userName"
+                          label="작업자"
+                          width="200"
+                          align="center"
+                        />
+                        <el-table-column
+                          prop="taskDesc"
+                          label="내역"
+                          min-width="550"
+                          align="center"
+                        />
+                        <template #empty>
+                          <div style="padding: 20px; text-align: center">
+                            <el-empty description="추가된 구성원이 없습니다." />
+                          </div>
+                        </template>
+                      </el-table>
+                      <div
+                        class="pagination-wrap"
+                        v-if="pagedTimeData.length > 0"
+                      >
+                        <el-pagination
+                          v-model:current-page="timeEntriesPage"
+                          :page-size="pagedtimeEntries"
+                          :hide-on-single-page="real"
+                          :total="timeEntriesList.length"
+                          layout="prev, pager, next"
+                          background
+                        />
+                      </div>
                     </div>
                   </el-tab-pane>
                   <el-tab-pane label="소요시간" name="second">
@@ -212,10 +227,19 @@
                         min-width="550"
                         align="left"
                       />
+                      <template #empty>
+                        <div style="padding: 20px; text-align: center">
+                          <el-empty description="추가된 구성원이 없습니다." />
+                        </div>
+                      </template>
                     </el-table>
-                    <div class="pagination-wrap">
+                    <div
+                      class="pagination-wrap"
+                      v-if="pagedTimeData.length > 0"
+                    >
                       <el-pagination
                         v-model:current-page="timeEntriesPage"
+                        :hide-on-single-page="real"
                         :page-size="pagedtimeEntries"
                         :total="timeEntriesList.length"
                         layout="prev, pager, next"
@@ -232,7 +256,7 @@
               <!-- 우측 상단 버튼들 -->
               <div class="flex justify-between">
                 <button @click="registerActualTime" class="btn-navy">
-                  <el-icon :size="20"><Clock /></el-icon>소요시간 등록
+                  <span class="text-lg">🕒</span>소요시간 등록
                 </button>
 
                 <button @click="goModify" class="btn-green">수정</button>
@@ -271,23 +295,18 @@
                 <div class="card-header">
                   <span class="card-title">첨부파일</span>
                 </div>
-                <div class="news-body">
-                  <ul class="dot-list">
-                    <li
-                      v-for="item in newsList"
-                      :key="item.label"
-                      class="dot-item"
-                    >
-                      <div class="dot-left">
-                        <span
-                          class="dot"
-                          :style="{ backgroundColor: item.color }"
-                        />
-                        <span class="dot-label">{{ item.label }}</span>
-                      </div>
-                      <span class="dot-count">{{ item.count }}</span>
-                    </li>
-                  </ul>
+                <div class="news-body"></div>
+              </div>
+              <!-- 소요시간 -->
+              <div class="card">
+                <div class="news-btn">
+                  <button
+                    v-if="canCreateSubTask"
+                    @click="goCreateSubTask"
+                    class="btn-sub"
+                  >
+                    + 하위업무 생성
+                  </button>
                 </div>
               </div>
             </div>
@@ -310,8 +329,8 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { useAuthStore } from "../stores/auth";
-import { Clock } from "@element-plus/icons-vue";
 import TaskActualTimeModal from "./TaskActualTimeModal.vue";
+import { changeDate } from "../utils/commonFunc";
 
 const taskStore = usetaskKJHStore();
 const authStore = useAuthStore();
@@ -321,6 +340,7 @@ const route = useRoute();
 const router = useRouter();
 let taskId = ref(route.params.taskId); // 업무 번호
 let projectId = ref(route.params.projectId); // 프로젝트 번호
+let subId = ref(route.params.subProjectId);
 let taskInfo = ref({
   actualHours: "",
   assigneeUserId: "",
@@ -352,7 +372,7 @@ onBeforeMount(async () => {
   await taskStore.getTaskById(taskId.value);
 
   taskInfo.value = { ...taskStore.taskDetail };
-  taskInfo.value.createdAt = taskInfo.value.createdAt.substr(0, 10);
+  taskInfo.value.createdAt = changeDate(taskInfo.value.createdAt);
 
   // 상위 프로젝트가 없을 때 구분
   if (taskInfo.value.parentProjectName != null) {
@@ -385,6 +405,36 @@ const registerActualTime = () => {
     taskId: taskInfo.value.taskId,
     taskTitle: taskInfo.value.title,
   };
+};
+
+// 하위업무 등록
+// 현재 로그인 판별
+const isAssignee = computed(
+  () =>
+    Number(taskInfo.value.assigneeUserId) ===
+    Number(authStore.user?.userId || authStore.user?.id),
+);
+// 반려+ 담당자일 때만 하위업무 버튼 노출
+const canCreateSubTask = computed(
+  () => Number(taskInfo.value.taskStatusId) === 4 && isAssignee.value,
+);
+const goCreateSubTask = () => {
+  router.push({
+    name: "taskRegister",
+    params: {
+      projectId:
+        taskInfo.value.parentProjectId || taskInfo.value.projectId.value,
+    },
+    query: { parentTaskId: taskId.value },
+  });
+};
+
+// 목록으로 버튼
+const goBack = () => {
+  router.push({
+    name: "taskList",
+    params: { projectId: projectId.value, subProjectId: subId.value },
+  });
 };
 
 // 수정 버튼(업무 수정 페이지로 이동)
@@ -482,7 +532,7 @@ const cellStyle = () => ({
 /* ── 상단 레이아웃 ── */
 .dashboard-top {
   display: grid;
-  grid-template-columns: 1fr 230px;
+  grid-template-columns: minmax(0, 1fr) 230px;
   gap: 20px;
   align-items: start;
 }
@@ -591,6 +641,9 @@ const cellStyle = () => ({
 }
 .news-body {
   padding: 16px 20px;
+}
+.new-btn {
+  display: flex;
 }
 
 .total-number {
@@ -780,8 +833,26 @@ const cellStyle = () => ({
   box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
   transform: translateY(-1px);
 }
+.btn-sub {
+  width: 100%;
+  flex: 1;
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #7c3aed;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+}
+.btn-sub:hover {
+  background: #6d28d9;
+}
 /* 진척도 */
-:depp(.demo-progress .el-progress--circle) {
+:deep(.demo-progress .el-progress--circle) {
   margin-right: 15px;
 }
 :deep(.el-table thead th:nth-child(5)) {
@@ -789,5 +860,66 @@ const cellStyle = () => ({
 }
 :deep(.el-table .el-table__cell:nth-child(5)) {
   padding-left: 15px;
+}
+
+/* 테이블 */
+.table-inner-wrap {
+  padding: 16px 20px 8px;
+  background: #ffffff;
+
+  width: 100%;
+  overflow-x: auto;
+}
+:deep(.table-inner-wrap .el-table),
+:deep(.table-inner-wrap .el-descriptions__table) {
+  border: 1px solid #e9eef5;
+  border-radius: 14px;
+  overflow: hidden;
+  border-spacing: 0;
+}
+
+/* --- Table Styles (기존 내용 유지) --- */
+:deep(.el-table th.el-table__cell) {
+  background: #f8fafc !important;
+}
+:deep(.el-table td.el-table__cell),
+:deep(.el-table th.el-table__cell) {
+  border-bottom: 1px solid #eef2f7 !important;
+}
+:deep(.el-table__body-wrapper .el-table__row) {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+:deep(.el-table__row:hover > td) {
+  background: #f8fbff !important;
+}
+:deep(.el-table) {
+  --el-table-border-color: #edf2f7;
+  --el-table-header-bg-color: #f8fafc;
+  --el-table-row-hover-bg-color: #f8fbff;
+}
+
+/* --- Descriptions Styles (Radius 해결 버전) --- */
+/* 내부 테두리가 래퍼의 radius를 가리지 않도록 전체 테두리 제거 */
+:deep(.el-descriptions__table.is-bordered) {
+  border: none !important;
+}
+
+/* 라벨(제목) 배경색 및 폰트 설정 */
+:deep(.el-descriptions__label.is-bordered-label) {
+  background: #f8fafc !important;
+  font-weight: 600;
+  color: #475569;
+  border: 1px solid #eef2f7 !important; /* 개별 셀에 테두리 부여 */
+}
+
+/* 콘텐츠(내용) 테두리 설정 */
+:deep(.el-descriptions__content.is-bordered-content) {
+  border: 1px solid #eef2f7 !important;
+}
+
+:deep(.el-descriptions) {
+  --el-descriptions-table-border: 1px solid #eef2f7;
+  --el-descriptions-item-label-background: #f8fafc;
 }
 </style>

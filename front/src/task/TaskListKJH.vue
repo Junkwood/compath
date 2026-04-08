@@ -225,11 +225,18 @@
                     <tr
                       v-for="task in taskList"
                       :key="task.id"
-                      @click="goDetail(task.taskId)"
+                      @click="goDetail(task)"
                     >
                       <td class="p-2 w-80">
                         <div class="text-left">
-                          {{ task.title }}
+                          <span
+                            v-if="task.parentTaskId"
+                            :style="{
+                              marginLeft: (task.level - 1) * 20 + 'px',
+                            }"
+                          >
+                            ㄴ [하위] </span
+                          >{{ task.title }}
                         </div>
                       </td>
                       <td class="p-2">
@@ -345,12 +352,11 @@ const route = useRoute();
 const router = useRouter();
 
 let taskList = ref(); // 업무 목록
-let listLoading = ref(true);
+let listLoading = ref(false);
 const filterList = ref([]);
 let name = ref(); // 프로젝트명
 let projectStartDate = ref(); // 프로젝트 날짜
 let projectendDate = ref(); // 프로젝트 날짜
-const visible = ref(false);
 
 let thList = ref([
   "업무명",
@@ -385,10 +391,19 @@ let listLength = ref();
 
 // 필터링 조건들
 let id = route.params.projectId;
+let subId = route.params.subProjectId;
 
 onBeforeMount(async () => {
-  console.log("프로젝트 번호", id);
-
+  Swal.fire({
+    title: "잠시만 기다려주세요...",
+    html: "데이터를 불러오는 중입니다.",
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    showCancelButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
   // 프로젝트 이름 조회
   await taskStore.getProjectName(id);
   const projectInfo = taskStore.projectName;
@@ -396,20 +411,19 @@ onBeforeMount(async () => {
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.startDate;
 
+  // url에 subProjectId가 있을 경우
+  console.log(subId);
+  if (subId) {
+    filteredList.value.parentProjectId = subId;
+  }
   // 전체 목록 조회
-  let obj = { projectId: id, parentProjectId: id };
-  await taskStore.getAllTask(obj);
+  await handleCurrentChange(1);
 
-  listLoading.value = false;
-
-  taskList.value = taskStore.taskAllList;
-  listLength.value =
-    taskList.value.length > 0 ? taskList.value[0].taskCounts : 0;
-
-  changeDateType(taskList.value);
   // 필터링 조건 조회
   await taskStore.getAllFilterInfo(id);
   filterInfo.value = taskStore.filterInfo;
+
+  Swal.close();
 });
 
 // 페이지네이션
@@ -510,13 +524,20 @@ const resetForm = async () => {
 };
 
 // 업무 상세페이지 이동
-const goDetail = (val) => {
-  console.log(val);
-  router.push({ name: "taskDetail", params: { taskId: val } });
+const goDetail = (task) => {
+  console.log(task);
+  subId = task.parentProjectId != null && task.projectId != null ? subId : null;
+
+  console.log(subId);
+  router.push({
+    name: "taskDetail",
+    params: { projectId: id, subProjectId: subId, taskId: task.taskId },
+  });
 };
 
 // 날짜 null 일 경우 형식 변경
 const changeDateType = (val) => {
+  console.log(val);
   for (let i = 0; i < val.length; i++) {
     // 날짜 형식 변경
     if (val[i].startDate != null) {

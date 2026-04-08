@@ -18,25 +18,27 @@
           <!-- 상단 타이틀 -->
           <div class="mb-6 proj-title-row">
             <div class="proj-title-left">
+              <div class="proj-title-left">
+                <h2
+                  class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
+                >
+                  하위 프로젝트 대시보드
+                </h2>
+                <div class="proj-name-row">
+                  <span class="proj-name"
+                    >최상위 프로젝트 【 {{ projectInfo.projectName }} 】</span
+                  >
+                  <span class="proj-period"
+                    >{{ projectInfo.startDate }} -
+                    {{ projectInfo.endDate }}</span
+                  >
+                </div>
+              </div>
 
-                          <div class="proj-title-left">
-              <h2
-                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
-              >
-                하위 프로젝트 대시보드
-              </h2>
               <div class="proj-name-row">
                 <span class="proj-name"
-                  >최상위 프로젝트 【 {{ projectInfo.projectName }} 】</span
+                  >하위 프로젝트【{{ subProjectInfo.projectName }}】</span
                 >
-                <span class="proj-period"
-                  >{{ projectInfo.startDate }} - {{ projectInfo.endDate }}</span
-                >
-              </div>
-            </div>
-
-              <div class="proj-name-row">
-                <span class="proj-name">하위 프로젝트【{{ subProjectInfo.projectName }}】</span>
                 <span class="proj-period">
                   {{ subProjectInfo.startDate }} - {{ subProjectInfo.endDate }}
                 </span>
@@ -65,7 +67,8 @@
                   <div class="sub-header-left">
                     <div class="sub-title">하위 프로젝트</div>
                     <div class="sub-period-inline">
-                      {{ subProjectInfo.startDate }} - {{ subProjectInfo.endDate }}
+                      {{ subProjectInfo.startDate }} -
+                      {{ subProjectInfo.endDate }}
                     </div>
                   </div>
                 </div>
@@ -84,12 +87,41 @@
                       :header-cell-style="tableHeaderStyle"
                       :cell-style="tableCellStyle"
                     >
-                      <el-table-column prop="type" label="유형" min-width="90" />
-                      <el-table-column prop="total" label="전체" min-width="72" align="center" />
-                      <el-table-column prop="inProgress" label="진행중" min-width="80" align="center" />
-                      <el-table-column prop="done" label="완료" min-width="72" align="center" />
-                      <el-table-column prop="rejected" label="반려" min-width="72" align="center" />
-                      <el-table-column prop="sum" label="합계" min-width="72" align="center" />
+                      <el-table-column
+                        prop="type"
+                        label="유형"
+                        min-width="90"
+                      />
+                      <el-table-column
+                        prop="total"
+                        label="전체"
+                        min-width="72"
+                        align="center"
+                      />
+                      <el-table-column
+                        prop="inProgress"
+                        label="진행중"
+                        min-width="80"
+                        align="center"
+                      />
+                      <el-table-column
+                        prop="done"
+                        label="완료"
+                        min-width="72"
+                        align="center"
+                      />
+                      <el-table-column
+                        prop="rejected"
+                        label="반려"
+                        min-width="72"
+                        align="center"
+                      />
+                      <el-table-column
+                        prop="sum"
+                        label="합계"
+                        min-width="72"
+                        align="center"
+                      />
                     </el-table>
                   </div>
                 </div>
@@ -133,8 +165,12 @@
                   </div>
 
                   <div class="manager-info">
-                    <span class="manager-name">{{ subProjectInfo.managerName }}</span>
-                    <span class="manager-role">{{ subProjectInfo.managerRole }}</span>
+                    <span class="manager-name">{{
+                      subProjectInfo.managerName
+                    }}</span>
+                    <span class="manager-role">{{
+                      subProjectInfo.managerRole
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -172,21 +208,21 @@
     </div>
   </div>
 
-<ProjectSubCreateModal
-  v-model="subProjectModalOpen"
-  :projectId="rootProjectId"
-  :parentProjectName="projectInfo.projectName"
-  :isEditMode="true"
-  :editData="editData"
-  @submitted="handleSubProjectUpdated"
-/>
+  <ProjectSubCreateModal
+    v-model="subProjectModalOpen"
+    :projectId="rootProjectId"
+    :parentProjectName="projectInfo.projectName"
+    :isEditMode="true"
+    :editData="editData"
+    @submitted="handleSubProjectUpdated"
+  />
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import api from "../utils/api"
-import ProjectSubCreateModal from "../project/ProjectSubCreateModal.vue"
+import api from "../utils/api";
+import ProjectSubCreateModal from "../project/ProjectSubCreateModal.vue";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -199,14 +235,14 @@ const subProjectId = route.params.subProjectId;
 const rootProjectId = route.params.rootProjectId;
 
 //하위프로젝트 수정 모달
-const subProjectModalOpen = ref(false)
-const editData = ref(null)
+const subProjectModalOpen = ref(false);
+const editData = ref(null);
 
 //하위프로젝트 수정 후 모달 닫으면 화면 갱신되게
 const handleSubProjectUpdated = async () => {
-  await fetchSubInfo()
-  subProjectModalOpen.value = false
-}
+  await fetchSubInfo();
+  subProjectModalOpen.value = false;
+};
 
 //상단 제목용 (루뜨프로젝트 이름)
 const projectInfo = ref({
@@ -229,9 +265,9 @@ const fetchProjectDetail = async () => {
 const subProjectInfo = ref({
   projectId: null,
   projectName: "",
-  startDate:"",
-  endDate:"",
-})
+  startDate: "",
+  endDate: "",
+});
 
 const fetchSubInfo = async () => {
   try {
@@ -242,7 +278,7 @@ const fetchSubInfo = async () => {
   }
 };
 
-//뒤로돌아가기 
+//뒤로돌아가기
 const handleGoBack = () => {
   console.log("go back rootProjectId:", rootProjectId);
 
@@ -275,7 +311,8 @@ const handleTaskRowClick = (row) => {
   router.push({
     name: "taskDetail",
     params: {
-      projectId: subProjectId,
+      subProjectId: subProjectId,
+      projectId: rootProjectId,
       taskId: row.taskId,
     },
   });
@@ -299,13 +336,13 @@ const handleCreateTask = () => {
 
 const handleSubProjectSetting = async () => {
   try {
-    const res = await api.get(`/ProjectSubDetail/${subProjectId}`)
-    editData.value = res.data
-    subProjectModalOpen.value = true
+    const res = await api.get(`/ProjectSubDetail/${subProjectId}`);
+    editData.value = res.data;
+    subProjectModalOpen.value = true;
   } catch (err) {
-    console.error("하위프로젝트 수정용 상세 조회 실패:", err)
+    console.error("하위프로젝트 수정용 상세 조회 실패:", err);
   }
-}
+};
 
 const tableHeaderStyle = () => ({
   background: "#f3f4f6",
@@ -337,7 +374,6 @@ onMounted(() => {
   fetchSubInfo();
   fetchTaskList();
 });
-
 </script>
 
 <style scoped>

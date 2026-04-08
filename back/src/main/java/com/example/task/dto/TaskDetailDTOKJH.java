@@ -22,6 +22,8 @@ public class TaskDetailDTOKJH { // 업무 상세
     private String assigneeUserName;
     private String priorityName;
     private Integer progressRate;
+    private Integer taskStatusId;
+    private Integer parentProjectId;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
