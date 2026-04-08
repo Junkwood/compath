@@ -70,6 +70,7 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
         return projectMapperJDJ.getSubProjectDetail(projectId);
     }
 
+
     //하위프로젝트 수정
     @Override
     public void modifySubProject(ProjectSubCreateDtoJDJ dto) {
@@ -82,6 +83,15 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
         }
     }
 
+    //하위프로젝트 삭제 (상태값 업데이트 F1 에서 F2 로)
+    @Override
+    public void removeSubProjectStatus( ProjectSubCreateDtoJDJ dto) {
+        int result = projectMapperJDJ.removeSubProjectStatus(dto);
+
+        if (result == 0) {
+            throw new RuntimeException("하위프로젝트 삭제(상태값 변경) 실패");
+        }
+    }
 
 
 }

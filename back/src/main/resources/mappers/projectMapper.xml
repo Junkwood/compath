@@ -1,28 +1,38 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.project.mapper.ProjectMapperJDJ">
-    <!-- 프로젝트 전체조회 -->
+    <!-- 프로젝트 전체조회             ROUND(AVG(NVL(T.PROGRESS_RATE, 0)), 0)      AS progressRate
+-->
     <select id="getAllProject" resultType="ProjectListDTO">
-        SELECT
-            P2.PROJECT_ID AS projectId,
-            P2.PROJECT_NAME AS parentProjectName,
-            P2.END_DATE AS endDate,
-            P2.PM_USER_ID AS pmUserId,
-            P2.PL_USER_ID AS plUserId,
-            ROUND(AVG(NVL(T.PROGRESS_RATE, 0)), 0) AS progressRate
-        FROM PROJECTS P2
-        LEFT JOIN PROJECTS P
-            ON P.PARENT_PROJECT_ID = P2.PROJECT_ID
-        LEFT JOIN TASKS T
-            ON P.PROJECT_ID = T.PROJECT_ID
-        WHERE P2.PARENT_PROJECT_ID IS NULL
-        GROUP BY
-            P2.PROJECT_ID,
-            P2.PROJECT_NAME,
-            P2.END_DATE,
-            P2.PM_USER_ID,
-            P2.PL_USER_ID
-        ORDER BY
-            P2.PROJECT_ID
+            SELECT
+                P2.PROJECT_ID                         AS projectId,
+                P2.PROJECT_NAME                       AS projectName,
+                P2.IDENTIFIER                         AS identifier,
+                TO_CHAR(P2.START_DATE, 'YYYY-MM-DD')  AS startDate,
+                TO_CHAR(P2.END_DATE, 'YYYY-MM-DD')    AS endDate,
+                PM.USER_NAME                          AS pmName,
+                PL.USER_NAME                          AS plName,
+                NVL(ROUND(AVG(NVL(T.PROGRESS_RATE, 0)), 0), 0) AS progressRate
+            FROM PROJECTS P2
+            LEFT JOIN USERS PM
+                ON PM.USER_ID = P2.PM_USER_ID
+            LEFT JOIN USERS PL
+                ON PL.USER_ID = P2.PL_USER_ID
+            LEFT JOIN PROJECTS P
+                ON P.PARENT_PROJECT_ID = P2.PROJECT_ID
+            AND P.STATUS = 'F1'
+            LEFT JOIN TASKS T
+                ON T.PROJECT_ID = P.PROJECT_ID
+            WHERE P2.PARENT_PROJECT_ID IS NULL
+                AND P2.STATUS = 'F1'
+            GROUP BY
+                P2.PROJECT_ID,
+                P2.PROJECT_NAME,
+                P2.IDENTIFIER,
+                P2.START_DATE,
+                P2.END_DATE,
+                PM.USER_NAME,
+                PL.USER_NAME
+            ORDER BY P2.PROJECT_ID
     </select>
 
     <!-- 프로젝트 생성 -->
@@ -126,6 +136,7 @@
         LEFT JOIN USERS U
             ON U.USER_ID = P.SUB_PL_USER_ID
         WHERE P.PARENT_PROJECT_ID = #{parentProjectId}
+            AND P.STATUS IN ('F1', 'F2')
         ORDER BY
             M.MILESTONE_ID NULLS LAST,
             P.PROJECT_ID
@@ -231,5 +242,12 @@
         SET
         MILESTONE_ID = #{milestoneId}
         WHERE MILESTONE_MAPPING_ID = #{milestoneMappingId}
+    </update>
+
+    <!--하위프로젝트 삭제(상태값 업데이트 F1 에서 F3 로)-->
+    <update id="removeSubProjectStatus" parameterType="ProjectSubCreateDtoJDJ">
+        UPDATE PROJECTS
+        SET STATUS='F3'
+        WHERE PROJECT_ID=#{projectId}
     </update>
 </mapper>

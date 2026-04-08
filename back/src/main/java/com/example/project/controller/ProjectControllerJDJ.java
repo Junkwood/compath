@@ -15,7 +15,6 @@ public class ProjectControllerJDJ {
     final ProjectServiceJDJ projectServiceJDJ;
 
     //프로젝트 전체목록 조회e
-    @ResponseBody
     @GetMapping("/ProjectList")
     public List<ProjectListDto> list() {
         return projectServiceJDJ.getAllProject();
@@ -72,6 +71,17 @@ public class ProjectControllerJDJ {
     public ProjectSubCreateDtoJDJ getSubProjectDetail(@PathVariable Integer projectId){
         return projectServiceJDJ.getSubProjectDetail(projectId);
     }
+
+    //하위프로젝트 삭제 (상태값 업데이트 F1 에서 F3 로)
+    @PutMapping("/ProjectSubDelete/{projectId}")
+    public String removeSubProjectStatus(
+            @PathVariable Integer projectId,
+            @RequestBody ProjectSubCreateDtoJDJ dto){
+        dto.setProjectId(projectId);
+        projectServiceJDJ.removeSubProjectStatus(dto);
+        return "하위프로젝트 삭제 완료";
+    }
+
 }
 
 

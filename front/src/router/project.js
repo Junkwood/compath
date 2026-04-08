@@ -31,5 +31,15 @@ const projectRoutes = [
     name: "subProjectDashboard",
     component: () => import("../project/ProjectSubDashboard.vue"),
   },
+  {
+    path: "/projectListAll",
+    name: "projectListAll",
+    component: () => import("../project/ProjectListAll.vue"),
+  },
+  {
+    path: "/projecWorkHistory",
+    name: "projectWorkHistory",
+    component: () => import("../project/ProjectWorkHistory.vue"),
+  },
 ];
 export default projectRoutes;

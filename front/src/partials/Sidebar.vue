@@ -92,20 +92,22 @@
                   @click="navigate"
                 >
                   <div class="flex items-center">
-                    <svg
-                      class="shrink-0 fill-current"
-                      :class="
-                        isExactActive ? 'text-violet-300' : 'text-slate-400'
-                      "
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        d="M6.753 2.659a1 1 0 0 0-1.506-1.317L2.451 4.537l-.744-.744A1 1 0 1 0 .293 5.207l1.5 1.5a1 1 0 0 0 1.46-.048l3.5-4ZM6.753 10.659a1 1 0 1 0-1.506-1.317l-2.796 3.195-.744-.744a1 1 0 0 0-1.414 1.414l1.5 1.5a1 1 0 0 0 1.46-.049l3.5-4ZM8 4.5a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2H9a1 1 0 0 1-1-1ZM9 11.5a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H9Z"
-                      />
-                    </svg>
+                    <span class="w-5 h-5 flex items-center justify-center shrink-0">
+                      <svg
+                        class="fill-current"
+                        :class="
+                          isExactActive ? 'text-violet-300' : 'text-slate-400'
+                        "
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M6.753 2.659a1 1 0 0 0-1.506-1.317L2.451 4.537l-.744-.744A1 1 0 1 0 .293 5.207l1.5 1.5a1 1 0 0 0 1.46-.048l3.5-4ZM6.753 10.659a1 1 0 1 0-1.506-1.317l-2.796 3.195-.744-.744a1 1 0 0 0-1.414 1.414l1.5 1.5a1 1 0 0 0 1.46-.049l3.5-4ZM8 4.5a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2H9a1 1 0 0 1-1-1ZM9 11.5a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H9Z"
+                        />
+                      </svg>
+                    </span>
                     <span
                       class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
                     >
@@ -118,7 +120,7 @@
 
             <!-- 전체 프로젝트 목록 -->
             <router-link
-              to="/projects"
+              :to="{ name: 'projectListAll' }"
               custom
               v-slot="{ href, navigate, isExactActive }"
             >
@@ -137,20 +139,22 @@
                   @click="navigate"
                 >
                   <div class="flex items-center">
-                    <svg
-                      class="shrink-0 fill-current"
-                      :class="
-                        isExactActive ? 'text-violet-300' : 'text-slate-400'
-                      "
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11ZM2.5 2a.5.5 0 0 0-.5.5v11a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5h-11ZM4 5.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5Zm0 3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5Zm0 3a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5Z"
-                      />
-                    </svg>
+                    <span class="w-5 h-5 flex items-center justify-center shrink-0">
+                      <svg
+                        class="fill-current"
+                        :class="
+                          isExactActive ? 'text-violet-300' : 'text-slate-400'
+                        "
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11ZM2.5 2a.5.5 0 0 0-.5.5v11a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5h-11ZM4 5.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5Zm0 3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5Zm0 3a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5Z"
+                        />
+                      </svg>
+                    </span>
                     <span
                       class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
                     >
@@ -161,75 +165,77 @@
               </li>
             </router-link>
 
-            <!-- 프로젝트 -->
-            <SidebarLinkGroup
-              v-if="!isMainPage"
-              v-slot="parentLink"
-              :activeCondition="
-                currentRoute.fullPath.includes('/project/') ||
-                currentRoute.fullPath.includes('/task/')
+          <!-- 프로젝트 -->
+          <SidebarLinkGroup
+            v-if="!hideProjectMenu"
+            v-slot="parentLink"
+            :activeCondition="
+              currentRoute.fullPath.includes('/project/') ||
+              currentRoute.fullPath.includes('/task/')
+            "
+          >
+            <a
+              class="block text-white truncate transition"
+              :class="
+                currentRoute.fullPath.includes('/project/')
+                  ? ''
+                  : 'hover:text-slate-200'
+              "
+              href="#0"
+              @click.prevent="
+                parentLink.handleClick();
+                sidebarExpanded = true;
               "
             >
-              <li class="mb-0.5 last:mb-0">
-                <a
-                  class="block text-white truncate transition pl-4 pr-3 py-2"
-                  :class="
-                    currentRoute.fullPath.includes('/project/')
-                      ? ''
-                      : 'hover:text-slate-200'
-                  "
-                  href="#0"
-                  @click.prevent="
-                    parentLink.handleClick();
-                    sidebarExpanded = true;
-                  "
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <svg
-                        class="shrink-0 fill-current"
-                        :class="
-                          currentRoute.fullPath.includes('/project/')
-                            ? 'text-violet-300'
-                            : 'text-slate-400'
-                        "
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                      >
-                        <path
-                          d="M.5 3l.04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2Zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 3a1 1 0 0 1 1-1h3.672Z"
-                        />
-                        <path
-                          d="M13.5 9a.5.5 0 0 1 .5.5V11h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V12h-1.5a.5.5 0 1 1 0-1H13V9.5a.5.5 0 0 1 .5-.5Z"
-                        />
-                      </svg>
-                      <span
-                        class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
-                      >
-                        프로젝트
-                      </span>
-                    </div>
-
-                    <div class="flex shrink-0 ml-2">
-                      <svg
-                        class="w-3 h-3 shrink-0 ml-1 fill-current text-slate-400 transition-transform duration-200"
-                        :class="parentLink.expanded && 'rotate-180'"
-                        viewBox="0 0 12 12"
-                      >
-                        <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                      </svg>
-                    </div>
-                  </div>
-                </a>
-
-                <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
-                  <ul
-                    class="pr-3 pb-2 mt-1 space-y-1"
-                    :class="!parentLink.expanded && 'hidden'"
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="w-5 h-5 flex items-center justify-center shrink-0">
+                    <svg
+                      class="fill-current"
+                      :class="
+                        currentRoute.fullPath.includes('/project/')
+                          ? 'text-violet-300'
+                          : 'text-slate-400'
+                      "
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M.5 3l.04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2Zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 3a1 1 0 0 1 1-1h3.672Z"
+                      />
+                      <path
+                        d="M13.5 9a.5.5 0 0 1 .5.5V11h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V12h-1.5a.5.5 0 1 1 0-1H13V9.5a.5.5 0 0 1 .5-.5Z"
+                      />
+                    </svg>
+                  </span>
+                  <span
+                    class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
                   >
-                    <router-link
+                    프로젝트
+                  </span>
+                </div>
+
+                <div class="flex shrink-0 ml-2">
+                  <svg
+                    class="w-3 h-3 shrink-0 ml-1 fill-current text-slate-400 transition-transform duration-200"
+                    :class="parentLink.expanded && 'rotate-180'"
+                    viewBox="0 0 12 12"
+                  >
+                    <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
+                  </svg>
+                </div>
+              </div>
+            </a>
+
+            <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
+              <ul
+                class="pr-3 pb-2 mt-1 space-y-1"
+                :class="!parentLink.expanded && 'hidden'"
+              >
+
+              <router-link
                       v-if="currentProjectId"
                       :to="{
                         name: 'projectDash',
@@ -288,7 +294,7 @@
                     </router-link>
 
                     <router-link
-                      to="/project/history"
+                      :to="{ name : 'projectWorkHistory'}"
                       custom
                       v-slot="{ href, navigate, isExactActive }"
                     >
@@ -306,7 +312,7 @@
                           <span
                             class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
                           >
-                            변경이력
+                            작업내역
                           </span>
                         </a>
                       </li>
@@ -507,80 +513,180 @@
                     </router-link>
                   </ul>
                 </div>
-              </li>
-            </SidebarLinkGroup>
+          </SidebarLinkGroup>
 
-            <!-- 설정(관리자) -->
-            <SidebarLinkGroup
-              v-if="auth.isAdmin && !isMainPage"
-              v-slot="parentLink"
-              :activeCondition="currentRoute.fullPath.includes('/admin/')"
+          <!-- 설정(관리자) -->
+          <SidebarLinkGroup
+            v-if="auth.isAdmin"
+            v-slot="parentLink"
+            :activeCondition="currentRoute.fullPath.includes('/admin/')"
+          >
+            <a
+              class="block text-white truncate transition"
+              :class="
+                currentRoute.fullPath.includes('/admin/')
+                  ? ''
+                  : 'hover:text-slate-200'
+              "
+              href="#0"
+              @click.prevent="
+                parentLink.handleClick();
+                sidebarExpanded = true;
+              "
             >
-              <li
-                class="rounded-lg mb-0.5 last:mb-0 transition"
-                :class="
-                  currentRoute.fullPath.includes('/admin/')
-                    ? 'bg-white/5'
-                    : 'hover:bg-white/5'
-                "
-              >
-                <a
-                  class="block text-white truncate transition pl-4 pr-3 py-2"
-                  :class="
-                    currentRoute.fullPath.includes('/admin/')
-                      ? ''
-                      : 'hover:text-slate-200'
-                  "
-                  href="#0"
-                  @click.prevent="
-                    parentLink.handleClick();
-                    sidebarExpanded = true;
-                  "
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <svg
-                        class="shrink-0 fill-current"
-                        :class="
-                          currentRoute.fullPath.includes('/admin/')
-                            ? 'text-violet-300'
-                            : 'text-slate-400'
-                        "
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                      >
-                        <path
-                          d="M14.3.3L5 9.6 1.7 6.3c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l4 4c.2.2.4.3.7.3.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0z"
-                        />
-                      </svg>
-                      <span
-                        class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
-                      >
-                        설정 (관리자)
-                      </span>
-                    </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="w-5 h-5 flex items-center justify-center shrink-0">
+                    <svg
+                      class="fill-current"
+                      :class="
+                        currentRoute.fullPath.includes('/admin/')
+                          ? 'text-violet-300'
+                          : 'text-slate-400'
+                      "
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M14.3.3L5 9.6 1.7 6.3c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l4 4c.2.2.4.3.7.3.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0z"
+                      />
+                    </svg>
+                  </span>
 
-                    <div class="flex shrink-0 ml-2">
+                  <span
+                    class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                  >
+                    설정 (관리자)
+                  </span>
+                </div>
+
+                <div class="flex shrink-0 ml-2">
+                  <svg
+                    class="w-3 h-3 shrink-0 ml-1 fill-current text-slate-400 transition-transform duration-200"
+                    :class="parentLink.expanded && 'rotate-180'"
+                    viewBox="0 0 12 12"
+                  >
+                    <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
+                  </svg>
+                </div>
+              </div>
+            </a>
+
+            <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
+              <ul
+                class="pr-3 pb-2 mt-1 space-y-1"
+                :class="!parentLink.expanded && 'hidden'"
+              >
+                <router-link
+                  to="/admin/emp"
+                  custom
+                  v-slot="{ href, navigate, isExactActive }"
+                >
+                  <li>
+                    <a
+                      class="block transition truncate pl-4 pr-3 py-2"
+                      :class="
+                        isExactActive
+                          ? 'text-violet-300'
+                          : 'text-slate-200 hover:text-white'
+                      "
+                      :href="href"
+                      @click="navigate"
+                    >
+                      <span
+                        class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                      >
+                        계정
+                      </span>
+                    </a>
+                  </li>
+                </router-link>
+
+                <router-link
+                  to="/admin/group"
+                  custom
+                  v-slot="{ href, navigate, isExactActive }"
+                >
+                  <li>
+                    <a
+                      class="block transition truncate pl-4 pr-3 py-2"
+                      :class="
+                        isExactActive
+                          ? 'text-violet-300'
+                          : 'text-slate-200 hover:text-white'
+                      "
+                      :href="href"
+                      @click="navigate"
+                    >
+                      <span
+                        class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                      >
+                        그룹
+                      </span>
+                    </a>
+                  </li>
+                </router-link>
+
+                <router-link
+                  to="/admin/role"
+                  custom
+                  v-slot="{ href, navigate, isExactActive }"
+                >
+                  <li>
+                    <a
+                      class="block transition truncate pl-4 pr-3 py-2"
+                      :class="
+                        isExactActive
+                          ? 'text-violet-300'
+                          : 'text-slate-200 hover:text-white'
+                      "
+                      :href="href"
+                      @click="navigate"
+                    >
+                      <span
+                        class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                      >
+                        역할
+                      </span>
+                    </a>
+                  </li>
+                </router-link>
+
+                <li>
+                  <a
+                    class="block transition w-full pl-4 pr-3 py-2"
+                    :class="
+                      currentRoute.fullPath.includes('/admin/task/')
+                        ? 'text-violet-300'
+                        : 'text-slate-200 hover:text-white'
+                    "
+                    href="#0"
+                    @click.prevent="taskExpanded = !taskExpanded"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span
+                        class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200 truncate"
+                      >
+                        업무
+                      </span>
                       <svg
                         class="w-3 h-3 shrink-0 ml-1 fill-current text-slate-400 transition-transform duration-200"
-                        :class="parentLink.expanded && 'rotate-180'"
+                        :class="taskExpanded ? 'rotate-180' : ''"
                         viewBox="0 0 12 12"
                       >
                         <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
                       </svg>
                     </div>
-                  </div>
-                </a>
+                  </a>
 
-                <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
                   <ul
-                    class="pr-3 pb-2 mt-1 space-y-1"
-                    :class="!parentLink.expanded && 'hidden'"
+                    class="mt-1 space-y-1"
+                    :class="!taskExpanded && 'hidden'"
                   >
                     <router-link
-                      to="/admin/emp"
+                      to="/admin/task/status"
                       custom
                       v-slot="{ href, navigate, isExactActive }"
                     >
@@ -598,14 +704,14 @@
                           <span
                             class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
                           >
-                            계정
+                            업무 상태
                           </span>
                         </a>
                       </li>
                     </router-link>
 
                     <router-link
-                      to="/admin/group"
+                      to="/admin/task/type"
                       custom
                       v-slot="{ href, navigate, isExactActive }"
                     >
@@ -623,123 +729,17 @@
                           <span
                             class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
                           >
-                            그룹
+                            업무 유형
                           </span>
                         </a>
                       </li>
                     </router-link>
-
-                    <router-link
-                      to="/admin/role"
-                      custom
-                      v-slot="{ href, navigate, isExactActive }"
-                    >
-                      <li>
-                        <a
-                          class="block transition truncate pl-4 pr-3 py-2"
-                          :class="
-                            isExactActive
-                              ? 'text-violet-300'
-                              : 'text-slate-200 hover:text-white'
-                          "
-                          :href="href"
-                          @click="navigate"
-                        >
-                          <span
-                            class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
-                          >
-                            역할
-                          </span>
-                        </a>
-                      </li>
-                    </router-link>
-
-                    <li>
-                      <a
-                        class="block transition w-full pl-4 pr-3 py-2"
-                        :class="
-                          currentRoute.fullPath.includes('/admin/task/')
-                            ? 'text-violet-300'
-                            : 'text-slate-200 hover:text-white'
-                        "
-                        href="#0"
-                        @click.prevent="taskExpanded = !taskExpanded"
-                      >
-                        <div class="flex items-center justify-between">
-                          <span
-                            class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200 truncate"
-                          >
-                            업무
-                          </span>
-                          <svg
-                            class="w-3 h-3 shrink-0 ml-1 fill-current text-slate-400 transition-transform duration-200"
-                            :class="taskExpanded ? 'rotate-180' : ''"
-                            viewBox="0 0 12 12"
-                          >
-                            <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                          </svg>
-                        </div>
-                      </a>
-
-                      <ul
-                        class="mt-1 space-y-1"
-                        :class="!taskExpanded && 'hidden'"
-                      >
-                        <router-link
-                          to="/admin/task/status"
-                          custom
-                          v-slot="{ href, navigate, isExactActive }"
-                        >
-                          <li>
-                            <a
-                              class="block transition truncate pl-4 pr-3 py-2"
-                              :class="
-                                isExactActive
-                                  ? 'text-violet-300'
-                                  : 'text-slate-200 hover:text-white'
-                              "
-                              :href="href"
-                              @click="navigate"
-                            >
-                              <span
-                                class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
-                              >
-                                업무 상태
-                              </span>
-                            </a>
-                          </li>
-                        </router-link>
-
-                        <router-link
-                          to="/admin/task/type"
-                          custom
-                          v-slot="{ href, navigate, isExactActive }"
-                        >
-                          <li>
-                            <a
-                              class="block transition truncate pl-4 pr-3 py-2"
-                              :class="
-                                isExactActive
-                                  ? 'text-violet-300'
-                                  : 'text-slate-200 hover:text-white'
-                              "
-                              :href="href"
-                              @click="navigate"
-                            >
-                              <span
-                                class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
-                              >
-                                업무 유형
-                              </span>
-                            </a>
-                          </li>
-                        </router-link>
-                      </ul>
-                    </li>
                   </ul>
-                </div>
-              </li>
-            </SidebarLinkGroup>
+                </li>
+              </ul>
+            </div>
+          </SidebarLinkGroup>
+
           </ul>
         </div>
       </div>
@@ -838,6 +838,10 @@ export default {
       emit("close-sidebar");
     };
 
+    const hideProjectMenu = computed(() => {
+      return route.path === "/" || route.name === "projectListAll";
+    });
+
     onMounted(() => {
       document.addEventListener("click", clickHandler);
       document.addEventListener("keydown", keyHandler);
@@ -874,6 +878,7 @@ export default {
       goTaskList,
       isMainPage,
       sub,
+      hideProjectMenu,
     };
   },
 };

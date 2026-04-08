@@ -46,6 +46,9 @@
             </div>
 
             <div class="proj-title-right">
+              <el-button class="delete-btn" @click="handleDelete">
+                프로젝트삭제
+              </el-button>
               <el-button class="back-btn" @click="handleGoBack">
                 돌아가기
               </el-button>
@@ -221,15 +224,19 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
 import api from "../utils/api";
-import ProjectSubCreateModal from "../project/ProjectSubCreateModal.vue";
+import Swal from "sweetalert2";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 
+import ProjectSubCreateModal from "../project/ProjectSubCreateModal.vue";
+
 const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(false);
+const authStore = useAuthStore();
 
 const subProjectId = route.params.subProjectId;
 const rootProjectId = route.params.rootProjectId;
@@ -325,6 +332,7 @@ const graphData = ref([
   { label: "다스트", raw: 2, value: 12 },
 ]);
 
+//업무생성 연결
 const handleCreateTask = () => {
   router.push({
     name: "taskRegister",
@@ -334,6 +342,7 @@ const handleCreateTask = () => {
   });
 };
 
+//하위프로젝트 수정 연결
 const handleSubProjectSetting = async () => {
   try {
     const res = await api.get(`/ProjectSubDetail/${subProjectId}`);
@@ -341,6 +350,43 @@ const handleSubProjectSetting = async () => {
     subProjectModalOpen.value = true;
   } catch (err) {
     console.error("하위프로젝트 수정용 상세 조회 실패:", err);
+  }
+};
+
+//하위프로젝트 삭제
+const handleDelete = async () => {
+  try {
+    const result = await Swal.fire({
+      title: "하위프로젝트를 삭제하시겠습니까?",
+      text: "업무 등록이 되지 않은 프로젝트만 삭제 가능합니다.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "삭제",
+      cancelButtonText: "취소",
+    });
+
+    if (!result.isConfirmed) return;
+
+    await api.put(`/ProjectSubDelete/${subProjectId}`, {
+      userId: authStore.user?.userId,
+    });
+
+    await Swal.fire({
+      icon: "success",
+      title: "삭제되었습니다.",
+      confirmButtonText: "확인",
+    });
+
+    router.push(`/project/dashboard/${rootProjectId}`);
+  } catch (err) {
+    console.error("하위프로젝트 삭제 실패:", err);
+
+    Swal.fire({
+      icon: "error",
+      title: "삭제 실패",
+      text: "하위프로젝트 삭제 중 오류가 발생했습니다.",
+      confirmButtonText: "확인",
+    });
   }
 };
 

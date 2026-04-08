@@ -33,4 +33,6 @@ public interface ProjectServiceJDJ {
     //수정용조회
     ProjectSubCreateDtoJDJ getSubProjectDetail(int projectId);
 
+    //하위프로젝트 삭제 (상태값 업데이트 F1 에서 F2 로)
+    void removeSubProjectStatus(ProjectSubCreateDtoJDJ dto);
 }

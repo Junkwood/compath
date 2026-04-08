@@ -132,7 +132,7 @@
                 :cell-style="cellStyle"
                 @row-click="goProjectDashboard"
               >
-                <el-table-column prop="parentProjectName" label="프로젝트명" min-width="180" />
+                <el-table-column prop="projectName" label="프로젝트명" min-width="180" />
                 <el-table-column label="진척도" min-width="200">
                   <template #default="{ row }">
                     <div class="progress-wrap">
