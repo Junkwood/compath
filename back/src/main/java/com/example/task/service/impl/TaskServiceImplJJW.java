@@ -24,11 +24,10 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
 
 
     //업무등록
-    @Override
+    @SendNotification(title = "새 업무 배정", message = "업무가 배정되었습니다.")
     public void insert(TaskReqDtoJJW dto) {
-        taskMapperJJW.insert(dto);
-    }
-    //업무 수정
+        taskMapperJJW.insert(dto);  // 이것만 써도 알림 자동으로 감
+    }    //업무 수정
     @Override
     public int updateTask(TaskReqDtoJJW dto) {
         // 시작일 자동 세팅 (상태가 '진행중'인 경우)
