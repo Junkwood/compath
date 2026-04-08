@@ -130,11 +130,34 @@
                   </template>
                 </el-upload>
               </div>
-              <!-- <div class="mb-3">
-                <el-button type="button" @click="openModal"
-                  >알림대상 선택</el-button
+              <div v-if="!isModified" class="notification-area">
+                <el-button
+                  type="button"
+                  class="btn-select-custom"
+                  @click="openModal"
                 >
-              </div> -->
+                  알림대상 선택
+                </el-button>
+
+                <div class="flex flex-wrap gap-2">
+                  <el-tag
+                    v-for="tag in alarmList"
+                    :key="tag.userId"
+                    closable
+                    :disable-transitions="true"
+                    @close="handleClose(tag)"
+                    class="custom-alarm-tag"
+                  >
+                    {{ tag.userName }}
+                  </el-tag>
+                  <span
+                    v-if="alarmList.length === 0"
+                    class="text-sm text-gray-400 font-medium"
+                  >
+                    대상을 선택하면 여기에 표시됩니다.
+                  </span>
+                </div>
+              </div>
               <div class="flex justify-between">
                 <button @click="goBack" type="button" class="btn-navy">
                   ← 목록으로
@@ -159,7 +182,11 @@
     </div>
   </div>
 
-  <!-- <DocumentNotificationModal v-model="modalOpen" /> -->
+  <DocumentNotificationModal
+    v-model="modalOpen"
+    :memberList="memberList"
+    @member-insert="memberInsert"
+  />
 </template>
 
 <script setup>
@@ -169,6 +196,8 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth";
 import { useNoticeStore } from "../stores/notice";
+
+import { useProjectKJHStore } from "../stores/projectKJH";
 import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
 import { useDocumentStore } from "../stores/document";
@@ -179,6 +208,8 @@ const route = useRoute();
 const authStore = useAuthStore();
 const noticeStore = useNoticeStore();
 const documentStore = useDocumentStore();
+
+const projectStore = useProjectKJHStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
@@ -197,6 +228,8 @@ const form = reactive({
 
 let isModified = ref(false); // 수정, 생성 구분
 let modalOpen = ref(false); // 알림대상 모달창
+const memberList = ref([]); // 구성원 테이블
+const alarmList = ref([]); // 알림대상 추가된 회원 목록
 
 // 상단고정 체크시
 const checkedPin = (event) => {
@@ -226,6 +259,18 @@ const submitForm = async (formEl) => {
           createdBy: userInfo.value.userId,
         };
         await documentStore.registerDocument(obj);
+
+        let alarmObj = [];
+        alarmList.value.forEach((al) => {
+          alarmObj.push({
+            targetId: documentStore.registeredDocument.documentId,
+            title: "문서를 등록되었습니다.",
+            message: "문서를 확인해주세요",
+            createdBy: al.userId,
+          });
+        });
+
+        await documentStore.registerDocumentAlarm(alarmObj);
       } else {
         const result = await Swal.fire({
           title: "정말 수정하시겠습니까?",
@@ -268,7 +313,18 @@ const submitForm = async (formEl) => {
   });
 };
 
+// 알림대상 모달 추가버튼 데이터 받기\
+const memberInsert = (mem) => {
+  modalOpen.value = false;
+  alarmList.value = mem;
+};
+
+const handleClose = (tag) => {
+  alarmList.value.splice(alarmList.value.indexOf(tag), 1);
+};
+
 onBeforeMount(async () => {
+  // 수정일때
   if (documentId !== "" && documentId !== undefined && documentId !== null) {
     isModified.value = true;
     Swal.fire({
@@ -281,10 +337,9 @@ onBeforeMount(async () => {
         Swal.showLoading();
       },
     });
-    // 수정일때
 
     await documentStore.getDocumentById(documentId);
-    let documentInfo = documentStore.documentDetail;
+    let documentInfo = documentStore.documentDetail.documentInfo;
 
     // 폼에 대입
     form.roleId =
@@ -307,6 +362,9 @@ onBeforeMount(async () => {
 
   await noticeStore.getProjectRoles(id);
   roles.value = noticeStore.projectRoles; // 전체 역할정보
+
+  await projectStore.getAllMembers(id); // 프로젝트 구성원 정보
+  memberList.value = projectStore.memberList;
 });
 
 // 알림대상 선택
@@ -506,5 +564,106 @@ const handleChange = (uploadFile, uploadFiles) => {
   background: #60aee2;
   box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
   transform: translateY(-1px);
+}
+
+.btn-select-custom {
+  height: 40px !important;
+  padding: 0 16px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important; /* 글씨 더 두껍게 */
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  /* 이미지의 '등록/수정' 버튼 컬러 계열로 테두리 지정 */
+  border: 1.5px solid #374151 !important;
+  color: #374151 !important;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-select-custom:hover {
+  transform: translateY(-1px);
+}
+/* 1. 알림 영역 전체 박스 (더 깔끔한 느낌) */
+.notification-area {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background-color: #f8fafc; /* 매우 연한 회색 */
+  border: 1px solid #e2e8f0; /* 점선 대신 실선으로 더 견고하게 */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 2. 알림대상 선택 버튼 (기존 어두운 버튼과 조화) */
+.btn-select-custom {
+  height: 36px !important;
+  padding: 0 14px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+  transition: all 0.2s;
+}
+
+.btn-select-custom:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #1e293b !important;
+}
+
+.notification-area {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 태그: 진한 테두리와 차분한 배경 */
+:deep(.custom-alarm-tag) {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  background-color: #ffffff !important; /* 깔끔한 흰색 배경 */
+  border: 1.5px solid #475569 !important; /* 진한 슬레이트(남회색) 테두리 */
+  color: #1e293b !important; /* 진한 텍스트 */
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 태그 우측 X 버튼 기본 설정 */
+:deep(.custom-alarm-tag .el-tag__close) {
+  color: #64748b !important; /* 기본 X 색상 */
+  font-size: 14px;
+  margin-left: 6px;
+  transition: transform 0.2s ease-in-out !important; /* 확대 애니메이션 설정 */
+}
+
+/* X 호버 시: 색상 변화 없이 크기만 살짝 확대 */
+:deep(.custom-alarm-tag .el-tag__close:hover) {
+  background-color: transparent !important; /* 배경색 변화 제거 */
+  color: #0f172a !important; /* 호버 시에만 조금 더 진하게 */
+  transform: scale(1.3); /* 1.3배 확대 */
+}
+
+/* (참고) 알림대상 선택 버튼도 진한 테두리로 통일 */
+.btn-select-custom {
+  height: 36px !important;
+  padding: 0 14px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  border: 1.5px solid #374151 !important;
+  color: #374151 !important;
+  cursor: pointer;
 }
 </style>
