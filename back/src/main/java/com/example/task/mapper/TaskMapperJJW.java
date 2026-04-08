@@ -21,6 +21,8 @@ public interface TaskMapperJJW {
     void insert1 (TaskRejectDtoJJW re);
     //업무 전체 조회(목록용)
     List<TaskReqDtoJJW> getTaskAll();
+    //업무 담당자 조회
+    TaskReqDtoJJW getTaskById(Integer taskId);
     //프로시져 curssor
     void getTaskTotalInfo(Map<String, Object> params);
 
