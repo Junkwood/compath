@@ -70,5 +70,6 @@ export const useNotificationStore = defineStore("notification", {
         console.error("전체 읽음 처리 실패:", err);
       }
     },
+    closeSSE() {},
   },
 });
