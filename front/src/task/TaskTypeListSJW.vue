@@ -12,7 +12,6 @@
 
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <!-- 페이지 타이틀 -->
           <div class="mb-6">
             <h1
               class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
@@ -21,7 +20,6 @@
             </h1>
           </div>
 
-          <!-- 카드 -->
           <div class="card">
             <div class="card-header">
               <span class="card-title">유형 목록</span>
@@ -32,44 +30,40 @@
 
             <el-table
               v-loading="isLoading"
-              :data="pagedStatuses"
+              :data="pagedTypes"
               style="width: 100%"
               :header-cell-style="headerStyle"
               :cell-style="cellStyle"
             >
-              <!-- 유형명 -->
               <el-table-column label="유형명" align="center" width="160">
                 <template #default="{ row }">
-                  <span class="status-name">{{ row.statusName }}</span>
+                  <span class="type-name">{{ row.typeName }}</span>
                 </template>
               </el-table-column>
 
-              <!-- 설명 -->
               <el-table-column label="설명" min-width="280">
                 <template #default="{ row }">
                   <span class="desc-text">{{ row.description || "-" }}</span>
                 </template>
               </el-table-column>
 
-              <!-- 완료 단계 여부 -->
               <el-table-column
-                label="완료 단계 여부"
+                label="기본 시작 상태"
                 align="center"
                 width="160"
               >
                 <template #default="{ row }">
-                  <div class="done-cell">
-                    <el-checkbox
-                      v-model="row.isFinal"
-                      :true-value="'Y'"
-                      :false-value="'N'"
-                      @change="handleCheck(row)"
-                    />
-                  </div>
+                  <el-tag
+                    size="small"
+                    type="info"
+                    effect="plain"
+                    class="font-bold"
+                  >
+                    {{ getStatusName(row.startStatus) }}
+                  </el-tag>
                 </template>
               </el-table-column>
 
-              <!-- 사용 여부(활성화) -->
               <el-table-column
                 label="사용 여부(활성화)"
                 align="center"
@@ -85,22 +79,20 @@
                 </template>
               </el-table-column>
 
-              <!-- 관리 -->
               <el-table-column label="관리" align="center" width="100">
                 <template #default="{ row }">
-                  <el-button class="btn-edit" @click="handleEdit(row)"
-                    >수정</el-button
-                  >
+                  <el-button class="btn-edit" @click="handleEdit(row)">
+                    수정
+                  </el-button>
                 </template>
               </el-table-column>
             </el-table>
 
-            <!-- 페이지네이션 -->
             <div class="pagination-wrap">
               <el-pagination
                 v-model:current-page="currentPage"
                 :page-size="pageSize"
-                :total="statusStore.statusList.length"
+                :total="typeStore.typeList?.length || 0"
                 layout="prev, pager, next"
                 background
               />
@@ -111,7 +103,6 @@
     </div>
   </div>
 
-  <!-- 유형 등록/수정 모달 -->
   <el-dialog
     v-model="modalVisible"
     :title="isEditMode ? '유형 수정' : '유형 등록'"
@@ -127,20 +118,19 @@
       label-width="120px"
       label-position="left"
     >
-      <el-form-item label="유형명" prop="statusName">
+      <el-form-item label="유형명" prop="typeName">
         <div style="display: flex; gap: 8px; width: 100%">
           <el-input
-            v-model="form.statusName"
+            v-model="form.typeName"
             placeholder="유형명을 입력하세요"
             style="flex: 1"
-            @input="onStatusNameInput"
+            @input="onTypeNameInput"
           />
-          <el-button class="btn-register" @click="checkDuplicate"
-            >중복 확인</el-button
-          >
+          <el-button class="btn-register" @click="checkDuplicate">
+            중복 확인
+          </el-button>
         </div>
 
-        <!-- ✅ 인라인 메시지 -->
         <p
           v-if="isOriginalName"
           style="font-size: 12px; margin-top: 4px; color: #9ca3af"
@@ -167,7 +157,6 @@
         </p>
       </el-form-item>
 
-      <!-- 설명 -->
       <el-form-item label="설명" prop="description">
         <el-input
           v-model="form.description"
@@ -177,24 +166,26 @@
         />
       </el-form-item>
 
-      <!-- 완료 단계 여부 -->
-      <el-form-item label="완료 단계 여부">
-        <div class="switch-row">
-          <el-switch
-            v-model="form.isFinal"
-            active-value="Y"
-            inactive-value="N"
-          />
-          <span class="switch-desc">
-            이 유형가 업무의 최종 완료 단계입니까?<br />
-            <span class="switch-sub"
-              >완료 단계로 설정하면 업무가 종료 처리됩니다.</span
-            >
-          </span>
+      <el-form-item label="기본 시작 상태" prop="startStatus">
+        <div style="width: 100%">
+          <el-select
+            v-model="form.startStatus"
+            placeholder="시작 상태를 선택하세요"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="status in statusStore.activeStatusList"
+              :key="status.taskStatusId"
+              :label="status.statusName"
+              :value="status.taskStatusId"
+            />
+          </el-select>
+          <p class="switch-sub mt-1">
+            이 업무 유형이 생성될 때 부여될 초기 상태입니다.
+          </p>
         </div>
       </el-form-item>
 
-      <!-- 사용 여부 -->
       <el-form-item label="사용 여부">
         <div class="switch-row">
           <el-switch
@@ -202,7 +193,7 @@
             active-value="Y"
             inactive-value="N"
           />
-          <span class="switch-desc">
+          <span class="switch-desc mt-0.5">
             {{
               form.isActive === "Y" ? "사용 중입니다." : "미사용 유형입니다."
             }}
@@ -236,9 +227,11 @@ import { ref, computed, onMounted, reactive } from "vue";
 import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import { useTypeStore } from "../stores/taskType.js";
 import { useStatusStore } from "../stores/status.js";
 
 const sidebarOpen = ref(false);
+const typeStore = useTypeStore();
 const statusStore = useStatusStore();
 
 // ── 페이지네이션 ──
@@ -246,10 +239,20 @@ const currentPage = ref(1);
 const pageSize = 10;
 const isLoading = ref(false);
 
-const pagedStatuses = computed(() => {
+const pagedTypes = computed(() => {
+  if (!typeStore.typeList) return [];
   const s = (currentPage.value - 1) * pageSize;
-  return statusStore.statusList.slice(s, s + pageSize);
+  return typeStore.typeList.slice(s, s + pageSize);
 });
+
+// 💡 테이블에서 ID 대신 상태명(statusName)을 보여주기 위한 함수
+const getStatusName = (statusId) => {
+  if (!statusStore.activeStatusList) return statusId;
+  const status = statusStore.activeStatusList.find(
+    (s) => s.taskStatusId === statusId,
+  );
+  return status ? status.statusName : statusId;
+};
 
 // ── 테이블 스타일 ──
 const headerStyle = () => ({
@@ -265,26 +268,36 @@ const cellStyle = () => ({
   borderBottom: "1px solid #f1f5f9",
 });
 
-// ── 모달 유형 ──
+// ── 모달 변수 ──
 const modalVisible = ref(false);
 const submitting = ref(false);
 const formRef = ref(null);
 const isEditMode = ref(false);
 
+// 🚨 [핵심 수정포인트] 바로 여기에 원본 데이터를 저장할 변수가 있어야 합니다!
+const originalForm = ref(null);
+
 const defaultForm = () => ({
-  taskStatusId: null,
-  statusName: "",
+  taskTypeId: null,
+  typeName: "",
   description: "",
-  isFinal: "N",
+  startStatus: 1,
   isActive: "Y",
 });
 
 const form = reactive(defaultForm());
 
 const rules = reactive({
-  statusName: [
+  typeName: [
     { required: true, message: "유형명을 입력하세요", trigger: "blur" },
     { max: 100, message: "유형명은 100자 이하로 입력하세요", trigger: "blur" },
+  ],
+  startStatus: [
+    {
+      required: true,
+      message: "기본 시작 상태를 선택하세요",
+      trigger: "change",
+    },
   ],
 });
 
@@ -298,13 +311,17 @@ const handleCreate = () => {
 const handleEdit = (row) => {
   isEditMode.value = true;
   Object.assign(form, {
-    taskStatusId: row.taskStatusId,
-    statusName: row.statusName,
+    taskTypeId: row.taskTypeId,
+    typeName: row.typeName,
     description: row.description ?? "",
-    isFinal: row.isFinal,
+    startStatus: row.startStatus,
     isActive: row.isActive,
   });
-  originalStatusName.value = row.statusName;
+
+  // 💡 수정 모달 열 때 원본 데이터 백업
+  originalForm.value = { ...form };
+
+  originalTypeName.value = row.typeName;
   modalVisible.value = true;
 };
 
@@ -314,8 +331,8 @@ const handleToggle = async (row) => {
   const action = row.isActive === "Y" ? "활성화" : "비활성화";
 
   const result = await Swal.fire({
-    title: `유형를 ${action}하시겠습니까?`,
-    text: `"${row.statusName}"`,
+    title: `유형을 ${action}하시겠습니까?`,
+    text: `"${row.typeName}"`,
     icon: "question",
     showCancelButton: true,
     confirmButtonColor: "#2563eb",
@@ -330,8 +347,7 @@ const handleToggle = async (row) => {
   }
 
   try {
-    // TODO: PUT /api/task-status/:taskStatusId/status
-    await statusStore.changeStatus(row);
+    await typeStore.toggleActive(row);
     Swal.fire({
       toast: true,
       position: "top-end",
@@ -339,7 +355,6 @@ const handleToggle = async (row) => {
       title: `${action} 처리되었습니다.`,
       showConfirmButton: false,
       timer: 2000,
-      timerProgressBar: true,
     });
   } catch {
     row.isActive = prevStatus;
@@ -349,54 +364,10 @@ const handleToggle = async (row) => {
       text: "유형 변경에 실패했습니다. 다시 시도해주세요.",
       confirmButtonColor: "#2563eb",
     });
-    await statusStore.getStatusList();
+    await typeStore.getTypeList();
   }
 };
 
-// ── 완료단계 체크박스 ──
-const handleCheck = async (row) => {
-  const prevStatus = row.isFinal === "Y" ? "N" : "Y";
-  const action = row.isFinal === "Y" ? "활성화" : "비활성화";
-
-  const result = await Swal.fire({
-    title: `완료 단계를 ${action}하시겠습니까?`,
-    text: `"${row.statusName}"`,
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonColor: "#2563eb",
-    cancelButtonColor: "#6b7280",
-    confirmButtonText: "확인",
-    cancelButtonText: "취소",
-  });
-
-  if (!result.isConfirmed) {
-    row.isFinal = prevStatus;
-    return;
-  }
-
-  try {
-    // TODO: PUT /api/task-status/:taskStatusId/status
-    await statusStore.changeFinal(row);
-    Swal.fire({
-      toast: true,
-      position: "top-end",
-      icon: "success",
-      title: `${action} 처리되었습니다.`,
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
-    });
-  } catch {
-    row.isActive = prevStatus;
-    Swal.fire({
-      icon: "error",
-      title: "처리 실패",
-      text: "유형 변경에 실패했습니다. 다시 시도해주세요.",
-      confirmButtonColor: "#2563eb",
-    });
-    await statusStore.getStatusList();
-  }
-};
 // ── 모달 닫기 ──
 const handleModalClose = () => {
   modalVisible.value = false;
@@ -407,7 +378,7 @@ const handleReset = () => {
   Object.assign(
     form,
     isEditMode.value
-      ? { statusName: "", description: "", isFinal: "N", isActive: "Y" }
+      ? { typeName: "", description: "", startStatus: 1, isActive: "Y" }
       : defaultForm(),
   );
   isNameChecked.value = false;
@@ -419,7 +390,7 @@ const handleReset = () => {
 const handleSubmit = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
   if (!valid) return;
-  // ✅ 중복 확인 체크
+
   if (!isOriginalName.value && !isNameChecked.value) {
     Swal.fire({
       icon: "warning",
@@ -436,17 +407,41 @@ const handleSubmit = async () => {
     });
     return;
   }
+
   submitting.value = true;
   try {
     if (isEditMode.value) {
-      // TODO: PUT /api/task-status/:taskStatusId
-      await statusStore.updateStatus(form);
+      const payload = { taskTypeId: form.taskTypeId };
+      let isChanged = false;
+
+      // 변경된 값만 추출 (originalForm.value에 ?.(옵셔널 체이닝) 적용)
+      Object.keys(form).forEach((key) => {
+        if (key !== "taskTypeId" && form[key] !== originalForm.value?.[key]) {
+          payload[key] = form[key];
+          isChanged = true;
+        }
+      });
+
+      // 💡 변경된 내용이 없을 때 처리
+      if (!isChanged) {
+        Swal.fire({
+          icon: "info",
+          title: "변경된 내용이 없습니다.",
+          confirmButtonColor: "#2563eb",
+          confirmButtonText: "확인",
+        });
+        modalVisible.value = false;
+        submitting.value = false;
+        return;
+      }
+
+      await typeStore.updateType(payload);
     } else {
-      // TODO: POST /api/task-status
-      await statusStore.createStatus(form);
+      await typeStore.createType(form);
     }
+
     modalVisible.value = false;
-    await statusStore.getStatusList();
+    await typeStore.getTypeList();
 
     Swal.fire({
       toast: true,
@@ -455,9 +450,9 @@ const handleSubmit = async () => {
       title: isEditMode.value ? "수정되었습니다." : "등록되었습니다.",
       showConfirmButton: false,
       timer: 2000,
-      timerProgressBar: true,
     });
-  } catch {
+  } catch (error) {
+    console.error("저장 중 에러 발생:", error);
     Swal.fire({
       icon: "error",
       title: isEditMode.value ? "수정 실패" : "등록 실패",
@@ -468,18 +463,18 @@ const handleSubmit = async () => {
     submitting.value = false;
   }
 };
-// ── 중복 확인 유형 ──
+
+// ── 중복 확인 ──
 const isNameChecked = ref(false);
 const isNameValid = ref(false);
-const originalStatusName = ref("");
-const dupMessage = ref(""); // 메시지 텍스트
-const dupValid = ref(null); // null = 미확인, true = 가능, false = 중복
+const originalTypeName = ref("");
+const dupMessage = ref("");
+const dupValid = ref(null);
 const isOriginalName = computed(
-  () => isEditMode.value && form.statusName === originalStatusName.value,
+  () => isEditMode.value && form.typeName === originalTypeName.value,
 );
 
-// 유형명 입력 시 중복 확인 초기화
-const onStatusNameInput = () => {
+const onTypeNameInput = () => {
   if (!isOriginalName.value) {
     isNameChecked.value = false;
     isNameValid.value = false;
@@ -488,17 +483,16 @@ const onStatusNameInput = () => {
   }
 };
 
-// 중복 확인
 const checkDuplicate = async () => {
-  // 수정 모드에서 기존 이름 그대로면 스킵
   if (isOriginalName.value) {
     isNameValid.value = true;
     isNameChecked.value = true;
+    dupValid.value = true;
     return;
   }
   try {
-    const res = await statusStore.checkDuplicate(form.statusName);
-    isNameValid.value = res; // true = 사용가능, false = 중복
+    const res = await typeStore.checkDuplicate(form.typeName);
+    isNameValid.value = res;
     dupValid.value = res;
     isNameChecked.value = true;
   } catch {
@@ -506,26 +500,27 @@ const checkDuplicate = async () => {
     dupValid.value = null;
   }
 };
-// 💡 모달이 화면에서 완전히 사라질 때 모든 유형를 '백지화' 합니다.
+
+// 💡 모달이 닫힐 때 백지화
 const handleModalClosed = () => {
-  // 1. 폼 데이터 완전 초기화
   Object.assign(form, defaultForm());
-
-  // 2. Element Plus 기본 빨간줄(검증 에러) 초기화
   formRef.value?.clearValidate();
-
-  // 3. 커스텀 중복 확인 관련 변수들 싹 다 초기화
+  originalForm.value = null; // 원본 데이터도 초기화
   isNameChecked.value = false;
   isNameValid.value = false;
   dupValid.value = null;
   dupMessage.value = "";
-  originalStatusName.value = "";
+  originalTypeName.value = "";
 };
+
 // ── 초기 로드 ──
 onMounted(async () => {
   isLoading.value = true;
   try {
-    await statusStore.getStatusList();
+    await Promise.all([
+      typeStore.getTypeList(),
+      statusStore.getActiveStatusList(),
+    ]);
   } finally {
     isLoading.value = false;
   }
@@ -533,6 +528,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* 기존 스타일 유지 */
 .card {
   background: #fff;
   border-radius: 12px;
@@ -551,31 +547,13 @@ onMounted(async () => {
   font-size: 14px;
   color: #1a1a2e;
 }
-.status-name {
+.type-name {
   font-weight: 600;
   color: #1a1a2e;
 }
 .desc-text {
   color: #6b7280;
   font-size: 13px;
-}
-
-/* 완료 단계 셀 */
-.done-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-.done-label {
-  font-size: 12px;
-  font-weight: 500;
-}
-.done-yes {
-  color: #2563eb;
-}
-.done-no {
-  color: #9ca3af;
 }
 
 .pagination-wrap {

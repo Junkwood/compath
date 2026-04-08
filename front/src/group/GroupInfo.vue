@@ -35,24 +35,24 @@
             </div>
 
             <button
-              class="btn bg-indigo-500 hover:bg-indigo-600 text-white"
+              class="btn bg-[#2563eb] hover:bg-blue-700 text-white border-none rounded-lg font-medium px-4 py-2 flex items-center"
               @click="handleEdit"
             >
               <svg
-                class="w-4 h-4 fill-current opacity-50 shrink-0"
+                class="w-4 h-4 fill-current opacity-70 shrink-0 mr-2"
                 viewBox="0 0 32 32"
               >
                 <path
                   d="M19.7 8.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM12.6 22H10v-2.6l6-6 2.6 2.6-6 6zm7.4-7.4L17.4 12l1.6-1.6 2.6 2.6-1.6 1.6z"
                 />
               </svg>
-              <span class="ml-2">그룹 수정</span>
+              그룹 수정
             </button>
           </div>
 
           <div v-if="isLoading" class="flex items-center justify-center py-20">
             <svg
-              class="animate-spin w-8 h-8 text-indigo-500"
+              class="animate-spin w-8 h-8 text-blue-600"
               fill="none"
               viewBox="0 0 24 24"
             >
@@ -93,29 +93,25 @@
                         class="text-gray-800 dark:text-gray-100 font-medium"
                         >{{ group.groupName }}</span
                       >
-                      <label
-                        class="relative inline-flex items-center cursor-pointer gap-2"
-                      >
-                        <input
-                          type="checkbox"
-                          class="sr-only peer"
-                          :checked="group.isActive === 'Y'"
-                          @change="handleToggle()"
+
+                      <div class="flex items-center gap-2">
+                        <el-switch
+                          v-model="group.isActive"
+                          active-value="Y"
+                          inactive-value="N"
+                          @change="handleToggle"
                         />
-                        <div
-                          class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"
-                        ></div>
                         <span
                           class="text-sm font-medium"
                           :class="
                             group.isActive === 'Y'
-                              ? 'text-emerald-500'
+                              ? 'text-blue-600'
                               : 'text-gray-400'
                           "
                         >
                           {{ group.isActive === "Y" ? "활성화" : "비활성화" }}
                         </span>
-                      </label>
+                      </div>
                     </div>
                   </div>
 
@@ -134,18 +130,17 @@
                       class="text-sm font-semibold text-gray-500 dark:text-gray-400 min-w-[80px]"
                       >그룹유형</span
                     >
-                    <span
-                      :class="[
-                        'inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium',
-                        group.groupType === 'C2'
-                          ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100'
-                          : 'bg-violet-100 text-violet-800 dark:bg-violet-800 dark:text-violet-100',
-                      ]"
+                    <el-tag
+                      size="small"
+                      effect="light"
+                      round
+                      class="font-medium"
+                      :type="group.groupType === 'C2' ? 'primary' : 'success'"
                     >
                       {{
                         group.groupType === "C2" ? "프로젝트 그룹" : "직군 그룹"
                       }}
-                    </span>
+                    </el-tag>
                   </div>
 
                   <div class="flex flex-col sm:flex-row sm:items-start gap-3">
@@ -223,11 +218,14 @@
                           {{ member.primaryGroupName || "-" }}
                         </td>
                         <td v-if="group.groupType === 'C2'" class="px-4 py-3">
-                          <span
-                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100"
+                          <el-tag
+                            size="small"
+                            type="info"
+                            effect="plain"
+                            class="font-medium"
                           >
                             {{ member.roleName || "-" }}
-                          </span>
+                          </el-tag>
                         </td>
                       </tr>
                     </tbody>
@@ -374,103 +372,136 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useGroupStore } from "../stores/groupSJW";
 import { useAuthStore } from "../stores/auth";
-export default {
-  name: "GroupInfo",
-  components: { Header, Sidebar },
-  setup() {
-    const router = useRouter();
-    const route = useRoute();
-    const sidebarOpen = ref(false);
-    const isLoading = ref(false);
-    const groupStore = useGroupStore();
-    const authStore = useAuthStore();
 
-    const group = ref({
-      groupId: null,
-      groupName: "",
-      groupType: "",
-      description: "",
-      isActive: "Y",
-      members: [],
-      logs: [],
+const router = useRouter();
+const route = useRoute();
+const sidebarOpen = ref(false);
+const isLoading = ref(false);
+const groupStore = useGroupStore();
+const authStore = useAuthStore();
+
+const group = ref({
+  groupId: null,
+  groupName: "",
+  groupType: "",
+  description: "",
+  isActive: "Y",
+  members: [],
+  logs: [],
+});
+
+// ── 💡 새 포맷에 맞춘 날짜 변환 함수 ──
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function historyDotColor(actionType) {
+  if (["신규 그룹 생성", "신규 구성원 추가"].includes(actionType))
+    return "bg-blue-500";
+  if (actionType === "구성원 제외") return "bg-red-500";
+  return "bg-green-500"; // 그룹명 변경, 상태 변경, 그룹 설명 변경, 역할 변경 등
+}
+
+function historyBadgeColor(actionType) {
+  if (["신규 그룹 생성", "신규 구성원 추가"].includes(actionType))
+    return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400";
+  if (actionType === "구성원 제외")
+    return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400";
+  return "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400";
+}
+
+// ── 💡 SweetAlert가 적용된 토글 액션 ──
+const handleToggle = async () => {
+  const prevStatus = group.value.isActive === "Y" ? "N" : "Y";
+  const action = group.value.isActive === "Y" ? "활성화" : "비활성화";
+
+  const result = await Swal.fire({
+    title: `그룹을 ${action}하시겠습니까?`,
+    text: `"${group.value.groupName}"`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#2563eb",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "확인",
+    cancelButtonText: "취소",
+  });
+
+  if (!result.isConfirmed) {
+    // 취소 시 스위치 원상복구
+    group.value.isActive = prevStatus;
+    return;
+  }
+
+  try {
+    await groupStore.changeStatus(
+      group.value.groupId,
+      group.value.isActive,
+      authStore.user.userId,
+    );
+
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: `${action} 처리되었습니다.`,
+      showConfirmButton: false,
+      timer: 2000,
     });
 
-    // ── 💡 새 포맷에 맞춘 날짜 변환 함수 ──
-    function formatDate(dateString) {
-      if (!dateString) return "";
-      const date = new Date(dateString);
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-    }
-
-    function historyDotColor(actionType) {
-      if (["신규 그룹 생성", "신규 구성원 추가"].includes(actionType))
-        return "bg-blue-500";
-      if (actionType === "구성원 제외") return "bg-red-500";
-      return "bg-green-500"; // 그룹명 변경, 상태 변경, 그룹 설명 변경, 역할 변경 등
-    }
-
-    function historyBadgeColor(actionType) {
-      if (["신규 그룹 생성", "신규 구성원 추가"].includes(actionType))
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400";
-      if (actionType === "구성원 제외")
-        return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400";
-      return "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400";
-    }
-
-    // ── 액션 ──
-    const handleToggle = async () => {
-      try {
-        await groupStore.changeStatus(
-          group.value.groupId,
-          group.value.isActive,
-          authStore.user.userId,
-        );
-
-        loadGroupInfo();
-      } catch {
-        alert("상태 변경에 실패했습니다.");
-      }
-    };
-
-    const handleEdit = () => {
-      router.push(`/admin/group/modify/${group.value.groupId}`);
-    };
-
-    const goBack = () => router.back();
-    const loadGroupInfo = async () => {
-      try {
-        const groupId = route.params.id;
-        const data = await groupStore.getGroupInfo(groupId);
-        group.value = data;
-      } catch {
-        alert("그룹 정보를 불러오는데 실패했습니다.");
-      } finally {
-        isLoading.value = false;
-      }
-    };
-    onMounted(async () => {
-      isLoading.value = true;
-      loadGroupInfo();
+    await loadGroupInfo();
+  } catch {
+    group.value.isActive = prevStatus;
+    Swal.fire({
+      icon: "error",
+      title: "처리 실패",
+      text: "상태 변경에 실패했습니다. 다시 시도해주세요.",
+      confirmButtonColor: "#2563eb",
     });
-
-    return {
-      sidebarOpen,
-      isLoading,
-      group,
-      formatDate,
-      historyDotColor,
-      historyBadgeColor,
-      handleToggle,
-      handleEdit,
-      goBack,
-    };
-  },
+  }
 };
+
+const handleEdit = () => {
+  router.push(`/admin/group/modify/${group.value.groupId}`);
+};
+
+const goBack = () => router.back();
+
+const loadGroupInfo = async () => {
+  try {
+    const groupId = route.params.id;
+    const data = await groupStore.getGroupInfo(groupId);
+    group.value = data;
+  } catch {
+    Swal.fire({
+      icon: "error",
+      title: "오류",
+      text: "그룹 정보를 불러오는데 실패했습니다.",
+      confirmButtonColor: "#2563eb",
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(async () => {
+  isLoading.value = true;
+  loadGroupInfo();
+});
 </script>
+
+<style scoped>
+/* SweetAlert 모달 z-index 방어용 */
+:global(.swal2-container) {
+  z-index: 9999 !important;
+}
+</style>
