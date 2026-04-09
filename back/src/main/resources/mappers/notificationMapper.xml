@@ -107,4 +107,13 @@
         SELECT user_id FROM users
     </select>
 
+    <!-- 프로젝트 전체 구성원 조회 -->
+    <select id="getProjectMemberIds" resultType="int" parameterType="int">
+        SELECT DISTINCT u.user_id
+        FROM users u
+        JOIN project_members pm ON u.user_id = pm.user_id
+        WHERE pm.project_id = #{projectId}
+        AND pm.is_active = 'O1'
+    </select>
+
 </mapper>

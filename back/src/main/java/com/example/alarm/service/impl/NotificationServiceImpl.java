@@ -21,7 +21,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final SseEmitterManager sseEmitterManager;
 
 
-    // 프로젝트 멤버 전체에게 전송 (수신자 포함)
+// 프로젝트 멤버 전체에게 전송 (수신자 포함)
     @Override
     public void sendToProjectMembers(int projectId, int assigneeId,
                                      String type, int targetId,
@@ -32,17 +32,41 @@ public class NotificationServiceImpl implements NotificationService {
         notificationMapper.getNotificationReceivers(params);
         List<Integer> receivers = (List<Integer>) params.get("receiverList");
 
+        // 루프 밖으로 이동
+        NotificationDto dto = NotificationDto.builder()
+                .notificationType(type)
+                .targetType(type)
+                .targetId(targetId)
+                .title(title)
+                .message(message)
+                .createdBy(createdBy)
+                .build();
+        registerNotification(dto);
+
+        // target만 루프
         for (Integer receiverId : receivers) {
-            NotificationDto dto = NotificationDto.builder()
-                    .notificationType(type)
-                    .targetType(type)
-                    .targetId(targetId)
-                    .title(title)
-                    .message(message)
-                    .receiverId(receiverId)
-                    .createdBy(createdBy)
-                    .build();
-            registerNotification(dto);
+            dto.setReceiverId(receiverId);
+            registerNotificationTarget(dto);
+        }
+    }
+    @Override
+    public void sendToAllProjectMembers(int projectId, String type, int targetId,
+                                        String title, String message, int createdBy) {
+        List<Integer> receivers = notificationMapper.getProjectMemberIds(projectId);
+
+        NotificationDto dto = NotificationDto.builder()
+                .notificationType(type)
+                .targetType(type)
+                .targetId(targetId)
+                .title(title)
+                .message(message)
+                .createdBy(createdBy)
+                .build();
+        registerNotification(dto);
+
+        for (Integer receiverId : receivers) {
+            if (receiverId == createdBy) continue; // 작성자 제외
+            dto.setReceiverId(receiverId);
             registerNotificationTarget(dto);
         }
     }

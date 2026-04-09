@@ -32,10 +32,11 @@ public class NoticeServiceImpl implements NoticeService {
         mapper.registerNotice(dto);
 
         // 알림 전송
-        notificationService.sendToAllUsers(
+        notificationService.sendToAllProjectMembers(
+                dto.getProjectId(),
                 "R1", id,
                 "공지사항 등록", "새로운 공지사항이 등록되었습니다.",
-                dto.getCreatedBy() // 작성자 ID 필드명 확인 필요!
+                dto.getCreatedBy()
         );
 
         return mapper.getNoticeById(id);

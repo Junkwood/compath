@@ -30,5 +30,9 @@ public interface NotificationMapper {
     //전체 사람들에게 알림 보내기
     List<Integer> getAllUserIds();
 
+    //프로젝트 별 전체 사용자
+    List<Integer> getProjectMemberIds(int projectId);
+
+
 
 }

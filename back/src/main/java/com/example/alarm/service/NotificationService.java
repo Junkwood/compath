@@ -33,5 +33,10 @@ public interface NotificationService {
     //전체 사용자에게 보내기
     void sendToAllUsers(String type, int targetId, String title, String message, int createdBy);
 
+    //전체사용자(프로젝트)
+//    List<Integer> getProjectMemberIds(int projectId);
+
+    void sendToAllProjectMembers(int projectId, String type, int targetId,
+                                 String title, String message, int createdBy);
 
 }
