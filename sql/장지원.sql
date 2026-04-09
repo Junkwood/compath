@@ -185,12 +185,20 @@ BEGIN
     WHERE project_id = v_target_project_id;
 
     -- 업무 상세 
-    OPEN taskDetail FOR
-    SELECT t.*, u.user_name as ASSIGNEENAME
-    FROM tasks t
-    LEFT JOIN users u ON t.assignee_user_id = u.user_id
-    WHERE t.task_id = p_task_id;
-
+	OPEN taskDetail FOR
+	SELECT 
+	    t.*, 
+	    u.user_name as ASSIGNEENAME,
+	    (SELECT NVL(SUM(hours), 0) FROM time_entries WHERE task_id = t.task_id) as TOTAL_TIME_ENTRIES,
+	    CASE 
+	        WHEN (SELECT SUM(hours) FROM time_entries WHERE task_id = t.task_id) > 0 
+	        THEN (SELECT SUM(hours) FROM time_entries WHERE task_id = t.task_id)
+	        ELSE t.actual_hours 
+	    END as FINAL_ACTUAL_HOURS
+	FROM tasks t
+	LEFT JOIN users u ON t.assignee_user_id = u.user_id
+	WHERE t.task_id = p_task_id;
+    
     -- 프로젝트 목록
     OPEN projectList FOR
     SELECT * FROM projects 

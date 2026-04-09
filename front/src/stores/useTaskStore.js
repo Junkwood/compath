@@ -358,7 +358,6 @@ export const useTaskStore = defineStore("task", () => {
       String(form.value.taskStatusId).replace(/[^0-9]/g, ""),
     );
     const isFinished = finishedIds.value.includes(status) || status === 3;
-
     const payload = {
       ...form.value,
       taskStatusId: status,
@@ -374,9 +373,19 @@ export const useTaskStore = defineStore("task", () => {
     };
 
     if (isFinished) {
-      payload.actualHours = actualHours.value
-        ? parseInt(String(actualHours.value).replace(/[^0-9]/g, ""))
-        : null;
+      const detailSum = parseInt(
+        String(form.value.displayActualHours || 0).replace(/[^0-9]/g, ""),
+      );
+
+      if (detailSum > 0) {
+        // 상세 기록이 있으면 그합계를 소요시간으로 사용
+        payload.actualHours = detailSum;
+      } else {
+        // 상세 기록이 없으면, watch로 자동 계산된 actualHours 사용
+        payload.actualHours = actualHours.value
+          ? parseInt(String(actualHours.value).replace(/[^0-9]/g, ""))
+          : 0;
+      }
       payload.progressRate = 100;
     } else {
       payload.actualHours = null;
