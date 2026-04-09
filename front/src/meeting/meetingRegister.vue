@@ -73,7 +73,7 @@
 
                     <div>
                       <el-form-item
-                        label="등록일"
+                        label="회의 일시"
                         class="block text-sm font-medium mb-1"
                         prop="date"
                       >
@@ -262,7 +262,7 @@ const projectStore = useProjectKJHStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
-const documentId = route.params.documentId;
+const meetingId = route.params.meetingId;
 const userInfo = ref(); // 글 작성자 정보
 const meetingType = ref([]);
 const form = reactive({
@@ -347,27 +347,27 @@ const submitForm = async (formEl) => {
         if (!result.isConfirmed) return;
         // 공지사항 수정
         let obj = {
-          documentId: id,
+          meetingLogId: meetingId,
           title: form.title,
           content: form.content,
-          isPinned: form.isPinned == true ? "O1" : "O2",
-          isComment: form.isComment == true ? "O2" : "O1",
-          category: form.roleId == "전체" ? null : form.roleId,
-          isEditorUserId: userInfo.value.userId,
+          meetingTypeCode: form.meetingType,
+          editorUserId: userInfo.value.userId,
+          meetingDate: form.meetingDate,
+          place: form.meetingRoom,
         };
-        await documentStore.modifyDocument(obj);
+        await meetingStore.modifyMeeting(obj);
       }
 
-      // router.push({
-      //   name: "documentDetail",
-      //   params: {
-      //     projectId: id,
-      //     documentId:
-      //       isModified == true
-      //         ? documentId
-      //         : documentStore.registeredDocument.documentId,
-      //   },
-      // });
+      router.push({
+        name: "meetingDetail",
+        params: {
+          projectId: id,
+          meetingStore:
+            isModified == true
+              ? meetingId
+              : meetingStore.registeredMeeting.meetingId,
+        },
+      });
     } else {
       // 안내 메세지 나옴
       console.log("error submit!", fields);
@@ -386,8 +386,10 @@ const handleClose = (tag) => {
 };
 
 onBeforeMount(async () => {
+  userInfo.value = authStore.user; // 작성자 정보 받아오기
+
   // 수정 및 생성 구분
-  if (documentId !== "" && documentId !== undefined && documentId !== null) {
+  if (meetingId !== "" && meetingId !== undefined && meetingId !== null) {
     isModified.value = true;
     Swal.fire({
       title: "잠시만 기다려주세요...",
@@ -400,24 +402,20 @@ onBeforeMount(async () => {
       },
     });
 
-    await documentStore.getDocumentById(documentId);
-    let documentInfo = documentStore.documentDetail.documentInfo;
+    await meetingStore.getMeetingById(meetingId);
+    let meetingInfo = meetingStore.meetingDetail;
 
     // 폼에 대입
-    form.roleId =
-      documentInfo.category == null ? "전체" : documentInfo.category;
-    form.author = documentInfo.userName;
-    form.date = documentInfo.createdAt;
-    form.title = documentInfo.title;
-    form.content = documentInfo.content;
-    form.isPinned = documentInfo.isPinned == "O1" ? true : false;
-    form.isComment = documentInfo.isComment == "O1" ? false : true;
-
+    form.meetingType = meetingInfo.meetingTypeCode;
+    form.author = meetingInfo.userName;
+    form.date = meetingInfo.meetingDate;
+    form.title = meetingInfo.title;
+    form.content = meetingInfo.content;
+    form.meetingRoom = meetingInfo.place;
     Swal.close();
+  } else {
+    form.author = userInfo.value.name;
   }
-  userInfo.value = authStore.user; // 작성자 정보 받아오기
-
-  form.author = userInfo.value.name;
 
   await meetingStore.getMeetingType();
   meetingType.value = meetingStore.meetingType;

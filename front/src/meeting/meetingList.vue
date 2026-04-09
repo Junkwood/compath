@@ -250,15 +250,15 @@ import { ref } from "vue";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
-import { useNoticeStore } from "../stores/notice";
 import { useDocumentStore } from "../stores/document";
 import Swal from "sweetalert2";
+import { useMeetingStore } from "../stores/meeting";
 
 const route = useRoute();
 const router = useRouter();
 const taskStore = usetaskKJHStore();
-const noticeStore = useNoticeStore();
 const documentStore = useDocumentStore();
+const meetingStore = useMeetingStore();
 
 const projectId = route.params.projectId;
 const sidebarOpen = ref(false);
@@ -368,16 +368,16 @@ onBeforeMount(async () => {
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
 
-  let obj = { projectId: projectId, parentProjectId: projectId };
-  await documentStore.getFilterList(obj);
+  let obj = { projectId: projectId };
+  await meetingStore.getFilterList(obj);
   Swal.close();
 
-  filterList.value = documentStore.filterList;
-  pagingList.value = documentStore.filterList.documentList;
+  filterList.value = meetingStore.filterList;
+  pagingList.value = meetingStore.filterList.meetingList;
 
-  pagingList.value.forEach((li) => {
-    li.roleName = li.roleName == null ? "전체" : li.roleName;
-  });
+  // pagingList.value.forEach((li) => {
+  //   li.roleName = li.roleName == null ? "전체" : li.roleName;
+  // });
   listLength.value =
     filterList.value.documentList.length > 0
       ? filterList.value.documentList[0].taskCounts

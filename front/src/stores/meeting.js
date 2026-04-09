@@ -5,6 +5,8 @@ export const useMeetingStore = defineStore("meeting", {
   state: () => ({
     meetingType: [],
     registeredMeeting: {},
+    meetingDetail: {},
+    filterList: [],
   }),
   getters: {},
   actions: {
@@ -35,6 +37,35 @@ export const useMeetingStore = defineStore("meeting", {
         .post("/meeting/alarm/register", arr)
         .then((res) => {
           console.log("알림발송 및 등록 완료", res.data);
+        });
+    },
+
+    // 회의록 단건조회(상세페이지)
+    async getMeetingById(id) {
+      await api //
+        .get("/meeting/detail/" + id)
+        .then((res) => {
+          this.meetingDetail = res.data;
+        });
+    },
+
+    // 회의록 수정
+    async modifyMeeting(obj) {
+      await api //
+        .put("/meeting/modify", obj)
+        .then((res) => {
+          this.meetingDetail = res.data;
+        });
+    },
+
+    // 필터링 조건
+    async getFilterList(obj) {
+      await api //
+        .get("/meeting/list", {
+          params: obj,
+        })
+        .then((res) => {
+          this.filterList = res.data;
         });
     },
   },

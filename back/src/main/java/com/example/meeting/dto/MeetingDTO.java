@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MeetingDTO { // 회의록
-//    회의록 유형(작성시)
+    //    회의록 유형(작성시)
     private String typeName;
     private String typeCode;
 
-//    회의록 등록시
+    //    회의록 등록시
     private Integer meetingLogId;
     private String title;
     private String content;
@@ -34,10 +34,31 @@ public class MeetingDTO { // 회의록
     private Integer createdBy;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime updateAt;
+
+//    회의록 단건 조회
+    private String projectName;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+    private LocalDateTime startDate;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+    private LocalDateTime endDate;
+
+    private String userName;
+
+//    회의록 수정
+    private Integer editorUserId;
+
+//    페이징
+    private Integer startNum = 1;
+    private Integer endNum = 10;
+    private String search;
 }

@@ -26,4 +26,16 @@ public interface MeetingMapper {
 
   // 회의록 알림 테이블 조회
   public int getMeetingAlarmById(Integer targetId);
+
+//  회의록 수정
+  public int modifyMeeting(MeetingDTO dto);
+
+//  필터링 조건(유형)
+  public List<MeetingDTO> getFilterType(Integer Id);
+
+  //  필터링 조건(작성자)
+  public List<MeetingDTO> getFilterUser(Integer Id);
+
+//  페이징 목록
+  public List<MeetingDTO> getAllMeeting(MeetingDTO dto);
 }
