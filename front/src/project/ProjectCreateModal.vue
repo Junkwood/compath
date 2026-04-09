@@ -116,7 +116,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
-import axios from "axios";
+import api from "../utils/api";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -132,7 +132,7 @@ const visible = computed({
 const plOptions = ref([]);
 
 const fetchPlList = async () => {
-  const res = await axios.get("/api/ProjectPlList");
+  const res = await api.get("/ProjectPlList");
   console.log(res.data);
   plOptions.value = res.data;
 };
@@ -194,7 +194,7 @@ const handleSubmit = async () => {
       isPublic: form.isPublic ? "O1" : "O2",
     };
 
-    await axios.post("/api/ProjectRegister", payload);
+    await api.post("/ProjectRegister", payload);
     visible.value = false;
     handleReset();
     emit("submitted");
