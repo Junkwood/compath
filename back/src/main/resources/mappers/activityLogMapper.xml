@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.log.mapper.CommonCodeMapper">
+<mapper namespace="com.example.log.mapper.ActivityLogMapper">
 
     <select id="getActivityLogsByProjectId" resultType="ActivityLogDto">
         SELECT

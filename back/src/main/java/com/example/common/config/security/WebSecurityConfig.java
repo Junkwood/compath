@@ -55,6 +55,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/auth/**").permitAll() // 인증 없이 접근 가능
                         .requestMatchers("/api/**").hasAnyRole("ADMIN", "USER")
+                        //.requestMatchers("/api/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated() // 나머지는 인증 필요
                 );
