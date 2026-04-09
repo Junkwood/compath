@@ -61,7 +61,7 @@ public class WebSecurityConfig {
 
         // 필터 등록.
         //매 요청마다 corsfilter실행 후 jwtAtuhenticationFilter 실행.
-        http.addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

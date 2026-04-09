@@ -93,6 +93,7 @@ export default {
   },
   setup() {
     const auth = useAuthStore();
+    const authStore = useAuthStore();
 
     const dropdownOpen = ref(false);
     const trigger = ref(null);

@@ -474,7 +474,7 @@ const fetchProjectDetail = async () => {
 const fetchActivityLogs = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/activityLogs/${projectId}`);
+    const res = await api.get(`/activityLogs/${projectId}`);
     logs.value = res.data.map(mapLogItem);
   } catch (err) {
     console.error("작업내역 조회 실패:", err);

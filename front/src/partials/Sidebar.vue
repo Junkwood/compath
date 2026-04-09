@@ -300,7 +300,10 @@
 
                   <router-link
                     v-if="currentProjectId"
-                    :to="{ name: 'projectWorkHistory' }"
+                    :to="{
+                      name: 'projectWorkHistory',
+                      params: { projectId: currentProjectId },
+                    }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >

@@ -37,7 +37,7 @@ const projectRoutes = [
     component: () => import("../project/ProjectListAll.vue"),
   },
   {
-    path: "/projecWorkHistory",
+    path: "/projecWorkHistory/:projectId",
     name: "projectWorkHistory",
     component: () => import("../project/ProjectWorkHistory.vue"),
   },
