@@ -3,32 +3,23 @@ import router from "../router/router.js"; // 라우터 파일 경로에 맞게 �
 import { useAuthStore } from "../stores/auth"; // 스토어 파일 경로에 맞게 수정
 
 // 1. 커스텀 Axios 인스턴스 생성
-const api = axios.create({
-  baseURL: "http://localhost:8080/api", // 백엔드 기본 URL (env 변수로 빼는 것 추천!)
+const auth = axios.create({
+  baseURL: "http://localhost:8080/auth", // 백엔드 기본 URL (env 변수로 빼는 것 추천!)
   // timeout: 10000, // 10초 이상 응답 없으면 에러
   withCredentials: true, // ⭐️ 세션 쿠키를 백엔드와 주고받으려면 무조건 true!
 });
 
 // 2. 요청(Request) 인터셉터 (옵션: JWT 토큰 등을 보낼 때 사용)
-api.interceptors.request.use(
+auth.interceptors.request.use(
   (config) => {
-    // 토큰을 헤더에 집어넣기
-    const token = localStorage.getItem("ACCESS_TOKEN");
-    // const currentProjectId = localStorage.getItem("CURRENT_PROJECT_ID");
-    // 1. JWT 토큰 세팅
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    // if (currentProjectId) {
-    //   config.headers["X-Project-Id"] = currentProjectId;
-    // }
+    // 토큰이 있다면 여기서 헤더에 쏙 넣어줄 수 있습니다.
     return config;
   },
   (error) => Promise.reject(error),
 );
 
 // 3. 응답(Response) 인터셉터 (⭐ 401 자동 로그아웃의 핵심!)
-api.interceptors.response.use(
+auth.interceptors.response.use(
   (response) => {
     // 정상 응답(2xx)은 그대로 통과
     return response;
@@ -66,4 +57,4 @@ api.interceptors.response.use(
 );
 
 // 4. 세팅이 끝난 api 객체를 내보냄
-export default api;
+export default auth;

@@ -121,7 +121,7 @@ import {
   computed,
   defineEmits,
 } from "vue";
-import axios from "axios";
+import api from "../utils/api";
 import { useProjectKJHStore } from "../stores/projectKJH";
 
 const projectStore = useProjectKJHStore();
@@ -161,7 +161,7 @@ watch(
 const plOptions = ref([]);
 
 const fetchPlList = async () => {
-  const res = await axios.get("/api/ProjectPlList");
+  const res = await api.get("/ProjectPlList");
   console.log(res.data);
   plOptions.value = res.data;
 };

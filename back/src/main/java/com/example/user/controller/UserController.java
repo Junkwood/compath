@@ -1,5 +1,6 @@
 package com.example.user.controller;
 
+import com.example.common.config.security.TokenProvider;
 import com.example.user.dto.ResponseDTO;
 import com.example.user.dto.UserDTO;
 import com.example.user.entity.UserEntity;
@@ -18,7 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private TokenProvider tokenProvider;
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
         try {
@@ -42,14 +44,19 @@ public class UserController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
-    @PostMapping("/signin")
+    @PostMapping("/signIn")
     public ResponseEntity<?> authenticate(@RequestBody UserDTO userDTO) {
         UserEntity user = userService.getByCredentials(
                 userDTO.getUserId(),
                 userDTO.getPassword()
         );
         if(user != null) {
-            final UserDTO responseUserDTO = userDTO.builder().userId(user.getUserId()).build();
+            final String token = tokenProvider.create(user);
+
+            final UserDTO responseUserDTO = userDTO.builder()
+                    .userId(user.getUserId())
+                    .token(token)
+                    .build();
             return ResponseEntity.ok().body(responseUserDTO);
         }else{
             ResponseDTO responseDTO = ResponseDTO.builder().error("Login failed.")

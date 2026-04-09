@@ -197,6 +197,7 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useRoleStore } from "../stores/roleSJW";
 import api from "../utils/api";
+import admin from "../utils/admin";
 
 const route = useRoute();
 const router = useRouter();
@@ -377,7 +378,7 @@ const methodColor = (method) => {
 };
 
 // ── 액션 로직 ──
-const handleGoBack = () => router.push("/admin/role");
+const handleGoBack = () => router.push("/amdin/role");
 
 const handleSubmit = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
@@ -395,9 +396,9 @@ const handleSubmit = async () => {
     console.log(payload);
     if (isEditMode.value) {
       payload.roleId = form.roleId;
-      await api.put(`/admin/role/${form.roleId}`, payload);
+      await admin.put(`/role/${form.roleId}`, payload);
     } else {
-      await api.post("/admin/role", payload);
+      await admin.post("/role", payload);
     }
 
     Swal.fire({
@@ -435,7 +436,7 @@ onMounted(async () => {
 
     if (isEditMode.value) {
       const roleId = route.params.id;
-      const res = await api.get(`/admin/role/${roleId}`);
+      const res = await admin.get(`/role/${roleId}`);
       const roleData = res.data;
 
       Object.assign(form, {

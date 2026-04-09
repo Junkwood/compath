@@ -4,7 +4,9 @@
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <!-- Content area -->
-    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+    >
       <!-- Header -->
       <Header
         :sidebarOpen="sidebarOpen"
@@ -16,11 +18,15 @@
           <!-- 페이지 타이틀 -->
           <div class="mb-6 activity-title-row">
             <div class="activity-title-left">
-              <h2 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
+              <h2
+                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
+              >
                 작업내역
               </h2>
               <div class="activity-sub-row">
-                <span class="activity-project-name">【 {{ projectInfo.projectName }} 】</span>
+                <span class="activity-project-name"
+                  >【 {{ projectInfo.projectName }} 】</span
+                >
                 <span class="activity-project-period">
                   {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
                 </span>
@@ -87,7 +93,10 @@
                 </button>
               </div>
 
-              <div v-if="selectedQuickRange === 'CUSTOM'" class="custom-date-row">
+              <div
+                v-if="selectedQuickRange === 'CUSTOM'"
+                class="custom-date-row"
+              >
                 <div class="date-input-wrap">
                   <label>시작일</label>
                   <input v-model="startDate" type="date" />
@@ -107,7 +116,8 @@
           <section class="activity-log-card">
             <div class="content-top">
               <div class="result-count">
-                총 <strong>{{ filteredLogs.length }}</strong>건
+                총 <strong>{{ filteredLogs.length }}</strong
+                >건
               </div>
             </div>
 
@@ -117,12 +127,17 @@
                 :key="group.date"
                 class="date-group"
               >
-                <div class="date-group-header" @click="toggleDateGroup(group.date)">
+                <div
+                  class="date-group-header"
+                  @click="toggleDateGroup(group.date)"
+                >
                   <div class="date-title-wrap">
                     <span class="fold-icon">
                       {{ isGroupOpen(group.date) ? "▾" : "▸" }}
                     </span>
-                    <span class="date-title">{{ formatDateTitle(group.date) }}</span>
+                    <span class="date-title">{{
+                      formatDateTitle(group.date)
+                    }}</span>
                     <span class="date-count">{{ group.items.length }}건</span>
                   </div>
 
@@ -138,7 +153,9 @@
                     class="log-card"
                   >
                     <div class="log-time-col">
-                      <div class="log-time">{{ formatTime(log.createdAt) }}</div>
+                      <div class="log-time">
+                        {{ formatTime(log.createdAt) }}
+                      </div>
                     </div>
 
                     <div class="log-main-col">
@@ -192,7 +209,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import axios from "axios";
+import api from "../utils/api";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -300,13 +317,13 @@ const filteredLogs = computed(() => {
 
   if (selectedActivityType.value) {
     result = result.filter(
-      (item) => item.activityType === selectedActivityType.value
+      (item) => item.activityType === selectedActivityType.value,
     );
   }
 
   if (selectedTargetType.value) {
     result = result.filter(
-      (item) => item.targetType === selectedTargetType.value
+      (item) => item.targetType === selectedTargetType.value,
     );
   }
 
@@ -323,7 +340,11 @@ const filteredLogs = computed(() => {
     });
   }
 
-  if (selectedQuickRange.value === "CUSTOM" && startDate.value && endDate.value) {
+  if (
+    selectedQuickRange.value === "CUSTOM" &&
+    startDate.value &&
+    endDate.value
+  ) {
     result = result.filter((item) => {
       const itemDate = item.createdAt.split(" ")[0];
       return itemDate >= startDate.value && itemDate <= endDate.value;
@@ -393,7 +414,7 @@ watch(
     });
     openDateGroups.value = nextState;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function applyQuickRange(type) {
@@ -464,7 +485,7 @@ function endOfDay(date) {
 const fetchProjectDetail = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/ProjectDetail/${projectId}`);
+    const res = await api.get(`/ProjectDetail/${projectId}`);
     projectInfo.value = res.data;
   } catch (err) {
     console.error("프로젝트 상세 조회 실패:", err);
