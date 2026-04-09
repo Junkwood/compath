@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.data.jpa.domain.AbstractAuditable_.createdBy;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -30,6 +32,7 @@ public class NoticeServiceImpl implements NoticeService {
 
         // 공지사항 등록
         mapper.registerNotice(dto);
+
 
         // 알림 전송
         notificationService.sendToAllProjectMembers(

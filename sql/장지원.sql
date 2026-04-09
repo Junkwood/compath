@@ -16,6 +16,19 @@ SELECT * FROM notification_targets;
 SELECT * FROM task_rejections;
 
 
+
+
+
+SELECT notification_targets_seq.NEXTVAL FROM DUAL;
+SELECT MAX(notification_target_no) FROM notification_targets;
+
+ALTER SEQUENCE notification_targets_seq INCREMENT BY 2;
+SELECT notification_targets_seq.NEXTVAL FROM DUAL;
+ALTER SEQUENCE notification_targets_seq INCREMENT BY 1;
+
+SELECT * FROM notification_targets ORDER BY notification_target_no DESC;
+
+
 UPDATE task_statuses 
 SET DESCRIPTION = 'G5' 
 WHERE TASK_STATUS_ID = 5;
@@ -130,6 +143,20 @@ JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
 JOIN roles r ON pmr.role_id = r.role_id
 WHERE pm.project_id = '1'
 AND pm.is_active = 'O1';
+
+
+DECLARE
+    v_cursor SYS_REFCURSOR;
+    v_id NUMBER;
+BEGIN
+    SP_GET_NOTIFICATION_RECEIVERS(1, 1004, v_cursor);
+    LOOP
+        FETCH v_cursor INTO v_id;
+        EXIT WHEN v_cursor%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('receiver: ' || v_id);
+    END LOOP;
+END;
+
 ---------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
     p_task_id      IN  NUMBER,
@@ -204,6 +231,7 @@ BEGIN
 
 END;
 ------------------------------------------------------------------------
+--알림 전용 프로시저
 CREATE OR REPLACE PROCEDURE SP_GET_NOTIFICATION_RECEIVERS (
     p_project_id  IN  NUMBER,
     p_assignee_id IN  NUMBER,
