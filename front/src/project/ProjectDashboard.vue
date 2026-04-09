@@ -135,14 +135,14 @@
                       </div>
 
                       <div class="sub-project-table-wrap">
-                          <el-table
-                            :data="currentMilestone.projects || []"
-                            class="sub-project-table"
-                            style="width: 100%"
-                            :show-header="false"
-                            :cell-style="subCellStyle"
-                            @row-click="handleSubProjectRowClick"
-                          >
+                        <el-table
+                          :data="currentMilestone.projects || []"
+                          class="sub-project-table"
+                          style="width: 100%"
+                          :show-header="false"
+                          :cell-style="subCellStyle"
+                          @row-click="handleSubProjectRowClick"
+                        >
                           <el-table-column prop="projectName" min-width="220" />
                           <el-table-column label="PL" width="140" align="right">
                             <template #default="{ row }">
@@ -188,13 +188,18 @@
                     >
                       <div
                         class="member-avatar"
-                        :style="{ backgroundColor: getAvatarColor(member.roleName) }"
+                        :style="{
+                          backgroundColor: getAvatarColor(member.roleName),
+                        }"
                       >
                         {{ member.userName?.charAt(0) }}
                       </div>
                       <div class="member-info">
                         <span class="member-name">{{ member.userName }}</span>
-                        <span class="member-role-badge" :class="getRoleClass(member.roleName)">
+                        <span
+                          class="member-role-badge"
+                          :class="getRoleClass(member.roleName)"
+                        >
                           {{ member.roleName }}
                         </span>
                       </div>
@@ -202,7 +207,9 @@
                   </template>
 
                   <div v-else class="member-empty-row">
-                    <span class="member-empty-text">구성원이 아직 지정되지 않았습니다.</span>
+                    <span class="member-empty-text"
+                      >구성원이 아직 지정되지 않았습니다.</span
+                    >
                   </div>
                 </div>
               </div>
@@ -255,37 +262,37 @@
     @submitted="handleMemoSubmitted"
   />
 
-<ProjectSubCreateModal
-  v-model="createSubProjectModalOpen"
-  :project-id="projectInfo.projectId"
-  :parent-project-name="projectInfo.projectName"
-  :parent-start-date="projectInfo.startDate"
-  :parent-end-date="projectInfo.endDate"
-/>
+  <ProjectSubCreateModal
+    v-model="createSubProjectModalOpen"
+    :project-id="projectInfo.projectId"
+    :parent-project-name="projectInfo.projectName"
+    :parent-start-date="projectInfo.startDate"
+    :parent-end-date="projectInfo.endDate"
+  />
 </template>
 
 <script setup>
 import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Swal from "sweetalert2";
-import axios from "axios";
+import api from "../utils/api";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectMemoModal from "../project/ProjectMemoModal.vue";
 import { useAuthStore } from "../stores/auth";
-import ProjectSubCreateModal from '../project/ProjectSubCreateModal.vue' 
+import ProjectSubCreateModal from "../project/ProjectSubCreateModal.vue";
 
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const sidebarOpen = ref(false);
 
-const createSubProjectModalOpen = ref(false)
+const createSubProjectModalOpen = ref(false);
 
-const handleAddSubProject = () =>{
-  createSubProjectModalOpen.value=true;
-}
+const handleAddSubProject = () => {
+  createSubProjectModalOpen.value = true;
+};
 
 // ── 업무 현황  ────────────────────────────
 const taskSummaryData = ref([]);
@@ -293,7 +300,7 @@ const taskSummaryData = ref([]);
 const fetchTaskSummary = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/TaskSummary/${projectId}`);
+    const res = await api.get(`/TaskSummary/${projectId}`);
     taskSummaryData.value = res.data;
   } catch (err) {
     console.error("업무 현황 조회 실패:", err);
@@ -325,7 +332,7 @@ const projectMembers = ref([]);
 const fetchPmemList = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/GroupMemList/${projectId}`);
+    const res = await api.get(`/GroupMemList/${projectId}`);
     projectMembers.value = res.data;
   } catch (err) {
     console.error("구성원 목록 조회 실패:", err);
@@ -352,7 +359,7 @@ const fetchMemoList = async () => {
     const projectId = route.params.projectId;
     const userId = authStore.user?.userId;
 
-    const res = await axios.get(`/api/MemoList/${projectId}`, {
+    const res = await api.get(`/MemoList/${projectId}`, {
       params: { userId },
     });
 
@@ -385,7 +392,7 @@ const handleDeleteMemo = async (memoId) => {
   try {
     const userId = authStore.user?.userId;
 
-    await axios.post("/api/MemoStatUpdate", {
+    await api.post("/MemoStatUpdate", {
       memoId,
       userId,
     });
@@ -421,14 +428,14 @@ const handleMemoSubmitted = async (payload) => {
     }
 
     if (isMemoEditMode.value) {
-      await axios.post("/api/MemoContentUpdate", {
+      await api.post("/MemoContentUpdate", {
         memoId: editingMemoId.value,
         projectId,
         userId,
         memoContent: payload.text,
       });
     } else {
-      await axios.post("/api/MemoRegister", {
+      await api.post("/MemoRegister", {
         projectId,
         userId,
         memoContent: payload.text,
@@ -457,7 +464,7 @@ const projectInfo = ref({
 const fetchProjectDetail = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/ProjectDetail/${projectId}`);
+    const res = await api.get(`/ProjectDetail/${projectId}`);
     projectInfo.value = res.data;
   } catch (err) {
     console.error("프로젝트 상세 조회 실패:", err);
@@ -472,7 +479,7 @@ const milestonePage = ref(1);
 const fetchSubProject = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/ProjectSubList/${projectId}`);
+    const res = await api.get(`/ProjectSubList/${projectId}`);
     subProjects.value = res.data;
     milestonePage.value = 1;
   } catch (err) {
@@ -508,7 +515,10 @@ const pagedMilestones = computed(() => {
 
 const currentMilestone = computed(() => {
   if (pagedMilestones.value.length === 0) return null;
-  const safeIndex = Math.min(milestonePage.value - 1, pagedMilestones.value.length - 1);
+  const safeIndex = Math.min(
+    milestonePage.value - 1,
+    pagedMilestones.value.length - 1,
+  );
   return pagedMilestones.value[safeIndex];
 });
 
@@ -530,14 +540,14 @@ const handleViewTasks = () => {
 };
 const handleNoticeClick = () => {};
 
-
 //하위프로젝트 테이블 행 클릭시 하위프로젝트 대쉬보드로 진입
 const handleSubProjectRowClick = (row) => {
   router.push({
     name: "subProjectDashboard",
-    params: { subProjectId: row.projectId, 
-              rootProjectId: route.params.projectId,
-     },
+    params: {
+      subProjectId: row.projectId,
+      rootProjectId: route.params.projectId,
+    },
   });
 };
 
@@ -969,7 +979,9 @@ onMounted(() => {
   padding: 0;
   line-height: 1;
   box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
-  transition: background 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 
 .memo-add-btn:hover {
@@ -1047,7 +1059,9 @@ onMounted(() => {
   width: 24px;
   flex-shrink: 0;
   border-radius: 50%;
-  transition: background 0.18s, color 0.18s;
+  transition:
+    background 0.18s,
+    color 0.18s;
 }
 
 .memo-del-btn:hover {

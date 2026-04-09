@@ -26,7 +26,7 @@
               <div class="grid grid-cols-3 gap-6">
                 <div>
                   <el-form-item
-                    label="업무 유형"
+                    label="문서 유형"
                     prop="roleId"
                     class="block text-sm font-medium mb-1"
                   >
@@ -185,6 +185,7 @@
   <DocumentNotificationModal
     v-model="modalOpen"
     :memberList="memberList"
+    :alarmList="alarmList"
     @member-insert="memberInsert"
   />
 </template>
@@ -270,18 +271,31 @@ const submitForm = async (formEl) => {
             },
           ];
 
-          let target = [];
-
-          alarmList.value.forEach((al) => {
-            target.push({
-              receiverId: al.userId,
-              notificationId: "",
+          if (alarmList.value.length > 0) {
+            alarmList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
             });
-          });
-
-          alarmArr.push(target);
+          } else {
+            memberList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
+            });
+          }
 
           await documentStore.registerDocumentAlarm(alarmArr);
+
+          await Swal.fire({
+            title: "등록 및 알림 전송이 완료되었습니다.",
+            text: "상세페이지로 이동합니다.",
+            icon: "success",
+            confirmButtonText: "확인",
+            reverseButtons: true,
+          });
         }
       } else {
         const result = await Swal.fire({
@@ -308,16 +322,16 @@ const submitForm = async (formEl) => {
         await documentStore.modifyDocument(obj);
       }
 
-      // router.push({
-      //   name: "documentDetail",
-      //   params: {
-      //     projectId: id,
-      //     documentId:
-      //       isModified == true
-      //         ? documentId
-      //         : documentStore.registeredDocument.documentId,
-      //   },
-      // });
+      router.push({
+        name: "documentDetail",
+        params: {
+          projectId: id,
+          documentId:
+            isModified == true
+              ? documentId
+              : documentStore.registeredDocument.documentId,
+        },
+      });
     } else {
       // 안내 메세지 나옴
       console.log("error submit!", fields);

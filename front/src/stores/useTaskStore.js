@@ -275,26 +275,28 @@ export const useTaskStore = defineStore("task", () => {
 
   // ───────────── 추정시간 ─────────────
   const calcEstTime = (force = false) => {
-    if (
-      !force &&
-      form.value.taskId &&
-      form.value.estTime &&
-      form.value.estTime !== "0시간"
-    )
-      return;
+    if (form.value.taskId) return;
 
-    const isEditMode = !!form.value.taskId;
-    const sDate = isEditMode ? form.value.startDate : form.value.estStartDate;
-    const eDate = isEditMode ? form.value.dueDate : form.value.estEndDate;
+    const sDate = form.value.estStartDate;
+    const eDate = form.value.estEndDate;
 
     if (sDate && eDate) {
-      const days =
-        Math.ceil((new Date(eDate) - new Date(sDate)) / (1000 * 60 * 60 * 24)) +
-        1;
-      if (days > 0) form.value.estTime = `${days * 8}시간`;
+      const workdays = countWorkdays(sDate, eDate);
+      if (workdays > 0) form.value.estTime = `${workdays * 8}시간`;
     }
   };
   // ───────────── 업무상태 변경 시 소요시간 자동계산 ─────────────
+  const countWorkdays = (start, end) => {
+    let count = 0;
+    const cur = new Date(start);
+    while (cur <= end) {
+      const day = cur.getDay();
+      if (day !== 0 && day !== 6) count++;
+      cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+  };
+
   watch(
     () => form.value.taskStatusId,
     (newVal) => {
@@ -304,11 +306,11 @@ export const useTaskStore = defineStore("task", () => {
       if (isFinished) {
         const { startDate, dueDate } = form.value;
         if (startDate && dueDate) {
-          const diffDays =
-            Math.round(
-              (new Date(dueDate) - new Date(startDate)) / (1000 * 60 * 60 * 24),
-            ) + 1;
-          actualHours.value = `${Math.max(1, diffDays) * 8}시간`;
+          const workdays = countWorkdays(
+            new Date(startDate),
+            new Date(dueDate),
+          );
+          actualHours.value = `${Math.max(1, workdays) * 8}시간`;
           form.value.progressRate = 100;
         }
       } else {

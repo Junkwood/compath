@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import api from "../utils/api";
 import { useAuthStore } from "../stores/auth";
+import { EventSourcePolyfill } from "event-source-polyfill";
 
 export const useNotificationStore = defineStore("notification", {
   state: () => ({
@@ -24,12 +25,21 @@ export const useNotificationStore = defineStore("notification", {
     },
 
     setupSSE(userId) {
+      const token = localStorage.getItem("ACCESS_TOKEN");
       if (this.eventSource) {
         this.eventSource.close();
       }
 
-      const eventSource = new EventSource(
+      const eventSource = new EventSourcePolyfill(
         `${import.meta.env.VITE_API_BASE_URL}/notifications/subscribe/${userId}`,
+        {
+          headers: {
+            // 헤더에 토큰 넣어야함.
+            Authorization: `Bearer ${token}`,
+          },
+          // SSE 연결 유지 시간 (1시간세팅함)
+          heartbeatTimeout: 60 * 60 * 1000,
+        },
       );
 
       this.eventSource = eventSource;

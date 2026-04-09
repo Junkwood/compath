@@ -384,7 +384,10 @@
 
                   <router-link
                     v-if="currentProjectId"
-                    to="/project/meeting"
+                    :to="{
+                      name: 'meetingList',
+                      params: { projectId: currentProjectId },
+                    }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >

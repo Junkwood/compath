@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -33,6 +34,7 @@ public class UserEntity {
     @Column(nullable = false, length = 255)
     private String password;
     @Column(name = "user_type", nullable = false, length = 2)
+    @ColumnTransformer(read = "role(user_type)")
     private String userType;
     @Column(name = "is_active", nullable = false, length = 2)
     private String isActive = "01";

@@ -8,7 +8,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +19,75 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationMapper notificationMapper;
     private final SseEmitterManager sseEmitterManager;
+
+
+// 프로젝트 멤버 전체에게 전송 (수신자 포함)
+    @Override
+    public void sendToProjectMembers(int projectId, int assigneeId,
+                                     String type, int targetId,
+                                     String title, String message, int createdBy) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("projectId", projectId);
+        params.put("assigneeId", assigneeId);
+        notificationMapper.getNotificationReceivers(params);
+        List<Integer> receivers = (List<Integer>) params.get("receiverList");
+
+        // 루프 밖으로 이동
+        NotificationDto dto = NotificationDto.builder()
+                .notificationType(type)
+                .targetType(type)
+                .targetId(targetId)
+                .title(title)
+                .message(message)
+                .createdBy(createdBy)
+                .build();
+        registerNotification(dto);
+
+        // target만 루프
+        for (Integer receiverId : receivers) {
+            dto.setReceiverId(receiverId);
+            registerNotificationTarget(dto);
+        }
+    }
+    @Override
+    public void sendToAllProjectMembers(int projectId, String type, int targetId,
+                                        String title, String message, int createdBy) {
+        List<Integer> receivers = notificationMapper.getProjectMemberIds(projectId);
+
+        NotificationDto dto = NotificationDto.builder()
+                .notificationType(type)
+                .targetType(type)
+                .targetId(targetId)
+                .title(title)
+                .message(message)
+                .createdBy(createdBy)
+                .build();
+        registerNotification(dto);
+
+        for (Integer receiverId : receivers) {
+            if (receiverId == createdBy) continue; // 작성자 제외
+            dto.setReceiverId(receiverId);
+            registerNotificationTarget(dto);
+        }
+    }
+
+    // 단일 수신자에게 전송
+    @Override
+    public void sendToOne(int receiverId, String type, int targetId,
+                          String title, String message, int createdBy) {
+        NotificationDto dto = NotificationDto.builder()
+                .notificationType(type)
+                .targetType(type)
+                .targetId(targetId)
+                .title(title)
+                .message(message)
+                .receiverId(receiverId)
+                .createdBy(createdBy)
+                .build();
+        registerNotification(dto);
+        registerNotificationTarget(dto);
+    }
+
 
     //알림 등록
     @Override
@@ -28,7 +99,6 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void registerNotificationTarget(NotificationDto dto) {
         notificationMapper.registerNotificationTarget(dto);
-        // DB저장 후 해당 유저가 접속중이면 실시간 전송
         sseEmitterManager.sendToUser(dto.getReceiverId(), dto);
     }
 
@@ -54,5 +124,27 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void modifyReadAll(Integer receiverId) {
         notificationMapper.modifyReadAll(receiverId);
+    }
+
+    //전체 사용자
+    @Override
+    public void sendToAllUsers(String type, int targetId, String title, String message, int createdBy) {
+        List<Integer> allUsers = notificationMapper.getAllUserIds();
+
+        for (Integer receiverId : allUsers) {
+            if (receiverId == createdBy) continue; // 작성자 본인 제외
+
+            NotificationDto dto = NotificationDto.builder()
+                    .notificationType(type)
+                    .targetType(type)
+                    .targetId(targetId)
+                    .title(title)
+                    .message(message)
+                    .receiverId(receiverId)
+                    .createdBy(createdBy)
+                    .build();
+            registerNotification(dto);
+            registerNotificationTarget(dto);
+        }
     }
 }

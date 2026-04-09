@@ -115,12 +115,12 @@ export default {
 
     // 단건 읽음 호출
     const handleReadOne = (notif) => {
-      notificationStore.readOne(notif, userId);
+      notificationStore.readOne(notif, userId.value);
     };
 
     // 전체 읽음 호출
     const handleReadAll = () => {
-      notificationStore.readAll(userId);
+      notificationStore.readAll(userId.value);
     };
 
     const clickHandler = ({ target }) => {
@@ -134,6 +134,7 @@ export default {
     };
 
     onMounted(() => {
+      console.log("userId 확인:", userId.value);
       notificationStore.fetchNotifications(userId.value);
       notificationStore.setupSSE(userId.value);
       document.addEventListener("click", clickHandler);

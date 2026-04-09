@@ -241,7 +241,7 @@
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
-import api from "../utils/api";
+import auth from "../utils/auth";
 const authStore = useAuthStore();
 const router = useRouter();
 
@@ -287,7 +287,7 @@ async function handleSubmit() {
   isLoading.value = true;
 
   try {
-    const response = await api.post("/login", {
+    const response = await auth.post("/signIn", {
       userId: form.id, // 사번
       password: form.password,
     });
