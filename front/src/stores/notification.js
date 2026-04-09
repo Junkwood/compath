@@ -31,7 +31,7 @@ export const useNotificationStore = defineStore("notification", {
     //   }
 
     //   const eventSource = new EventSourcePolyfill(
-    //      `${import.meta.env.VITE_API_BASE_URL}/notifications/subscribe/${userId}`,
+    //     `${import.meta.env.VITE_API_BASE_URL}/notifications/subscribe/${userId}`,
     //     {
     //       headers: {
     //         // 헤더에 토큰 넣어야함.
