@@ -24,7 +24,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
 
 
     //업무등록
-    @SendNotification(title = "새 업무 배정", message = "업무가 배정되었습니다.")
+    //@SendNotification(title = "새 업무 배정", message = "업무가 배정되었습니다.")
     public void insert(TaskReqDtoJJW dto) {
         taskMapperJJW.insert(dto);  // 이것만 써도 알림 자동으로 감
     }    //업무 수정
