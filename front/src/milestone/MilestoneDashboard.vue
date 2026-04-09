@@ -4,7 +4,9 @@
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <!-- Content area -->
-    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+    >
       <!-- Site header -->
       <Header
         :sidebarOpen="sidebarOpen"
@@ -22,7 +24,9 @@
                 프로젝트 대시보드
               </h2>
               <div class="proj-name-row">
-                <span class="proj-name">【 {{ projectInfo.projectName }} 】</span>
+                <span class="proj-name"
+                  >【 {{ projectInfo.projectName }} 】</span
+                >
                 <span class="proj-period">
                   {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
                 </span>
@@ -46,12 +50,17 @@
                     <el-button @click="handleCreateMilestone">
                       마일스톤 생성
                     </el-button>
-
                   </div>
 
                   <div class="milestone-guide">
-                    <p>마일스톤을 생성해 프로젝트를 개발 단계별로 관리할 수 있습니다.</p>
-                    <p>해당 마일스톤을 선택하면 마일스톤 상세 페이지로 이동합니다.</p>
+                    <p>
+                      마일스톤을 생성해 프로젝트를 개발 단계별로 관리할 수
+                      있습니다.
+                    </p>
+                    <p>
+                      해당 마일스톤을 선택하면 마일스톤 상세 페이지로
+                      이동합니다.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -68,7 +77,7 @@
                 <!-- 왼쪽 -->
                 <div class="milestone-left">
                   <div class="milestone-name">
-                    {{ item.milestoneName }} 
+                    {{ item.milestoneName }}
                   </div>
 
                   <div class="milestone-date">
@@ -85,9 +94,12 @@
                 <div class="milestone-center">
                   <template v-if="item.totalTasks > 0">
                     <div class="progress-text">
-                      <span class="progress-done">{{ item.completedTasks }} 완료</span>
+                      <span class="progress-done"
+                        >{{ item.completedTasks }} 완료</span
+                      >
                       <span class="progress-sub">
-                        (총 {{ item.totalTasks }}건 — {{ item.inprogressTasks }} 건 진행 중)
+                        (총 {{ item.totalTasks }}건 —
+                        {{ item.inprogressTasks }} 건 진행 중)
                       </span>
                     </div>
 
@@ -129,18 +141,18 @@
       </main>
     </div>
     <MilestoneCreateModal
-        v-model="createModalVisible"
-        :project-id="route.params.projectId"
-        :project-name="projectInfo.projectName"
-        @saved="handleMilestoneSaved"
-      />
-    </div>
+      v-model="createModalVisible"
+      :project-id="route.params.projectId"
+      :project-name="projectInfo.projectName"
+      @saved="handleMilestoneSaved"
+    />
+  </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "axios";
+import api from "../utils/api";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -166,7 +178,7 @@ const milestoneList = ref([]);
 const fetchMilestoneList = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/MilestoneListByPid/${projectId}`);
+    const res = await api.get(`/MilestoneListByPid/${projectId}`);
 
     milestoneList.value = Array.isArray(res.data) ? res.data : [];
   } catch (err) {
@@ -178,7 +190,7 @@ const fetchMilestoneList = async () => {
 const fetchProjectDetail = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/ProjectDetail/${projectId}`);
+    const res = await api.get(`/ProjectDetail/${projectId}`);
     projectInfo.value = res.data;
   } catch (err) {
     console.error("프로젝트 상세 조회 실패:", err);
@@ -204,8 +216,6 @@ const goMilestoneDetail = (item) => {
     },
   });
 };
-
-
 
 onMounted(() => {
   fetchProjectDetail();
@@ -256,7 +266,11 @@ onMounted(() => {
 ========================= */
 .milestone-page {
   background:
-    radial-gradient(circle at top right, rgba(99, 102, 241, 0.06), transparent 28%),
+    radial-gradient(
+      circle at top right,
+      rgba(99, 102, 241, 0.06),
+      transparent 28%
+    ),
     linear-gradient(to bottom, #ffffff, #fbfcff);
   border: 1px solid #e5e7eb;
   border-radius: 24px;
@@ -590,5 +604,4 @@ onMounted(() => {
     font-size: 12px;
   }
 }
-
 </style>

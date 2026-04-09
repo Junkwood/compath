@@ -209,7 +209,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import axios from "axios";
+import api from "../utils/api";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -464,7 +464,7 @@ function mapLogItem(item) {
 const fetchProjectDetail = async () => {
   try {
     const projectId = route.params.projectId;
-    const res = await axios.get(`/api/ProjectDetail/${projectId}`);
+    const res = await api.get(`/ProjectDetail/${projectId}`);
     projectInfo.value = res.data;
   } catch (err) {
     console.error("프로젝트 상세 조회 실패:", err);

@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
-
+import api from "../utils/api";
 export const useDocumentStore = defineStore("document", {
   state: () => ({
     registeredDocument: {}, // 문서 등록
@@ -14,8 +13,8 @@ export const useDocumentStore = defineStore("document", {
     // 문서 등록
     async registerDocument(obj) {
       console.log("등록전 데이터: ", obj);
-      await axios //
-        .post("/api/documents/register", obj)
+      await api //
+        .post("/documents/register", obj)
         .then((res) => {
           this.registeredDocument = res.data;
           console.log("문서 등록완료: ", this.registeredDocument);
@@ -24,8 +23,8 @@ export const useDocumentStore = defineStore("document", {
 
     // 문서 단건 조회(상세페이지)
     async getDocumentById(id) {
-      await axios //
-        .get("/api/documents/Detail/" + id)
+      await api //
+        .get("/documents/Detail/" + id)
         .then((res) => {
           this.documentDetail = res.data;
           console.log("문서 단건 조회 완료: ", this.documentDetail);
@@ -36,8 +35,8 @@ export const useDocumentStore = defineStore("document", {
     async modifyDocument(obj) {
       console.log("수정전 데이터: ", obj);
 
-      await axios //
-        .put("/api/docuemnts/update", obj)
+      await api //
+        .put("/docuemnts/update", obj)
         .then((res) => {
           this.registeredDocument = res.data;
           console.log("수정완료", this.registeredDocument);
@@ -46,8 +45,8 @@ export const useDocumentStore = defineStore("document", {
 
     // 문서 목록 필터링 조건들
     async getFilterList(obj) {
-      await axios //
-        .get("/api/docuemnts/listFilter", {
+      await api //
+        .get("/docuemnts/listFilter", {
           params: obj,
         })
         .then((res) => {
@@ -57,8 +56,8 @@ export const useDocumentStore = defineStore("document", {
 
     // 문서 목록 페이지네이션
     async getPagingList(obj) {
-      await axios //
-        .get("/api/docuemnts/listPaging", {
+      await api //
+        .get("/docuemnts/listPaging", {
           params: obj,
         })
         .then((res) => {
@@ -69,8 +68,8 @@ export const useDocumentStore = defineStore("document", {
     // 문서 댓글 등록
     async registerComment(obj) {
       console.log("등록전 데이터: ", obj);
-      await axios //
-        .post("/api/documents/comments/register", obj)
+      await api //
+        .post("/documents/comments/register", obj)
         .then((res) => {
           this.registeredComment = res.data;
           console.log("댓글 등록완료: ", this.registeredComment);
@@ -81,8 +80,8 @@ export const useDocumentStore = defineStore("document", {
     async modifyComment(obj) {
       console.log("수정전 데이터: ", obj);
 
-      await axios //
-        .put("/api/docuemnts/comments/update", obj)
+      await api //
+        .put("/docuemnts/comments/update", obj)
         .then((res) => {
           this.registeredComment = res.data;
           console.log("수정완료", this.registeredComment);
@@ -91,8 +90,9 @@ export const useDocumentStore = defineStore("document", {
 
     // 알림 등록
     async registerDocumentAlarm(arr) {
-      await axios //
-        .post("/api/group/members", arr)
+      console.log("생성값", arr);
+      await api //
+        .post("/docuemnts/alarm/register", arr)
         .then((res) => {
           console.log("알림발송 및 등록 완료", res.data);
         });

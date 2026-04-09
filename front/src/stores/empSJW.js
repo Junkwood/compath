@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import api from "../utils/api";
+import admin from "../utils/admin";
 
 export const useEmpStore = defineStore("emp", {
   state: () => ({
@@ -9,30 +9,30 @@ export const useEmpStore = defineStore("emp", {
   getters: {},
   actions: {
     async getEmpList() {
-      await api.get("/admin/emp").then((response) => {
+      await admin.get("/emp").then((response) => {
         this.empList = response.data;
       });
     },
     async getEmpList4Group() {
-      await api.get("/admin/emp/group").then((response) => {
+      await admin.get("/emp/group").then((response) => {
         this.empList4Group = response.data;
       });
     },
     async getEmp(id) {
-      const response = await api.get(`/admin/emp/${id}`);
+      const response = await admin.get(`/emp/${id}`);
       return response.data;
     },
     async chageStatus(id) {
-      const response = await api.get(`/admin/emp/${id}/status`);
+      const response = await admin.get(`/emp/${id}/status`);
       return response.data;
     },
     async registerEmp(data) {
-      const response = await api.post("/admin/emp", data);
+      const response = await admin.post("/emp", data);
       return response;
     },
     async updateEmp(data) {
       console.log(data);
-      const response = await api.put(`/admin/emp/${data.userId}`, data);
+      const response = await admin.put(`/emp/${data.userId}`, data);
       if (response) {
         console.log("업뎃 성공", data);
       } else {

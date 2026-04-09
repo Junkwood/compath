@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import api from "../utils/api";
+import admin from "../utils/admin";
 import { useAuthStore } from "./auth";
 
 export const useStatusStore = defineStore("status", () => {
@@ -10,7 +10,7 @@ export const useStatusStore = defineStore("status", () => {
   // ── 목록 조회 ──
   async function getStatusList() {
     try {
-      const res = await api.get("/admin/task/status");
+      const res = await admin.get("/task/status");
       statusList.value = res.data;
     } catch (err) {
       console.error("상태 목록 조회 실패:", err);
@@ -20,7 +20,7 @@ export const useStatusStore = defineStore("status", () => {
   // ── 활성 상태 목록 조회 ──
   async function getActiveStatusList() {
     try {
-      const res = await api.get("/admin/task/status/active");
+      const res = await admin.get("/task/status/active");
       activeStatusList.value = res.data;
     } catch (err) {
       console.error("상태 목록 조회 실패:", err);
@@ -30,7 +30,7 @@ export const useStatusStore = defineStore("status", () => {
   // ── 단건 조회 ──
   async function getStatus(taskStatusId) {
     try {
-      const res = await api.get(`/admin/task/status/${taskStatusId}`);
+      const res = await admin.get(`/task/status/${taskStatusId}`);
       return res.data;
     } catch (err) {
       console.error("상태 조회 실패:", err);
@@ -42,7 +42,7 @@ export const useStatusStore = defineStore("status", () => {
   async function createStatus(form) {
     try {
       form.userId = authStore.user.userId;
-      const res = await api.post("/admin/task/status", form);
+      const res = await admin.post("/task/status", form);
       return res.data;
     } catch (err) {
       console.error("상태 등록 실패:", err);
@@ -54,8 +54,8 @@ export const useStatusStore = defineStore("status", () => {
   async function updateStatus(form) {
     try {
       form.userId = authStore.user.userId;
-      const res = await api.put(
-        `/admin/task/status/modify/${form.taskStatusId}`,
+      const res = await admin.put(
+        `/task/status/modify/${form.taskStatusId}`,
         form,
       );
       return res.data;
@@ -68,7 +68,7 @@ export const useStatusStore = defineStore("status", () => {
   // ── 활성화 상태 토글 ──
   async function changeStatus(row) {
     try {
-      const res = await api.put(`/admin/task/status/modify/isActive`, {
+      const res = await admin.put(`/task/status/modify/isActive`, {
         taskStatusId: row.taskStatusId,
         isActive: row.isActive,
         userId: authStore.user.userId,
@@ -86,7 +86,7 @@ export const useStatusStore = defineStore("status", () => {
   // ── 활성화 상태 토글 ──
   async function changeFinal(row) {
     try {
-      const res = await api.put(`/admin/task/status/modify/isFinal`, {
+      const res = await admin.put(`/task/status/modify/isFinal`, {
         taskStatusId: row.taskStatusId,
         isFinal: row.isFinal,
         userId: authStore.user.userId,
@@ -104,7 +104,7 @@ export const useStatusStore = defineStore("status", () => {
   // 상태명 중복 체크
   async function checkDuplicate(statusName) {
     try {
-      const res = await api.get(`/admin/task/status/checkDup/${statusName}`);
+      const res = await admin.get(`/task/status/checkDup/${statusName}`);
       const result = res.data;
       return result;
     } catch (e) {

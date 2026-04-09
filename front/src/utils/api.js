@@ -12,7 +12,16 @@ const api = axios.create({
 // 2. 요청(Request) 인터셉터 (옵션: JWT 토큰 등을 보낼 때 사용)
 api.interceptors.request.use(
   (config) => {
-    // 토큰이 있다면 여기서 헤더에 쏙 넣어줄 수 있습니다.
+    // 토큰을 헤더에 집어넣기
+    const token = localStorage.getItem("ACCESS_TOKEN");
+    // const currentProjectId = localStorage.getItem("CURRENT_PROJECT_ID");
+    // 1. JWT 토큰 세팅
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    // if (currentProjectId) {
+    //   config.headers["X-Project-Id"] = currentProjectId;
+    // }
     return config;
   },
   (error) => Promise.reject(error),
@@ -37,25 +46,19 @@ api.interceptors.response.use(
 
         authStore.logout(); // 피니아 데이터 초기화
         router.push("/login"); // 로그인 화면으로 강제 이동
-      }
-
-      else if (status === 403) {
+      } else if (status === 403) {
         alert("접근 권한이 없습니다.");
-      }
-      else if (status === 404) {
+      } else if (status === 404) {
         alert("요청하신 페이지나 데이터를 찾을 수 없습니다.");
-      }
-      else if (status === 500) {
+      } else if (status === 500) {
         alert("서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-      }
-      else {
+      } else {
         const serverMessage = error.response.data?.message;
         alert(serverMessage || "데이터 요청 중 오류가 발생했습니다.");
       }
     } else {
       alert("서버와 통신할 수 없습니다. 네트워크 상태를 확인해주세요.");
     }
-
 
     // 컴포넌트 쪽으로 에러를 넘겨줌 (컴포넌트의 catch 블록이 실행되도록)
     return Promise.reject(error);

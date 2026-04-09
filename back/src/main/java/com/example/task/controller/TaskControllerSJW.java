@@ -12,7 +12,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/admin")
 public class TaskControllerSJW {
 
     final TaskServiceSJW taskService;

@@ -4,7 +4,9 @@
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <!-- Content area -->
-    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+    >
       <!-- Site header -->
       <Header
         :sidebarOpen="sidebarOpen"
@@ -12,7 +14,9 @@
       />
 
       <main class="grow">
-        <div class="page-container px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+        <div
+          class="page-container px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto"
+        >
           <!-- 페이지 타이틀 -->
           <div class="page-title-wrap mb-6">
             <h1 class="page-title text-2xl md:text-3xl font-bold">
@@ -39,14 +43,53 @@
                   :header-cell-style="headerStyle"
                   :cell-style="cellStyle"
                 >
-                  <el-table-column prop="no" label="번호" width="70" align="center" />
-                  <el-table-column prop="projectName" label="프로젝트" min-width="160" />
-                  <el-table-column prop="created" label="신규" width="70" align="center" />
-                  <el-table-column prop="inProgress" label="진행" width="70" align="center" />
-                  <el-table-column prop="devDone" label="개발완료" width="90" align="center" />
-                  <el-table-column prop="rejected" label="반려" width="70" align="center" />
-                  <el-table-column prop="done" label="종료" width="70" align="center" />
-                  <el-table-column prop="totalSum" label="합계" width="70" align="center" />
+                  <el-table-column
+                    prop="no"
+                    label="번호"
+                    width="70"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="projectName"
+                    label="프로젝트"
+                    min-width="160"
+                  />
+                  <el-table-column
+                    prop="created"
+                    label="신규"
+                    width="70"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="inProgress"
+                    label="진행"
+                    width="70"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="devDone"
+                    label="개발완료"
+                    width="90"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="rejected"
+                    label="반려"
+                    width="70"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="done"
+                    label="종료"
+                    width="70"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="totalSum"
+                    label="합계"
+                    width="70"
+                    align="center"
+                  />
                 </el-table>
               </div>
 
@@ -81,9 +124,16 @@
                   </div>
 
                   <ul class="dot-list">
-                    <li v-for="item in taskStatusList" :key="item.label" class="dot-item">
+                    <li
+                      v-for="item in taskStatusList"
+                      :key="item.label"
+                      class="dot-item"
+                    >
                       <div class="dot-left">
-                        <span class="dot" :style="{ backgroundColor: item.color }" />
+                        <span
+                          class="dot"
+                          :style="{ backgroundColor: item.color }"
+                        />
                         <span class="dot-label">{{ item.label }}</span>
                       </div>
                       <span class="dot-count">{{ item.count }}</span>
@@ -100,9 +150,16 @@
 
                 <div class="news-body">
                   <ul class="dot-list">
-                    <li v-for="item in newsList" :key="item.label" class="dot-item">
+                    <li
+                      v-for="item in newsList"
+                      :key="item.label"
+                      class="dot-item"
+                    >
                       <div class="dot-left">
-                        <span class="dot" :style="{ backgroundColor: item.color }" />
+                        <span
+                          class="dot"
+                          :style="{ backgroundColor: item.color }"
+                        />
                         <span class="dot-label">{{ item.label }}</span>
                       </div>
                       <span class="dot-count">{{ item.count }}</span>
@@ -132,7 +189,11 @@
                 :cell-style="cellStyle"
                 @row-click="goProjectDashboard"
               >
-                <el-table-column prop="projectName" label="프로젝트명" min-width="180" />
+                <el-table-column
+                  prop="projectName"
+                  label="프로젝트명"
+                  min-width="180"
+                />
                 <el-table-column label="진척도" min-width="200">
                   <template #default="{ row }">
                     <div class="progress-wrap">
@@ -147,8 +208,18 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="endDate" label="마감일" width="130" align="center" />
-                <el-table-column prop="pmUserId" label="관리자" width="110" align="center" />
+                <el-table-column
+                  prop="endDate"
+                  label="마감일"
+                  width="130"
+                  align="center"
+                />
+                <el-table-column
+                  prop="pmUserId"
+                  label="관리자"
+                  width="110"
+                  align="center"
+                />
               </el-table>
             </div>
 
@@ -171,151 +242,151 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
-import Sidebar from '../partials/Sidebar.vue'
-import Header from '../partials/Header.vue'
-import ProjectCreateModal from '../project/ProjectCreateModal.vue'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import api from "../utils/api";
+import Sidebar from "../partials/Sidebar.vue";
+import Header from "../partials/Header.vue";
+import ProjectCreateModal from "../project/ProjectCreateModal.vue";
 
-const sidebarOpen = ref(false)
+const sidebarOpen = ref(false);
 
 // 모달
-const createProjectModalOpen = ref(false)
+const createProjectModalOpen = ref(false);
 
 // 토글
-const myTaskOnly = ref(true)
-const myProjectOnly = ref(true)
+const myTaskOnly = ref(true);
+const myProjectOnly = ref(true);
 
 // 페이지네이션
-const workPage = ref(1)
-const workPageSize = 5
-const projectPage = ref(1)
-const projectPageSize = 5
+const workPage = ref(1);
+const workPageSize = 5;
+const projectPage = ref(1);
+const projectPageSize = 5;
 
 // 더미 데이터
-const myTasks = ref({ inProgress: 5, done: 10, rejected: 3, deadline: 1 })
+const myTasks = ref({ inProgress: 5, done: 10, rejected: 3, deadline: 1 });
 
 const taskStatusList = computed(() => [
-  { label: '진행중', count: myTasks.value.inProgress, color: '#3b82f6' },
-  { label: '완료', count: myTasks.value.done, color: '#22c55e' },
-  { label: '반려', count: myTasks.value.rejected, color: '#94a3b8' },
-  { label: '기한임박', count: myTasks.value.deadline, color: '#ef4444' },
-])
+  { label: "진행중", count: myTasks.value.inProgress, color: "#3b82f6" },
+  { label: "완료", count: myTasks.value.done, color: "#22c55e" },
+  { label: "반려", count: myTasks.value.rejected, color: "#94a3b8" },
+  { label: "기한임박", count: myTasks.value.deadline, color: "#ef4444" },
+]);
 
 const totalTaskCount = computed(() =>
-  Object.values(myTasks.value).reduce((sum, v) => sum + v, 0)
-)
+  Object.values(myTasks.value).reduce((sum, v) => sum + v, 0),
+);
 
 const newsList = [
-  { label: '메세지', count: 5, color: '#3b82f6' },
-  { label: '새 공지사항', count: 3, color: '#22c55e' },
-  { label: '업무 생성', count: 2, color: '#94a3b8' },
-]
+  { label: "메세지", count: 5, color: "#3b82f6" },
+  { label: "새 공지사항", count: 3, color: "#22c55e" },
+  { label: "업무 생성", count: 2, color: "#94a3b8" },
+];
 
-const router = useRouter()
+const router = useRouter();
 
-const taskProjects = ref([])
-const loadingTasks = ref(false)
-const taskError = ref('')
+const taskProjects = ref([]);
+const loadingTasks = ref(false);
+const taskError = ref("");
 
 const fetchTaskList = async () => {
-  loadingTasks.value = true
-  taskError.value = ''
+  loadingTasks.value = true;
+  taskError.value = "";
 
   try {
-    const res = await axios.get('/api/TaskListDash')
-    console.log(res.data)
-    taskProjects.value = res.data
+    const res = await api.get("/TaskListDash");
+    console.log(res.data);
+    taskProjects.value = res.data;
   } catch (err) {
-    console.error('업무 목록 조회 실패:', err)
-    projectError.value = '업무 목록 조회 실패'
+    console.error("업무 목록 조회 실패:", err);
+    projectError.value = "업무 목록 조회 실패";
 
     if (err.response) {
-      console.error('status:', err.response.status)
-      console.error('data:', err.response.data)
+      console.error("status:", err.response.status);
+      console.error("data:", err.response.data);
     } else if (err.request) {
-      console.error('요청은 갔는데 응답이 없음')
+      console.error("요청은 갔는데 응답이 없음");
     } else {
-      console.error('axios 설정 오류')
+      console.error("axios 설정 오류");
     }
   } finally {
-    loadingTasks.value = false
+    loadingTasks.value = false;
   }
-}
+};
 
-const loadingProjects = ref(false)
-const projectError = ref('')
-const projectList = ref([])
+const loadingProjects = ref(false);
+const projectError = ref("");
+const projectList = ref([]);
 
 const fetchProjectList = async () => {
-  loadingProjects.value = true
-  projectError.value = ''
+  loadingProjects.value = true;
+  projectError.value = "";
 
   try {
-    const res = await axios.get('/api/ProjectList')
-    console.log(res.data)
-    projectList.value = res.data
+    const res = await api.get("/ProjectList");
+    console.log(res.data);
+    projectList.value = res.data;
   } catch (err) {
-    console.error('프로젝트 목록 조회 실패:', err)
-    projectError.value = '프로젝트 목록 조회 실패'
+    console.error("프로젝트 목록 조회 실패:", err);
+    projectError.value = "프로젝트 목록 조회 실패";
 
     if (err.response) {
-      console.error('status:', err.response.status)
-      console.error('data:', err.response.data)
+      console.error("status:", err.response.status);
+      console.error("data:", err.response.data);
     } else if (err.request) {
-      console.error('요청은 갔는데 응답이 없음')
+      console.error("요청은 갔는데 응답이 없음");
     } else {
-      console.error('axios 설정 오류')
+      console.error("axios 설정 오류");
     }
   } finally {
-    loadingProjects.value = false
+    loadingProjects.value = false;
   }
-}
+};
 
 onMounted(() => {
-  fetchProjectList()
-  fetchTaskList()
-})
+  fetchProjectList();
+  fetchTaskList();
+});
 
 // 페이징 데이터
 const pagedTaskData = computed(() => {
-  const s = (workPage.value - 1) * workPageSize
+  const s = (workPage.value - 1) * workPageSize;
   return taskProjects.value.slice(s, s + workPageSize).map((item, index) => ({
     ...item,
     no: s + index + 1,
-  }))
-})
+  }));
+});
 
 const pagedProjectData = computed(() => {
-  const s = (projectPage.value - 1) * projectPageSize
-  return projectList.value.slice(s, s + projectPageSize)
-})
+  const s = (projectPage.value - 1) * projectPageSize;
+  return projectList.value.slice(s, s + projectPageSize);
+});
 
 // 테이블 공통 스타일
 const headerStyle = () => ({
-  background: '#f8fafc',
-  color: '#475569',
-  fontSize: '12px',
-  fontWeight: '700',
-})
+  background: "#f8fafc",
+  color: "#475569",
+  fontSize: "12px",
+  fontWeight: "700",
+});
 
 const cellStyle = () => ({
-  fontSize: '13px',
-  color: '#334155',
-})
+  fontSize: "13px",
+  color: "#334155",
+});
 
 // 이벤트
 const handleCreateProject = () => {
-  createProjectModalOpen.value = true
-}
+  createProjectModalOpen.value = true;
+};
 
 const goProjectDashboard = (row) => {
   router.push({
-    name: 'projectDash',
+    name: "projectDash",
     params: { projectId: row.projectId },
-  })
-}
+  });
+};
 </script>
 
 <style scoped>

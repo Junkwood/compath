@@ -1,5 +1,6 @@
 package com.example.notice.service.impl;
 
+import com.example.alarm.service.NotificationService;
 import com.example.notice.dto.NoticeDTO;
 import com.example.notice.mapper.NoticeMapper;
 import com.example.notice.service.NoticeService;
@@ -11,12 +12,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.data.jpa.domain.AbstractAuditable_.createdBy;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class NoticeServiceImpl implements NoticeService {
 
     private final NoticeMapper mapper;
+    private  final NotificationService notificationService;
 
     // 공지사항 등록
     @Override
@@ -28,6 +32,15 @@ public class NoticeServiceImpl implements NoticeService {
 
         // 공지사항 등록
         mapper.registerNotice(dto);
+
+
+        // 알림 전송
+        notificationService.sendToAllProjectMembers(
+                dto.getProjectId(),
+                "R1", id,
+                "공지사항 등록", "새로운 공지사항이 등록되었습니다.",
+                dto.getCreatedBy()
+        );
 
         return mapper.getNoticeById(id);
     }

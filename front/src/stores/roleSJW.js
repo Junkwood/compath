@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import api from "../utils/api";
+import admin from "../utils/admin";
 export const useRoleStore = defineStore("role", {
   state: () => ({
     roleList: [],
@@ -9,25 +9,25 @@ export const useRoleStore = defineStore("role", {
   getters: {},
   actions: {
     async getRoleList() {
-      const response = await api.get("/admin/role");
+      const response = await admin.get("/role");
       this.roleList = response.data;
       return this.roleList;
     },
     async getActiveRoleList() {
-      const response = await api.get("/admin/role/active");
+      const response = await admin.get("/role/active");
       this.activeRoleList = response.data;
       console.log("activeRoles");
       console.log();
       return this.roleList;
     },
     async getPermissionList() {
-      const response = await api.get("/admin/permission");
+      const response = await admin.get("/permission");
       this.permissionList = response.data;
       return this.permissionList;
     },
     async changeRoleStatus(roleId, isActive) {
       console.log(roleId, isActive);
-      const response = await api.put(`/admin/role/${roleId}/activation`, {
+      const response = await admin.put(`/role/${roleId}/activation`, {
         isActive: isActive,
       });
       const result = response.data;

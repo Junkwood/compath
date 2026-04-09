@@ -1,6 +1,7 @@
 package com.example.task.service.impl;
 
 import com.example.alarm.dto.NotificationDto;
+import com.example.alarm.mapper.NotificationMapper;
 import com.example.alarm.service.NotificationService;
 import com.example.task.dto.*;
 import com.example.task.mapper.TaskMapperJJW;
@@ -22,65 +23,60 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     private final TaskMapperJJW taskMapperJJW;
     private final NotificationService notificationService;
 
-
     //업무등록
-    @Override
-    public void insert(TaskReqDtoJJW dto) {
-        taskMapperJJW.insert(dto);
+    public void insert(TaskReqDtoJJW re) {
+        taskMapperJJW.insert(re);
+
+        notificationService.sendToProjectMembers(
+                re.getProjectId(), re.getAssigneeUserId(),
+                "R2", re.getTaskId(),
+                "업무 등록", "새로운 업무가 등록되었습니다.",
+                re.getAssigneeUserId()
+        );
     }
     //업무 수정
     @Override
     public int updateTask(TaskReqDtoJJW dto) {
-        // 시작일 자동 세팅 (상태가 '진행중'인 경우)
         if (dto.getTaskStatusId() != null && dto.getTaskStatusId() == 2) {
-            if (dto.getStartDate() == null) {
-                dto.setStartDate(new Date());
-            }
+            if (dto.getStartDate() == null) dto.setStartDate(new Date());
         }
-        // 소요 시간 자동 계산 (일수 * 8시간)
-        if (dto.getStartDate() != null && dto.getDueDate() != null) {
-            long diff = dto.getDueDate().getTime() - dto.getStartDate().getTime();
-            long diffDays = (diff / (1000 * 60 * 60 * 24)) + 1;
-            dto.setActualHours(String.valueOf(diffDays * 8));
+        int result = taskMapperJJW.updateTask(dto);
+
+        if (dto.getTaskStatusId() == 3 || dto.getTaskStatusId() == 5) {
+            String title   = dto.getTaskStatusId() == 3 ? "개발완료" : "업무 종료";
+            String message = dto.getTaskStatusId() == 3
+                    ? "담당 업무가 개발완료 되었습니다."
+                    : "담당 업무가 종료되었습니다.";
+
+            notificationService.sendToProjectMembers(
+                    dto.getProjectId(), dto.getAssigneeUserId(),
+                    "R3", dto.getTaskId(),
+                    title, message,
+                    dto.getAssigneeUserId()
+            );
         }
-        return taskMapperJJW.updateTask(dto);
+        return result;
     }
     //반려 사유 등록
     @Override
     public void insert1(TaskRejectDtoJJW re) {
-
-        // 1. 반려 사유 등록
         taskMapperJJW.insert1(re);
-
-        // 2. 업무 상태 반려로 변경
         taskMapperJJW.updateTaskStatus(re.getTaskId(), 4);
 
-        // 3. 업무 정보 조회 (담당자 필요)
         TaskReqDtoJJW task = taskMapperJJW.getTaskById(re.getTaskId());
 
-        // 4. 알림 생성
-        NotificationDto dto = NotificationDto.builder()
-                .notificationType("TASK")
-                .targetType("TASK")
-                .targetId(re.getTaskId())
-                .title("업무 반려")
-                .message("담당하신 업무가 반려되었습니다.")
-                .receiverId(task.getAssigneeUserId())
-                .createdBy(re.getRejectedBy())
-                .build();
-
-        // 5. 알림 저장 + SSE 전송
-        notificationService.registerNotification(dto);
-        notificationService.registerNotificationTarget(dto);
+        notificationService.sendToOne(
+                task.getAssigneeUserId(),
+                "R3", re.getTaskId(),
+                "업무 반려", "담당하신 업무가 반려되었습니다.",
+                re.getRejectedBy()
+        );
     }
-
-
     //업무 전체 조회
     @Override
     public List<TaskReqDtoJJW> getTaskAll() {
         return taskMapperJJW.getTaskAll();
     }
-
 
     //프로시저 사용
     @Override

@@ -30,7 +30,7 @@
                SYSDATE,
                #{projectId},
                #{isPinned},
-               'O2',
+               'Q2',
                #{isComment})
     </insert>
 
@@ -172,7 +172,8 @@
                d.created_at
         FROM document_comments d
         LEFT JOIN users u ON d.user_id = u.user_id
-        WHERE d.document_id = #{id} AND d.is_deleted = 'O2'
+        WHERE d.document_id = #{id} AND d.is_deleted = 'Q2'
+        ORDER BY d.created_at
     </select>
 
 <!--    문서 댓글 수정-->
@@ -195,6 +196,10 @@
 
 <!--    알림 테이블 등록-->
     <insert id="registerCommentAlarm">
+        <selectKey order="BEFORE" resultType="int" keyProperty="notificationId">
+            SELECT max(notification_id) + 1
+            FROM notifications
+        </selectKey>
         INSERT INTO notifications( notification_id,
                                    notification_type,
                                    target_type,
@@ -203,9 +208,8 @@
                                    message,
                                    created_by,
                                    created_at )
-        VALUES ( (SELECT max(notification_id) + 1
-                  FROM notifications),
-                 'R4'
+        VALUES ( #{notificationId},
+                 'R4',
                  'documents',
                   #{targetId},
                   #{title},
@@ -222,15 +226,6 @@
         VALUES ( (SELECT max(notification_target_no) + 1
                   FROM notification_targets),
                   #{notificationId},
-                  #{receiverId}
-    </insert>
-
-<!--    알림 테이블 조회-->
-    <insert id="getDocumentAlarmById">
-        SELECT notification_id
-        FROM notifications
-        WHERE target_type = 'documents'
-        AND target_id = #{id}
-        AND notification_type = 'R4'
+                  #{receiverId} )
     </insert>
 </mapper>

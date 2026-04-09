@@ -26,7 +26,7 @@
               <div class="grid grid-cols-3 gap-6">
                 <div>
                   <el-form-item
-                    label="업무 유형"
+                    label="문서 유형"
                     prop="roleId"
                     class="block text-sm font-medium mb-1"
                   >
@@ -185,6 +185,7 @@
   <DocumentNotificationModal
     v-model="modalOpen"
     :memberList="memberList"
+    :alarmList="alarmList"
     @member-insert="memberInsert"
   />
 </template>
@@ -260,17 +261,42 @@ const submitForm = async (formEl) => {
         };
         await documentStore.registerDocument(obj);
 
-        let alarmObj = [];
-        alarmList.value.forEach((al) => {
-          alarmObj.push({
-            targetId: documentStore.registeredDocument.documentId,
-            title: "문서를 등록되었습니다.",
-            message: "문서를 확인해주세요",
-            createdBy: al.userId,
-          });
-        });
+        if (documentStore.registeredDocument.documentId > 0) {
+          let alarmArr = [
+            {
+              targetId: documentStore.registeredDocument.documentId,
+              title: "문서를 등록되었습니다.",
+              message: "문서를 확인해주세요",
+              createdBy: userInfo.value.userId,
+            },
+          ];
 
-        await documentStore.registerDocumentAlarm(alarmObj);
+          if (alarmList.value.length > 0) {
+            alarmList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
+            });
+          } else {
+            memberList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
+            });
+          }
+
+          await documentStore.registerDocumentAlarm(alarmArr);
+
+          await Swal.fire({
+            title: "등록 및 알림 전송이 완료되었습니다.",
+            text: "상세페이지로 이동합니다.",
+            icon: "success",
+            confirmButtonText: "확인",
+            reverseButtons: true,
+          });
+        }
       } else {
         const result = await Swal.fire({
           title: "정말 수정하시겠습니까?",

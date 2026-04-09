@@ -16,7 +16,6 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
 public class EmpControllerSJW {
     private final EmpServiceSJW empService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
@@ -45,11 +44,15 @@ public class EmpControllerSJW {
     public Boolean update(@RequestBody EmpVOSJW emp,@PathVariable Integer id) {
         return  empService.modifyEmpById(emp,id);
     }
-    @PostMapping("/login")
+    @PutMapping("/auth/emp/{id}")
+    public Boolean chagePassword(@RequestBody EmpVOSJW emp,@PathVariable Integer id) {
+        return  empService.modifyEmpById(emp,id);
+    }
+    @PostMapping("/auth/login")
     public EmpVOSJW login(@RequestBody EmpVOSJW emp) {
         return  empService.login(emp);
     }
-    @PostMapping("/email/sendCode")
+    @PostMapping("/auth/email/sendCode")
     public ResponseEntity<Map<String, Object>> sendEmail(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         Integer userId = Integer.valueOf(request.get("userId"));
@@ -60,7 +63,7 @@ public class EmpControllerSJW {
         response.put("message", "인증번호가 발송되었습니다.");
         return ResponseEntity.ok(response);
     }
-    @PostMapping("/email/verifyCode")
+    @PostMapping("/auth/email/verifyCode")
     public ResponseEntity<Map<String, Object>> verifyCode(@RequestBody Map<String, String> request) {
         Integer code = Integer.valueOf( request.get("code"));
         Integer emailId = Integer.valueOf( request.get("emailId"));

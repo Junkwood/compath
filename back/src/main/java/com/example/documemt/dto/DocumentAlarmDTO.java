@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class DocumentAlarmDTO { // 문서
 
     //    문서 알림
-    private Integer notification_id;
+    private Integer notificationId;
     private Integer userId;
     private String userName;
     private Integer roleId;
@@ -28,7 +28,7 @@ public class DocumentAlarmDTO { // 문서
     private Integer targetId;
     private String title;
     private String Message;
-    private Integer created_by;
+    private Integer createdBy;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")

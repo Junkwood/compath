@@ -150,7 +150,11 @@ const initGantt = async () => {
 
   const allDates = store.rawTasks
     .flatMap((t) => [t.estStartDate ?? t.startDate, t.estEndDate ?? t.dueDate])
-    .filter(Boolean)
+    .filter((d) => {
+      if (!d) return false;
+      const date = new Date(d);
+      return !isNaN(date.getTime());
+    })
     .map((d) => new Date(d));
 
   const minDate = new Date(Math.min(...allDates));
