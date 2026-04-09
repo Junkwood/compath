@@ -6,18 +6,18 @@ const projectRoutes = [
   },
 
   {
-    path: "/project/dashboard/:projectId",
+    path: "/project/:projectId/dashboard",
     name: "projectDash",
     component: () => import("../project/ProjectDashboard.vue"),
     props: true,
   },
   {
-    path: "/project/memo/:projectId",
+    path: "/project/:projectId/memo",
     name: "projectMemo",
     component: () => import("../project/ProjectMemoModal.vue"),
   },
   {
-    path: "/project/milestone/:projectId",
+    path: "/project/:projectId/milestone",
     name: "milestoneDashboard",
     component: () => import("../milestone/MilestoneDashboard.vue"),
   },
@@ -37,7 +37,7 @@ const projectRoutes = [
     component: () => import("../project/ProjectListAll.vue"),
   },
   {
-    path: "/project/workHistory",
+    path: "/project/:projectId/workHistory",
     name: "projectWorkHistory",
     component: () => import("../project/ProjectWorkHistory.vue"),
   },

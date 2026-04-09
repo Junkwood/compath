@@ -18,13 +18,13 @@ export const useGanttChartStore = defineStore("ganttChart", {
     async fetchGanttData(projectId) {
       try {
         const [taskRes, projectRes, codeRes] = await Promise.all([
-          fetch(`/api/task/gantt?projectId=${projectId}`),
-          fetch(`/api/task-total-info?projectId=${projectId}`),
+          api.get(`/task/gantt`, { params: { projectId } }),
+          api.get(`/task-total-info`, { params: { projectId } }),
           api.get("/code", { params: { groupValue: ["0H"] } }),
         ]);
 
-        const tasks = await taskRes.json();
-        const totalInfo = await projectRes.json();
+        const tasks = await taskRes.data;
+        const totalInfo = await projectRes.data;
         //공통 코드 저장
         this.priorityList = codeRes.data.c0H || [];
         this.rawTasks = tasks || [];

@@ -6,23 +6,23 @@ const taskRoutes1 = [
   },
 
   {
-    path: "/task/TaskRegister/:projectId",
+    path: "/project/:projectId/task/TaskRegister",
     name: "taskRegister",
     component: () => import("../task/TaskRegister.vue"),
   },
 
   {
-    path: "/taskModify/:taskId",
+    path: "/project/:projectId/taskModify/:taskId",
     name: "taskModify",
     component: () => import("../task/TaskModify.vue"),
   },
   {
-    path: "/task/gantt/:projectId",
+    path: "/project/:projectId/task/gantt",
     name: "GanttView",
     component: () => import("../report/GanttView.vue"),
   },
   {
-    path: "/task/report/:projectId",
+    path: "/project/:projectId/task/report",
     name: "TaskReport",
     component: () => import("../report/TaskReport.vue"),
   },
