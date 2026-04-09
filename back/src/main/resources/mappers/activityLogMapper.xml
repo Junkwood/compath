@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.log.mapper.CommonCodeMapper">
+
+    <select id="getActivityLogsByProjectId" resultType="ActivityLogDto">
+        SELECT
+            AL.ACTIVITY_LOG_ID AS activityLogId,
+            AL.TARGET_TYPE     AS targetType,
+            AL.TARGET_ID       AS targetId,
+            AL.ACTION_TYPE     AS actionType,
+            AL.ACTOR_USER_ID   AS actorUserId,
+            U.USER_NAME        AS userName,
+            AL.BEFORE_VALUE    AS beforeValue,
+            AL.AFTER_VALUE     AS afterValue,
+            TO_CHAR(AL.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+            AL.PROJECT_ID      AS projectId
+        FROM ACTIVITY_LOGS AL
+        LEFT JOIN USERS U
+            ON U.USER_ID = AL.ACTOR_USER_ID
+        WHERE AL.PROJECT_ID = #{projectId}
+        ORDER BY AL.CREATED_AT DESC
+    </select>
+
+</mapper>

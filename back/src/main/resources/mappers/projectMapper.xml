@@ -63,7 +63,7 @@
             #{description},
             #{startDate},
             #{endDate},
-            1,
+            'F1',
             #{isPublic},
             sysdate,
             NULL,

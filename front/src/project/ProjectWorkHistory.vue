@@ -4,7 +4,9 @@
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <!-- Content area -->
-    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+    >
       <!-- Header -->
       <Header
         :sidebarOpen="sidebarOpen"
@@ -16,11 +18,15 @@
           <!-- 페이지 타이틀 -->
           <div class="mb-6 activity-title-row">
             <div class="activity-title-left">
-              <h2 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
+              <h2
+                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
+              >
                 작업내역
               </h2>
               <div class="activity-sub-row">
-                <span class="activity-project-name">【 {{ projectInfo.projectName }} 】</span>
+                <span class="activity-project-name"
+                  >【 {{ projectInfo.projectName }} 】</span
+                >
                 <span class="activity-project-period">
                   {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
                 </span>
@@ -44,9 +50,10 @@
                 <label>활동유형</label>
                 <select v-model="selectedActivityType">
                   <option value="">전체</option>
-                  <option value="CREATE">생성</option>
-                  <option value="UPDATE">수정</option>
-                  <option value="DELETE">삭제</option>
+                  <option value="J0">생성</option>
+                  <option value="J1">수정</option>
+                  <option value="J2">삭제</option>
+                  <option value="J3">상태변경</option>
                 </select>
               </div>
 
@@ -54,12 +61,11 @@
                 <label>대상유형</label>
                 <select v-model="selectedTargetType">
                   <option value="">전체</option>
-                  <option value="PROJECT">프로젝트</option>
-                  <option value="SUBPROJECT">하위프로젝트</option>
-                  <option value="MILESTONE">마일스톤</option>
-                  <option value="TASK">업무</option>
-                  <option value="MEMBER">구성원</option>
-                  <option value="MEMO">메모</option>
+                  <option value="projects">프로젝트</option>
+                  <option value="tasks">업무</option>
+                  <option value="milestones">마일스톤</option>
+                  <option value="members">구성원</option>
+                  <option value="memos">메모</option>
                 </select>
               </div>
 
@@ -87,7 +93,10 @@
                 </button>
               </div>
 
-              <div v-if="selectedQuickRange === 'CUSTOM'" class="custom-date-row">
+              <div
+                v-if="selectedQuickRange === 'CUSTOM'"
+                class="custom-date-row"
+              >
                 <div class="date-input-wrap">
                   <label>시작일</label>
                   <input v-model="startDate" type="date" />
@@ -107,7 +116,8 @@
           <section class="activity-log-card">
             <div class="content-top">
               <div class="result-count">
-                총 <strong>{{ filteredLogs.length }}</strong>건
+                총 <strong>{{ filteredLogs.length }}</strong
+                >건
               </div>
             </div>
 
@@ -117,12 +127,17 @@
                 :key="group.date"
                 class="date-group"
               >
-                <div class="date-group-header" @click="toggleDateGroup(group.date)">
+                <div
+                  class="date-group-header"
+                  @click="toggleDateGroup(group.date)"
+                >
                   <div class="date-title-wrap">
                     <span class="fold-icon">
                       {{ isGroupOpen(group.date) ? "▾" : "▸" }}
                     </span>
-                    <span class="date-title">{{ formatDateTitle(group.date) }}</span>
+                    <span class="date-title">{{
+                      formatDateTitle(group.date)
+                    }}</span>
                     <span class="date-count">{{ group.items.length }}건</span>
                   </div>
 
@@ -138,7 +153,9 @@
                     class="log-card"
                   >
                     <div class="log-time-col">
-                      <div class="log-time">{{ formatTime(log.createdAt) }}</div>
+                      <div class="log-time">
+                        {{ formatTime(log.createdAt) }}
+                      </div>
                     </div>
 
                     <div class="log-main-col">
@@ -202,9 +219,9 @@ const sidebarOpen = ref(false);
 
 const projectInfo = ref({
   projectId: null,
-  projectName: "Compath",
-  startDate: "2026-04-01",
-  endDate: "2026-06-30",
+  projectName: "",
+  startDate: "",
+  endDate: "",
 });
 
 const searchKeyword = ref("");
@@ -224,75 +241,7 @@ const quickRangeOptions = [
   { label: "직접선택", value: "CUSTOM" },
 ];
 
-const logs = ref([
-  {
-    id: 1,
-    createdAt: "2026-04-08 14:32:00",
-    userName: "장다정",
-    activityType: "UPDATE",
-    targetType: "PROJECT",
-    targetName: "Compath",
-    message: "프로젝트명을 수정했습니다.",
-    detail: "기존: Compath_v1 → 변경: Compath",
-    projectPath: "프로젝트 > 메인 프로젝트",
-  },
-  {
-    id: 2,
-    createdAt: "2026-04-08 13:50:00",
-    userName: "김철수",
-    activityType: "CREATE",
-    targetType: "SUBPROJECT",
-    targetName: "프론트엔드 개발",
-    message: "하위 프로젝트를 생성했습니다.",
-    detail: "하위프로젝트명: 프론트엔드 개발",
-    projectPath: "프로젝트 > 1차 개발",
-  },
-  {
-    id: 3,
-    createdAt: "2026-04-08 11:20:00",
-    userName: "이영희",
-    activityType: "DELETE",
-    targetType: "MILESTONE",
-    targetName: "2차 개발",
-    message: "마일스톤을 삭제했습니다.",
-    detail: "삭제된 마일스톤: 2차 개발",
-    projectPath: "프로젝트 > 마일스톤",
-  },
-  {
-    id: 4,
-    createdAt: "2026-04-07 17:05:00",
-    userName: "장다정",
-    activityType: "UPDATE",
-    targetType: "TASK",
-    targetName: "로그인 API 개발",
-    message: "업무 상태를 변경했습니다.",
-    detail: "기존: 시작 전 → 변경: 진행중",
-    projectPath: "프로젝트 > 1차 개발 > 업무",
-  },
-  {
-    id: 5,
-    createdAt: "2026-04-07 15:30:00",
-    userName: "박민수",
-    activityType: "CREATE",
-    targetType: "MEMBER",
-    targetName: "홍길동",
-    message: "프로젝트 구성원을 추가했습니다.",
-    detail: "추가된 구성원: 홍길동 (PL)",
-    projectPath: "프로젝트 > 구성원",
-  },
-  {
-    id: 6,
-    createdAt: "2026-04-07 10:10:00",
-    userName: "장다정",
-    activityType: "UPDATE",
-    targetType: "MEMO",
-    targetName: "회의 메모",
-    message: "메모 내용을 수정했습니다.",
-    detail: "일정 관련 코멘트가 수정되었습니다.",
-    projectPath: "프로젝트 > 메모",
-  },
-]);
-
+const logs = ref([]);
 const openDateGroups = ref({});
 
 const filteredLogs = computed(() => {
@@ -300,13 +249,13 @@ const filteredLogs = computed(() => {
 
   if (selectedActivityType.value) {
     result = result.filter(
-      (item) => item.activityType === selectedActivityType.value
+      (item) => item.activityType === selectedActivityType.value,
     );
   }
 
   if (selectedTargetType.value) {
     result = result.filter(
-      (item) => item.targetType === selectedTargetType.value
+      (item) => item.targetType === selectedTargetType.value,
     );
   }
 
@@ -314,16 +263,20 @@ const filteredLogs = computed(() => {
     const keyword = searchKeyword.value.trim().toLowerCase();
     result = result.filter((item) => {
       return (
-        item.userName.toLowerCase().includes(keyword) ||
+        (item.userName || "").toLowerCase().includes(keyword) ||
         (item.targetName || "").toLowerCase().includes(keyword) ||
-        item.message.toLowerCase().includes(keyword) ||
+        (item.message || "").toLowerCase().includes(keyword) ||
         (item.detail || "").toLowerCase().includes(keyword) ||
         (item.projectPath || "").toLowerCase().includes(keyword)
       );
     });
   }
 
-  if (selectedQuickRange.value === "CUSTOM" && startDate.value && endDate.value) {
+  if (
+    selectedQuickRange.value === "CUSTOM" &&
+    startDate.value &&
+    endDate.value
+  ) {
     result = result.filter((item) => {
       const itemDate = item.createdAt.split(" ")[0];
       return itemDate >= startDate.value && itemDate <= endDate.value;
@@ -393,7 +346,7 @@ watch(
     });
     openDateGroups.value = nextState;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function applyQuickRange(type) {
@@ -413,26 +366,27 @@ function toggleDateGroup(date) {
 }
 
 function getActivityTypeLabel(type) {
-  if (type === "CREATE") return "생성";
-  if (type === "UPDATE") return "수정";
-  if (type === "DELETE") return "삭제";
+  if (type === "J0") return "생성";
+  if (type === "J1") return "수정";
+  if (type === "J2") return "삭제";
+  if (type === "J3") return "상태변경";
   return type;
 }
 
 function getTargetTypeLabel(type) {
-  if (type === "PROJECT") return "프로젝트";
-  if (type === "SUBPROJECT") return "하위프로젝트";
-  if (type === "MILESTONE") return "마일스톤";
-  if (type === "TASK") return "업무";
-  if (type === "MEMBER") return "구성원";
-  if (type === "MEMO") return "메모";
+  if (type === "projects") return "프로젝트";
+  if (type === "tasks") return "업무";
+  if (type === "milestones") return "마일스톤";
+  if (type === "members") return "구성원";
+  if (type === "memos") return "메모";
   return type;
 }
 
 function badgeClass(type) {
-  if (type === "CREATE") return "create";
-  if (type === "UPDATE") return "update";
-  if (type === "DELETE") return "delete";
+  if (type === "J0") return "create";
+  if (type === "J1") return "update";
+  if (type === "J2") return "delete";
+  if (type === "J3") return "update";
   return "";
 }
 
@@ -461,6 +415,52 @@ function endOfDay(date) {
   return d;
 }
 
+function buildMessage(item) {
+  const targetLabel = getTargetTypeLabel(item.targetType);
+
+  if (item.actionType === "J0") return `${targetLabel}가 생성되었습니다.`;
+  if (item.actionType === "J1") return `${targetLabel}가 수정되었습니다.`;
+  if (item.actionType === "J2") return `${targetLabel}가 삭제되었습니다.`;
+  if (item.actionType === "J3")
+    return `${targetLabel}의 상태가 변경되었습니다.`;
+
+  return "작업내역이 기록되었습니다.";
+}
+
+function buildDetail(item) {
+  const beforeValue = item.beforeValue ?? "";
+  const afterValue = item.afterValue ?? "";
+
+  if (item.actionType === "J0") {
+    return afterValue ? `변경 후: ${afterValue}` : "";
+  }
+
+  if (item.actionType === "J1" || item.actionType === "J3") {
+    if (!beforeValue && !afterValue) return "";
+    return `기존: ${beforeValue} → 변경: ${afterValue}`;
+  }
+
+  if (item.actionType === "J2") {
+    return beforeValue ? `삭제 전: ${beforeValue}` : "";
+  }
+
+  return "";
+}
+
+function mapLogItem(item) {
+  return {
+    id: item.activityLogId,
+    createdAt: item.createdAt,
+    userName: item.userName || "알 수 없음",
+    activityType: item.actionType,
+    targetType: item.targetType,
+    targetName: item.targetName || item.targetId || "",
+    message: buildMessage(item),
+    detail: buildDetail(item),
+    projectPath: `프로젝트 ID : ${item.projectId}`,
+  };
+}
+
 const fetchProjectDetail = async () => {
   try {
     const projectId = route.params.projectId;
@@ -471,8 +471,20 @@ const fetchProjectDetail = async () => {
   }
 };
 
+const fetchActivityLogs = async () => {
+  try {
+    const projectId = route.params.projectId;
+    const res = await axios.get(`/api/activityLogs/${projectId}`);
+    logs.value = res.data.map(mapLogItem);
+  } catch (err) {
+    console.error("작업내역 조회 실패:", err);
+    logs.value = [];
+  }
+};
+
 onMounted(() => {
   fetchProjectDetail();
+  fetchActivityLogs();
 });
 </script>
 
