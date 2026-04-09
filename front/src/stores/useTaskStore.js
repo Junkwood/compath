@@ -275,15 +275,17 @@ export const useTaskStore = defineStore("task", () => {
 
   // ───────────── 추정시간 ─────────────
   const calcEstTime = (force = false) => {
-    if (form.value.taskId) return;
+    if (form.value.taskId && !force) return;
 
-    const sDate = form.value.estStartDate;
-    const eDate = form.value.estEndDate;
+    const { estStartDate, estEndDate } = form.value;
+    if (!estStartDate || !estEndDate) return;
 
-    if (sDate && eDate) {
-      const workdays = countWorkdays(sDate, eDate);
-      if (workdays > 0) form.value.estTime = `${workdays * 8}시간`;
-    }
+    const workdays = countWorkdays(
+      new Date(estStartDate),
+      new Date(estEndDate),
+    );
+
+    form.value.estTime = `${Math.max(1, workdays) * 8}시간`;
   };
   // ───────────── 업무상태 변경 시 소요시간 자동계산 ─────────────
   const countWorkdays = (start, end) => {
@@ -319,6 +321,10 @@ export const useTaskStore = defineStore("task", () => {
     },
   );
 
+  watch(
+    () => [form.value.estStartDate, form.value.estEndDate],
+    () => calcEstTime(),
+  );
   // ───────────── 폼 초기화 ─────────────
   const resetForm = (mode = "create") => {
     if (mode === "edit" && originalForm.value) {
