@@ -37,7 +37,7 @@
 
           <div v-if="isLoading" class="flex items-center justify-center py-20">
             <svg
-              class="animate-spin w-8 h-8 text-indigo-500"
+              class="animate-spin w-8 h-8 text-blue-600"
               fill="none"
               viewBox="0 0 24 24"
             >
@@ -71,12 +71,12 @@
                     <input
                       type="text"
                       v-model="form.groupName"
-                      class="form-input w-full bg-white dark:bg-gray-800"
+                      class="form-input w-full bg-white dark:bg-gray-800 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="그룹명을 입력하세요"
                       @input="onGroupNameInput"
                     />
                     <button
-                      class="btn bg-indigo-500 hover:bg-indigo-600 text-white shrink-0"
+                      class="btn bg-[#2563eb] hover:bg-blue-700 text-white shrink-0 border-none"
                       @click="checkDuplicate"
                     >
                       중복 확인
@@ -107,16 +107,15 @@
                   class="font-semibold text-gray-800 dark:text-gray-100 min-w-[80px]"
                   >그룹유형</label
                 >
-                <span
-                  :class="[
-                    'inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium',
-                    form.groupType === 'C2'
-                      ? 'bg-violet-100 text-violet-800 dark:bg-violet-800/30 dark:text-violet-300'
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-300',
-                  ]"
+                <el-tag
+                  size="small"
+                  effect="light"
+                  round
+                  class="font-medium"
+                  :type="form.groupType === 'C2' ? 'primary' : 'success'"
                 >
                   {{ form.groupType === "C2" ? "프로젝트 그룹" : "직군 그룹" }}
-                </span>
+                </el-tag>
                 <span class="text-xs text-gray-400 dark:text-gray-500"
                   >※ 그룹 유형은 변경할 수 없습니다.</span
                 >
@@ -129,7 +128,7 @@
                 >
                 <textarea
                   v-model="form.description"
-                  class="form-textarea w-full bg-white dark:bg-gray-800 resize-none"
+                  class="form-textarea w-full bg-white dark:bg-gray-800 resize-none focus:border-blue-500 focus:ring-blue-500"
                   rows="2"
                   placeholder="그룹에 대한 설명을 입력하세요 (선택)"
                 />
@@ -179,7 +178,7 @@
                       <div class="flex items-center gap-3">
                         <input
                           type="checkbox"
-                          class="form-checkbox text-indigo-500 rounded-sm"
+                          class="form-checkbox text-blue-600 rounded-sm focus:ring-blue-500"
                           :checked="isGroupChecked(group)"
                           @change="toggleGroupSelection(group, $event)"
                         />
@@ -230,7 +229,7 @@
                             type="checkbox"
                             :value="user.userId"
                             v-model="selectedLeftUsers"
-                            class="form-checkbox text-indigo-500"
+                            class="form-checkbox text-blue-600 focus:ring-blue-500"
                           />
                           <span
                             class="text-sm text-gray-700 dark:text-gray-300"
@@ -262,7 +261,7 @@
                         type="radio"
                         v-model="selectedRole"
                         :value="role.roleId"
-                        class="form-radio text-indigo-500 w-3.5 h-3.5"
+                        class="form-radio text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
                       />
                       <span class="text-xs text-gray-700 dark:text-gray-300">{{
                         role.roleName
@@ -270,7 +269,7 @@
                     </label>
                   </div>
                   <button
-                    class="btn bg-indigo-900 hover:bg-indigo-800 text-white p-2 shrink-0 self-end sm:self-auto"
+                    class="btn bg-[#2563eb] hover:bg-blue-700 text-white p-2 shrink-0 self-end sm:self-auto border-none"
                     @click="moveUsersToRight"
                     :disabled="selectedLeftUsers.length === 0"
                   >
@@ -340,7 +339,7 @@
                         <select
                           v-model="member.roleId"
                           @change="onRoleChange(member)"
-                          class="form-select text-xs py-1 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-indigo-500 font-medium"
+                          class="form-select text-xs py-1 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-blue-600 focus:border-blue-500 focus:ring-blue-500 font-medium"
                         >
                           <option
                             v-for="role in roles"
@@ -376,7 +375,7 @@
                   취소
                 </button>
                 <button
-                  class="btn bg-indigo-900 hover:bg-indigo-800 text-white min-w-[120px]"
+                  class="btn bg-[#2563eb] hover:bg-blue-700 text-white min-w-[120px] border-none"
                   @click="submitUpdate"
                 >
                   수정 완료
@@ -393,12 +392,13 @@
 <script>
 import { ref, computed, watch, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import Swal from "sweetalert2"; // 💡 SweetAlert2 임포트
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useEmpStore } from "../stores/empSJW";
 import { useRoleStore } from "../stores/roleSJW";
-import { useGroupStore } from "../stores/groupSJW"; // 💡 GroupStore 추가
-import { useAuthStore } from "../stores/auth"; // 💡 AuthStore 추가
+import { useGroupStore } from "../stores/groupSJW";
+import { useAuthStore } from "../stores/auth";
 import api from "../utils/api";
 
 export default {
@@ -411,8 +411,8 @@ export default {
     const isLoading = ref(true);
     const empStore = useEmpStore();
     const roleStore = useRoleStore();
-    const groupStore = useGroupStore(); // 💡 초기화
-    const authStore = useAuthStore(); // 💡 초기화
+    const groupStore = useGroupStore();
+    const authStore = useAuthStore();
 
     // ── 폼 상태 ──
     const form = ref({
@@ -420,7 +420,7 @@ export default {
       groupName: "",
       groupType: "",
       description: "",
-      isActive: "Y", // 기존 상태 보존용
+      isActive: "Y",
     });
 
     const originalGroupName = ref("");
@@ -555,14 +555,18 @@ export default {
       const regex = new RegExp(`(${q})`, "gi");
       return String(text).replace(
         regex,
-        '<mark class="bg-yellow-100 dark:bg-yellow-800 text-inherit rounded px-0.5">$1</mark>',
+        '<mark class="bg-yellow-200 text-inherit rounded px-0.5">$1</mark>',
       );
     };
 
-    // ── 중복 확인 ──
+    // ── 💡 중복 확인 (SweetAlert) ──
     const checkDuplicate = async () => {
       if (!form.value.groupName.trim()) {
-        alert("그룹명을 입력해주세요.");
+        Swal.fire({
+          icon: "warning",
+          title: "그룹명을 입력해주세요.",
+          confirmButtonColor: "#2563eb",
+        });
         return;
       }
       if (isOriginalName.value) {
@@ -575,28 +579,39 @@ export default {
       isNameChecked.value = true;
     };
 
-    // ── 수정 제출 ──
+    // ── 💡 수정 제출 (SweetAlert) ──
     const submitUpdate = async () => {
       if (!isOriginalName.value && !isNameChecked.value) {
-        alert("그룹명 중복 확인을 해주세요.");
+        Swal.fire({
+          icon: "warning",
+          title: "그룹명 중복 확인을 해주세요.",
+          confirmButtonColor: "#2563eb",
+        });
         return;
       }
       if (!isOriginalName.value && !isNameValid.value) {
-        alert("이미 사용 중인 그룹명입니다.");
+        Swal.fire({
+          icon: "warning",
+          title: "이미 사용 중인 그룹명입니다.",
+          confirmButtonColor: "#2563eb",
+        });
         return;
       }
       if (form.value.groupType === "C2" && groupMembers.value.length === 0) {
-        alert("그룹 구성원을 최소 1명 이상 추가해주세요.");
+        Swal.fire({
+          icon: "warning",
+          title: "그룹 구성원을 최소 1명 이상 추가해주세요.",
+          confirmButtonColor: "#2563eb",
+        });
         return;
       }
 
-      // 💡 백엔드 GroupDTOSJW 구조에 맞춘 페이로드 조립
       const payload = {
         groupId: form.value.groupId,
         groupName: form.value.groupName,
-        groupType: form.value.groupType, // 타입 유지
+        groupType: form.value.groupType,
         description: form.value.description,
-        editorUserId: authStore.user.userId, // 💡 로그 기록용 작업자 ID 필수!
+        editorUserId: authStore.user.userId,
         members: groupMembers.value.map((m) => ({
           userId: m.userId,
           roleId: form.value.groupType === "C2" ? m.roleId : null,
@@ -604,22 +619,34 @@ export default {
       };
 
       try {
-        console.log(payload);
         await api.put(`/admin/group/${form.value.groupId}`, payload);
-        alert("그룹이 성공적으로 수정되었습니다.");
-        router.push(`/admin/group/info/${form.value.groupId}`); // 상세 페이지로 복귀
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "그룹이 성공적으로 수정되었습니다.",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+
+        router.push(`/admin/group/info/${form.value.groupId}`);
       } catch {
-        alert("그룹 수정에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        Swal.fire({
+          icon: "error",
+          title: "수정 실패",
+          text: "그룹 수정에 실패했습니다. 잠시 후 다시 시도해주세요.",
+          confirmButtonColor: "#2563eb",
+        });
       }
     };
 
     const goBack = () => router.back();
 
-    // ── 초기 데이터 로드 ──
+    // ── 💡 초기 데이터 로드 (SweetAlert) ──
     onMounted(async () => {
-      const groupId = route.params.id || route.params.groupId; // 라우터 파라미터 매칭
+      const groupId = route.params.id || route.params.groupId;
       try {
-        // 1. 공통 코드성 데이터 로드 (사원 목록, 역할 목록)
         await Promise.all([
           empStore.getEmpList4Group(),
           roleStore.getActiveRoleList(),
@@ -629,26 +656,28 @@ export default {
         roles.value = roleStore.activeRoleList;
         if (roles.value.length > 0) selectedRole.value = roles.value[0].roleId;
 
-        // 2. 💡 더미 데이터 대신 실제 DB에서 그룹 상세 정보 로드
         const data = await groupStore.getGroupInfo(groupId);
 
-        // 3. 불러온 데이터 폼에 바인딩
         form.value = {
           groupId: data.groupId,
           groupName: data.groupName,
           groupType: data.groupType,
           description: data.description,
-          isActive: data.isActive, // 기존 상태값 살려두기
+          isActive: data.isActive,
         };
         originalGroupName.value = data.groupName;
 
-        // 기존 멤버 목록 바인딩
         groupMembers.value = (data.members || []).map((m) => ({
           ...m,
           isNew: false,
         }));
       } catch {
-        alert("그룹 정보를 불러오는 데 실패했습니다.");
+        Swal.fire({
+          icon: "error",
+          title: "조회 실패",
+          text: "그룹 정보를 불러오는 데 실패했습니다.",
+          confirmButtonColor: "#2563eb",
+        });
       } finally {
         isLoading.value = false;
       }
@@ -684,3 +713,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* SweetAlert2 모달 Z-index 방어용 */
+:global(.swal2-container) {
+  z-index: 9999 !important;
+}
+</style>

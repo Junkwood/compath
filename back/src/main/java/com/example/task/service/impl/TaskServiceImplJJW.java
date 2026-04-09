@@ -1,5 +1,7 @@
 package com.example.task.service.impl;
 
+import com.example.alarm.dto.NotificationDto;
+import com.example.alarm.service.NotificationService;
 import com.example.task.dto.*;
 import com.example.task.mapper.TaskMapperJJW;
 import com.example.task.service.TaskServiceJJW;
@@ -18,14 +20,14 @@ import java.util.Map;
 public class TaskServiceImplJJW implements TaskServiceJJW {
 
     private final TaskMapperJJW taskMapperJJW;
+    private final NotificationService notificationService;
 
 
     //업무등록
-    @Override
+    //@SendNotification(title = "새 업무 배정", message = "업무가 배정되었습니다.")
     public void insert(TaskReqDtoJJW dto) {
-        taskMapperJJW.insert(dto);
-    }
-    //업무 수정
+        taskMapperJJW.insert(dto);  // 이것만 써도 알림 자동으로 감
+    }    //업무 수정
     @Override
     public int updateTask(TaskReqDtoJJW dto) {
         // 시작일 자동 세팅 (상태가 '진행중'인 경우)
@@ -45,8 +47,30 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     //반려 사유 등록
     @Override
     public void insert1(TaskRejectDtoJJW re) {
+
+        // 1. 반려 사유 등록
         taskMapperJJW.insert1(re);
+
+        // 2. 업무 상태 반려로 변경
         taskMapperJJW.updateTaskStatus(re.getTaskId(), 4);
+
+        // 3. 업무 정보 조회 (담당자 필요)
+        TaskReqDtoJJW task = taskMapperJJW.getTaskById(re.getTaskId());
+
+        // 4. 알림 생성
+        NotificationDto dto = NotificationDto.builder()
+                .notificationType("TASK")
+                .targetType("TASK")
+                .targetId(re.getTaskId())
+                .title("업무 반려")
+                .message("담당하신 업무가 반려되었습니다.")
+                .receiverId(task.getAssigneeUserId())
+                .createdBy(re.getRejectedBy())
+                .build();
+
+        // 5. 알림 저장 + SSE 전송
+        notificationService.registerNotification(dto);
+        notificationService.registerNotificationTarget(dto);
     }
 
 

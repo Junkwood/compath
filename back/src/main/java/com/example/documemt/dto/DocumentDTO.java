@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class DocumentDTO { // 문서
     private Integer documentId;
     private Integer projectId;
+    private Integer parentProjectId;
     private String title;
     private String content;
     private Integer category;
@@ -59,6 +60,17 @@ public class DocumentDTO { // 문서
     private Integer endNum = 10;
     private Integer num;
     private String search;
+    private Integer count; // 댓글 총 수
+
+//    댓글
+    private Integer documentCommentId;
+    private String comments;
+    private Integer commentWriterId;
+    private String commentWriter;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime createdDay;
 
 
 

@@ -21,4 +21,5 @@ public class ProjectSubCreateDtoJDJ {
     private Integer milestoneMappingId;
     private LocalDate updatedAt;
     private String editorUserId;
+    private String status;
 }

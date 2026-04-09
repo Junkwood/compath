@@ -19,4 +19,16 @@ public interface TaskServiceSJW {
     Boolean checkDup(String name);
 
     List<TaskTypeDTOSJW> getTaskTypes();
+
+    List<TaskStatusDTOSJW> getActiveTaskStatuses();
+
+    List<TaskTypeDTOSJW> getActiveTaskTypes();
+
+    Boolean modifyTaskTypeActivation(TaskTypeDTOSJW taskType);
+
+    Boolean checkDupType(String name);
+
+    Boolean registerTaskType(TaskTypeDTOSJW taskType);
+
+    Boolean modifyTaskType(Integer taskTypeId, TaskTypeDTOSJW taskType);
 }

@@ -9,12 +9,23 @@
       :aria-expanded="dropdownOpen"
     >
       <span class="sr-only">Notifications</span>
-      <svg class="fill-current text-gray-500/80 dark:text-gray-400/80" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-        <path d="M7 0a7 7 0 0 0-7 7c0 1.202.308 2.33.84 3.316l-.789 2.368a1 1 0 0 0 1.265 1.265l2.595-.865a1 1 0 0 0-.632-1.898l-.698.233.3-.9a1 1 0 0 0-.104-.85A4.97 4.97 0 0 1 2 7a5 5 0 0 1 5-5 4.99 4.99 0 0 1 4.093 2.135 1 1 0 1 0 1.638-1.148A6.99 6.99 0 0 0 7 0Z" />
-        <path d="M11 6a5 5 0 0 0 0 10c.807 0 1.567-.194 2.24-.533l1.444.482a1 1 0 0 0 1.265-1.265l-.482-1.444A4.962 4.962 0 0 0 16 11a5 5 0 0 0-5-5Zm-3 5a3 3 0 0 1 6 0c0 .588-.171 1.134-.466 1.6a1 1 0 0 0-.115.82 1 1 0 0 0-.82.114A2.973 2.973 0 0 1 11 14a3 3 0 0 1-3-3Z" />                                        
-      </svg>      
-      <div class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-gray-100 dark:border-gray-900 rounded-full"></div>
+
+      <svg
+        class="w-4 h-4 fill-current text-gray-500/80 dark:text-gray-400/80"
+        viewBox="0 0 16 16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M8 0C4.686 0 2 2.686 2 6v4.586l-1.707 1.707C0.105 12.481 0 12.731 0 13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1c0-.269-.105-.519-.293-.707L14 10.586V6c0-3.314-2.686-6-6-6ZM8 2c2.206 0 4 1.794 4 4v5H4V6c0-2.206 1.794-4 4-4Zm0 14c1.105 0 2-.895 2-2H6a2 2 0 0 0 2 2Z"
+        />
+      </svg>
+
+      <div
+        v-if="unreadCount > 0"
+        class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"
+      ></div>
     </button>
+
     <transition
       enter-active-class="transition ease-out duration-200 transform"
       enter-from-class="opacity-0 -translate-y-2"
@@ -23,76 +34,125 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-show="dropdownOpen" class="origin-top-right z-10 absolute top-full -mr-48 sm:mr-0 min-w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1" :class="align === 'right' ? 'right-0' : 'left-0'">
-        <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase pt-1.5 pb-2 px-4">Notifications</div>
-        <ul
-          ref="dropdown"
-          @focusin="dropdownOpen = true"
-          @focusout="dropdownOpen = false"
-        >
-          <li class="border-b border-gray-200 dark:border-gray-700/60 last:border-0">
-            <router-link class="block py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/20" to="#0" @click="dropdownOpen = false">
-              <span class="block text-sm mb-2">📣 <span class="font-medium text-gray-800 dark:text-gray-100">Edit your information in a swipe</span> Sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.</span>
-              <span class="block text-xs font-medium text-gray-400 dark:text-gray-500">Feb 12, 2024</span>
-            </router-link>
+      <div
+        v-show="dropdownOpen"
+        class="origin-top-right z-10 absolute top-full -mr-48 sm:mr-0 min-w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1"
+        :class="align === 'right' ? 'right-0' : 'left-0'"
+      >
+        <div class="flex items-center justify-between py-1.5 px-4">
+          <!-- <div
+            class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase"
+          >
+            Notifications 
+          </div> -->
+          <button
+            v-if="unreadCount > 0"
+            @click="handleReadAll"
+            class="text-[10px] text-blue-500 hover:text-blue-600 font-medium"
+          >
+            모두 읽음
+          </button>
+        </div>
+
+        <ul ref="dropdown" class="max-h-96 overflow-y-auto">
+          <li
+            v-if="notifications.length === 0"
+            class="py-4 px-4 text-sm text-gray-500 text-center"
+          >
+            새로운 알림이 없습니다.
           </li>
-          <li class="border-b border-gray-200 dark:border-gray-700/60 last:border-0">
-            <router-link class="block py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/20" to="#0" @click="dropdownOpen = false">
-              <span class="block text-sm mb-2">📣 <span class="font-medium text-gray-800 dark:text-gray-100">Edit your information in a swipe</span> Sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.</span>
-              <span class="block text-xs font-medium text-gray-400 dark:text-gray-500">Feb 9, 2024</span>
-            </router-link>
-          </li>
-          <li class="border-b border-gray-200 dark:border-gray-700/60 last:border-0">
-            <router-link class="block py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/20" to="#0" @click="dropdownOpen = false">
-              <span class="block text-sm mb-2">🚀<span class="font-medium text-gray-800 dark:text-gray-100">Say goodbye to paper receipts!</span> Sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.</span>
-              <span class="block text-xs font-medium text-gray-400 dark:text-gray-500">Jan 24, 2024</span>
-            </router-link>
+
+          <li
+            v-for="notif in notifications"
+            :key="notif.notificationTargetNo"
+            class="border-b border-gray-200 dark:border-gray-700/60 last:border-0"
+          >
+            <div
+              class="block py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/20 cursor-pointer"
+              @click="handleReadOne(notif)"
+              :class="{ 'opacity-60': notif.isRead === 'Y' }"
+            >
+              <span class="block text-sm mb-1">
+                <span class="font-medium text-gray-800 dark:text-gray-100">{{
+                  notif.title
+                }}</span>
+                <p class="text-gray-600 dark:text-gray-400 leading-tight">
+                  {{ notif.message }}
+                </p>
+              </span>
+              <span class="block text-xs font-medium text-gray-400">{{
+                notif.createdAt
+              }}</span>
+            </div>
           </li>
         </ul>
-      </div> 
+      </div>
     </transition>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useNotificationStore } from "../stores/notification";
+import { useAuthStore } from "../stores/auth";
 
 export default {
-  name: 'DropdownNotifications',
-  props: ['align'],
+  name: "DropdownNotifications",
+  props: ["align"],
   setup() {
+    const dropdownOpen = ref(false);
+    const trigger = ref(null);
+    const dropdown = ref(null);
 
-    const dropdownOpen = ref(false)
-    const trigger = ref(null)
-    const dropdown = ref(null)
+    const notificationStore = useNotificationStore();
 
-    // close on click outside
+    // 로그인한 사용자 ID
+    const authStore = useAuthStore();
+    const userId = computed(() => authStore.user.userId);
+
+    const notifications = computed(() => notificationStore.notifications);
+    const unreadCount = computed(() => notificationStore.unreadCount);
+
+    // 단건 읽음 호출
+    const handleReadOne = (notif) => {
+      notificationStore.readOne(notif, userId);
+    };
+
+    // 전체 읽음 호출
+    const handleReadAll = () => {
+      notificationStore.readAll(userId);
+    };
+
     const clickHandler = ({ target }) => {
-      if (!dropdownOpen.value || dropdown.value.contains(target) || trigger.value.contains(target)) return
-      dropdownOpen.value = false
-    }
-
-    // close if the esc key is pressed
-    const keyHandler = ({ keyCode }) => {
-      if (!dropdownOpen.value || keyCode !== 27) return
-      dropdownOpen.value = false
-    }
+      if (
+        !dropdownOpen.value ||
+        dropdown.value?.contains(target) ||
+        trigger.value?.contains(target)
+      )
+        return;
+      dropdownOpen.value = false;
+    };
 
     onMounted(() => {
-      document.addEventListener('click', clickHandler)
-      document.addEventListener('keydown', keyHandler)
-    })
+      notificationStore.fetchNotifications(userId.value);
+      notificationStore.setupSSE(userId.value);
+      document.addEventListener("click", clickHandler);
+    });
 
     onUnmounted(() => {
-      document.removeEventListener('click', clickHandler)
-      document.removeEventListener('keydown', keyHandler)
-    })
+      document.removeEventListener("click", clickHandler);
+      notificationStore.closeSSE();
+    });
 
     return {
       dropdownOpen,
       trigger,
       dropdown,
-    }
-  }
-}
+      notifications,
+      unreadCount,
+      handleReadOne,
+      handleReadAll,
+    };
+  },
+};
 </script>

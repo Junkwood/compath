@@ -36,9 +36,7 @@
                   ? 'bg-blue-100 text-blue-600'
                   : item.userType === 'PL'
                     ? 'bg-purple-100 text-purple-600'
-                    : item.userType === '개발자'
-                      ? 'bg-green-100 text-green-600'
-                      : 'bg-gray-100 text-gray-500',
+                    : 'bg-green-100 text-green-600',
               ]"
             >
               {{ item.userType }}
