@@ -13,10 +13,20 @@ SELECT * FROM task_statuses;
 
 SELECT * FROM  notifications;
 SELECT * FROM notification_targets;
+SELECT * FROM task_rejections;
+
 
 UPDATE task_statuses 
 SET DESCRIPTION = 'G5' 
 WHERE TASK_STATUS_ID = 5;
+
+SELECT notification_targets_seq.NEXTVAL FROM DUAL;
+SELECT MAX(notification_target_no) FROM notification_targets;
+
+ALTER SEQUENCE notification_targets_seq INCREMENT BY 2;
+SELECT notification_targets_seq.NEXTVAL FROM DUAL;
+ALTER SEQUENCE notification_targets_seq INCREMENT BY 1;
+
 
 
 
@@ -192,6 +202,33 @@ BEGIN
     WHERE is_active = 'O1'
     	ORDER BY task_status_id;
 
+END;
+------------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE SP_GET_NOTIFICATION_RECEIVERS (
+    p_project_id  IN  NUMBER,
+    p_assignee_id IN  NUMBER,
+    receiverList  OUT SYS_REFCURSOR
+) AS
+    v_root_project_id NUMBER;
+BEGIN
+    -- 루트 프로젝트 id 결정
+    SELECT NVL(parent_project_id, project_id)
+    INTO v_root_project_id
+    FROM projects
+    WHERE project_id = p_project_id;
+
+    -- PM/PL/총괄PL 알림 전용
+    OPEN receiverList FOR
+        SELECT DISTINCT u.user_id
+        FROM users u
+        JOIN project_members pm ON u.user_id = pm.user_id
+        JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+        JOIN roles r ON pmr.role_id = r.role_id
+        WHERE pm.project_id = v_root_project_id
+          AND pm.is_active = 'O1'
+          AND r.role_id IN (1, 2, 3)  -- PM, 총괄PL, PL
+        UNION
+        SELECT p_assignee_id FROM DUAL;  -- 담당자
 END;
 ------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE SP_REJECT_TASK_COMPLETE (

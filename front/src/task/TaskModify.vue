@@ -282,13 +282,6 @@
               <button @click="goBack" class="btn-navy">← 목록으로</button>
               <div class="flex gap-2">
                 <button
-                  v-if="canCreateSubTask"
-                  @click="goCreateSubTask"
-                  class="btn-sub"
-                >
-                  + 하위업무 생성
-                </button>
-                <button
                   @click="() => resetForm('edit')"
                   class="btn-red"
                   :disabled="isTerminated"

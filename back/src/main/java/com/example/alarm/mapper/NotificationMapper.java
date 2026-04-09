@@ -3,6 +3,7 @@ package com.example.alarm.mapper;
 import com.example.alarm.dto.NotificationDto;
 
 import java.util.List;
+import java.util.Map;
 
 public interface NotificationMapper {
     // 알림 Register
@@ -22,5 +23,12 @@ public interface NotificationMapper {
 
     // 전체 읽음 처리
     void modifyReadAll(Integer receiverId);
+
+    //알림 받을 사람 프로시저
+    void getNotificationReceivers(Map<String, Object> params);
+
+    //전체 사람들에게 알림 보내기
+    List<Integer> getAllUserIds();
+
 
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -26,5 +27,8 @@ public class NotificationDto { //알림
     private Integer  receiverId;
     private String isRead;
     private LocalDateTime readAt;
+
+    //알림 받을 사람들
+    private List<Integer> receiverList;
 
 }

@@ -1,5 +1,6 @@
 package com.example.notice.service.impl;
 
+import com.example.alarm.service.NotificationService;
 import com.example.notice.dto.NoticeDTO;
 import com.example.notice.mapper.NoticeMapper;
 import com.example.notice.service.NoticeService;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class NoticeServiceImpl implements NoticeService {
 
     private final NoticeMapper mapper;
+    private  final NotificationService notificationService;
 
     // 공지사항 등록
     @Override
@@ -28,6 +30,13 @@ public class NoticeServiceImpl implements NoticeService {
 
         // 공지사항 등록
         mapper.registerNotice(dto);
+
+        // 알림 전송
+        notificationService.sendToAllUsers(
+                "R1", id,
+                "공지사항 등록", "새로운 공지사항이 등록되었습니다.",
+                dto.getCreatedBy() // 작성자 ID 필드명 확인 필요!
+        );
 
         return mapper.getNoticeById(id);
     }

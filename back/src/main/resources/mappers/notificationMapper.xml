@@ -89,4 +89,22 @@
         WHERE receiver_id = #{receiverId}
         AND is_read = 'N'
     </update>
+
+    <!--알림 받을 사람 프로시저 -->
+    <resultMap id="receiverResultMap" type="integer">
+        <result property="value" column="user_id"/>
+    </resultMap>
+    <select id="getNotificationReceivers" statementType="CALLABLE">
+        {call SP_GET_NOTIFICATION_RECEIVERS(
+        #{projectId, mode=IN, jdbcType=INTEGER},
+        #{assigneeId, mode=IN, jdbcType=INTEGER},
+        #{receiverList, mode=OUT, jdbcType=CURSOR, javaType=ResultSet, resultMap=receiverResultMap}
+        )}
+    </select>
+
+    <!--전체 사용자에게 -->
+    <select id="getAllUserIds" resultType="int">
+        SELECT user_id FROM users
+    </select>
+
 </mapper>
