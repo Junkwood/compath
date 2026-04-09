@@ -64,6 +64,8 @@ CREATE SEQUENCE notifications_seq
     NOCACHE
     NOCYCLE;
 
+CREATE SEQUENCE notification_targets_seq START WITH 1 INCREMENT BY 1;
+
 -- 시퀀스 관리 (task) : 기존 시퀀스 삭제 후 최대값 기준으로 재설정
 DROP SEQUENCE task_seq;
 SELECT MAX(task_id) FROM tasks; -- 현재 최대값 확인 후 아래 START WITH 설정
