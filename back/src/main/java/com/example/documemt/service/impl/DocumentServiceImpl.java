@@ -110,9 +110,7 @@ public class DocumentServiceImpl implements DocumentService {
 
         mapper.registerCommentAlarm(dto);
 
-        int targetId = dto.getTargetId();
-
-        int id = mapper.getDocumentAlarmById(targetId);
+        int id = dto.getNotificationId();
 
         Integer result = 0;
         for(int i=1; i<list.size(); i++) {
@@ -123,6 +121,5 @@ public class DocumentServiceImpl implements DocumentService {
 
         return result;
     }
-
 
 }

@@ -62,9 +62,9 @@ public class DocumentController {
 
     // 알림 등록
     @PostMapping("docuemnts/alarm/register")
-    public int registerCommentAlarm(@RequestParam(value="arr") List<DocumentAlarmDTO> arr) {
+    public int registerCommentAlarm(@RequestBody List<DocumentAlarmDTO> list) {
 
-        return service.registerCommentAlarm(arr);
+        return service.registerCommentAlarm(list);
     }
 
 

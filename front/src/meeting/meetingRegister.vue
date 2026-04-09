@@ -11,183 +11,232 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            {{ isModified == false ? "문서 생성" : "문서 수정" }}
+            회의록{{ isModified == false ? " 생성" : " 수정" }}
           </h1>
-          <el-form
-            ref="ruleFormRef"
-            style="max-width: 100%"
-            :model="form"
-            status-icon
-            :rules="rules"
-            label-width="auto"
-            label-position="top"
-          >
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-              <div class="grid grid-cols-3 gap-6">
-                <div>
-                  <el-form-item
-                    label="업무 유형"
-                    prop="roleId"
-                    class="block text-sm font-medium mb-1"
-                  >
-                    <el-select
-                      v-model="form.roleId"
-                      class="input flex-1"
-                      placeholder="유형을 선택하세요"
+          <div class="dashboard-top mb-5">
+            <div class="card main-col">
+              <el-form
+                ref="ruleFormRef"
+                style="max-width: 100%"
+                :model="form"
+                status-icon
+                :rules="rules"
+                label-width="auto"
+                label-position="top"
+              >
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                  <div>
+                    <el-form-item
+                      label="제목"
+                      class="block text-sm font-medium mb-1"
+                      prop="title"
                     >
-                      <el-option value="전체" label="전체">전체</el-option>
-                      <el-option
-                        v-for="role in roles"
-                        :label="role.roleName"
-                        :value="role.roleId"
+                      <el-input
+                        placeholder="회의록 제목을 적으세요"
+                        class="w-full"
+                        v-model="form.title"
                       />
-                    </el-select>
-                  </el-form-item>
-                </div>
-                <div>
-                  <el-form-item
-                    label="작성자"
-                    class="block text-sm font-medium mb-1"
-                  >
-                    <el-input
-                      disabled
-                      class="input w-full"
-                      v-model="form.author"
-                    />
-                  </el-form-item>
-                </div>
-
-                <div>
-                  <el-form-item
-                    label="등록일"
-                    class="block text-sm font-medium mb-1"
-                  >
-                    <el-input
-                      disabled
-                      class="input w-full"
-                      v-model="form.date"
-                    />
-                  </el-form-item>
-                </div>
-              </div>
-              <div class="grid grid-cols-20 gap-4">
-                <div class="col-span-17">
-                  <el-form-item
-                    label="제목"
-                    class="block text-sm font-medium mb-1"
-                    prop="title"
-                  >
-                    <el-input
-                      placeholder="업무 제목을 적으세요"
-                      class="w-full"
-                      v-model="form.title"
-                    />
-                  </el-form-item>
-                </div>
-                <div class="self-center col-span-3">
-                  <label class="mx-2">
-                    <input
-                      type="checkbox"
-                      :value="form.isPinned"
-                      :checked="form.isPinned"
-                      @change="checkedPin($event)"
-                    />
-                    <span class="text-lg">📌</span><span>상단고정</span>
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      :value="form.isComment"
-                      :checked="form.isComment"
-                      @change="checkedComment($event)"
-                    />
-                    <span class="text-lg">🔒</span><span>댓글잠금</span>
-                  </label>
-                </div>
-              </div>
-              <div>
-                <el-form-item label="내용" prop="content">
-                  <el-input
-                    :rows="15"
-                    class="input w-full"
-                    v-model="form.content"
-                    type="textarea"
-                  />
-                </el-form-item>
-              </div>
-              <div class="mb-6">
-                <el-upload
-                  v-model:file-list="fileList"
-                  class="upload-demo"
-                  action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                  :on-change="handleChange"
-                >
-                  <el-button type="primary">파일선택</el-button>
-                  <template #tip>
-                    <div class="el-upload__tip">
-                      jpg/png 파일은 최대 500kb까지 가능합니다.
+                    </el-form-item>
+                  </div>
+                  <div class="grid grid-cols-2 gap-6">
+                    <div>
+                      <el-form-item
+                        label="회의 유형"
+                        prop="roleId"
+                        class="block text-sm font-medium mb-1"
+                      >
+                        <el-select
+                          v-model="form.roleId"
+                          class="input flex-1"
+                          placeholder="유형을 선택하세요"
+                        >
+                          <el-option value="전체" label="전체">전체</el-option>
+                          <el-option
+                            v-for="role in roles"
+                            :label="role.roleName"
+                            :value="role.roleId"
+                          />
+                        </el-select>
+                      </el-form-item>
                     </div>
-                  </template>
-                </el-upload>
-              </div>
-              <div v-if="!isModified" class="notification-area">
-                <el-button
-                  type="button"
-                  class="btn-select-custom"
-                  @click="openModal"
-                >
-                  알림대상 선택
-                </el-button>
+                    <div>
+                      <el-form-item
+                        label="작성자"
+                        class="block text-sm font-medium mb-1"
+                      >
+                        <el-input
+                          disabled
+                          class="input w-full"
+                          v-model="form.author"
+                        />
+                      </el-form-item>
+                    </div>
 
-                <div class="flex flex-wrap gap-2">
-                  <el-tag
-                    v-for="tag in alarmList"
-                    :key="tag.userId"
-                    closable
-                    :disable-transitions="true"
-                    @close="handleClose(tag)"
-                    class="custom-alarm-tag"
-                  >
-                    {{ tag.userName }}
-                  </el-tag>
-                  <span
-                    v-if="alarmList.length === 0"
-                    class="text-sm text-gray-400 font-medium"
-                  >
-                    대상을 선택하면 여기에 표시됩니다.
-                  </span>
+                    <div>
+                      <el-form-item
+                        label="등록일"
+                        class="block text-sm font-medium mb-1"
+                      >
+                        <el-input
+                          disabled
+                          class="input w-full"
+                          v-model="form.date"
+                        />
+                      </el-form-item>
+                    </div>
+                    <div>
+                      <el-form-item
+                        label="회의 장소"
+                        prop="roleId"
+                        class="block text-sm font-medium mb-1"
+                      >
+                        <el-input
+                          placeholder="회의 장소를 적으세요"
+                          class="w-full"
+                          v-model="form.title"
+                        />
+                      </el-form-item>
+                    </div>
+                  </div>
+
+                  <div>
+                    <el-form-item label="내용" prop="content">
+                      <el-input
+                        :rows="15"
+                        class="input w-full"
+                        v-model="form.content"
+                        type="textarea"
+                      />
+                    </el-form-item>
+                  </div>
+                  <div class="mb-6">
+                    <el-upload action="#" :auto-upload="false" class="w-full">
+                      <template #trigger>
+                        <div
+                          class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 cursor-pointer"
+                        >
+                          <i class="el-icon-paperclip text-gray-500"></i>
+                          <span class="text-sm font-medium text-gray-700"
+                            >파일 선택</span
+                          >
+                        </div>
+                      </template>
+
+                      <template #tip>
+                        <div class="text-xs text-gray-400 mt-2">
+                          MP3, WAV 파일 최대 50MB까지 가능
+                        </div>
+                      </template>
+                    </el-upload>
+                  </div>
+                  <div v-if="!isModified" class="notification-area">
+                    <el-button
+                      type="button"
+                      class="btn-select-custom"
+                      @click="openModal"
+                    >
+                      알림대상 선택
+                    </el-button>
+
+                    <div class="flex flex-wrap gap-2">
+                      <el-tag
+                        v-for="tag in alarmList"
+                        :key="tag.userId"
+                        closable
+                        :disable-transitions="true"
+                        @close="handleClose(tag)"
+                        class="custom-alarm-tag"
+                      >
+                        {{ tag.userName }}
+                      </el-tag>
+                      <span
+                        v-if="alarmList.length === 0"
+                        class="text-sm text-gray-400 font-medium"
+                      >
+                        대상을 선택하면 여기에 표시됩니다.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-between">
+                    <button @click="goBack" type="button" class="btn-navy">
+                      ← 목록으로
+                    </button>
+                    <div class="flex gap-2">
+                      <button @click="resetForm" type="button" class="btn-red">
+                        초기화
+                      </button>
+                      <button
+                        type="button"
+                        @click="submitForm(ruleFormRef)"
+                        class="btn-green"
+                      >
+                        {{ isModified == false ? "등록" : "수정" }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </el-form>
+            </div>
+            <!-- 우측 카드 묶음 -->
+            <div class="side-col">
+              <!-- 소요시간 -->
+              <div class="card">
+                <div class="card-header">
+                  <span class="card-title">업무연결</span>
+                </div>
+                <div class="h-32 place-items-center">
+                  <div class="h-20"></div>
+                  <div>
+                    <button @click="registerActualTime" class="btn-navy">
+                      <span class="text-lg"></span>업무 추가
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div class="flex justify-between">
-                <button @click="goBack" type="button" class="btn-navy">
-                  ← 목록으로
-                </button>
-                <div class="flex gap-2">
-                  <button @click="resetForm" type="button" class="btn-red">
-                    초기화
-                  </button>
-                  <button
-                    type="button"
-                    @click="submitForm(ruleFormRef)"
-                    class="btn-green"
+              <div class="card">
+                <div class="card-header">
+                  <span class="card-title">음성파일로 내용작성</span>
+                </div>
+                <div>
+                  <el-upload
+                    class="upload-demo"
+                    drag
+                    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+                    multiple
                   >
-                    {{ isModified == false ? "등록" : "수정" }}
+                    <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+                    <div class="el-upload__text">
+                      Drop file here or <em>click to upload</em>
+                    </div>
+                    <template #tip class="flex items-center">
+                      <div class="el-upload__tip">
+                        음성파일은 최대 500kb까지 가능합니다.
+                      </div>
+                    </template>
+                  </el-upload>
+                </div>
+              </div>
+              <div class="card">
+                <div class="news-btn">
+                  <button type="button" class="btn-sub">
+                    AI 요약 및 업무 추천
                   </button>
                 </div>
               </div>
             </div>
-          </el-form>
+          </div>
         </div>
       </main>
     </div>
   </div>
 
-  <DocumentNotificationModal
+  <!-- <meetingNotifirationModal
     v-model="modalOpen"
     :memberList="memberList"
     :alarmList="alarmList"
     @member-insert="memberInsert"
-  />
+  /> -->
 </template>
 
 <script setup>
@@ -202,7 +251,7 @@ import { useProjectKJHStore } from "../stores/projectKJH";
 import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
 import { useDocumentStore } from "../stores/document";
-import DocumentNotificationModal from "./DocumentNotificationModal.vue";
+// import { meetingNotifirationModal } from "./meetingNotificationModal.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -685,5 +734,58 @@ const handleChange = (uploadFile, uploadFiles) => {
   border: 1.5px solid #374151 !important;
   color: #374151 !important;
   cursor: pointer;
+}
+/* ── 상단 레이아웃 ── */
+.dashboard-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 20px;
+  align-items: start;
+}
+.side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── 카드 공통 ── */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a1a2e;
+}
+
+/* 우측에 버튼들 */
+.btn-sub {
+  width: 100%;
+  flex: 1;
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #7c3aed;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+}
+.btn-sub:hover {
+  background: #6d28d9;
 }
 </style>
