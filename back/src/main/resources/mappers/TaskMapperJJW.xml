@@ -23,6 +23,8 @@
         <result property="projectId" column="PROJECT_ID" />
         <result property="assigneeUserId" column="ASSIGNEE_USER_ID" />
         <result property="assigneeName" column="ASSIGNEENAME" />
+        <result property="totalTimeEntries" column="TOTAL_TIME_ENTRIES" />
+        <result property="finalActualHours" column="FINAL_ACTUAL_HOURS" />
     </resultMap>
 
     <resultMap id="projectMap" type="com.example.project.dto.ProjectDtoJJW">
