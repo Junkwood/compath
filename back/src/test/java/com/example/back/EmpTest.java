@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.List;
 
 @SpringBootTest
@@ -44,9 +46,16 @@ public class EmpTest {
         String result = String.format("%06d",(int)Math.floor(randval));
         System.out.println(result);
     }
-    @Test
+//    @Test
     public void groupNameDuplicatedCheckTest(){
         int e = groupMapperSJW.checkDuplicatedName("PM");
         System.out.println(e);
+    }
+    @Test
+    public void secretKeyTest(){
+        byte[] keyBytes = new byte[64]; // 512비트
+        new SecureRandom().nextBytes(keyBytes);
+        String secretKey = Base64.getEncoder().encodeToString(keyBytes);
+        System.out.println("생성된 키: " + secretKey);
     }
 }
