@@ -12,4 +12,77 @@
         WHERE group_value = '0N'
     </select>
 
+<!--    회의록 등록-->
+    <insert id="registerMeeting">
+        <selectKey order="BEFORE" resultType="int" keyProperty="meetingLogId">
+            SELECT NVL(max(meeting_log_id),0) + 1
+            FROM meeting_logs
+        </selectKey>
+        INSERT INTO meeting_logs( meeting_log_id,
+                                  project_id,
+                                  title,
+                                  meeting_type_code,
+                                  meeting_date,
+                                  place,
+                                  content,
+                                  created_by,
+                                  created_at )
+        VALUES( #{meetingLogId},
+                #{projectId},
+                #{title},
+                #{meetingTypeCode},
+                #{meetingDate},
+                #{place},
+                #{content},
+                #{createdBy},
+                SYSDATE )
+    </insert>
+
+<!--    회의록 단건 조회-->
+    <select id="getMeetingById" >
+        SELECT title,
+               meeting_type_code,
+               meeting_date,
+               place,
+               content,
+               created_by,
+               meeting_log_id
+        FROM meeting_logs
+        WHERE meeting_log_id = #{id}
+    </select>
+
+    <!--    알림 테이블 등록-->
+    <insert id="registerMeetingAlarm">
+        <selectKey order="BEFORE" resultType="int" keyProperty="notificationId">
+            SELECT max(notification_id) + 1
+            FROM notifications
+        </selectKey>
+        INSERT INTO notifications( notification_id,
+                                   notification_type,
+                                   target_type,
+                                   target_id,
+                                   title,
+                                   message,
+                                   created_by,
+                                   created_at )
+        VALUES ( #{notificationId},
+                   'R7',
+                   'documents',
+                   #{targetId},
+                   #{title},
+                   #{message},
+                   #{createdBy},
+                   SYSDATE )
+    </insert>
+
+    <!--    알림 대상 테이블 등록-->
+    <insert id="registerAlarmTarget">
+        INSERT INTO notification_targets( notification_target_no,
+        notification_id,
+        receiver_id)
+        VALUES ( (SELECT max(notification_target_no) + 1
+        FROM notification_targets),
+        #{notificationId},
+        #{receiverId} )
+    </insert>
 </mapper>

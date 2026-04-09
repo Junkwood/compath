@@ -1,5 +1,7 @@
 package com.example.meeting.service.impl;
 
+import com.example.documemt.dto.DocumentAlarmDTO;
+import com.example.meeting.dto.MeetingAlarmDTO;
 import com.example.meeting.dto.MeetingDTO;
 import com.example.meeting.mapper.MeetingMapper;
 import com.example.meeting.service.MeetingService;
@@ -19,5 +21,34 @@ public class MeetingServiceImpl implements MeetingService {
     @Override
     public List<MeetingDTO> getMeetingType() {
         return mapper.getMeetingType();
+    }
+
+    @Override
+    public MeetingDTO registerMeeting(MeetingDTO dto) {
+
+        mapper.registerMeeting(dto);
+
+        int id = dto.getMeetingLogId();
+
+        return mapper.getMeetingById(id);
+    }
+
+    @Override
+    public int registerCommentAlarm(List<MeetingAlarmDTO> list) {
+
+        MeetingAlarmDTO dto = list.get(0);
+
+        mapper.registerMeetingAlarm(dto);
+
+        int id = dto.getNotificationId();
+
+        Integer result = 0;
+        for(int i=1; i<list.size(); i++) {
+            list.get(i).setNotificationId(id);
+
+            result += mapper.registerAlarmTarget(list.get(i));
+        }
+
+        return result;
     }
 }

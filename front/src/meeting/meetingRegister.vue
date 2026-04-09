@@ -75,10 +75,11 @@
                       <el-form-item
                         label="등록일"
                         class="block text-sm font-medium mb-1"
+                        prop="date"
                       >
                         <el-input
                           type="date"
-                          v-model="form.estStartDate"
+                          v-model="form.date"
                           class="w-full"
                         />
                       </el-form-item>
@@ -230,12 +231,12 @@
     </div>
   </div>
 
-  <!-- <meetingNotifirationModal
+  <meetingNotifirationModal
     v-model="modalOpen"
     :memberList="memberList"
     :alarmList="alarmList"
     @member-insert="memberInsert"
-  /> -->
+  />
 </template>
 
 <script setup>
@@ -247,10 +248,9 @@ import { useAuthStore } from "../stores/auth";
 
 import { useProjectKJHStore } from "../stores/projectKJH";
 import { useMeetingStore } from "../stores/meeting";
-import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
 import { useDocumentStore } from "../stores/document";
-// import { meetingNotifirationModal } from "./meetingNotificationModal.vue";
+import meetingNotifirationModal from "./meetingNotificationModal.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -290,37 +290,43 @@ const submitForm = async (formEl) => {
           projectId: id,
           title: form.title,
           content: form.content,
-          isPinned: form.isPinned == true ? "O1" : "O2",
-          isComment: form.isComment == true ? "O2" : "O1",
-          category: form.roleId == "전체" ? null : form.roleId,
+          meetingTypeCode: form.meetingType,
+          meetingDate: form.date,
+          place: form.meetingRoom,
           createdBy: userInfo.value.userId,
         };
-        await documentStore.registerDocument(obj);
+        await meetingStore.registerMeeting(obj);
 
-        if (
-          documentStore.registeredDocument.documentId > 0 &&
-          alarmList.value.length > 0
-        ) {
+        if (meetingStore.registeredMeeting.meetingLogId > 0) {
           let alarmArr = [
             {
-              targetId: documentStore.registeredDocument.documentId,
-              title: "문서를 등록되었습니다.",
-              message: "문서를 확인해주세요",
+              targetId: meetingStore.registeredMeeting.meetingLogId,
+              title: "회의록이 등록되었습니다.",
+              message: "등록된 회의록을 확인해주세요",
               createdBy: userInfo.value.userId,
             },
           ];
 
-          alarmList.value.forEach((al) => {
-            alarmArr.push({
-              receiverId: al.userId,
-              notificationId: "",
+          if (alarmList.value.length > 0) {
+            alarmList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
             });
-          });
+          } else {
+            memberList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
+            });
+          }
 
-          await documentStore.registerDocumentAlarm(alarmArr);
+          await meetingStore.registerMeetingAlarm(alarmArr);
 
           const result = await Swal.fire({
-            title: "등록 및 알림 전송이 완료되었습니다.",
+            title: "회의록 등록 및 알림 전송이 완료되었습니다.",
             text: "상세페이지로 이동합니다.",
             icon: "success",
             confirmButtonText: "확인",
@@ -352,16 +358,16 @@ const submitForm = async (formEl) => {
         await documentStore.modifyDocument(obj);
       }
 
-      router.push({
-        name: "documentDetail",
-        params: {
-          projectId: id,
-          documentId:
-            isModified == true
-              ? documentId
-              : documentStore.registeredDocument.documentId,
-        },
-      });
+      // router.push({
+      //   name: "documentDetail",
+      //   params: {
+      //     projectId: id,
+      //     documentId:
+      //       isModified == true
+      //         ? documentId
+      //         : documentStore.registeredDocument.documentId,
+      //   },
+      // });
     } else {
       // 안내 메세지 나옴
       console.log("error submit!", fields);
@@ -413,8 +419,6 @@ onBeforeMount(async () => {
 
   form.author = userInfo.value.name;
 
-  form.date = changeDate(new Date()); // 작성 당일 날짜 생성
-
   await meetingStore.getMeetingType();
   meetingType.value = meetingStore.meetingType;
 
@@ -465,6 +469,13 @@ const rules = reactive({
     {
       required: true,
       message: "회의 장소를 입력해주세요",
+      trigger: "change",
+    },
+  ],
+  date: [
+    {
+      required: true,
+      message: "회의 날짜를 선택해주세요",
       trigger: "change",
     },
   ],
