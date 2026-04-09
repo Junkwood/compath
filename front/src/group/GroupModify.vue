@@ -630,7 +630,7 @@ export default {
           timer: 2000,
         });
 
-        router.push(`/group/info/${form.value.groupId}`);
+        router.push(`/admin/group/info/${form.value.groupId}`);
       } catch {
         Swal.fire({
           icon: "error",

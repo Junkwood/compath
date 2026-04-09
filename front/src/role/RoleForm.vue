@@ -378,7 +378,7 @@ const methodColor = (method) => {
 };
 
 // ── 액션 로직 ──
-const handleGoBack = () => router.push("/role");
+const handleGoBack = () => router.push("/amdin/role");
 
 const handleSubmit = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
@@ -409,7 +409,7 @@ const handleSubmit = async () => {
       showConfirmButton: false,
     });
 
-    router.push("/role");
+    router.push("/admin/role");
   } catch (err) {
     Swal.fire({
       icon: "error",
