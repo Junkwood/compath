@@ -26,7 +26,7 @@
               <div class="grid grid-cols-3 gap-6">
                 <div>
                   <el-form-item
-                    label="업무 유형"
+                    label="문서 유형"
                     prop="roleId"
                     class="block text-sm font-medium mb-1"
                   >
@@ -261,10 +261,7 @@ const submitForm = async (formEl) => {
         };
         await documentStore.registerDocument(obj);
 
-        if (
-          documentStore.registeredDocument.documentId > 0 &&
-          alarmList.value.length > 0
-        ) {
+        if (documentStore.registeredDocument.documentId > 0) {
           let alarmArr = [
             {
               targetId: documentStore.registeredDocument.documentId,
@@ -274,16 +271,25 @@ const submitForm = async (formEl) => {
             },
           ];
 
-          alarmList.value.forEach((al) => {
-            alarmArr.push({
-              receiverId: al.userId,
-              notificationId: "",
+          if (alarmList.value.length > 0) {
+            alarmList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
             });
-          });
+          } else {
+            memberList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
+            });
+          }
 
           await documentStore.registerDocumentAlarm(alarmArr);
 
-          const result = await Swal.fire({
+          await Swal.fire({
             title: "등록 및 알림 전송이 완료되었습니다.",
             text: "상세페이지로 이동합니다.",
             icon: "success",

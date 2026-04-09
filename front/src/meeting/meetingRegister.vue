@@ -42,19 +42,18 @@
                     <div>
                       <el-form-item
                         label="회의 유형"
-                        prop="roleId"
+                        prop="meetingType"
                         class="block text-sm font-medium mb-1"
                       >
                         <el-select
-                          v-model="form.roleId"
+                          v-model="form.meetingType"
                           class="input flex-1"
                           placeholder="유형을 선택하세요"
                         >
-                          <el-option value="전체" label="전체">전체</el-option>
                           <el-option
-                            v-for="role in roles"
-                            :label="role.roleName"
-                            :value="role.roleId"
+                            v-for="type in meetingType"
+                            :label="type.typeName"
+                            :value="type.typeCode"
                           />
                         </el-select>
                       </el-form-item>
@@ -78,22 +77,22 @@
                         class="block text-sm font-medium mb-1"
                       >
                         <el-input
-                          disabled
-                          class="input w-full"
-                          v-model="form.date"
+                          type="date"
+                          v-model="form.estStartDate"
+                          class="w-full"
                         />
                       </el-form-item>
                     </div>
                     <div>
                       <el-form-item
                         label="회의 장소"
-                        prop="roleId"
+                        prop="meetingRoom"
                         class="block text-sm font-medium mb-1"
                       >
                         <el-input
                           placeholder="회의 장소를 적으세요"
                           class="w-full"
-                          v-model="form.title"
+                          v-model="form.meetingRoom"
                         />
                       </el-form-item>
                     </div>
@@ -135,7 +134,7 @@
                       class="btn-select-custom"
                       @click="openModal"
                     >
-                      알림대상 선택
+                      참석자 선택
                     </el-button>
 
                     <div class="flex flex-wrap gap-2">
@@ -245,9 +244,9 @@ import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth";
-import { useNoticeStore } from "../stores/notice";
 
 import { useProjectKJHStore } from "../stores/projectKJH";
+import { useMeetingStore } from "../stores/meeting";
 import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
 import { useDocumentStore } from "../stores/document";
@@ -256,8 +255,8 @@ import { useDocumentStore } from "../stores/document";
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
-const noticeStore = useNoticeStore();
 const documentStore = useDocumentStore();
+const meetingStore = useMeetingStore();
 
 const projectStore = useProjectKJHStore();
 const sidebarOpen = ref(false);
@@ -265,15 +264,14 @@ const sidebarOpen = ref(false);
 const id = route.params.projectId;
 const documentId = route.params.documentId;
 const userInfo = ref(); // 글 작성자 정보
-const roles = ref([]);
+const meetingType = ref([]);
 const form = reactive({
-  roleId: "전체",
+  meetingType: "",
   author: "",
   date: "",
   title: "",
   content: "",
-  isPinned: false,
-  isComment: false,
+  meetingRoom: "",
 }); // 작성내용 담을 곳
 
 let isModified = ref(false); // 수정, 생성 구분
@@ -281,20 +279,9 @@ let modalOpen = ref(false); // 알림대상 모달창
 const memberList = ref([]); // 구성원 테이블
 const alarmList = ref([]); // 알림대상 추가된 회원 목록
 
-// 상단고정 체크시
-const checkedPin = (event) => {
-  form.isPinned = event.target.checked;
-  console.log("상단고정", form.isPinned);
-};
-
-// 댓글잠금 체크시
-const checkedComment = (event) => {
-  form.isComment = event.target.checked;
-  console.log("댓글잠금", form.isComment);
-};
-
 // 공지사항 생성 버튼
 const submitForm = async (formEl) => {
+  console.log(formEl.validate);
   await formEl.validate(async (valid, fields) => {
     if (valid) {
       // 공지사항 등록
@@ -393,7 +380,7 @@ const handleClose = (tag) => {
 };
 
 onBeforeMount(async () => {
-  // 수정일때
+  // 수정 및 생성 구분
   if (documentId !== "" && documentId !== undefined && documentId !== null) {
     isModified.value = true;
     Swal.fire({
@@ -422,15 +409,14 @@ onBeforeMount(async () => {
 
     Swal.close();
   }
-  // 생성일 때
   userInfo.value = authStore.user; // 작성자 정보 받아오기
 
   form.author = userInfo.value.name;
 
   form.date = changeDate(new Date()); // 작성 당일 날짜 생성
 
-  await noticeStore.getProjectRoles(id);
-  roles.value = noticeStore.projectRoles; // 전체 역할정보
+  await meetingStore.getMeetingType();
+  meetingType.value = meetingStore.meetingType;
 
   await projectStore.getAllMembers(id); // 프로젝트 구성원 정보
   memberList.value = projectStore.memberList;
@@ -445,7 +431,7 @@ const openModal = () => {
 const goBack = () => {
   console.log(id);
   router.push({
-    name: "documentList",
+    name: "meetingList",
     params: { projectId: id },
   });
 };
@@ -461,10 +447,24 @@ const rules = reactive({
       trigger: "change",
     },
   ],
+  meetingType: [
+    {
+      required: true,
+      message: "회의유형을 선택해주세요",
+      trigger: "change",
+    },
+  ],
   content: [
     {
       required: true,
       message: "내용을 입력해주세요",
+      trigger: "change",
+    },
+  ],
+  meetingRoom: [
+    {
+      required: true,
+      message: "회의 장소를 입력해주세요",
       trigger: "change",
     },
   ],
@@ -787,5 +787,33 @@ const handleChange = (uploadFile, uploadFiles) => {
 }
 .btn-sub:hover {
   background: #6d28d9;
+}
+:deep(.input) {
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  font-size: 13px;
+}
+:deep(.input:focus) {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15) !important;
+  background: #fff !important;
+  outline: none;
+}
+:deep(.input:disabled) {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+:deep(select.input) {
+  border-radius: 10px !important;
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  padding-right: 28px !important;
+}
+:deep(textarea.input) {
+  border-radius: 10px !important;
 }
 </style>
