@@ -14,7 +14,14 @@ api.interceptors.request.use(
   (config) => {
     // 토큰을 헤더에 집어넣기
     const token = localStorage.getItem("ACCESS_TOKEN");
-    config.headers.Authorization = `Bearer ${token}`;
+    // const currentProjectId = localStorage.getItem("CURRENT_PROJECT_ID");
+    // 1. JWT 토큰 세팅
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    // if (currentProjectId) {
+    //   config.headers["X-Project-Id"] = currentProjectId;
+    // }
     return config;
   },
   (error) => Promise.reject(error),

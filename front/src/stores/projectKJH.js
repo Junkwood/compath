@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import api from "../utils/api";
 
 export const useProjectKJHStore = defineStore("projectKJH", {
   state: () => ({
@@ -20,7 +20,7 @@ export const useProjectKJHStore = defineStore("projectKJH", {
   actions: {
     // 프로젝트 구성원
     async getProjectInfo(id) {
-      this.projectInfo = (await axios.get("/api/ProjectInfo/" + id)).data;
+      this.projectInfo = (await api.get("/ProjectInfo/" + id)).data;
     },
 
     // 프로젝트 수정
@@ -31,8 +31,8 @@ export const useProjectKJHStore = defineStore("projectKJH", {
 
         console.log("수정 프로젝트 번호", id);
 
-        let result = await axios //
-          .put("/api/projects/info/" + id, payload);
+        let result = await api //
+          .put("/projects/info/" + id, payload);
 
         if (result.status == 200) {
           this.modifiedInfo = result.data;
@@ -44,23 +44,23 @@ export const useProjectKJHStore = defineStore("projectKJH", {
 
     // 멤버 정보
     async getUsersById(id) {
-      let result = await axios //
-        .get("/api/emp/users/" + id);
+      let result = await api //
+        .get("/emp/users/" + id);
       this.userInfo = result.data;
     },
 
     // 그룹 전체 정보
     async getAllGroups() {
-      let result = await axios //
-        .get("/api/group/list");
+      let result = await api //
+        .get("/group/list");
 
       this.groupList = result.data;
     },
 
     // 그룹 하나 조회
     async getGroupsById(id) {
-      let result = await axios //
-        .get("/api/group/info/" + id);
+      let result = await api //
+        .get("/group/info/" + id);
 
       this.groupInfo = result.data;
     },
@@ -68,7 +68,7 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     // 프로젝트 구성원 등록
     async registerProjectMem(arr) {
       console.log(arr);
-      let result = await axios.post("/api/projects/registerMember", arr);
+      let result = await api.post("/projects/registerMember", arr);
 
       console.log("구성원 등록 ", result.data);
       this.insertedList = result.data;
@@ -76,24 +76,24 @@ export const useProjectKJHStore = defineStore("projectKJH", {
 
     // 프로젝트 구성원 조회
     async getAllMembers(id) {
-      let result = await axios //
-        .get("/api/projects/getMembers/" + id);
+      let result = await api //
+        .get("/projects/getMembers/" + id);
 
       this.memberList = result.data;
     },
 
     // 역할 전체 조회
     async getAllRoles() {
-      let result = await axios //
-        .get("/api/role/list");
+      let result = await api //
+        .get("/role/list");
       this.roleList = result.data;
     },
 
     // 구성원 삭제
     async removeMem(obj) {
       console.log("구성원 삭제전", obj);
-      let result = await axios //
-        .delete("/api/projects/delMembers", {
+      let result = await api //
+        .delete("/projects/delMembers", {
           data: {
             projectId: obj.projectId,
             projectMemberId: obj.projectMemberId,
@@ -105,14 +105,14 @@ export const useProjectKJHStore = defineStore("projectKJH", {
 
     // 프로젝트 그룹 및 멤버 조회
     async getProjectGroupMem() {
-      let result = await axios.get("/api/projectgroup/members");
+      let result = await api.get("/projectgroup/members");
       console.log(result);
       this.projectGroupMem = result.data;
     },
 
     // 직군 그룹 및 멤버 조회
     async getGeneralGroupMem() {
-      let result = await axios.get("/api/group/members");
+      let result = await api.get("/group/members");
       this.generalGroupMem = result.data;
     },
   },
