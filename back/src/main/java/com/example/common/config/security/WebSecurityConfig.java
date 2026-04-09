@@ -53,7 +53,7 @@ public class WebSecurityConfig {
                 .httpBasic(httpBasic->httpBasic.disable())//토큰 쓰니까 basic인증 disable
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/auth/**").permitAll() // 인증 없이 접근 가능
+                        .requestMatchers("/", "/login", "/auth/**","/api/notifications/subscribe/**").permitAll() // 인증 없이 접근 가능
                         .requestMatchers("/api/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated() // 나머지는 인증 필요

@@ -22,22 +22,22 @@ const projectRoutes = [
     component: () => import("../milestone/MilestoneDashboard.vue"),
   },
   {
-    path: "/project/milestoneDetail/:projectId/:milestoneId",
+    path: "/project/:projectId/milestoneDetail/:milestoneId",
     name: "milestoneDetail",
     component: () => import("../milestone/MilestoneDetail.vue"),
   },
   {
-    path: "/project/sub/:rootProjectId/:subProjectId",
+    path: "/project/:projectId/sub/:subProjectId",
     name: "subProjectDashboard",
     component: () => import("../project/ProjectSubDashboard.vue"),
   },
   {
-    path: "/projectListAll",
+    path: "/project/listAll",
     name: "projectListAll",
     component: () => import("../project/ProjectListAll.vue"),
   },
   {
-    path: "/projecWorkHistory",
+    path: "/project/workHistory",
     name: "projectWorkHistory",
     component: () => import("../project/ProjectWorkHistory.vue"),
   },
