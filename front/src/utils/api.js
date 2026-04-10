@@ -69,7 +69,7 @@ api.interceptors.response.use(
           text: "접근 권한이 없습니다.",
           confirmButtonText: "확인",
         }).then(() => {
-          router.back(); // 확인 버튼을 누른 뒤 뒤로가기
+          router.push("/"); // 확인 버튼을 누른 뒤 뒤로가기
         });
       } else if (status === 404) {
         Swal.fire({
