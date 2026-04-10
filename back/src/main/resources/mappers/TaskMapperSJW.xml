@@ -147,4 +147,46 @@
         #{startStatus}
         )
     </insert>
+    <select id="getTaskSummary">
+        <![CDATA[
+    SELECT
+        -- 1. 진행 중 (완료가 아니고, 마감일이 안 지난 것)
+        COUNT(CASE WHEN ts.is_final = 'O2' AND TRUNC(t.due_date) >= TRUNC(SYSDATE) THEN 1 END) AS inProgress,
+
+        -- 2. 지연됨 (완료가 아니고, 마감일이 지난 것)
+        COUNT(CASE WHEN ts.is_final = 'O2' AND TRUNC(t.due_date) < TRUNC(SYSDATE) THEN 1 END) AS delayed,
+
+        -- 3. 마감 임박 (완료가 아니고, 마감일이 오늘부터 3일 이내인 것)
+        COUNT(CASE WHEN ts.is_final = 'O2' AND (TRUNC(t.due_date) - TRUNC(SYSDATE)) BETWEEN 0 AND 3 THEN 1 END) AS pendingPR,
+
+        -- 4. 완료 처리됨
+        COUNT(CASE WHEN ts.is_final = 'O1' THEN 1 END) AS done
+    FROM tasks t
+    JOIN task_statuses ts ON t.task_status_id = ts.task_status_id
+    WHERE t.ASSIGNEE_USER_ID = #{userId} -- 💡 1. 맵핑 테이블 없이 바로 tasks 테이블의 담당자 컬럼을 조회!
+    ]]>
+    </select>
+
+    <select id="getTaskList">
+        <![CDATA[
+    SELECT
+        t.task_id AS taskId,
+        t.project_id AS projectId,
+        p.parent_project_id AS parentProjectId, -- 💡 상위 프로젝트 ID 추출
+        t.title AS title,
+        (TRUNC(t.due_date) - TRUNC(SYSDATE)) AS dDay,
+        common(t.priority_code) AS priority,
+        tt.type_name AS typeName,
+        ts.status_name AS statusName,
+        ts.is_final AS isFinal,
+        t.progress_rate AS progressRate
+    FROM tasks t
+    JOIN projects p ON t.project_id = p.project_id  -- 💡 프로젝트 테이블 조인
+    LEFT JOIN task_types tt ON t.task_type_id = tt.task_type_id
+    JOIN task_statuses ts ON t.task_status_id = ts.task_status_id
+    WHERE t.ASSIGNEE_USER_ID = #{userId}
+      AND ts.is_final = 'O2'
+    ORDER BY dDay ASC
+    ]]>
+    </select>
 </mapper>

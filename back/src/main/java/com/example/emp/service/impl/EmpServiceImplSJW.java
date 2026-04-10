@@ -191,4 +191,11 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
         return false;
     }
 
+    @Override
+    public EmpVOSJW getByIdForMyPage(Integer id) {
+        EmpVOSJW emp = empMapper.getByIdForMyPage(id);
+        emp.setPassword(null);
+        return emp;
+    }
+
 }

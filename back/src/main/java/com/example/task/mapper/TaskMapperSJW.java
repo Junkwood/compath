@@ -1,5 +1,6 @@
 package com.example.task.mapper;
 
+import com.example.task.dto.TaskDTOSJW;
 import com.example.task.dto.TaskStatusDTOSJW;
 import com.example.task.dto.TaskTypeDTOSJW;
 import org.apache.ibatis.annotations.Mapper;
@@ -33,4 +34,8 @@ public interface TaskMapperSJW {
     Integer checkDupType(String name);
     //업무 유형 등록
     Integer registerTaskType(TaskTypeDTOSJW taskType);
+    //마이페이지용 업무 목록.
+    List<TaskDTOSJW> getTaskList(Integer userId);
+    //마이페이지용 업무 요약
+    List<TaskDTOSJW> getTaskSummary(Integer userId);
 }

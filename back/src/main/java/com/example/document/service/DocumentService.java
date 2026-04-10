@@ -1,8 +1,8 @@
-package com.example.documemt.service;
+package com.example.document.service;
 
-import com.example.documemt.dto.DocumentAlarmDTO;
-import com.example.documemt.dto.DocumentCommentDTO;
-import com.example.documemt.dto.DocumentDTO;
+import com.example.document.dto.DocumentAlarmDTO;
+import com.example.document.dto.DocumentCommentDTO;
+import com.example.document.dto.DocumentDTO;
 
 import java.util.List;
 import java.util.Map;

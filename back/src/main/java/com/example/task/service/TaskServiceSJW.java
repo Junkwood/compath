@@ -1,5 +1,6 @@
 package com.example.task.service;
 
+import com.example.task.dto.TaskDTOSJW;
 import com.example.task.dto.TaskStatusDTOSJW;
 import com.example.task.dto.TaskTypeDTOSJW;
 
@@ -31,4 +32,8 @@ public interface TaskServiceSJW {
     Boolean registerTaskType(TaskTypeDTOSJW taskType);
 
     Boolean modifyTaskType(Integer taskTypeId, TaskTypeDTOSJW taskType);
+
+    List<TaskDTOSJW> getTaskList(Integer userId);
+
+    List<TaskDTOSJW> getTaskSummary(Integer userId);
 }

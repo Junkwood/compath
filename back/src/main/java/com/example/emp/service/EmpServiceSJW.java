@@ -9,12 +9,22 @@ import java.util.List;
 
 public interface EmpServiceSJW {
     List<EmpDTOSJW> getAll();
+
     List<EmpVOSJW> getAllForGroup();
+
     EmpVOSJW getById(Integer id);
+
     String modifyStatusById(Integer id);
+
     Integer registerEmp(EmpVOSJW emp);
+
     EmpVOSJW login(EmpVOSJW emp);
-    Boolean modifyEmpById(EmpVOSJW emp,Integer id);
-    Integer sendEmail(String email,Integer userId);
+
+    Boolean modifyEmpById(EmpVOSJW emp, Integer id);
+
+    Integer sendEmail(String email, Integer userId);
+
     Boolean verifyCode(Integer code, Integer emailId);
+
+    EmpVOSJW getByIdForMyPage(Integer id);
 }

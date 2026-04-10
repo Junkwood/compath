@@ -15,7 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 
 @Configuration
@@ -55,11 +54,12 @@ public class WebSecurityConfig {
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers("/", "/login", "/auth/**","/api/notifications/subscribe/**").permitAll() // 인증 없이 접근 가능
-                        .requestMatchers("/api/**").hasAnyRole("ADMIN", "USER")
-                        //.requestMatchers("/api/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/", "/login", "/auth/**").permitAll() // 인증 없이 접근 가능
+                        .requestMatchers("/api/**").authenticated()
+                        //.requestMatchers("/api/**","/api/notifications/subscribe/**").hasAnyRole("ADMIN", "USER")
+                        //.requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated() // 나머지는 인증 필요
                 );
 
