@@ -1,8 +1,8 @@
-package com.example.documemt.mapper;
+package com.example.document.mapper;
 
-import com.example.documemt.dto.DocumentAlarmDTO;
-import com.example.documemt.dto.DocumentCommentDTO;
-import com.example.documemt.dto.DocumentDTO;
+import com.example.document.dto.DocumentAlarmDTO;
+import com.example.document.dto.DocumentCommentDTO;
+import com.example.document.dto.DocumentDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

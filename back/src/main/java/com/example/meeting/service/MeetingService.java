@@ -1,6 +1,5 @@
 package com.example.meeting.service;
 
-import com.example.documemt.dto.DocumentAlarmDTO;
 import com.example.meeting.dto.MeetingAlarmDTO;
 import com.example.meeting.dto.MeetingDTO;
 

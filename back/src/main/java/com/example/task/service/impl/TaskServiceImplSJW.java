@@ -1,5 +1,6 @@
 package com.example.task.service.impl;
 
+import com.example.task.dto.TaskDTOSJW;
 import com.example.task.dto.TaskStatusDTOSJW;
 import com.example.task.dto.TaskTypeDTOSJW;
 import com.example.task.mapper.TaskMapperSJW;
@@ -179,5 +180,15 @@ public class TaskServiceImplSJW implements TaskServiceSJW {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<TaskDTOSJW> getTaskList(Integer userId) {
+        return taskMapper.getTaskList(userId);
+    }
+
+    @Override
+    public List<TaskDTOSJW> getTaskSummary(Integer userId) {
+        return taskMapper.getTaskSummary(userId);
     }
 }

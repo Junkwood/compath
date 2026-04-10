@@ -1,9 +1,9 @@
-package com.example.documemt.controller;
+package com.example.document.controller;
 
-import com.example.documemt.dto.DocumentAlarmDTO;
-import com.example.documemt.dto.DocumentCommentDTO;
-import com.example.documemt.dto.DocumentDTO;
-import com.example.documemt.service.DocumentService;
+import com.example.document.dto.DocumentAlarmDTO;
+import com.example.document.dto.DocumentCommentDTO;
+import com.example.document.dto.DocumentDTO;
+import com.example.document.service.DocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

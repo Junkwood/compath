@@ -239,7 +239,7 @@ const sidebarOpen = ref(false);
 const authStore = useAuthStore();
 
 const subProjectId = route.params.subProjectId;
-const rootProjectId = route.params.rootProjectId;
+const rootProjectId = route.params.projectId;
 
 //하위프로젝트 수정 모달
 const subProjectModalOpen = ref(false);

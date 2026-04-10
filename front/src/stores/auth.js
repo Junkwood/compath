@@ -21,27 +21,27 @@ export const useAuthStore = defineStore("auth", {
   actions: {
     login(userData, remember = false) {
       const token = userData.token;
-      localStorage.setItem("ACCESS_TOKEN", token);
+      if (remember) {
+        // 로그인 유지 체크 시: localStorage 사용
+        localStorage.setItem("keepLogin", "true");
+        localStorage.setItem("ACCESS_TOKEN", token);
+      } else {
+        // 로그인 유지 미체크 시: sessionStorage 사용
+        sessionStorage.setItem("ACCESS_TOKEN", token);
+      }
       const decoded = jwtDecode(token);
       this.user = userData;
       this.user.userType = decoded.userType;
       this.user.name = decoded.userName;
       console.log(decoded);
       localStorage.setItem("user", JSON.stringify(userData));
-
-      if (remember) {
-        localStorage.setItem("keepLogin", "true");
-      } else {
-        localStorage.removeItem("keepLogin");
-        sessionStorage.setItem("alive", "true");
-      }
     },
     logout() {
       this.user = null;
+      console.log("authStore.logout");
       localStorage.removeItem("user");
       localStorage.removeItem("keepLogin");
       localStorage.removeItem("ACCESS_TOKEN");
-      sessionStorage.removeItem("alive");
     },
   },
 });

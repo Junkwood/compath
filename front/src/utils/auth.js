@@ -30,25 +30,57 @@ auth.interceptors.response.use(
       const status = error.response.status;
 
       if (status === 401) {
-        // 🚨 반드시 에러가 발생한 이 '시점(함수 내부)'에서 스토어를 호출해야 합니다!
-        const authStore = useAuthStore();
-
-        alert("세션이 만료되었거나 로그인이 필요합니다.");
-
-        authStore.logout(); // 피니아 데이터 초기화
-        router.push("/login"); // 로그인 화면으로 강제 이동
+        // 반드시 에러가 발생한 이 '시점(함수 내부)'에서 스토어를 호출해야 합니다!
+        // 비동기 처리: 확인 버튼을 누른 뒤에 로그아웃 및 라우팅!
+        Swal.fire({
+          icon: "warning",
+          title: "세션 만료",
+          text: "세션이 만료되었거나 로그인이 필요합니다.",
+          confirmButtonText: "확인",
+        }).then(() => {
+          authStore.logout();
+          router.push("/login");
+        });
       } else if (status === 403) {
-        alert("접근 권한이 없습니다.");
+        Swal.fire({
+          icon: "error",
+          title: "접근 거부",
+          text: "접근 권한이 없습니다.",
+          confirmButtonText: "확인",
+        }).then(() => {
+          router.back(); // 확인 버튼을 누른 뒤 뒤로가기
+        });
       } else if (status === 404) {
-        alert("요청하신 페이지나 데이터를 찾을 수 없습니다.");
+        Swal.fire({
+          icon: "question",
+          title: "페이지 없음",
+          text: "요청하신 페이지나 데이터를 찾을 수 없습니다.",
+          confirmButtonText: "확인",
+        });
       } else if (status === 500) {
-        alert("서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        Swal.fire({
+          icon: "error",
+          title: "서버 오류",
+          text: "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+          confirmButtonText: "확인",
+        });
       } else {
         const serverMessage = error.response.data?.message;
-        alert(serverMessage || "데이터 요청 중 오류가 발생했습니다.");
+        Swal.fire({
+          icon: "error",
+          title: "요청 오류",
+          text: serverMessage || "데이터 요청 중 오류가 발생했습니다.",
+          confirmButtonText: "확인",
+        });
       }
     } else {
-      alert("서버와 통신할 수 없습니다. 네트워크 상태를 확인해주세요.");
+      // 서버가 죽었거나 인터넷이 끊겼을 때
+      Swal.fire({
+        icon: "error",
+        title: "네트워크 오류",
+        text: "서버와 통신할 수 없습니다. 네트워크 상태를 확인해주세요.",
+        confirmButtonText: "확인",
+      });
     }
 
     // 컴포넌트 쪽으로 에러를 넘겨줌 (컴포넌트의 catch 블록이 실행되도록)

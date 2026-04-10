@@ -1,10 +1,10 @@
-package com.example.documemt.service.impl;
+package com.example.document.service.impl;
 
-import com.example.documemt.dto.DocumentAlarmDTO;
-import com.example.documemt.dto.DocumentCommentDTO;
-import com.example.documemt.dto.DocumentDTO;
-import com.example.documemt.mapper.DocumentMapper;
-import com.example.documemt.service.DocumentService;
+import com.example.document.dto.DocumentAlarmDTO;
+import com.example.document.dto.DocumentCommentDTO;
+import com.example.document.dto.DocumentDTO;
+import com.example.document.mapper.DocumentMapper;
+import com.example.document.service.DocumentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

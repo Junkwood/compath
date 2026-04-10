@@ -1,10 +1,12 @@
 import { defineStore } from "pinia";
 import admin from "../utils/admin";
+import api from "../utils/api";
 
 export const useEmpStore = defineStore("emp", {
   state: () => ({
     empList: [],
     empList4Group: [],
+    user: {},
   }),
   getters: {},
   actions: {
@@ -38,6 +40,11 @@ export const useEmpStore = defineStore("emp", {
       } else {
         console.error("업뎃 실패", data);
       }
+    },
+    async getUser(id) {
+      const response = await api.get(`/emp/${id}`);
+      this.user = response.data;
+      return this.user;
     },
   },
 });
