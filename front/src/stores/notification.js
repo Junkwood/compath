@@ -24,37 +24,37 @@ export const useNotificationStore = defineStore("notification", {
       }
     },
 
-    // setupSSE(userId) {
-    //   const token = localStorage.getItem("ACCESS_TOKEN");
-    //   if (this.eventSource) {
-    //     this.eventSource.close();
-    //   }
+    setupSSE(userId) {
+      const token = localStorage.getItem("ACCESS_TOKEN");
+      if (this.eventSource) {
+        this.eventSource.close();
+      }
 
-    //   const eventSource = new EventSourcePolyfill(
-    //     `${import.meta.env.VITE_API_BASE_URL}/notifications/subscribe/${userId}`,
-    //     {
-    //       headers: {
-    //         // 헤더에 토큰 넣어야함.
-    //         Authorization: `Bearer ${token}`,
-    //       },
-    //       // SSE 연결 유지 시간 (1시간세팅함)
-    //       heartbeatTimeout: 60 * 60 * 1000,
-    //     },
-    //   );
+      const eventSource = new EventSourcePolyfill(
+        `${import.meta.env.VITE_API_BASE_URL}/notifications/subscribe/${userId}`,
+        {
+          headers: {
+            // 헤더에 토큰 넣어야함.
+            Authorization: `Bearer ${token}`,
+          },
+          // SSE 연결 유지 시간 (1시간세팅함)
+          heartbeatTimeout: 60 * 60 * 1000,
+        },
+      );
 
-    //   this.eventSource = eventSource;
+      this.eventSource = eventSource;
 
-    //   eventSource.addEventListener("notification", (event) => {
-    //     const newNotif = JSON.parse(event.data);
-    //     this.notifications.unshift(newNotif);
-    //     this.unreadCount++;
-    //   });
+      eventSource.addEventListener("notification", (event) => {
+        const newNotif = JSON.parse(event.data);
+        this.notifications.unshift(newNotif);
+        this.unreadCount++;
+      });
 
-    //   eventSource.onerror = () => {
-    //     eventSource.close();
-    //     setTimeout(() => this.setupSSE(userId), 5000);
-    //   };
-    // },
+      eventSource.onerror = () => {
+        eventSource.close();
+        setTimeout(() => this.setupSSE(userId), 5000);
+      };
+    },
 
     // 단건 읽음 처리
 

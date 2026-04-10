@@ -41,20 +41,35 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
             if (dto.getStartDate() == null) dto.setStartDate(new Date());
         }
 
-
         int result = taskMapperJJW.updateTask(dto);
 
-        if (dto.getTaskStatusId() == 3 || dto.getTaskStatusId() == 5) {
-            String title   = dto.getTaskStatusId() == 3 ? "개발완료" : "업무 종료";
-            String message = dto.getTaskStatusId() == 3
-                    ? "담당 업무가 개발완료 되었습니다."
-                    : "담당 업무가 종료되었습니다.";
-
+        // 진행중
+        if (dto.getTaskStatusId() == 2) {
             notificationService.sendToProjectMembers(
                     dto.getProjectId(), dto.getAssigneeUserId(),
                     "R3", dto.getTaskId(),
-                    title, message,
+                    "업무 진행중", "담당 업무가 진행중으로 변경 되었습니다.",
                     dto.getAssigneeUserId()
+            );
+        }
+
+        // 개발완료
+        if (dto.getTaskStatusId() == 3) {
+            notificationService.sendToProjectMembers(
+                    dto.getProjectId(), dto.getAssigneeUserId(),
+                    "R3", dto.getTaskId(),
+                    "개발완료", "담당 업무가 개발완료 되었습니다.",
+                    dto.getAssigneeUserId()
+            );
+        }
+
+        // 업무 종료(보내는 사람 0은 임의로 해둠 딱히 문제 x)
+        if (dto.getTaskStatusId() == 5) {
+            notificationService.sendToOne(
+                    dto.getAssigneeUserId(),
+                    "R3", dto.getTaskId(),
+                    "업무 종료", "담당 업무가 종료되었습니다.",
+                    0
             );
         }
         return result;

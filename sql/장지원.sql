@@ -4,6 +4,10 @@ SELECT * FROM users;
 SELECT * FROM projects;
 SELECT * FROM tasks;
 
+SELECT task_id, editor_user_id, updated_at 
+FROM tasks 
+WHERE task_id = 10152;
+
 SELECT * FROM groups;
 SELECT * FROM roles;
 SELECT * FROM project_members;
@@ -14,7 +18,7 @@ SELECT * FROM task_statuses;
 SELECT * FROM  notifications;
 SELECT * FROM notification_targets;
 SELECT * FROM task_rejections;
-
+SELECT * FROM time_entries;
 
 
 
@@ -98,6 +102,21 @@ CREATE SEQUENCE task_seq
     INCREMENT BY 1
     NOCACHE
     NOCYCLE;
+
+DROP SEQUENCE notifications_seq;
+CREATE SEQUENCE notifications_seq
+    START WITH 200
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+DROP SEQUENCE notification_targets_seq;
+CREATE SEQUENCE notification_targets_seq
+    START WITH 400
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
 
 -- 특정 업무 상세 조회 (VO/DTO 매핑용)
 SELECT 
@@ -239,6 +258,7 @@ BEGIN
 
 END;
 ------------------------------------------------------------------------
+
 --알림 전용 프로시저
 CREATE OR REPLACE PROCEDURE SP_GET_NOTIFICATION_RECEIVERS (
     p_project_id  IN  NUMBER,
