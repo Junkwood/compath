@@ -25,6 +25,7 @@ public class TaskReqDtoJJW {
     @NotNull(message = "업무유형은 필수입니다.")
     Integer taskTypeId;
     @NotNull(message = "업무상태는 필수입니다.")
+
     Integer taskStatusId;
     @NotNull(message = "업무명은 필수입니다.")
     String title;

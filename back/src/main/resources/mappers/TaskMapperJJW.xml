@@ -63,15 +63,43 @@
             SELECT task_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO tasks (
-        task_id, project_id, parent_task_id, milestone_id,
-        task_type_id, task_status_id, title, content,
-        assignee_user_id, priority_code, est_start_date, est_end_date,
-        start_date, due_date, estimated_hours, progress_rate, created_at
+        task_id,
+        project_id,
+        parent_task_id,
+        milestone_id,
+        task_type_id,
+        task_status_id,
+        title,
+        content,
+        assignee_user_id,
+        priority_code,
+        est_start_date,
+        est_end_date,
+        start_date,
+        due_date,
+        estimated_hours,
+        progress_rate,
+        created_by,
+        created_at
         ) VALUES (
-        #{taskId}, #{projectId}, #{parentTaskId}, #{milestoneId},
-        #{taskTypeId}, #{taskStatusId}, #{title}, #{content},
-        #{assigneeUserId}, #{priorityCode}, #{estStartDate}, #{estEndDate},
-        #{startDate}, #{dueDate}, #{estimatedHours}, #{progressRate}, SYSDATE
+        #{taskId},
+        #{projectId},
+        #{parentTaskId},
+        #{milestoneId},
+        #{taskTypeId},
+        #{taskStatusId},
+        #{title},
+        #{content},
+        #{assigneeUserId},
+        #{priorityCode},
+        #{estStartDate},
+        #{estEndDate},
+        #{startDate},
+        #{dueDate},
+        #{estimatedHours},
+        #{progressRate},
+        #{createdBy},
+        SYSDATE
         )
     </insert>
 
