@@ -26,5 +26,15 @@ const taskRoutes1 = [
     name: "TaskReport",
     component: () => import("../report/TaskReport.vue"),
   },
+  {
+    path: "/project/:projectId/task/time-report",
+    name: "TimeReport",
+    component: () => import("../report/TimeReport.vue"),
+  },
+  {
+    path: "/project/:projectId/task/time-entries/:taskId",
+    name: "TimeEntries",
+    component: () => import("../report/TimeEntries.vue"),
+  },
 ];
 export default taskRoutes1;

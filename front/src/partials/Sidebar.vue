@@ -416,7 +416,10 @@
 
                   <router-link
                     v-if="currentProjectId"
-                    to="/project/time"
+                    :to="{
+                      name: 'TimeReport', // 라우터 설정의 name과 일치 필수!
+                      params: { projectId: currentProjectId },
+                    }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >

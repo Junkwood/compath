@@ -116,7 +116,10 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
+import { useAuthStore } from "../stores/auth";
 import api from "../utils/api";
+
+const authStore = useAuthStore();
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -192,6 +195,7 @@ const handleSubmit = async () => {
       description: form.description,
       useMilestone: form.useMilestone ? "O1" : "O2",
       isPublic: form.isPublic ? "O1" : "O2",
+      createdBy: authStore.user.userId,
     };
 
     await api.post("/ProjectRegister", payload);

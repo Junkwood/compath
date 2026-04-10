@@ -379,7 +379,6 @@ onBeforeMount(async () => {
     taskInfo.value.actualHours = taskInfo.value.totalTimeEntries;
   }
 
-
   // 상위 프로젝트가 없을 때 구분
   if (taskInfo.value.parentProjectName != null) {
     taskPjList.value = [
@@ -428,8 +427,7 @@ const goCreateSubTask = () => {
   router.push({
     name: "taskRegister",
     params: {
-      projectId:
-        taskInfo.value.parentProjectId || taskInfo.value.projectId.value,
+      projectId: taskInfo.value.parentProjectId || taskInfo.value.projectId,
     },
     query: { parentTaskId: taskId.value },
   });
@@ -471,10 +469,10 @@ const submitted = async (val) => {
   // console.log("소요시간 우측: ", taskInfo.value.actualHours);
 
   //등록 후 합계를 다시 계산해서 반영 => 누적 합계
-    taskInfo.value.actualHours = timeEntriesList.value.reduce(
-    (sum, entry) => sum + Number(entry.hours ?? 0), 0
+  taskInfo.value.actualHours = timeEntriesList.value.reduce(
+    (sum, entry) => sum + Number(entry.hours ?? 0),
+    0,
   );
-
 
   chageTaskDesc();
 };

@@ -1,5 +1,6 @@
 package com.example.project.service.impl;
 
+import com.example.alarm.service.NotificationService;
 import com.example.project.dto.*;
 import com.example.project.mapper.ProjectMapperKJH;
 import com.example.project.service.ProjectServiceKJH;
@@ -15,6 +16,7 @@ import java.util.List;
 public class ProjectServiceImplKJH implements ProjectServiceKJH {
 
     private final ProjectMapperKJH mapper;
+    private final NotificationService notificationService;
 
 //    프로젝트 단건 조회
     @Override
@@ -41,6 +43,18 @@ public class ProjectServiceImplKJH implements ProjectServiceKJH {
         // 구성원 역할 테이블에 등록
         mapper.registerMemRole(dto);
         }
+        // 알림 전송
+        for (ProjectMemberDtoKJH dto : dtoList) {
+            notificationService.sendToOne(
+                    dto.getUserId(),
+                    "R2",
+                    dto.getProjectId(),
+                    "프로젝트 참여",
+                    "프로젝트에 참여되었습니다.",
+                    0
+            );
+        }
+
 
         // 구서원 조회
         return mapper.getAllProjectMem(dtoList.getFirst().getProjectId());
