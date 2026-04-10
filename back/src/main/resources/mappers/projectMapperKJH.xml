@@ -42,7 +42,8 @@
             is_public = #{isPublic},
             updated_at = SYSDATE,
             pl_user_id = #{plUserId},
-            use_milestone = #{useMilestone}
+            use_milestone = #{useMilestone},
+            editor_user_id = #{editorUserId}
         WHERE project_id = #{projectId}
     </insert>
 
