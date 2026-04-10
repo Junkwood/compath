@@ -26,7 +26,8 @@
                                   place,
                                   content,
                                   created_by,
-                                  created_at )
+                                  created_at,
+                                  attachment_group_id )
         VALUES( #{meetingLogId},
                 #{projectId},
                 #{title},
@@ -35,7 +36,8 @@
                 #{place},
                 #{content},
                 #{createdBy},
-                SYSDATE )
+                SYSDATE,
+                #{attachmentGroupId} )
     </insert>
 
 <!--    회의록 단건 조회-->
@@ -51,7 +53,8 @@
                m.meeting_log_id,
                p.project_name,
                p.start_date,
-               p.end_date
+               p.end_date,
+               m.attachment_group_id
         FROM meeting_logs m
         LEFT JOIN projects p ON m.project_id = p.project_id
         LEFT JOIN users u ON m.created_by = u.user_id
@@ -71,7 +74,7 @@
                                    title,
                                    message,
                                    created_by,
-                                   created_at )
+                                   created_at)
         VALUES ( #{notificationId},
                    'R7',
                    'documents',
@@ -79,7 +82,7 @@
                    #{title},
                    #{message},
                    #{createdBy},
-                   SYSDATE )
+                   SYSDATE)
     </insert>
 
     <!--    알림 대상 테이블 등록-->
@@ -108,7 +111,7 @@
 <!--    필터링 조건(유형)-->
     <select id="getFilterType">
         SELECT DISTINCT m.meeting_type_code,
-               c.code_name
+               c.code_name AS typeName
         FROM meeting_logs m
         JOIN common_code c ON m.meeting_type_code = c.code_value
         JOIN projects p ON m.project_id = p.project_id
@@ -133,7 +136,8 @@
                 m.title,
                 u.user_name,
                 m.created_at,
-                c.code_name AS type_name
+                c.code_name AS type_name,
+                m.attachment_group_id
               FROM meeting_logs m
               JOIN projects p ON m.project_id = p.project_id
               JOIN users u ON m.created_by = u.user_id

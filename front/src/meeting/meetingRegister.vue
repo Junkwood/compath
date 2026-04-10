@@ -110,7 +110,14 @@
                     </el-form-item>
                   </div>
                   <div class="mb-6">
-                    <el-upload action="#" :auto-upload="false" class="w-full">
+                    <el-upload
+                      v-model:filet="file"
+                      action="#"
+                      :auto-upload="false"
+                      class="w-full"
+                      multiple
+                      :on-change="handleChange"
+                    >
                       <template #trigger>
                         <div
                           class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 cursor-pointer"
@@ -295,7 +302,22 @@ const submitForm = async (formEl) => {
           place: form.meetingRoom,
           createdBy: userInfo.value.userId,
         };
-        await meetingStore.registerMeeting(obj);
+
+        const formData = new FormData();
+        formData.append(
+          "obj",
+          new Blob([JSON.stringify(obj)], {
+            type: "application/json",
+          }),
+        );
+
+        if (fileList.value && fileList.value.length > 0) {
+          fileList.value.forEach((file) => {
+            formData.append("files", file.raw);
+            console.log("file정체", file.raw);
+          });
+        }
+        await meetingStore.registerMeeting(formData);
 
         if (meetingStore.registeredMeeting.meetingLogId > 0) {
           let alarmArr = [
@@ -362,10 +384,10 @@ const submitForm = async (formEl) => {
         name: "meetingDetail",
         params: {
           projectId: id,
-          meetingStore:
+          meetingId:
             isModified == true
               ? meetingId
-              : meetingStore.registeredMeeting.meetingId,
+              : meetingStore.registeredMeeting.meetingLogId,
         },
       });
     } else {
@@ -485,15 +507,11 @@ const resetForm = (formEl) => {
 };
 
 // 첨부파일api
-const fileList = ref([
-  {
-    name: "food.jpeg",
-    url: "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100",
-  },
-]);
+const file = ref([]);
+const fileList = ref([]);
 
 const handleChange = (uploadFile, uploadFiles) => {
-  fileList.value = fileList.value.slice(-3);
+  fileList.value = uploadFiles;
 };
 </script>
 

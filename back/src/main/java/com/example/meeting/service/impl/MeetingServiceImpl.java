@@ -1,6 +1,5 @@
 package com.example.meeting.service.impl;
 
-import com.example.documemt.dto.DocumentAlarmDTO;
 import com.example.meeting.dto.MeetingAlarmDTO;
 import com.example.meeting.dto.MeetingDTO;
 import com.example.meeting.mapper.MeetingMapper;
@@ -85,5 +84,10 @@ public class MeetingServiceImpl implements MeetingService {
         result.put("meetingList", meetingList);
 
         return result;
+    }
+
+    @Override
+    public List<MeetingDTO> getAllMeeting(MeetingDTO dto) {
+        return mapper.getAllMeeting(dto);
     }
 }
