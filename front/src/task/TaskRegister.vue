@@ -186,22 +186,18 @@
                 <label class="block text-sm font-medium mb-1"
                   >예정 시작 일</label
                 >
-                <input
-                  type="date"
+                <TaskDatePicker
                   v-model="form.estStartDate"
                   @change="calcEstTime(true)"
-                  class="input w-full"
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1"
                   >예정 종료일</label
                 >
-                <input
-                  type="date"
+                <TaskDatePicker
                   v-model="form.estEndDate"
                   @change="calcEstTime(true)"
-                  class="input w-full"
                 />
                 <p class="text-xs text-gray-400 mt-1">
                   우선순위 선택 시 마감기한이 자동 설정됩니다.
@@ -237,8 +233,10 @@ import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import { useAuthStore } from "../stores/auth";
 import ProjectSelectModal from "../components/SelectModal.vue";
 import { useTaskStore } from "../stores/useTaskStore";
+import TaskDatePicker from "../components/TaskDatePicker.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -246,6 +244,7 @@ const sidebarOpen = ref(false);
 const store = useTaskStore();
 const id = route.params.projectId;
 const parentTaskId = route.query.parentTaskId;
+const authStore = useAuthStore();
 
 const isSubTask = computed(() => !!route.query.parentTaskId);
 
@@ -288,7 +287,7 @@ const confirmSubProject = () => {
 
 const handleSubmit = async () => {
   try {
-    await store.createTask();
+    await store.createTask(authStore.user?.userId);
     alert("등록 완료!");
     router.push({
       name: "taskList",

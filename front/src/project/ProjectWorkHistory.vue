@@ -24,9 +24,9 @@
                 작업내역
               </h2>
               <div class="activity-sub-row">
-                <span class="activity-project-name"
-                  >【 {{ projectInfo.projectName }} 】</span
-                >
+                <span class="activity-project-name">
+                  【 {{ projectInfo.projectName }} 】
+                </span>
                 <span class="activity-project-period">
                   {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
                 </span>
@@ -40,7 +40,7 @@
               <div class="filter-item search-box">
                 <label>검색</label>
                 <input
-                  v-model="searchKeyword"
+                  v-model="activityStore.searchKeyword"
                   type="text"
                   placeholder="사용자명, 대상명, 내용 검색"
                 />
@@ -48,30 +48,43 @@
 
               <div class="filter-item">
                 <label>활동유형</label>
-                <select v-model="selectedActivityType">
+                <select v-model="activityStore.selectedActivityType">
                   <option value="">전체</option>
-                  <option value="CREATE">생성</option>
-                  <option value="UPDATE">수정</option>
-                  <option value="DELETE">삭제</option>
+
+                  <option value="J0">프로젝트 생성</option>
+                  <option value="J1">프로젝트 수정</option>
+                  <option value="J2">프로젝트 삭제</option>
+                  <option value="J3">프로젝트 상태변경</option>
+
+                  <option value="M0">마일스톤 생성</option>
+                  <option value="M1">마일스톤 수정</option>
+                  <option value="M2">마일스톤 삭제</option>
+                  <option value="M3">마일스톤 상태변경</option>
+
+                  <option value="T0">업무 생성</option>
+                  <option value="T1">업무 수정</option>
+                  <option value="T2">업무 삭제</option>
+                  <option value="T3">업무 상태변경</option>
+                  <option value="T4">업무 진척도변경</option>
+                  <option value="T5">업무 소요시간변경</option>
                 </select>
               </div>
 
               <div class="filter-item">
                 <label>대상유형</label>
-                <select v-model="selectedTargetType">
+                <select v-model="activityStore.selectedTargetType">
                   <option value="">전체</option>
-                  <option value="PROJECT">프로젝트</option>
-                  <option value="SUBPROJECT">하위프로젝트</option>
-                  <option value="MILESTONE">마일스톤</option>
-                  <option value="TASK">업무</option>
-                  <option value="MEMBER">구성원</option>
-                  <option value="MEMO">메모</option>
+                  <option value="projects">프로젝트</option>
+                  <option value="tasks">업무</option>
+                  <option value="milestones">마일스톤</option>
+                  <option value="members">구성원</option>
+                  <option value="memos">메모</option>
                 </select>
               </div>
 
               <div class="filter-item">
                 <label>정렬</label>
-                <select v-model="sortOrder">
+                <select v-model="activityStore.sortOrder">
                   <option value="DESC">최신순</option>
                   <option value="ASC">오래된순</option>
                 </select>
@@ -83,30 +96,32 @@
 
               <div class="period-chip-row">
                 <button
-                  v-for="item in quickRangeOptions"
+                  v-for="item in activityStore.quickRangeOptions"
                   :key="item.value"
                   class="period-chip"
-                  :class="{ active: selectedQuickRange === item.value }"
-                  @click="applyQuickRange(item.value)"
+                  :class="{
+                    active: activityStore.selectedQuickRange === item.value,
+                  }"
+                  @click="activityStore.applyQuickRange(item.value)"
                 >
                   {{ item.label }}
                 </button>
               </div>
 
               <div
-                v-if="selectedQuickRange === 'CUSTOM'"
+                v-if="activityStore.selectedQuickRange === 'CUSTOM'"
                 class="custom-date-row"
               >
                 <div class="date-input-wrap">
                   <label>시작일</label>
-                  <input v-model="startDate" type="date" />
+                  <input v-model="activityStore.startDate" type="date" />
                 </div>
 
                 <div class="date-tilde">~</div>
 
                 <div class="date-input-wrap">
                   <label>종료일</label>
-                  <input v-model="endDate" type="date" />
+                  <input v-model="activityStore.endDate" type="date" />
                 </div>
               </div>
             </div>
@@ -116,14 +131,17 @@
           <section class="activity-log-card">
             <div class="content-top">
               <div class="result-count">
-                총 <strong>{{ filteredLogs.length }}</strong
+                총 <strong>{{ activityStore.filteredLogs.length }}</strong
                 >건
               </div>
             </div>
 
-            <div v-if="groupedLogs.length > 0" class="date-group-wrap">
+            <div
+              v-if="activityStore.groupedLogs.length > 0"
+              class="date-group-wrap"
+            >
               <div
-                v-for="group in groupedLogs"
+                v-for="group in activityStore.groupedLogs"
                 :key="group.date"
                 class="date-group"
               >
@@ -135,9 +153,9 @@
                     <span class="fold-icon">
                       {{ isGroupOpen(group.date) ? "▾" : "▸" }}
                     </span>
-                    <span class="date-title">{{
-                      formatDateTitle(group.date)
-                    }}</span>
+                    <span class="date-title">
+                      {{ activityStore.formatDateTitle(group.date) }}
+                    </span>
                     <span class="date-count">{{ group.items.length }}건</span>
                   </div>
 
@@ -154,7 +172,7 @@
                   >
                     <div class="log-time-col">
                       <div class="log-time">
-                        {{ formatTime(log.createdAt) }}
+                        {{ activityStore.formatTime(log.createdAt) }}
                       </div>
                     </div>
 
@@ -164,15 +182,19 @@
                           <span class="user-name">{{ log.userName }}</span>
                           <span class="dot">•</span>
                           <span class="target-type">
-                            {{ getTargetTypeLabel(log.targetType) }}
+                            {{
+                              activityStore.getTargetTypeLabel(log.targetType)
+                            }}
                           </span>
                         </div>
 
                         <span
                           class="type-badge"
-                          :class="badgeClass(log.activityType)"
+                          :class="activityStore.badgeClass(log.activityType)"
                         >
-                          {{ getActivityTypeLabel(log.activityType) }}
+                          {{
+                            activityStore.getActivityTypeLabel(log.activityType)
+                          }}
                         </span>
                       </div>
 
@@ -207,9 +229,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import api from "../utils/api";
+import { useActivityLogsStore } from "../stores/activityLogs";
 
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -217,193 +240,19 @@ import Header from "../partials/Header.vue";
 const route = useRoute();
 const sidebarOpen = ref(false);
 
+const activityStore = useActivityLogsStore();
+
 const projectInfo = ref({
   projectId: null,
-  projectName: "Compath",
-  startDate: "2026-04-01",
-  endDate: "2026-06-30",
+  projectName: "",
+  startDate: "",
+  endDate: "",
 });
-
-const searchKeyword = ref("");
-const selectedActivityType = ref("");
-const selectedTargetType = ref("");
-const sortOrder = ref("DESC");
-
-const selectedQuickRange = ref("ALL");
-const startDate = ref("");
-const endDate = ref("");
-
-const quickRangeOptions = [
-  { label: "전체", value: "ALL" },
-  { label: "오늘", value: "TODAY" },
-  { label: "최근 7일", value: "7D" },
-  { label: "최근 30일", value: "30D" },
-  { label: "직접선택", value: "CUSTOM" },
-];
-
-const logs = ref([
-  {
-    id: 1,
-    createdAt: "2026-04-08 14:32:00",
-    userName: "장다정",
-    activityType: "UPDATE",
-    targetType: "PROJECT",
-    targetName: "Compath",
-    message: "프로젝트명을 수정했습니다.",
-    detail: "기존: Compath_v1 → 변경: Compath",
-    projectPath: "프로젝트 > 메인 프로젝트",
-  },
-  {
-    id: 2,
-    createdAt: "2026-04-08 13:50:00",
-    userName: "김철수",
-    activityType: "CREATE",
-    targetType: "SUBPROJECT",
-    targetName: "프론트엔드 개발",
-    message: "하위 프로젝트를 생성했습니다.",
-    detail: "하위프로젝트명: 프론트엔드 개발",
-    projectPath: "프로젝트 > 1차 개발",
-  },
-  {
-    id: 3,
-    createdAt: "2026-04-08 11:20:00",
-    userName: "이영희",
-    activityType: "DELETE",
-    targetType: "MILESTONE",
-    targetName: "2차 개발",
-    message: "마일스톤을 삭제했습니다.",
-    detail: "삭제된 마일스톤: 2차 개발",
-    projectPath: "프로젝트 > 마일스톤",
-  },
-  {
-    id: 4,
-    createdAt: "2026-04-07 17:05:00",
-    userName: "장다정",
-    activityType: "UPDATE",
-    targetType: "TASK",
-    targetName: "로그인 API 개발",
-    message: "업무 상태를 변경했습니다.",
-    detail: "기존: 시작 전 → 변경: 진행중",
-    projectPath: "프로젝트 > 1차 개발 > 업무",
-  },
-  {
-    id: 5,
-    createdAt: "2026-04-07 15:30:00",
-    userName: "박민수",
-    activityType: "CREATE",
-    targetType: "MEMBER",
-    targetName: "홍길동",
-    message: "프로젝트 구성원을 추가했습니다.",
-    detail: "추가된 구성원: 홍길동 (PL)",
-    projectPath: "프로젝트 > 구성원",
-  },
-  {
-    id: 6,
-    createdAt: "2026-04-07 10:10:00",
-    userName: "장다정",
-    activityType: "UPDATE",
-    targetType: "MEMO",
-    targetName: "회의 메모",
-    message: "메모 내용을 수정했습니다.",
-    detail: "일정 관련 코멘트가 수정되었습니다.",
-    projectPath: "프로젝트 > 메모",
-  },
-]);
 
 const openDateGroups = ref({});
 
-const filteredLogs = computed(() => {
-  let result = [...logs.value];
-
-  if (selectedActivityType.value) {
-    result = result.filter(
-      (item) => item.activityType === selectedActivityType.value,
-    );
-  }
-
-  if (selectedTargetType.value) {
-    result = result.filter(
-      (item) => item.targetType === selectedTargetType.value,
-    );
-  }
-
-  if (searchKeyword.value.trim()) {
-    const keyword = searchKeyword.value.trim().toLowerCase();
-    result = result.filter((item) => {
-      return (
-        item.userName.toLowerCase().includes(keyword) ||
-        (item.targetName || "").toLowerCase().includes(keyword) ||
-        item.message.toLowerCase().includes(keyword) ||
-        (item.detail || "").toLowerCase().includes(keyword) ||
-        (item.projectPath || "").toLowerCase().includes(keyword)
-      );
-    });
-  }
-
-  if (
-    selectedQuickRange.value === "CUSTOM" &&
-    startDate.value &&
-    endDate.value
-  ) {
-    result = result.filter((item) => {
-      const itemDate = item.createdAt.split(" ")[0];
-      return itemDate >= startDate.value && itemDate <= endDate.value;
-    });
-  }
-
-  if (selectedQuickRange.value === "TODAY") {
-    const today = new Date().toISOString().slice(0, 10);
-    result = result.filter((item) => item.createdAt.startsWith(today));
-  }
-
-  if (selectedQuickRange.value === "7D") {
-    const baseDate = new Date();
-    const fromDate = new Date(baseDate);
-    fromDate.setDate(baseDate.getDate() - 6);
-
-    result = result.filter((item) => {
-      const itemDate = new Date(item.createdAt.replace(" ", "T"));
-      return itemDate >= startOfDay(fromDate) && itemDate <= endOfDay(baseDate);
-    });
-  }
-
-  if (selectedQuickRange.value === "30D") {
-    const baseDate = new Date();
-    const fromDate = new Date(baseDate);
-    fromDate.setDate(baseDate.getDate() - 29);
-
-    result = result.filter((item) => {
-      const itemDate = new Date(item.createdAt.replace(" ", "T"));
-      return itemDate >= startOfDay(fromDate) && itemDate <= endOfDay(baseDate);
-    });
-  }
-
-  result.sort((a, b) => {
-    const aTime = new Date(a.createdAt.replace(" ", "T")).getTime();
-    const bTime = new Date(b.createdAt.replace(" ", "T")).getTime();
-    return sortOrder.value === "DESC" ? bTime - aTime : aTime - bTime;
-  });
-
-  return result;
-});
-
-const groupedLogs = computed(() => {
-  const groupMap = {};
-
-  filteredLogs.value.forEach((log) => {
-    const date = log.createdAt.split(" ")[0];
-    if (!groupMap[date]) groupMap[date] = [];
-    groupMap[date].push(log);
-  });
-
-  return Object.keys(groupMap).map((date) => ({
-    date,
-    items: groupMap[date],
-  }));
-});
-
 watch(
-  groupedLogs,
+  () => activityStore.groupedLogs,
   (newGroups) => {
     const nextState = {};
     newGroups.forEach((group) => {
@@ -414,16 +263,8 @@ watch(
     });
     openDateGroups.value = nextState;
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 );
-
-function applyQuickRange(type) {
-  selectedQuickRange.value = type;
-  if (type !== "CUSTOM") {
-    startDate.value = "";
-    endDate.value = "";
-  }
-}
 
 function isGroupOpen(date) {
   return openDateGroups.value[date];
@@ -433,58 +274,11 @@ function toggleDateGroup(date) {
   openDateGroups.value[date] = !openDateGroups.value[date];
 }
 
-function getActivityTypeLabel(type) {
-  if (type === "CREATE") return "생성";
-  if (type === "UPDATE") return "수정";
-  if (type === "DELETE") return "삭제";
-  return type;
-}
-
-function getTargetTypeLabel(type) {
-  if (type === "PROJECT") return "프로젝트";
-  if (type === "SUBPROJECT") return "하위프로젝트";
-  if (type === "MILESTONE") return "마일스톤";
-  if (type === "TASK") return "업무";
-  if (type === "MEMBER") return "구성원";
-  if (type === "MEMO") return "메모";
-  return type;
-}
-
-function badgeClass(type) {
-  if (type === "CREATE") return "create";
-  if (type === "UPDATE") return "update";
-  if (type === "DELETE") return "delete";
-  return "";
-}
-
-function formatDateTitle(dateString) {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}.${month}.${day}`;
-}
-
-function formatTime(dateTimeString) {
-  const timePart = dateTimeString.split(" ")[1];
-  return timePart ? timePart.slice(0, 5) : "";
-}
-
-function startOfDay(date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function endOfDay(date) {
-  const d = new Date(date);
-  d.setHours(23, 59, 59, 999);
-  return d;
-}
-
 const fetchProjectDetail = async () => {
   try {
     const projectId = route.params.projectId;
+    if (!projectId) return;
+
     const res = await api.get(`/ProjectDetail/${projectId}`);
     projectInfo.value = res.data;
   } catch (err) {
@@ -492,11 +286,12 @@ const fetchProjectDetail = async () => {
   }
 };
 
-onMounted(() => {
-  fetchProjectDetail();
+onMounted(async () => {
+  const projectId = route.params.projectId;
+  await fetchProjectDetail();
+  await activityStore.fetchActivityLogs(projectId);
 });
 </script>
-
 <style scoped>
 .activity-title-row {
   display: flex;

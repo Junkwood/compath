@@ -14,7 +14,7 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <el-alert
-            v-if="documentInfo.isDeleted === 'O1'"
+            v-if="meetingInfo.isDeleted === 'O1'"
             title="비활성화된 게시글입니다."
             type="warning"
             description="관리자만 열람 가능하며 일반 사용자에게는 노출되지 않습니다."
@@ -28,15 +28,15 @@
               <h2
                 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
               >
-                문서 상세
+                회의록 상세
               </h2>
 
               <div class="proj-name-row">
                 <span class="proj-name"
-                  >【 {{ documentInfo.projectName }} 】</span
+                  >【 {{ meetingInfo.projectName }} 】</span
                 >
                 <span class="proj-period">
-                  {{ documentInfo.startDate }} ~ {{ documentInfo.endDate }}
+                  {{ meetingInfo.startDate }} ~ {{ meetingInfo.endDate }}
                 </span>
               </div>
             </div>
@@ -48,7 +48,7 @@
             <div
               class="text-xl md:text-2xl text-gray-800 dark:text-gray-100 font-bold mb-8"
             >
-              <h4>{{ documentInfo.title }}</h4>
+              <h4>{{ meetingInfo.title }}</h4>
             </div>
             <div class="grid grid-cols-3 gap-6 mb-8">
               <div class="flex flex-row gap-10">
@@ -56,16 +56,16 @@
                   >카테고리</label
                 >
                 <span>{{
-                  documentInfo.roleName == null ? "전체" : documentInfo.roleName
+                  meetingInfo.roleName == null ? "전체" : meetingInfo.roleName
                 }}</span>
               </div>
               <div class="flex flex-row gap-10">
                 <label class="block text-base font-semibold mb-1">작성자</label>
-                <span>{{ documentInfo.userName }}</span>
+                <span>{{ meetingInfo.userName }}</span>
               </div>
               <div class="flex flex-row gap-10">
                 <label class="block text-base font-semibold mb-1">등록일</label>
-                <span>{{ documentInfo.createdAt }}</span>
+                <span>{{ meetingInfo.createdAt }}</span>
               </div>
             </div>
 
@@ -76,9 +76,65 @@
               <textarea
                 rows="5"
                 class="input w-full"
-                :value="documentInfo.content"
+                :value="meetingInfo.content"
                 disabled
               />
+            </div>
+            <div class="my-6">
+              <label class="block text-base font-semibold mb-1">첨부파일</label>
+
+              <div
+                class="border-t border-b border-gray-200 divide-y divide-gray-100"
+              >
+                <div
+                  v-for="(file, index) in attachmentList"
+                  :key="index"
+                  class="py-2 flex items-center justify-between group"
+                >
+                  <div class="flex items-center gap-2 flex-1">
+                    <svg
+                      class="w-5 h-5 text-gray-500 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      ></path>
+                    </svg>
+
+                    <div
+                      class="flex items-center gap-1 cursor-pointer"
+                      @click="attachmentDownload(file)"
+                    >
+                      <span
+                        class="text-[14px] font-medium text-gray-700 group-hover:text-blue-600 transition-colors my-1"
+                      >
+                        {{ file.fileName }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-6">
+                    <button
+                      @click="handleDownload(file)"
+                      class="text-[13px] text-gray-600 hover:text-blue-600 flex items-center gap-1"
+                    >
+                      다운로드 <span class="text-[10px] text-gray-400">〉</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  v-if="!attachmentList || attachmentList.length === 0"
+                  class="py-4 text-center text-sm text-gray-400"
+                >
+                  등록된 서류가 없습니다.
+                </div>
+              </div>
             </div>
 
             <div class="flex flex-row justify-between">
@@ -89,114 +145,6 @@
               </div>
               <div class="flex flex-row gap-2">
                 <button @click="modifyDocument" class="btn-green">수정</button>
-                <button
-                  @click="delDocument"
-                  class="btn-red"
-                  v-if="commentList.length == 0"
-                >
-                  삭제
-                </button>
-              </div>
-            </div>
-          </div>
-          <div
-            v-if="documentInfo.isComment == 'O1'"
-            class="filter-card mt-4 mb-0"
-          >
-            <!-- 검색어 -->
-            <div class="filter-item filter-item--wide mt-3">
-              <div class="search-wrap">
-                <input
-                  v-model="comment"
-                  type="text"
-                  placeholder="댓글을 입력해주세요."
-                  class="search-input"
-                  @keyup.enter="registerComment()"
-                />
-                <div class="filter-actions">
-                  <button
-                    type="button"
-                    @click="registerComment()"
-                    class="btn-search"
-                  >
-                    등록
-                  </button>
-                </div>
-              </div>
-              <!-- 버튼 -->
-            </div>
-            <div class="comment-list" v-for="comment in commentList">
-              <div class="flex gap-4 pt-4 pb-2 border-b-2 border-gray-100">
-                <div class="flex-1">
-                  <div v-if="!modifyOpen">
-                    <div class="flex items-center gap-2 mb-1">
-                      <el-text size="large" strong>{{
-                        comment.userName
-                      }}</el-text>
-                      <el-text size="small" type="info">{{
-                        comment.createdAt
-                      }}</el-text>
-                    </div>
-                    <el-text class="block leading-relaxed">{{
-                      comment.content
-                    }}</el-text>
-
-                    <div class="flex flex-row-reverse mt-2">
-                      <el-button
-                        link
-                        type="danger"
-                        size="small"
-                        @click="removeComment(comment)"
-                        >삭제</el-button
-                      >
-                      <el-button
-                        type="button"
-                        @click="openModifyComment(comment)"
-                        link
-                        size="small"
-                        >수정</el-button
-                      >
-                    </div>
-                  </div>
-                  <div
-                    class="p-4 bg-indigo-50/50 border-2 border-indigo-200 rounded-lg transition-all"
-                    v-if="modifyOpen"
-                  >
-                    <div
-                      class="flex items-center gap-2 mb-2 text-indigo-600 font-bold text-xs"
-                    >
-                      <i class="el-icon-edit"></i> 댓글 수정 중...
-                    </div>
-
-                    <div class="flex-1">
-                      <div class="flex items-center gap-2 mb-1">
-                        <el-text size="large" strong>{{
-                          comment.userName
-                        }}</el-text>
-                        <el-text size="small" type="info">{{
-                          comment.createdAt
-                        }}</el-text>
-                      </div>
-                      <el-input
-                        type="textarea"
-                        :autosize="{ minRows: 2 }"
-                        v-model="comment.content"
-                        class="edit-textarea"
-                      />
-                      <div class="flex flex-row-reverse mt-2 gap-1">
-                        <el-button size="small" @click="cancelModify()"
-                          >취소</el-button
-                        >
-                        <el-button
-                          type="primary"
-                          size="small"
-                          @click="modifyComment(comment)"
-                          >수정완료</el-button
-                        >
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -207,33 +155,29 @@
 </template>
 
 <script setup>
-import { onBeforeMount, ref, watch } from "vue";
-import { useDocumentStore } from "../stores/document";
-import { useAuthStore } from "../stores/auth";
+import { onBeforeMount, ref } from "vue";
+import { useMeetingStore } from "../stores/meeting";
+import { useAttachmentStore } from "../stores/attachment";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
-import Swal from "sweetalert2";
 
 const route = useRoute();
 const router = useRouter();
-const documentStore = useDocumentStore();
-const authStore = useAuthStore();
+const meetingStore = useMeetingStore();
+const attachmentStore = useAttachmentStore();
 const sidebarOpen = ref(false);
 
-const documentInfo = ref({});
-const documentId = route.params.documentId;
+const meetingInfo = ref({});
+const attachmentList = ref([]);
+const meetingId = route.params.meetingId;
 const projectId = route.params.projectId;
-
-const commentList = ref([]); // 댓글목록
-const comment = ref(); // 댓글
-const modifyOpen = ref(false);
 
 // 목록으로
 const goBack = () => {
   console.log(projectId);
   router.push({
-    name: "documentList",
+    name: "meetingList",
     params: { projectId: projectId },
   });
 };
@@ -241,151 +185,21 @@ const goBack = () => {
 // 수정 버튼
 const modifyDocument = () => {
   router.push({
-    name: "documentRegister",
-    params: { projectId: projectId, documentId: documentId },
+    name: "meetingRegister",
+    params: { projectId: projectId, meetingId: meetingId },
   });
 };
 
-// 삭제 버튼
-const delDocument = async () => {
-  const result = await Swal.fire({
-    title: "정말 삭제하시겠습니까?",
-    text: "비활성한 문서는 목록에서 보이지 않습니다.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "삭제",
-    cancelButtonText: "취소",
-    reverseButtons: true,
-  });
-
-  if (!result.isConfirmed) return;
-
-  let obj = {
-    documentId: documentId,
-    isDeleted: "Q1",
-    isEditorUserId: authStore.user.userId,
-  };
-
-  await documentStore.modifyDocument(obj);
-
-  await Swal.fire({
-    title: "삭제를 완료했습니다.",
-    icon: "success",
-    confirmButtonText: "확인",
-    reverseButtons: true,
-  });
-
-  router.push({
-    name: "documentList",
-    params: { projectId: projectId },
-  });
-};
-
-// 댓글 등록
-const registerComment = async () => {
-  // 작성한 내용 없을 경우 알림창
-  if (!comment.value || comment.value == " ") {
-    const result = await Swal.fire({
-      title: "댓글을 작성해주세요",
-      icon: "error",
-      confirmButtonText: "확인",
-      reverseButtons: true,
-    });
-
-    if (!result.isConfirmed) return;
-    return;
-  }
-
-  const result = await Swal.fire({
-    title: "댓글을 등록하시겠습니까??",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "확인",
-    cancelButtonText: "취소",
-    reverseButtons: true,
-  });
-
-  if (!result.isConfirmed) return;
-
-  let user = authStore.user; // 로그인한 사람 정보
-
-  let commentInfo = {
-    // 백으로 보낼 정보
-    documentId: documentId,
-    userId: user.userId,
-    content: comment.value,
-  };
-
-  await documentStore.registerComment(commentInfo);
-  commentList.value = documentStore.registeredComment;
-  comment.value = null;
-};
-
-// 댓글 수정
-const openModifyComment = (comment) => {
-  modifyOpen.value = true;
-};
-
-const modifyComment = async (comment) => {
-  const result = await Swal.fire({
-    title: "댓글을 수정하시겠습니까??",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "확인",
-    cancelButtonText: "취소",
-    reverseButtons: true,
-  });
-
-  if (!result.isConfirmed) return;
-
-  let obj = {
-    documentId: comment.documentId,
-    documentCommentId: comment.documentCommentId,
-    content: comment.content,
-    editorUserId: authStore.user.userId,
-  };
-
-  modifyOpen.value = false;
-  await documentStore.modifyComment(obj);
-
-  commentList.value = documentStore.registeredComment;
-};
-
-// 댓글 수정 취소
-const cancelModify = () => {
-  modifyOpen.value = false;
-};
-
-// 댓글 삭제
-const removeComment = async (comment) => {
-  const result = await Swal.fire({
-    title: "댓글을 삭제하시겠습니까??",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "확인",
-    cancelButtonText: "취소",
-    reverseButtons: true,
-  });
-
-  if (!result.isConfirmed) return;
-
-  let obj = {
-    documentId: comment.documentId,
-    documentCommentId: comment.documentCommentId,
-    editorUserId: authStore.user.userId,
-    isDeleted: "O1",
-  };
-
-  await documentStore.modifyComment(obj);
-
-  commentList.value = documentStore.registeredComment;
+// 파일 다운로드
+const attachmentDownload = async (file) => {
+  await attachmentStore.downloadFile(file.filePath);
 };
 
 onBeforeMount(async () => {
   // 문서 및 프로젝트 정보
-  await documentStore.getDocumentById(documentId);
-  documentInfo.value = documentStore.documentDetail.documentInfo;
-  commentList.value = documentStore.documentDetail.commentInfo;
+  await meetingStore.getMeetingById(meetingId);
+  meetingInfo.value = meetingStore.meetingDetail.meetingList;
+  attachmentList.value = meetingStore.meetingDetail.attachmentList;
 });
 </script>
 <style scoped>
@@ -624,5 +438,70 @@ onBeforeMount(async () => {
 
 :deep(.el-button + .el-button) {
   margin-left: 0px;
+}
+
+/* 1. 파일 목록 전체 감싸는 영역 (위아래 선) */
+.attachment-container {
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  margin-top: 1rem;
+}
+
+/* 2. 각 파일 행 (간격 좁게) */
+.file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0; /* 사진처럼 촘촘한 간격 */
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.file-row:last-child {
+  border-bottom: none;
+}
+
+/* 3. 파일 이름 & 메타 정보 (왼쪽 정렬) */
+.file-link-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex: 1; /* 왼쪽으로 바짝 붙게 함 */
+}
+
+.file-name-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.file-meta-text {
+  font-size: 13px;
+  color: #9ca3af; /* 사진 속 회색 느낌 */
+}
+
+/* 4. 우측 액션 버튼 (다운로드, 바로보기) */
+.action-group {
+  display: flex;
+  gap: 20px; /* 버튼 사이 간격 */
+}
+
+.action-btn {
+  font-size: 13px;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+
+.action-btn:hover {
+  color: #2563eb; /* 호버 시 파란색 */
+}
+
+.arrow-icon {
+  font-size: 10px;
+  color: #d1d5db; /* 화살표는 연하게 */
+  font-family: sans-serif;
 }
 </style>

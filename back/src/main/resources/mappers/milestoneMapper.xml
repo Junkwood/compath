@@ -52,6 +52,7 @@
     JOIN PROJECTS P
         ON P.PARENT_PROJECT_ID = M.PROJECT_ID
     WHERE P.PARENT_PROJECT_ID = #{projectId}
+        AND M.STATUS='E1'
     ORDER BY M.MILESTONE_ID
     </select>
 

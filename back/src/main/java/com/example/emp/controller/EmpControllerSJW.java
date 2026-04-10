@@ -79,5 +79,9 @@ public class EmpControllerSJW {
             return ResponseEntity.badRequest().body(response);
         }
     }
+    @GetMapping("/api/emp/{id}")
+    public EmpVOSJW getByIdForMyPage(@PathVariable Integer id) {
+        return empService.getByIdForMyPage(id);
+    }
 
 }

@@ -19,4 +19,5 @@ public class ProjectModifyDtoKJH {
     private String isPublic;
     private String plUserId;
     private String useMilestone;
+    private Integer editorUserId;
 }

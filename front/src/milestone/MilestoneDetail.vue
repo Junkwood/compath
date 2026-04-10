@@ -75,8 +75,6 @@
                       삭제
                   </el-button>
                 </div>
-
-
             </div>
 
             <!-- 1. 하위 프로젝트 목록 -->
@@ -86,9 +84,17 @@
 
                 <div class="subproject-table-wrap">
                   <table class="detail-table subproject-table">
+                    <thead>
+                      <tr>
+                        <th>하위프로젝트 명</th>
+                        <th>프로젝트 기간</th>
+                        <th>하위프로젝트 PL</th>
+                      </tr>
+                    </thead>
+
                     <tbody>
                       <tr
-                        v-for="item in currentSubProjectList"
+                        v-for="item in pagedSubProjectList"
                         :key="item.projectId"
                         class="clickable-row"
                         @click="goSubProjectDashboard(item)"
@@ -104,6 +110,18 @@
                       </tr>
                     </tbody>
                   </table>
+                  <div
+                    class="pagination-wrap"
+                    v-if="subProjectList.length > subProjectPageSize"
+                  >
+                    <el-pagination
+                      v-model:current-page="subProjectPage"
+                      :page-size="subProjectPageSize"
+                      :total="subProjectList.length"
+                      layout="prev, pager, next"
+                      background
+                    />
+                  </div>
                 </div>
               </div>
             </section>
@@ -129,7 +147,7 @@
 
                     <tbody>
                       <tr
-                        v-for="task in currentTaskList"
+                        v-for="task in pagedTaskList"
                         :key="task.taskId"
                         class="clickable-row"
                         @click="goTaskDetail(task)"
@@ -166,6 +184,18 @@
                       </tr>
                     </tbody>
                   </table>
+                  <div
+                    class="pagination-wrap"
+                    v-if="currentTaskList.length > taskPageSize"
+                  >
+                    <el-pagination
+                      v-model:current-page="taskPage"
+                      :page-size="taskPageSize"
+                      :total="currentTaskList.length"
+                      layout="prev, pager, next"
+                      background
+                    />
+                  </div>
                 </div>
               </div>
             </section>
@@ -268,6 +298,7 @@ const fetchTaskWnoSubP = async () => {
       `/MilestoneWnoSubPidList/${projectId}/${milestoneId}`
     );
     currentTaskList.value = res.data;
+    taskPage.value = 1;
   } catch (err) {
     console.error("하위프로젝트 없는 개별업무 조회 실패 : ", err);
     currentTaskList.value = [];
@@ -314,27 +345,23 @@ const openEditModal = () => {
 };
 
 const goSubProjectDashboard = (item) => {
-  console.log("하위 프로젝트 대시보드로 이동:", item);
-
-  // 나중에 실제 라우터 연결
-  // router.push({
-  //   name: "projectDashboard",
-  //   params: { projectId: item.projectId },
-  // });
+  router.push({
+    name: "subProjectDashboard",
+    params: {
+      projectId: route.params.projectId,
+      subProjectId: item.projectId,
+    },
+  });
 };
 
 const goTaskDetail = (task) => {
-  console.log("업무 상세 페이지로 이동:", task);
-
-  // 나중에 실제 라우터 연결
-  // router.push({
-  //   name: "taskDetail",
-  //   params: {
-  //     projectId: currentProjectId.value,
-  //     milestoneId: selectedMilestoneId.value,
-  //     taskId: task.taskId,
-  //   },
-  // });
+  router.push({
+    name: "taskDetail",
+    params: {
+      projectId: route.params.projectId,
+      taskId: task.taskId,
+    },
+  });
 };
 
 //마일스톤 삭제 (상태값 업데이트)
@@ -385,6 +412,25 @@ const handleDeleteMilestone = async () => {
       });
     }
   };
+
+//페이지네이션
+const subProjectPage = ref(1);
+const subProjectPageSize = 5;
+
+const taskPage = ref(1);
+const taskPageSize = 5;
+
+const pagedSubProjectList = computed(() => {
+  const start = (subProjectPage.value - 1) * subProjectPageSize;
+  return subProjectList.value.slice(start, start + subProjectPageSize);
+});
+
+const pagedTaskList = computed(() => {
+  const start = (taskPage.value - 1) * taskPageSize;
+  return currentTaskList.value.slice(start, start + taskPageSize);
+});
+
+
 
 const handleMilestoneUpdated = async () => {
   editModalVisible.value = false;
@@ -758,6 +804,13 @@ watch(
   padding: 36px 16px !important;
   height: auto !important;
   letter-spacing: 0.01em;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 18px;
+  border-top: 1px solid var(--border);
 }
 
 /* hover */

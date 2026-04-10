@@ -4,6 +4,10 @@ SELECT * FROM users;
 SELECT * FROM projects;
 SELECT * FROM tasks;
 
+SELECT task_id, editor_user_id, updated_at 
+FROM tasks 
+WHERE task_id = 10152;
+
 SELECT * FROM groups;
 SELECT * FROM roles;
 SELECT * FROM project_members;
@@ -14,7 +18,7 @@ SELECT * FROM task_statuses;
 SELECT * FROM  notifications;
 SELECT * FROM notification_targets;
 SELECT * FROM task_rejections;
-
+SELECT * FROM time_entries;
 
 
 
@@ -98,6 +102,21 @@ CREATE SEQUENCE task_seq
     INCREMENT BY 1
     NOCACHE
     NOCYCLE;
+
+DROP SEQUENCE notifications_seq;
+CREATE SEQUENCE notifications_seq
+    START WITH 200
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+DROP SEQUENCE notification_targets_seq;
+CREATE SEQUENCE notification_targets_seq
+    START WITH 400
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
 
 -- 특정 업무 상세 조회 (VO/DTO 매핑용)
 SELECT 
@@ -185,12 +204,20 @@ BEGIN
     WHERE project_id = v_target_project_id;
 
     -- 업무 상세 
-    OPEN taskDetail FOR
-    SELECT t.*, u.user_name as ASSIGNEENAME
-    FROM tasks t
-    LEFT JOIN users u ON t.assignee_user_id = u.user_id
-    WHERE t.task_id = p_task_id;
-
+	OPEN taskDetail FOR
+	SELECT 
+	    t.*, 
+	    u.user_name as ASSIGNEENAME,
+	    (SELECT NVL(SUM(hours), 0) FROM time_entries WHERE task_id = t.task_id) as TOTAL_TIME_ENTRIES,
+	    CASE 
+	        WHEN (SELECT SUM(hours) FROM time_entries WHERE task_id = t.task_id) > 0 
+	        THEN (SELECT SUM(hours) FROM time_entries WHERE task_id = t.task_id)
+	        ELSE t.actual_hours 
+	    END as FINAL_ACTUAL_HOURS
+	FROM tasks t
+	LEFT JOIN users u ON t.assignee_user_id = u.user_id
+	WHERE t.task_id = p_task_id;
+    
     -- 프로젝트 목록
     OPEN projectList FOR
     SELECT * FROM projects 
@@ -231,6 +258,7 @@ BEGIN
 
 END;
 ------------------------------------------------------------------------
+
 --알림 전용 프로시저
 CREATE OR REPLACE PROCEDURE SP_GET_NOTIFICATION_RECEIVERS (
     p_project_id  IN  NUMBER,

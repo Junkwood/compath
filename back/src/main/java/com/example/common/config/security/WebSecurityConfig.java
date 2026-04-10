@@ -1,6 +1,7 @@
 package com.example.common.config.security;
 
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 
 @Configuration
@@ -53,15 +53,19 @@ public class WebSecurityConfig {
                 .httpBasic(httpBasic->httpBasic.disable())//토큰 쓰니까 basic인증 disable
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/auth/**").permitAll() // 인증 없이 접근 가능
-                        .requestMatchers("/api/**").hasAnyRole("ADMIN", "USER")
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/", "/login", "/auth/**").permitAll() // 인증 없이 접근 가능
+                        .requestMatchers("/api/**").authenticated()
+                        //.requestMatchers("/api/**","/api/notifications/subscribe/**").hasAnyRole("ADMIN", "USER")
+                        //.requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated() // 나머지는 인증 필요
                 );
 
         // 필터 등록.
         //매 요청마다 corsfilter실행 후 jwtAtuhenticationFilter 실행.
-        http.addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

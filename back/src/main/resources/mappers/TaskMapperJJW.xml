@@ -23,6 +23,8 @@
         <result property="projectId" column="PROJECT_ID" />
         <result property="assigneeUserId" column="ASSIGNEE_USER_ID" />
         <result property="assigneeName" column="ASSIGNEENAME" />
+        <result property="totalTimeEntries" column="TOTAL_TIME_ENTRIES" />
+        <result property="finalActualHours" column="FINAL_ACTUAL_HOURS" />
     </resultMap>
 
     <resultMap id="projectMap" type="com.example.project.dto.ProjectDtoJJW">
@@ -61,15 +63,43 @@
             SELECT task_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO tasks (
-        task_id, project_id, parent_task_id, milestone_id,
-        task_type_id, task_status_id, title, content,
-        assignee_user_id, priority_code, est_start_date, est_end_date,
-        start_date, due_date, estimated_hours, progress_rate, created_at
+        task_id,
+        project_id,
+        parent_task_id,
+        milestone_id,
+        task_type_id,
+        task_status_id,
+        title,
+        content,
+        assignee_user_id,
+        priority_code,
+        est_start_date,
+        est_end_date,
+        start_date,
+        due_date,
+        estimated_hours,
+        progress_rate,
+        created_by,
+        created_at
         ) VALUES (
-        #{taskId}, #{projectId}, #{parentTaskId}, #{milestoneId},
-        #{taskTypeId}, #{taskStatusId}, #{title}, #{content},
-        #{assigneeUserId}, #{priorityCode}, #{estStartDate}, #{estEndDate},
-        #{startDate}, #{dueDate}, #{estimatedHours}, #{progressRate}, SYSDATE
+        #{taskId},
+        #{projectId},
+        #{parentTaskId},
+        #{milestoneId},
+        #{taskTypeId},
+        #{taskStatusId},
+        #{title},
+        #{content},
+        #{assigneeUserId},
+        #{priorityCode},
+        #{estStartDate},
+        #{estEndDate},
+        #{startDate},
+        #{dueDate},
+        #{estimatedHours},
+        #{progressRate},
+        #{createdBy},
+        SYSDATE
         )
     </insert>
 
@@ -82,7 +112,7 @@
         priority_code  = #{priorityCode},
         assignee_user_id = #{assigneeUserId},
         progress_rate  = #{progressRate},
-        actual_hours   = #{actualHours},
+<!--        actual_hours   = #{actualHours},-->
         start_date     = #{startDate},
         due_date       = #{dueDate},
         updated_at     = SYSDATE,

@@ -73,12 +73,13 @@
 
                     <div>
                       <el-form-item
-                        label="등록일"
+                        label="회의 일시"
                         class="block text-sm font-medium mb-1"
+                        prop="date"
                       >
                         <el-input
                           type="date"
-                          v-model="form.estStartDate"
+                          v-model="form.date"
                           class="w-full"
                         />
                       </el-form-item>
@@ -109,7 +110,14 @@
                     </el-form-item>
                   </div>
                   <div class="mb-6">
-                    <el-upload action="#" :auto-upload="false" class="w-full">
+                    <el-upload
+                      v-model:filet="file"
+                      action="#"
+                      :auto-upload="false"
+                      class="w-full"
+                      multiple
+                      :on-change="handleChange"
+                    >
                       <template #trigger>
                         <div
                           class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 cursor-pointer"
@@ -230,12 +238,12 @@
     </div>
   </div>
 
-  <!-- <meetingNotifirationModal
+  <meetingNotifirationModal
     v-model="modalOpen"
     :memberList="memberList"
     :alarmList="alarmList"
     @member-insert="memberInsert"
-  /> -->
+  />
 </template>
 
 <script setup>
@@ -247,10 +255,9 @@ import { useAuthStore } from "../stores/auth";
 
 import { useProjectKJHStore } from "../stores/projectKJH";
 import { useMeetingStore } from "../stores/meeting";
-import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
 import { useDocumentStore } from "../stores/document";
-// import { meetingNotifirationModal } from "./meetingNotificationModal.vue";
+import meetingNotifirationModal from "./meetingNotificationModal.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -262,7 +269,7 @@ const projectStore = useProjectKJHStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
-const documentId = route.params.documentId;
+const meetingId = route.params.meetingId;
 const userInfo = ref(); // 글 작성자 정보
 const meetingType = ref([]);
 const form = reactive({
@@ -290,37 +297,58 @@ const submitForm = async (formEl) => {
           projectId: id,
           title: form.title,
           content: form.content,
-          isPinned: form.isPinned == true ? "O1" : "O2",
-          isComment: form.isComment == true ? "O2" : "O1",
-          category: form.roleId == "전체" ? null : form.roleId,
+          meetingTypeCode: form.meetingType,
+          meetingDate: form.date,
+          place: form.meetingRoom,
           createdBy: userInfo.value.userId,
         };
-        await documentStore.registerDocument(obj);
 
-        if (
-          documentStore.registeredDocument.documentId > 0 &&
-          alarmList.value.length > 0
-        ) {
+        const formData = new FormData();
+        formData.append(
+          "obj",
+          new Blob([JSON.stringify(obj)], {
+            type: "application/json",
+          }),
+        );
+
+        if (fileList.value && fileList.value.length > 0) {
+          fileList.value.forEach((file) => {
+            formData.append("files", file.raw);
+            console.log("file정체", file.raw);
+          });
+        }
+        await meetingStore.registerMeeting(formData);
+
+        if (meetingStore.registeredMeeting.meetingLogId > 0) {
           let alarmArr = [
             {
-              targetId: documentStore.registeredDocument.documentId,
-              title: "문서를 등록되었습니다.",
-              message: "문서를 확인해주세요",
+              targetId: meetingStore.registeredMeeting.meetingLogId,
+              title: "회의록이 등록되었습니다.",
+              message: "등록된 회의록을 확인해주세요",
               createdBy: userInfo.value.userId,
             },
           ];
 
-          alarmList.value.forEach((al) => {
-            alarmArr.push({
-              receiverId: al.userId,
-              notificationId: "",
+          if (alarmList.value.length > 0) {
+            alarmList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
             });
-          });
+          } else {
+            memberList.value.forEach((al) => {
+              alarmArr.push({
+                receiverId: al.userId,
+                notificationId: "",
+              });
+            });
+          }
 
-          await documentStore.registerDocumentAlarm(alarmArr);
+          await meetingStore.registerMeetingAlarm(alarmArr);
 
           const result = await Swal.fire({
-            title: "등록 및 알림 전송이 완료되었습니다.",
+            title: "회의록 등록 및 알림 전송이 완료되었습니다.",
             text: "상세페이지로 이동합니다.",
             icon: "success",
             confirmButtonText: "확인",
@@ -341,25 +369,25 @@ const submitForm = async (formEl) => {
         if (!result.isConfirmed) return;
         // 공지사항 수정
         let obj = {
-          documentId: id,
+          meetingLogId: meetingId,
           title: form.title,
           content: form.content,
-          isPinned: form.isPinned == true ? "O1" : "O2",
-          isComment: form.isComment == true ? "O2" : "O1",
-          category: form.roleId == "전체" ? null : form.roleId,
-          isEditorUserId: userInfo.value.userId,
+          meetingTypeCode: form.meetingType,
+          editorUserId: userInfo.value.userId,
+          meetingDate: form.meetingDate,
+          place: form.meetingRoom,
         };
-        await documentStore.modifyDocument(obj);
+        await meetingStore.modifyMeeting(obj);
       }
 
       router.push({
-        name: "documentDetail",
+        name: "meetingDetail",
         params: {
           projectId: id,
-          documentId:
+          meetingId:
             isModified == true
-              ? documentId
-              : documentStore.registeredDocument.documentId,
+              ? meetingId
+              : meetingStore.registeredMeeting.meetingLogId,
         },
       });
     } else {
@@ -380,8 +408,10 @@ const handleClose = (tag) => {
 };
 
 onBeforeMount(async () => {
+  userInfo.value = authStore.user; // 작성자 정보 받아오기
+
   // 수정 및 생성 구분
-  if (documentId !== "" && documentId !== undefined && documentId !== null) {
+  if (meetingId !== "" && meetingId !== undefined && meetingId !== null) {
     isModified.value = true;
     Swal.fire({
       title: "잠시만 기다려주세요...",
@@ -394,26 +424,20 @@ onBeforeMount(async () => {
       },
     });
 
-    await documentStore.getDocumentById(documentId);
-    let documentInfo = documentStore.documentDetail.documentInfo;
+    await meetingStore.getMeetingById(meetingId);
+    let meetingInfo = meetingStore.meetingDetail;
 
     // 폼에 대입
-    form.roleId =
-      documentInfo.category == null ? "전체" : documentInfo.category;
-    form.author = documentInfo.userName;
-    form.date = documentInfo.createdAt;
-    form.title = documentInfo.title;
-    form.content = documentInfo.content;
-    form.isPinned = documentInfo.isPinned == "O1" ? true : false;
-    form.isComment = documentInfo.isComment == "O1" ? false : true;
-
+    form.meetingType = meetingInfo.meetingTypeCode;
+    form.author = meetingInfo.userName;
+    form.date = meetingInfo.meetingDate;
+    form.title = meetingInfo.title;
+    form.content = meetingInfo.content;
+    form.meetingRoom = meetingInfo.place;
     Swal.close();
+  } else {
+    form.author = userInfo.value.name;
   }
-  userInfo.value = authStore.user; // 작성자 정보 받아오기
-
-  form.author = userInfo.value.name;
-
-  form.date = changeDate(new Date()); // 작성 당일 날짜 생성
 
   await meetingStore.getMeetingType();
   meetingType.value = meetingStore.meetingType;
@@ -468,6 +492,13 @@ const rules = reactive({
       trigger: "change",
     },
   ],
+  date: [
+    {
+      required: true,
+      message: "회의 날짜를 선택해주세요",
+      trigger: "change",
+    },
+  ],
 });
 
 const resetForm = (formEl) => {
@@ -476,15 +507,11 @@ const resetForm = (formEl) => {
 };
 
 // 첨부파일api
-const fileList = ref([
-  {
-    name: "food.jpeg",
-    url: "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100",
-  },
-]);
+const file = ref([]);
+const fileList = ref([]);
 
 const handleChange = (uploadFile, uploadFiles) => {
-  fileList.value = fileList.value.slice(-3);
+  fileList.value = uploadFiles;
 };
 </script>
 

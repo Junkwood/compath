@@ -149,4 +149,19 @@
         <![CDATA[
         OR created_at < SYSDATE - (3 / 24 / 60)]]><!-- 덤으로 3분 지난 쓰레기들 싹 다 청소 -->
     </delete>
+
+    <select id="getByIdForMyPage">
+        SELECT
+        u.user_id,
+        u.user_name as name,
+        u.password,
+        u.email,
+        role(u.user_type) as user_type,
+        active(u.is_active) as is_active,
+        g.group_name as primary_group_name
+        FROM users u
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary='Y'
+        LEFT JOIN groups g ON gm.group_id = g.group_id
+        WHERE u.user_id=#{id}
+    </select>
 </mapper>

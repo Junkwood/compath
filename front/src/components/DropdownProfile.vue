@@ -17,7 +17,7 @@
       <div class="flex items-center truncate">
         <span
           class="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white"
-          >{{ auth.user.name }}</span
+          >{{ auth.user?.name }}</span
         >
         <svg
           class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500"
@@ -44,10 +44,10 @@
           class="pt-0.5 pb-2 px-3 mb-1 border-b border-gray-200 dark:border-gray-700/60"
         >
           <div class="font-medium text-gray-800 dark:text-gray-100">
-            {{ auth.user.name }}
+            {{ auth.user?.name }}
           </div>
           <div class="text-xs text-gray-500 dark:text-gray-400 italic">
-            {{ auth.user.userType }}
+            {{ auth.user?.userType }}
           </div>
         </div>
         <ul
@@ -58,9 +58,9 @@
           <li>
             <router-link
               class="font-medium text-sm text-violet-500 hover:text-violet-600 dark:hover:text-violet-400 flex items-center py-1 px-3"
-              to="/settings/account"
+              :to="{ name: 'MyPage' }"
               @click="dropdownOpen = false"
-              >Settings</router-link
+              >MyPage</router-link
             >
           </li>
           <li>
@@ -93,6 +93,7 @@ export default {
   },
   setup() {
     const auth = useAuthStore();
+    const authStore = useAuthStore();
 
     const dropdownOpen = ref(false);
     const trigger = ref(null);
@@ -118,12 +119,7 @@ export default {
       dropdownOpen.value = false;
       router.push("/login");
     };
-    const handleClose = () => {
-      const keepLogin = localStorage.getItem("keepLogin");
-      if (!keepLogin) {
-        authStore.logout();
-      }
-    };
+
     onMounted(() => {
       if (!auth.isLoggedIn) {
         logout();
@@ -134,13 +130,11 @@ export default {
       }
       document.addEventListener("click", clickHandler);
       document.addEventListener("keydown", keyHandler);
-      window.addEventListener("beforeunload", handleClose);
     });
 
     onUnmounted(() => {
       document.removeEventListener("click", clickHandler);
       document.removeEventListener("keydown", keyHandler);
-      window.removeEventListener("beforeunload", handleClose);
     });
 
     return {

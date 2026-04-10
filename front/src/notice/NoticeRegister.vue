@@ -200,7 +200,7 @@ const submitForm = async (formEl) => {
           projectId: id,
           title: form.title,
           content: form.content,
-          isPinned: form.isPinned == true ? "O1" : "O2",
+          isPinned: form.isPinned == true ? "B1" : "B2",
           category: form.roleId,
           createdBy: userInfo.value.userId,
         };
@@ -222,7 +222,7 @@ const submitForm = async (formEl) => {
           noticeId: noticeId,
           title: form.title,
           content: form.content,
-          isPinned: form.emerency == true ? "O1" : "O2",
+          isPinned: form.emerency == true ? "B1" : "B2",
           category: form.roleId,
           isEditorUserId: userInfo.value.userId,
         };
@@ -270,7 +270,7 @@ onBeforeMount(async () => {
     form.date = noticeInfo.createdAt;
     form.title = noticeInfo.title;
     form.content = noticeInfo.content;
-    form.isPinned = noticeInfo.isPinned == "O1" ? true : false;
+    form.isPinned = noticeInfo.isPinned == "B1" ? true : false;
   }
   // 생성일 때
   userInfo.value = authStore.user; // 작성자 정보 받아오기

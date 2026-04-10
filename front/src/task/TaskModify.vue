@@ -244,36 +244,31 @@
             <div class="grid grid-cols-3 gap-6 mb-8">
               <div>
                 <label class="block text-sm font-medium mb-1">시작 일</label>
-                <input
-                  type="date"
+                <TaskDatePicker
                   v-model="form.startDate"
-                  @change="calcEstTime"
-                  class="input w-full"
                   :disabled="isTerminated"
+                  @change="calcEstTime"
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">종료일</label>
-                <input
-                  type="date"
+                <TaskDatePicker
                   v-model="form.dueDate"
-                  @change="calcEstTime"
-                  class="input w-full"
                   :disabled="isTerminated"
+                  @change="calcEstTime"
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">추정 시간</label>
                 <input
                   v-model="form.estTime"
-                  :disabled="
-                    isTerminated ||
-                    !!form.taskId ||
-                    (form.estTime && form.estTime !== '0시간')
-                  "
-                  class="input w-full bg-gray-100 disabled:cursor-not-allowed"
-                  placeholder="날짜 선택 시 자동 계산"
+                  readonly
+                  class="input w-full bg-gray-100 cursor-not-allowed"
+                  placeholder="예정 시작일/종료일 선택 시 자동 계산"
                 />
+                <p class="text-xs text-gray-400 mt-1">
+                  * 예정 시작일 ~ 예정 종료일 기준 워킹데이로 자동 계산됩니다.
+                </p>
               </div>
             </div>
 
@@ -315,6 +310,8 @@ import Header from "../partials/Header.vue";
 import ProjectSelectModal from "../components/SelectModal.vue";
 import { useTaskStore } from "../stores/useTaskStore";
 import { useAuthStore } from "../stores/auth";
+import TaskDatePicker from "../components/TaskDatePicker.vue";
+
 const router = useRouter();
 const route = useRoute();
 const sidebarOpen = ref(false);
@@ -373,6 +370,9 @@ const goCreateSubTask = () => {
 };
 
 const handleSubmit = async () => {
+  console.log("authStore.user:", authStore.user); // ← 추가
+  console.log("editorUserId:", authStore.user?.userId || authStore.user?.id); // ← 추가
+
   const taskId = route.params.taskId;
   const editorUserId = authStore.user?.userId || authStore.user?.id;
   const projectId = form.value.projectId;

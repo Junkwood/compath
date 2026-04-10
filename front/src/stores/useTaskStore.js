@@ -201,6 +201,9 @@ export const useTaskStore = defineStore("task", () => {
       milestone:
         rawMilestoneList.find((m) => m.milestoneId === d.milestoneId)
           ?.milestoneName ?? "마일스톤 없음",
+
+      displayActualHours:
+        d.totalTimeEntries > 0 ? d.totalTimeEntries : (d.actualHours ?? 0),
     };
 
     originalForm.value = { ...form.value };
@@ -275,15 +278,17 @@ export const useTaskStore = defineStore("task", () => {
 
   // ───────────── 추정시간 ─────────────
   const calcEstTime = (force = false) => {
-    if (form.value.taskId) return;
+    if (form.value.taskId && !force) return;
 
-    const sDate = form.value.estStartDate;
-    const eDate = form.value.estEndDate;
+    const start = form.value.taskId
+      ? form.value.startDate
+      : form.value.estStartDate;
+    const end = form.value.taskId ? form.value.dueDate : form.value.estEndDate;
 
-    if (sDate && eDate) {
-      const workdays = countWorkdays(sDate, eDate);
-      if (workdays > 0) form.value.estTime = `${workdays * 8}시간`;
-    }
+    if (!start || !end) return;
+
+    const workdays = countWorkdays(new Date(start), new Date(end));
+    form.value.estTime = `${Math.max(1, workdays) * 8}시간`;
   };
   // ───────────── 업무상태 변경 시 소요시간 자동계산 ─────────────
   const countWorkdays = (start, end) => {
@@ -304,6 +309,11 @@ export const useTaskStore = defineStore("task", () => {
       const isFinished = finishedIds.value.includes(status) || status === 3;
 
       if (isFinished) {
+        if (form.value.displayActualHours > 0) {
+          actualHours.value = `${form.value.displayActualHours}시간`;
+          form.value.progressRate = 100;
+          return;
+        }
         const { startDate, dueDate } = form.value;
         if (startDate && dueDate) {
           const workdays = countWorkdays(
@@ -319,6 +329,15 @@ export const useTaskStore = defineStore("task", () => {
     },
   );
 
+  watch(
+    () => [
+      form.value.estStartDate,
+      form.value.estEndDate,
+      form.value.startDate,
+      form.value.dueDate,
+    ],
+    () => calcEstTime(),
+  );
   // ───────────── 폼 초기화 ─────────────
   const resetForm = (mode = "create") => {
     if (mode === "edit" && originalForm.value) {
@@ -352,7 +371,6 @@ export const useTaskStore = defineStore("task", () => {
       String(form.value.taskStatusId).replace(/[^0-9]/g, ""),
     );
     const isFinished = finishedIds.value.includes(status) || status === 3;
-
     const payload = {
       ...form.value,
       taskStatusId: status,
@@ -368,9 +386,19 @@ export const useTaskStore = defineStore("task", () => {
     };
 
     if (isFinished) {
-      payload.actualHours = actualHours.value
-        ? parseInt(String(actualHours.value).replace(/[^0-9]/g, ""))
-        : null;
+      const detailSum = parseInt(
+        String(form.value.displayActualHours || 0).replace(/[^0-9]/g, ""),
+      );
+
+      if (detailSum > 0) {
+        // 상세 기록이 있으면 그합계를 소요시간으로 사용
+        payload.actualHours = detailSum;
+      } else {
+        // 상세 기록이 없으면, watch로 자동 계산된 actualHours 사용
+        payload.actualHours = actualHours.value
+          ? parseInt(String(actualHours.value).replace(/[^0-9]/g, ""))
+          : 0;
+      }
       payload.progressRate = 100;
     } else {
       payload.actualHours = null;
@@ -394,9 +422,12 @@ export const useTaskStore = defineStore("task", () => {
   };
 
   // ───────────── 등록 ─────────────
-  const createTask = async () => {
+  const createTask = async (createdBy) => {
     validateForm();
-    await api.post("/tasks", buildPayload());
+    await api.post("/tasks", {
+      ...buildPayload(),
+      createdBy: createdBy,
+    });
   };
 
   // ───────────── 수정 ─────────────
@@ -437,7 +468,9 @@ export const useTaskStore = defineStore("task", () => {
         ...buildPayload(),
         taskId: Number(taskId),
         rejectionReason: rejectReason.value,
+        editorUserId: editorUserId,
       });
+
       await Swal.fire(
         "저장 완료",
         "업무 정보가 업데이트되었습니다.",

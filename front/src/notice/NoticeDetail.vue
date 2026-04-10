@@ -22,6 +22,7 @@
             :closable="false"
             class="mb-4"
           />
+
           <!-- projectDashboard.vue와 동일한 제목 영역 -->
           <div class="mb-6 proj-title-row flex justify-between mt-5">
             <div class="proj-title-left">
@@ -52,7 +53,7 @@
                 {{ noticeInfo.title
                 }}<span
                   class="text-base"
-                  v-if="noticeInfo.isPinned == 'O1' ? true : false"
+                  v-if="noticeInfo.isPinned == 'B1' ? true : false"
                   >[긴급🚨]</span
                 >
               </h4>

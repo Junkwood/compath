@@ -1,5 +1,6 @@
 package com.example.project.service.impl;
 
+import com.example.alarm.service.NotificationService;
 import com.example.project.dto.*;
 import com.example.project.mapper.ProjectMapperJDJ;
 import com.example.project.service.ProjectServiceJDJ;
@@ -16,6 +17,7 @@ import java.util.List;
 public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
 
     private final ProjectMapperJDJ projectMapperJDJ;
+    private final NotificationService notificationService;
 
     //프로젝트 전체목록 조회
     @Override
@@ -27,6 +29,14 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
     @Override
     public void registerProject(ProjectCreateDtoJDJ dto) {
         projectMapperJDJ.registerProject(dto);
+        // 총괄PL한테 알림
+        notificationService.sendToOne(
+                dto.getPlUserId(),
+                "R2", dto.getProjectId(),
+                "프로젝트 배정", "총괄PL로 배정되었습니다.",
+                dto.getCreatedBy()
+        );
+
     }
 
     //프로젝트 생성시 총괄PL 리스트 불러오기

@@ -57,6 +57,11 @@ export const useNotificationStore = defineStore("notification", {
     },
 
     // 단건 읽음 처리
+
+    setupSSE(userId) {
+      return;
+    },
+
     async readOne(notif, userId) {
       if (notif.isRead === "Y") return;
       try {

@@ -43,12 +43,12 @@
               <div class="filter-item">
                 <label class="filter-label">작성자</label>
                 <div class="select-wrap">
-                  <select v-model="filteredList.userId">
+                  <select v-model="filteredList.createdBy">
                     <option value="">전체</option>
                     <option
-                      :value="user.userId"
+                      :value="user.createdBy"
                       v-for="user in filterList.userList"
-                      :key="user.userId"
+                      :key="user.createdBy"
                     >
                       {{ user.userName }}
                     </option>
@@ -59,16 +59,16 @@
 
               <!-- 카테고리 -->
               <div class="filter-item">
-                <label class="filter-label">카테고리</label>
+                <label class="filter-label">회의유형</label>
                 <div class="select-wrap">
-                  <select v-model="filteredList.category">
+                  <select v-model="filteredList.meetingTypeCode">
                     <option value="">전체</option>
                     <option
-                      :value="category.roleId"
-                      v-for="category in filterList.categoryList"
-                      :key="category.roleId"
+                      :value="category.meetingTypeCode"
+                      v-for="category in filterList.typeList"
+                      :key="category.meetingTypeCode"
                     >
-                      {{ category.roleName }}
+                      {{ category.typeName }}
                     </option>
                   </select>
                   <span class="select-arrow">▾</span>
@@ -171,46 +171,39 @@
                 <template v-else-if="!listLoading && listLength > 0">
                   <tr
                     @click="goDetail(document)"
-                    v-for="document in pagingList"
-                    :key="document.num"
+                    v-for="meeting in pagingList"
+                    :key="meeting.num"
                     class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
                     :class="
-                      document.isDeleted == 'O1'
+                      meeting.isDeleted == 'O1'
                         ? 'grayscale-[100%] blur-[4px] opacity-60'
                         : ''
                     "
                   >
                     <td class="p-2 w-30">
-                      <div class="text-center">{{ document.num }}</div>
+                      <div class="text-center">{{ meeting.num }}</div>
                     </td>
                     <td class="p-2">
                       <div class="text-center">
-                        [{{ document.roleName }}]{{ document.title
+                        [{{ meeting.typeName }}]{{ meeting.title
                         }}<span
                           class="text-base"
-                          v-if="document.isPinned == 'O1' ? true : false"
-                          >📌</span
-                        ><span
-                          class="text-base"
-                          v-if="document.isComment == 'O2' ? true : false"
-                          >🔒</span
+                          v-if="
+                            meeting.attachmentGroupId !== null ? true : false
+                          "
+                          >📋</span
                         >
                       </div>
                     </td>
                     <td class="p-2 w-70">
                       <div class="text-center cursor-pointer">
-                        {{ document.userName }}
-                      </div>
-                    </td>
-                    <td class="p-2 w-70">
-                      <div class="text-center cursor-pointer">
-                        {{ document.count }}
+                        {{ meeting.userName }}
                       </div>
                     </td>
 
                     <td class="p-2 w-70">
                       <div class="text-center">
-                        {{ document.createdAt }}
+                        {{ meeting.createdAt }}
                       </div>
                     </td>
                   </tr>
@@ -250,23 +243,21 @@ import { ref } from "vue";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
-import { useNoticeStore } from "../stores/notice";
-import { useDocumentStore } from "../stores/document";
 import Swal from "sweetalert2";
+import { useMeetingStore } from "../stores/meeting";
 
 const route = useRoute();
 const router = useRouter();
 const taskStore = usetaskKJHStore();
-const noticeStore = useNoticeStore();
-const documentStore = useDocumentStore();
+const meetingStore = useMeetingStore();
 
 const projectId = route.params.projectId;
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
 
 const filteredList = ref({
-  category: "",
-  userId: "",
+  meetingTypeCode: "",
+  createdBy: "",
   startDate: "",
   endDate: "",
   search: "",
@@ -284,12 +275,11 @@ let name = ref(); // 프로젝트명
 let projectStartDate = ref(); // 프로젝트 날짜
 let projectendDate = ref(); // 프로젝트 날짜
 
-const thList = ["번호", "제목", "작성자", "댓글수", "등록일"];
+const thList = ["번호", "제목", "작성자", "등록일"];
 
 // 페이지네이션
 const handleCurrentChange = async (val) => {
   val = val == undefined ? 1 : val;
-  console.log("페이징", val);
   nowPage.value = val;
 
   let start = (val - 1) * listNum.value + 1;
@@ -314,13 +304,10 @@ const handleCurrentChange = async (val) => {
   });
 
   try {
-    await documentStore.getPagingList(obj);
+    await meetingStore.getPagingList(obj);
     Swal.close();
 
-    pagingList.value = documentStore.pagingList;
-    pagingList.value.forEach((li) => {
-      li.roleName = li.roleName == null ? "전체" : li.roleName;
-    });
+    pagingList.value = meetingStore.pagingList;
 
     listLength.value =
       pagingList.value.length == 0 ? 0 : pagingList.value[0].taskCounts;
@@ -334,7 +321,7 @@ const handleCurrentChange = async (val) => {
   }
 };
 
-// 공지 생성 버튼
+// 회의록 생성 버튼
 const goResister = () => {
   router.push({
     name: "meetingRegister",
@@ -368,26 +355,23 @@ onBeforeMount(async () => {
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
 
-  let obj = { projectId: projectId, parentProjectId: projectId };
-  await documentStore.getFilterList(obj);
-  Swal.close();
+  let obj = { projectId: projectId };
+  await meetingStore.getFilterList(obj);
 
-  filterList.value = documentStore.filterList;
-  pagingList.value = documentStore.filterList.documentList;
+  filterList.value = meetingStore.filterList;
 
-  pagingList.value.forEach((li) => {
-    li.roleName = li.roleName == null ? "전체" : li.roleName;
-  });
   listLength.value =
-    filterList.value.documentList.length > 0
-      ? filterList.value.documentList[0].taskCounts
+    filterList.value.meetingList.length > 0
+      ? filterList.value.meetingList[0].taskCounts
       : 0;
+  await handleCurrentChange(1);
+  Swal.close();
 });
 
 const resetForm = () => {
   filteredList.value = {
-    category: "",
-    userId: "",
+    meetingTypeCode: "",
+    createdBy: "",
     startDate: "",
     endDate: "",
     search: "",

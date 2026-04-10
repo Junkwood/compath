@@ -188,6 +188,7 @@
 import { onBeforeMount, ref, watch } from "vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { useProjectKJHStore } from "../stores/projectKJH";
+import { useAuthStore } from "../stores/auth";
 import { useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -198,6 +199,7 @@ import Swal from "sweetalert2";
 
 const route = useRoute();
 const taskStore = usetaskKJHStore();
+const authStore = useAuthStore();
 const projectStore = useProjectKJHStore();
 
 const name = ref(); // 프로젝트 이름
@@ -219,7 +221,7 @@ const projectInfo = ref({
   updatedAt: null,
   useMilestone: null,
 });
-const id = route.params.id;
+const id = route.params.projectId;
 
 const ModifyProjectModalOpen = ref(false); // 수정 모달
 const MemberModalOpen = ref(false); // 구성원 추가 모달
@@ -272,6 +274,7 @@ const modifyProject = async (form) => {
     description: form.description,
     useMilestone: form.useMilestone ? "O1" : "O2",
     isPublic: form.isPublic ? "P1" : "P2",
+    editorUserId: authStore.user.userId,
   };
 
   console.log("전송데이터", payload);

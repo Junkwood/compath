@@ -213,21 +213,21 @@
     <!--    활동내역 등록-->
     <insert id="registerTimeLog">
         INSERT INTO activity_logs(activity_log_id,
-        target_type,
-        target_id,
-        action_type,
-        actor_user_id,
-        before_value,
-        after_value,
-        created_at)
+                                    target_type,
+                                    target_id,
+                                    action_type,
+                                    actor_user_id,
+                                    before_value,
+                                    after_value,
+                                    created_at)
         VALUES (ACTIVITY_LOGS_SEQ.NEXTVAL,
-        'time_entries',
-        #{targetId},
-        'J1',
-        #{actorUserId},
-        #{beforeValue},
-        #{afterValue},
-        SYSDATE)
+                'time_entries',
+                #{targetId},
+                'J1',
+                #{actorUserId},
+                #{beforeValue},
+                #{afterValue},
+                SYSDATE)
     </insert>
 
 <!--    활동 내역 조회-->

@@ -29,7 +29,7 @@
                SYSDATE,
                #{projectId},
                #{isPinned},
-               'O2')
+               'B2')
     </insert>
 
 <!--    공지사항 단건 조회-->

@@ -24,4 +24,6 @@ public interface EmpMapperSJW {
     void insertEmailAuth(AccountDTOSJW account);
     Integer verifyAuthCode(Integer code,Integer emailId);
     void cleanUpOldCodes(Integer emailId);
+
+    EmpVOSJW getByIdForMyPage(Integer id);
 }
