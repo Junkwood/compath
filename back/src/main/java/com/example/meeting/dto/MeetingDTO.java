@@ -26,6 +26,7 @@ public class MeetingDTO { // 회의록
     private String meetingTypeCode;
     private String place;
     private Integer projectId;
+    private Integer attachmentGroupId;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
@@ -46,11 +47,11 @@ public class MeetingDTO { // 회의록
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
     private String userName;
 
@@ -61,4 +62,6 @@ public class MeetingDTO { // 회의록
     private Integer startNum = 1;
     private Integer endNum = 10;
     private String search;
+    private Integer taskCounts;
+    private Integer num;
 }

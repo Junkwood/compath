@@ -80,6 +80,62 @@
                 disabled
               />
             </div>
+            <div class="my-6">
+              <label class="block text-base font-semibold mb-1">첨부파일</label>
+
+              <div
+                class="border-t border-b border-gray-200 divide-y divide-gray-100"
+              >
+                <div
+                  v-for="(file, index) in attachmentList"
+                  :key="index"
+                  class="py-2 flex items-center justify-between group"
+                >
+                  <div class="flex items-center gap-2 flex-1">
+                    <svg
+                      class="w-5 h-5 text-gray-500 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      ></path>
+                    </svg>
+
+                    <div
+                      class="flex items-center gap-1 cursor-pointer"
+                      @click="attachmentDownload(file)"
+                    >
+                      <span
+                        class="text-[14px] font-medium text-gray-700 group-hover:text-blue-600 transition-colors my-1"
+                      >
+                        {{ file.fileName }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-6">
+                    <button
+                      @click="handleDownload(file)"
+                      class="text-[13px] text-gray-600 hover:text-blue-600 flex items-center gap-1"
+                    >
+                      다운로드 <span class="text-[10px] text-gray-400">〉</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  v-if="!attachmentList || attachmentList.length === 0"
+                  class="py-4 text-center text-sm text-gray-400"
+                >
+                  등록된 서류가 없습니다.
+                </div>
+              </div>
+            </div>
 
             <div class="flex flex-row justify-between">
               <div class="flex flex-row gap-10">
@@ -99,8 +155,9 @@
 </template>
 
 <script setup>
-import { onBeforeMount, ref, watch } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useMeetingStore } from "../stores/meeting";
+import { useAttachmentStore } from "../stores/attachment";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -108,13 +165,13 @@ import Header from "../partials/Header.vue";
 const route = useRoute();
 const router = useRouter();
 const meetingStore = useMeetingStore();
+const attachmentStore = useAttachmentStore();
 const sidebarOpen = ref(false);
 
 const meetingInfo = ref({});
+const attachmentList = ref([]);
 const meetingId = route.params.meetingId;
 const projectId = route.params.projectId;
-
-const commentList = ref([]); // 댓글목록
 
 // 목록으로
 const goBack = () => {
@@ -133,10 +190,16 @@ const modifyDocument = () => {
   });
 };
 
+// 파일 다운로드
+const attachmentDownload = async (file) => {
+  await attachmentStore.downloadFile(file.filePath);
+};
+
 onBeforeMount(async () => {
   // 문서 및 프로젝트 정보
   await meetingStore.getMeetingById(meetingId);
-  meetingInfo.value = meetingStore.meetingDetail;
+  meetingInfo.value = meetingStore.meetingDetail.meetingList;
+  attachmentList.value = meetingStore.meetingDetail.attachmentList;
 });
 </script>
 <style scoped>
@@ -375,5 +438,70 @@ onBeforeMount(async () => {
 
 :deep(.el-button + .el-button) {
   margin-left: 0px;
+}
+
+/* 1. 파일 목록 전체 감싸는 영역 (위아래 선) */
+.attachment-container {
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  margin-top: 1rem;
+}
+
+/* 2. 각 파일 행 (간격 좁게) */
+.file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0; /* 사진처럼 촘촘한 간격 */
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.file-row:last-child {
+  border-bottom: none;
+}
+
+/* 3. 파일 이름 & 메타 정보 (왼쪽 정렬) */
+.file-link-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex: 1; /* 왼쪽으로 바짝 붙게 함 */
+}
+
+.file-name-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.file-meta-text {
+  font-size: 13px;
+  color: #9ca3af; /* 사진 속 회색 느낌 */
+}
+
+/* 4. 우측 액션 버튼 (다운로드, 바로보기) */
+.action-group {
+  display: flex;
+  gap: 20px; /* 버튼 사이 간격 */
+}
+
+.action-btn {
+  font-size: 13px;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+
+.action-btn:hover {
+  color: #2563eb; /* 호버 시 파란색 */
+}
+
+.arrow-icon {
+  font-size: 10px;
+  color: #d1d5db; /* 화살표는 연하게 */
+  font-family: sans-serif;
 }
 </style>

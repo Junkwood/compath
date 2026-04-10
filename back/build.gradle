@@ -71,6 +71,10 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     //hibernate
     implementation 'org.hibernate.orm:hibernate-community-dialects:6.5.2.Final'
+
+//    첨부파일
+    implementation 'commons-io:commons-io:2.11.0'
+
 }
 
 

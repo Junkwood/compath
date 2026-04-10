@@ -169,13 +169,35 @@
                     :key="notice.num"
                     @click="goDetail(notice)"
                     class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                    :class="
+                      notice.isDeleted == 'O1'
+                        ? 'grayscale blur-[4px] opacity-60'
+                        : ''
+                    "
                   >
-                    <td class="p-2 text-center">{{ notice.num }}</td>
-                    <td class="p-2 text-center">
-                      [{{ notice.roleName }}] {{ notice.title }}
+                    <td class="p-2 w-30">
+                      <div class="text-center">{{ notice.num }}</div>
                     </td>
-                    <td class="p-2 text-center">{{ notice.userName }}</td>
-                    <td class="p-2 text-center">{{ notice.createdAt }}</td>
+
+                    <td class="p-2">
+                      <div class="text-center">
+                        [{{ notice.roleName }}] {{ notice.title }}
+                        <span class="text-base" v-if="notice.isPinned == 'B1'"
+                          >🚨</span
+                        >
+                        <span class="text-base" v-if="notice.isDeleted == 'B1'">
+                          <el-icon><Lock /></el-icon>
+                        </span>
+                      </div>
+                    </td>
+
+                    <td class="p-2 w-70">
+                      <div class="text-center">{{ notice.userName }}</div>
+                    </td>
+
+                    <td class="p-2 w-70">
+                      <div class="text-center">{{ notice.createdAt }}</div>
+                    </td>
                   </tr>
                 </template>
 

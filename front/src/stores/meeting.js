@@ -7,6 +7,7 @@ export const useMeetingStore = defineStore("meeting", {
     registeredMeeting: {},
     meetingDetail: {},
     filterList: [],
+    pagingList: [],
   }),
   getters: {},
   actions: {
@@ -20,10 +21,12 @@ export const useMeetingStore = defineStore("meeting", {
     },
 
     // 회의록 등록
-    async registerMeeting(obj) {
-      console.log("회의록 등록전", obj);
+    async registerMeeting(formData) {
+      console.log("회의록 등록전", formData);
       await api //
-        .post("/meeting/register", obj)
+        .post("/meeting/register", formData, {
+          headers: {},
+        })
         .then((res) => {
           this.registeredMeeting = res.data;
           console.log("회의록 조회완료", this.registeredMeeting);
@@ -66,6 +69,18 @@ export const useMeetingStore = defineStore("meeting", {
         })
         .then((res) => {
           this.filterList = res.data;
+        });
+    },
+
+    // 페이징목록 조회
+    async getPagingList(obj) {
+      console.log(obj);
+      await api //
+        .get("/meeting/paging", {
+          params: obj,
+        })
+        .then((res) => {
+          this.pagingList = res.data;
         });
     },
   },
