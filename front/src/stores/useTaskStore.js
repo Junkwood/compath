@@ -202,10 +202,8 @@ export const useTaskStore = defineStore("task", () => {
         rawMilestoneList.find((m) => m.milestoneId === d.milestoneId)
           ?.milestoneName ?? "마일스톤 없음",
 
-        displayActualHours: (d.totalTimeEntries > 0)
-        ? d.totalTimeEntries
-        : (d.actualHours ?? 0),
-
+      displayActualHours:
+        d.totalTimeEntries > 0 ? d.totalTimeEntries : (d.actualHours ?? 0),
     };
 
     originalForm.value = { ...form.value };
@@ -279,21 +277,19 @@ export const useTaskStore = defineStore("task", () => {
   };
 
   // ───────────── 추정시간 ─────────────
-const calcEstTime = (force = false) => {
-  if (form.value.taskId && !force) return;
+  const calcEstTime = (force = false) => {
+    if (form.value.taskId && !force) return;
 
-  const start = form.value.taskId
-    ? form.value.startDate
-    : form.value.estStartDate;
-  const end = form.value.taskId
-    ? form.value.dueDate
-    : form.value.estEndDate;
+    const start = form.value.taskId
+      ? form.value.startDate
+      : form.value.estStartDate;
+    const end = form.value.taskId ? form.value.dueDate : form.value.estEndDate;
 
-  if (!start || !end) return;
+    if (!start || !end) return;
 
-  const workdays = countWorkdays(new Date(start), new Date(end));
-  form.value.estTime = `${Math.max(1, workdays) * 8}시간`;
-};
+    const workdays = countWorkdays(new Date(start), new Date(end));
+    form.value.estTime = `${Math.max(1, workdays) * 8}시간`;
+  };
   // ───────────── 업무상태 변경 시 소요시간 자동계산 ─────────────
   const countWorkdays = (start, end) => {
     let count = 0;
@@ -314,10 +310,10 @@ const calcEstTime = (force = false) => {
 
       if (isFinished) {
         if (form.value.displayActualHours > 0) {
-        actualHours.value = `${form.value.displayActualHours}시간`;
-        form.value.progressRate = 100;
-        return;
-      }
+          actualHours.value = `${form.value.displayActualHours}시간`;
+          form.value.progressRate = 100;
+          return;
+        }
         const { startDate, dueDate } = form.value;
         if (startDate && dueDate) {
           const workdays = countWorkdays(
@@ -333,10 +329,15 @@ const calcEstTime = (force = false) => {
     },
   );
 
- watch(
-  () => [form.value.estStartDate, form.value.estEndDate, form.value.startDate, form.value.dueDate],
-  () => calcEstTime(),
-);
+  watch(
+    () => [
+      form.value.estStartDate,
+      form.value.estEndDate,
+      form.value.startDate,
+      form.value.dueDate,
+    ],
+    () => calcEstTime(),
+  );
   // ───────────── 폼 초기화 ─────────────
   const resetForm = (mode = "create") => {
     if (mode === "edit" && originalForm.value) {
@@ -421,9 +422,12 @@ const calcEstTime = (force = false) => {
   };
 
   // ───────────── 등록 ─────────────
-  const createTask = async () => {
+  const createTask = async (createdBy) => {
     validateForm();
-    await api.post("/tasks", buildPayload());
+    await api.post("/tasks", {
+      ...buildPayload(),
+      createdBy: createdBy,
+    });
   };
 
   // ───────────── 수정 ─────────────
@@ -464,7 +468,9 @@ const calcEstTime = (force = false) => {
         ...buildPayload(),
         taskId: Number(taskId),
         rejectionReason: rejectReason.value,
+        editorUserId: editorUserId,
       });
+
       await Swal.fire(
         "저장 완료",
         "업무 정보가 업데이트되었습니다.",

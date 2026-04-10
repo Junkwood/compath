@@ -186,11 +186,11 @@
                 <label class="block text-sm font-medium mb-1"
                   >예정 시작 일</label
                 >
-             <TaskDatePicker
-                v-model="form.estStartDate"
-                @change="calcEstTime(true)"
-              />
-            </div>
+                <TaskDatePicker
+                  v-model="form.estStartDate"
+                  @change="calcEstTime(true)"
+                />
+              </div>
               <div>
                 <label class="block text-sm font-medium mb-1"
                   >예정 종료일</label
@@ -233,10 +233,10 @@ import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import { useAuthStore } from "../stores/auth";
 import ProjectSelectModal from "../components/SelectModal.vue";
 import { useTaskStore } from "../stores/useTaskStore";
-import TaskDatePicker from '../components/TaskDatePicker.vue';
-
+import TaskDatePicker from "../components/TaskDatePicker.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -244,6 +244,7 @@ const sidebarOpen = ref(false);
 const store = useTaskStore();
 const id = route.params.projectId;
 const parentTaskId = route.query.parentTaskId;
+const authStore = useAuthStore();
 
 const isSubTask = computed(() => !!route.query.parentTaskId);
 
@@ -286,7 +287,7 @@ const confirmSubProject = () => {
 
 const handleSubmit = async () => {
   try {
-    await store.createTask();
+    await store.createTask(authStore.user?.userId);
     alert("등록 완료!");
     router.push({
       name: "taskList",

@@ -258,18 +258,18 @@
                   @change="calcEstTime"
                 />
               </div>
-                <div>
-                  <label class="block text-sm font-medium mb-1">추정 시간</label>
-                  <input
-                    v-model="form.estTime"
-                    readonly
-                    class="input w-full bg-gray-100 cursor-not-allowed"
-                    placeholder="예정 시작일/종료일 선택 시 자동 계산"
-                  />
-                  <p class="text-xs text-gray-400 mt-1">
-                    * 예정 시작일 ~ 예정 종료일 기준 워킹데이로 자동 계산됩니다.
-                  </p>
-                </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">추정 시간</label>
+                <input
+                  v-model="form.estTime"
+                  readonly
+                  class="input w-full bg-gray-100 cursor-not-allowed"
+                  placeholder="예정 시작일/종료일 선택 시 자동 계산"
+                />
+                <p class="text-xs text-gray-400 mt-1">
+                  * 예정 시작일 ~ 예정 종료일 기준 워킹데이로 자동 계산됩니다.
+                </p>
+              </div>
             </div>
 
             <!-- 하단 버튼 -->
@@ -310,7 +310,7 @@ import Header from "../partials/Header.vue";
 import ProjectSelectModal from "../components/SelectModal.vue";
 import { useTaskStore } from "../stores/useTaskStore";
 import { useAuthStore } from "../stores/auth";
-import TaskDatePicker from '../components/TaskDatePicker.vue';
+import TaskDatePicker from "../components/TaskDatePicker.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -370,6 +370,9 @@ const goCreateSubTask = () => {
 };
 
 const handleSubmit = async () => {
+  console.log("authStore.user:", authStore.user); // ← 추가
+  console.log("editorUserId:", authStore.user?.userId || authStore.user?.id); // ← 추가
+
   const taskId = route.params.taskId;
   const editorUserId = authStore.user?.userId || authStore.user?.id;
   const projectId = form.value.projectId;
