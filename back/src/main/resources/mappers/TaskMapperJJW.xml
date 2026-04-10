@@ -112,7 +112,7 @@
         priority_code  = #{priorityCode},
         assignee_user_id = #{assigneeUserId},
         progress_rate  = #{progressRate},
-        actual_hours   = #{actualHours},
+<!--        actual_hours   = #{actualHours},-->
         start_date     = #{startDate},
         due_date       = #{dueDate},
         updated_at     = SYSDATE,

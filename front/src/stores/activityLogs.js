@@ -39,6 +39,7 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
     T3: "상태변경",
     T4: "진척도변경",
     T5: "소요시간변경",
+    T6: "우선순위변경",
   };
 
   const TARGET_TYPE_MAP = {
@@ -56,6 +57,13 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
     3: "개발완료",
     4: "반려",
     5: "종료",
+  };
+
+  const PRIORITY_LABEL_MAP = {
+    H1: "긴급",
+    H2: "상",
+    H3: "중",
+    H4: "하",
   };
 
   function startOfDay(date) {
@@ -89,7 +97,9 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
   function badgeClass(type) {
     if (["J0", "M0", "T0"].includes(type)) return "create";
     if (["J2", "M2", "T2"].includes(type)) return "delete";
-    if (["J1", "J3", "M1", "M3", "T1", "T3", "T4", "T5"].includes(type)) {
+    if (
+      ["J1", "J3", "M1", "M3", "T1", "T3", "T4", "T5", "T6"].includes(type)
+    ) {
       return "update";
     }
     return "";
@@ -111,6 +121,20 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
   function getTaskStatusLabel(value) {
     if (value === null || value === undefined || value === "") return "-";
     return TASK_STATUS_LABEL_MAP[Number(value)] || value;
+  }
+
+  function isPriorityCode(value) {
+    if (value === null || value === undefined || value === "") return false;
+    return Object.prototype.hasOwnProperty.call(
+      PRIORITY_LABEL_MAP,
+      String(value).trim(),
+    );
+  }
+
+  function getPriorityLabel(value) {
+    if (value === null || value === undefined || value === "") return "-";
+    const code = String(value).trim();
+    return PRIORITY_LABEL_MAP[code] || code;
   }
 
   function buildMessage(item) {
@@ -163,6 +187,9 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
             ? `업무 "${afterValue}"가 생성되었습니다.`
             : "업무가 생성되었습니다.";
         case "T1":
+          if (isPriorityCode(beforeValue) || isPriorityCode(afterValue)) {
+            return "업무 우선순위가 변경되었습니다.";
+          }
           return "업무 정보가 수정되었습니다.";
         case "T2":
           return beforeValue
@@ -175,6 +202,8 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
           return "업무 진척도가 변경되었습니다.";
         case "T5":
           return "업무 소요시간이 변경되었습니다.";
+        case "T6":
+          return "업무 우선순위가 변경되었습니다.";
         default:
           return "업무 작업내역이 기록되었습니다.";
       }
@@ -250,6 +279,9 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
           return afterValue ? `생성값: ${afterValue}` : "";
         case "T1":
           if (!beforeValue && !afterValue) return "";
+          if (isPriorityCode(beforeValue) || isPriorityCode(afterValue)) {
+            return `우선순위 변경: ${getPriorityLabel(beforeValue)} → ${getPriorityLabel(afterValue)}`;
+          }
           return `기존값: ${beforeValue || "-"} → 변경값: ${afterValue || "-"}`;
         case "T2":
           return beforeValue ? `삭제 전 값: ${beforeValue}` : "";
@@ -262,6 +294,9 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
         case "T5":
           if (!beforeValue && !afterValue) return "";
           return `소요시간 변경: ${beforeValue || "0"}시간 → ${afterValue || "0"}시간`;
+        case "T6":
+          if (!beforeValue && !afterValue) return "";
+          return `우선순위 변경: ${getPriorityLabel(beforeValue)} → ${getPriorityLabel(afterValue)}`;
         default:
           return "";
       }

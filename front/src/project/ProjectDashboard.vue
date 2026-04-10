@@ -52,6 +52,7 @@
                     업무 목록 보기
                   </el-button>
                 </div>
+                
                 <div class="task-table-wrap">
                   <el-table
                     :data="taskSummaryData"
@@ -100,21 +101,28 @@
                 <div class="card-header">
                   <span class="card-title">공지사항</span>
                 </div>
+
                 <div class="notice-body">
-                  <ul class="notice-list">
+                  <ul v-if="noticeList.length > 0" class="notice-list">
                     <li
                       v-for="item in noticeList"
-                      :key="item.id"
+                      :key="item.noticeId"
                       class="notice-item"
                       @click="handleNoticeClick(item)"
                     >
                       <div class="notice-left">
                         <span class="notice-title">{{ item.title }}</span>
+                        <span v-if="item.pinStatusCode === 'B1'" class="notice-pin-badge">
+                          고정
+                        </span>
                         <span v-if="item.isNew" class="notice-badge">NEW</span>
                       </div>
-                      <span class="notice-date">{{ item.date }}</span>
+
+                      <span class="notice-date">{{ item.createdAt }}</span>
                     </li>
                   </ul>
+
+                  <div v-else class="notice-empty">등록된 공지사항이 없습니다.</div>
                 </div>
               </div>
 
@@ -177,6 +185,8 @@
               <div class="card mb-5">
                 <div class="card-header">
                   <span class="card-title">프로젝트 구성원</span>
+                  <span class="member-count">{{ projectMembers.length }}명</span>
+
                 </div>
 
                 <div class="member-body">
@@ -308,23 +318,69 @@ const fetchTaskSummary = async () => {
   }
 };
 
-// ── 공지사항 (하드코딩) ──────────────────────────────
-const noticeList = ref([
-  { id: 1, title: "서비스 현황성 적용 안내", date: "2026-03-19", isNew: true },
-  { id: 2, title: "서비스 현황성 적용 안내", date: "2026-06-18", isNew: false },
-  {
-    id: 3,
-    title: "공지사항 등록 및 수정 안내",
-    date: "2026-06-18",
-    isNew: false,
-  },
-  {
-    id: 4,
-    title: "공지사항 등록 및 수정 안내",
-    date: "2026-06-18",
-    isNew: false,
-  },
-]);
+// ── 공지사항 ──────────────────────────────
+const noticeList = ref([]);
+
+const formatDate = (value) => {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value).slice(0, 10);
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const isWithin7Days = (value) => {
+  if (!value) return false;
+
+  const target = new Date(value);
+  if (Number.isNaN(target.getTime())) return false;
+
+  const today = new Date();
+  const diff = today.getTime() - target.getTime();
+  const diffDays = diff / (1000 * 60 * 60 * 24);
+
+  return diffDays >= 0 && diffDays <= 7;
+};
+
+const fetchNoticeList = async () => {
+  try {
+    const projectId = Number(route.params.projectId);
+    const res = await api.get(`/notices/getNoticeLists/${projectId}`);
+
+    const rawList = Array.isArray(res.data) ? res.data : [];
+
+    noticeList.value = rawList
+      .map((item, index) => ({
+        noticeId: item.noticeId ?? item.id ?? index,
+        title: item.title,
+        createdAt: formatDate(item.createdAt),
+        rawCreatedAt: item.createdAt,
+        pinStatusCode: item.pinStatusCode ?? item.pinned ?? item.pinYn ?? "B2",
+        isNew: isWithin7Days(item.createdAt),
+      }))
+      .sort((a, b) => {
+        const aPinned = a.pinStatusCode === "B1" ? 1 : 0;
+        const bPinned = b.pinStatusCode === "B1" ? 1 : 0;
+
+        if (aPinned !== bPinned) {
+          return bPinned - aPinned;
+        }
+
+        return new Date(b.rawCreatedAt) - new Date(a.rawCreatedAt);
+      })
+      .slice(0, 7);
+  } catch (err) {
+    console.error("공지사항 목록 조회 실패:", err);
+    noticeList.value = [];
+  }
+};
 
 // ── 프로젝트 구성원 ──────────────────────────────
 const projectMembers = ref([]);
@@ -538,7 +594,17 @@ const handleViewTasks = () => {
     },
   });
 };
-const handleNoticeClick = () => {};
+
+//공지사항 테이블 행 클릭 이벤트
+const handleNoticeClick = (item) => {
+  router.push({
+    name: "noticeDetail",
+    params: {
+      projectId: route.params.projectId,
+      noticeId: item.noticeId,
+    },
+  });
+};
 
 //하위프로젝트 테이블 행 클릭시 하위프로젝트 대쉬보드로 진입
 const handleSubProjectRowClick = (row) => {
@@ -591,6 +657,7 @@ onMounted(() => {
   fetchMemoList();
   fetchPmemList();
   fetchTaskSummary();
+  fetchNoticeList();
 });
 </script>
 
@@ -1077,6 +1144,17 @@ onMounted(() => {
   border: 1px dashed #dbe2ea;
   border-radius: 12px;
   background: #fafcff;
+}
+
+.task-table-wrap {
+  padding: 16px 20px 8px;
+  background: #ffffff;
+}
+
+.task-table-wrap :deep(.el-table) {
+  border: 1px solid #e9eef5;
+  border-radius: 14px;
+  overflow: hidden;
 }
 
 /* ────────────────────────────────────────────
