@@ -41,4 +41,8 @@ public class TaskReqDtoJJW {
     String priorityCode;
     @NotNull(message = "담당자는 필수입니다.")
     String assigneeName;
+
+    Integer totalTimeEntries;
+    Integer finalActualHours;
+
 }

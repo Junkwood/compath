@@ -40,6 +40,8 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
         if (dto.getTaskStatusId() != null && dto.getTaskStatusId() == 2) {
             if (dto.getStartDate() == null) dto.setStartDate(new Date());
         }
+
+
         int result = taskMapperJJW.updateTask(dto);
 
         if (dto.getTaskStatusId() == 3 || dto.getTaskStatusId() == 5) {

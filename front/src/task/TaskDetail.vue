@@ -374,6 +374,12 @@ onBeforeMount(async () => {
   taskInfo.value = { ...taskStore.taskDetail };
   taskInfo.value.createdAt = changeDate(taskInfo.value.createdAt);
 
+  //time_entries 합계가 있으면 표시
+  if (taskInfo.value.totalTimeEntries > 0) {
+    taskInfo.value.actualHours = taskInfo.value.totalTimeEntries;
+  }
+
+
   // 상위 프로젝트가 없을 때 구분
   if (taskInfo.value.parentProjectName != null) {
     taskPjList.value = [
@@ -461,8 +467,14 @@ const submitted = async (val) => {
   timeEntriesList.value = taskStore.timeEntriesList;
 
   // 소요시간 목록 최신화
-  taskInfo.value.actualHours += Number(val.hours);
-  console.log("소요시간 우측: ", taskInfo.value.actualHours);
+  // taskInfo.value.actualHours += Number(val.hours);
+  // console.log("소요시간 우측: ", taskInfo.value.actualHours);
+
+  //등록 후 합계를 다시 계산해서 반영 => 누적 합계
+    taskInfo.value.actualHours = timeEntriesList.value.reduce(
+    (sum, entry) => sum + Number(entry.hours ?? 0), 0
+  );
+
 
   chageTaskDesc();
 };
