@@ -43,8 +43,8 @@
         <router-link class="block" to="/">
           <div class="flex items-center justify-center gap-0">
             <img
-              src="/src/images/comPath.png"
-              class="w-20 h-auto object-contain shrink-0"
+              src="/src/images/whiteBgComPath.PNG"
+              class="w-6 mr-5 h-auto object-contain shrink-0"
             />
             <span
               class="text-2xl font-bold text-white lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"

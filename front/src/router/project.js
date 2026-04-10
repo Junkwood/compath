@@ -6,38 +6,38 @@ const projectRoutes = [
   },
 
   {
-    path: "/project/dashboard/:projectId",
+    path: "/project/:projectId/dashboard",
     name: "projectDash",
     component: () => import("../project/ProjectDashboard.vue"),
     props: true,
   },
   {
-    path: "/project/memo/:projectId",
+    path: "/project/:projectId/memo",
     name: "projectMemo",
     component: () => import("../project/ProjectMemoModal.vue"),
   },
   {
-    path: "/project/milestone/:projectId",
+    path: "/project/:projectId/milestone",
     name: "milestoneDashboard",
     component: () => import("../milestone/MilestoneDashboard.vue"),
   },
   {
-    path: "/project/milestoneDetail/:projectId/:milestoneId",
+    path: "/project/:projectId/milestoneDetail/:milestoneId",
     name: "milestoneDetail",
     component: () => import("../milestone/MilestoneDetail.vue"),
   },
   {
-    path: "/project/sub/:rootProjectId/:subProjectId",
+    path: "/project/:projectId/sub/:subProjectId",
     name: "subProjectDashboard",
     component: () => import("../project/ProjectSubDashboard.vue"),
   },
   {
-    path: "/projectListAll",
+    path: "/project/listAll",
     name: "projectListAll",
     component: () => import("../project/ProjectListAll.vue"),
   },
   {
-    path: "/projecWorkHistory/:projectId",
+    path: "/project/:projectId/workHistory",
     name: "projectWorkHistory",
     component: () => import("../project/ProjectWorkHistory.vue"),
   },

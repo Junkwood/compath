@@ -219,7 +219,7 @@ const projectInfo = ref({
   updatedAt: null,
   useMilestone: null,
 });
-const id = route.params.id;
+const id = route.params.projectId;
 
 const ModifyProjectModalOpen = ref(false); // 수정 모달
 const MemberModalOpen = ref(false); // 구성원 추가 모달
