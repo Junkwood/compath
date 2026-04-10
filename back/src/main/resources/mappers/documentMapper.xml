@@ -112,7 +112,7 @@
                      (SELECT count(*)
                      FROM document_comments
                      WHERE document_id = d.document_id
-                     AND is_deleted = 'O2') AS count
+                     AND is_deleted = 'Q2') AS count
               FROM documents d
               JOIN projects p ON d.project_id = p.project_id
               JOIN users u ON d.created_by = u.user_id
