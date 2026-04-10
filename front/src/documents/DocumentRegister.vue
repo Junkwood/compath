@@ -311,7 +311,7 @@ const submitForm = async (formEl) => {
         if (!result.isConfirmed) return;
         // 공지사항 수정
         let obj = {
-          documentId: id,
+          documentId: documentId,
           title: form.title,
           content: form.content,
           isPinned: form.isPinned == true ? "O1" : "O2",

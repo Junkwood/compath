@@ -128,7 +128,7 @@
             <div class="comment-list" v-for="comment in commentList">
               <div class="flex gap-4 pt-4 pb-2 border-b-2 border-gray-100">
                 <div class="flex-1">
-                  <div v-if="!modifyOpen">
+                  <div v-if="!comment.modifyOpen">
                     <div class="flex items-center gap-2 mb-1">
                       <el-text size="large" strong>{{
                         comment.userName
@@ -160,7 +160,7 @@
                   </div>
                   <div
                     class="p-4 bg-indigo-50/50 border-2 border-indigo-200 rounded-lg transition-all"
-                    v-if="modifyOpen"
+                    v-if="comment.modifyOpen"
                   >
                     <div
                       class="flex items-center gap-2 mb-2 text-indigo-600 font-bold text-xs"
@@ -184,7 +184,7 @@
                         class="edit-textarea"
                       />
                       <div class="flex flex-row-reverse mt-2 gap-1">
-                        <el-button size="small" @click="cancelModify()"
+                        <el-button size="small" @click="cancelModify(comment)"
                           >취소</el-button
                         >
                         <el-button
@@ -323,7 +323,8 @@ const registerComment = async () => {
 
 // 댓글 수정
 const openModifyComment = (comment) => {
-  modifyOpen.value = true;
+  console.log(comment);
+  comment.modifyOpen = true;
 };
 
 const modifyComment = async (comment) => {
@@ -352,8 +353,8 @@ const modifyComment = async (comment) => {
 };
 
 // 댓글 수정 취소
-const cancelModify = () => {
-  modifyOpen.value = false;
+const cancelModify = (comment) => {
+  comment.modifyOpen = false;
 };
 
 // 댓글 삭제
@@ -386,6 +387,10 @@ onBeforeMount(async () => {
   await documentStore.getDocumentById(documentId);
   documentInfo.value = documentStore.documentDetail.documentInfo;
   commentList.value = documentStore.documentDetail.commentInfo;
+
+  commentList.value.forEach((comment) => {
+    comment.modifyOpen = false;
+  });
 });
 </script>
 <style scoped>

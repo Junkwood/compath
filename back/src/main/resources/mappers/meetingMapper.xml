@@ -137,7 +137,8 @@
                 u.user_name,
                 m.created_at,
                 c.code_name AS type_name,
-                m.attachment_group_id
+                m.attachment_group_id,
+                m.meeting_log_id
               FROM meeting_logs m
               JOIN projects p ON m.project_id = p.project_id
               JOIN users u ON m.created_by = u.user_id
