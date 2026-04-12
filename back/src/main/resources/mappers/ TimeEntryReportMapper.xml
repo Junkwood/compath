@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.report.mapper.TimeEntryReportMapper">
+
+    <resultMap id="ReportMap"   type="com.example.report.dto.TimeEntryReportDto" autoMapping="true"/>
+    <resultMap id="AssigneeMap" type="com.example.report.dto.AssigneeDto"        autoMapping="true"/>
+    <resultMap id="TaskTypeMap" type="com.example.report.dto.TaskTypeDto"        autoMapping="true"/>
+
+    <select id="getTimeEntryReport" statementType="CALLABLE">
+        {
+        CALL SP_GET_TIME_ENTRY_REPORT(
+        #{projectId,       mode=IN,  jdbcType=NUMERIC},
+        #{assigneeUserId,  mode=IN,  jdbcType=NUMERIC},
+        #{taskTypeId,      mode=IN,  jdbcType=NUMERIC},
+        #{keyword,         mode=IN,  jdbcType=VARCHAR},
+        #{dateFrom,        mode=IN,  jdbcType=DATE},
+        #{dateTo,          mode=IN,  jdbcType=DATE},
+        #{reportList,      mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=ReportMap},
+        #{assigneeList,    mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=AssigneeMap},
+        #{taskTypeList,    mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=TaskTypeMap}
+             )
+        }
+    </select>
+
+</mapper>

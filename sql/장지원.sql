@@ -15,7 +15,7 @@ SELECT * FROM project_members;
 SELECT * FROM task_types;
 SELECT * FROM task_statuses;
 
-SELECT * FROM  notifications;
+SELECT * FROM notifications;
 SELECT * FROM notification_targets;
 SELECT * FROM task_rejections;
 SELECT * FROM time_entries;
