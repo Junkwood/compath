@@ -111,7 +111,7 @@
                   </div>
                   <div class="mb-6">
                     <el-upload
-                      v-model:filet="file"
+                      v-model:file-list="fileList"
                       action="#"
                       :auto-upload="false"
                       class="w-full"
@@ -122,7 +122,6 @@
                         <div
                           class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 cursor-pointer"
                         >
-                          <i class="el-icon-paperclip text-gray-500"></i>
                           <span class="text-sm font-medium text-gray-700"
                             >파일 선택</span
                           >
@@ -136,6 +135,78 @@
                       </template>
                     </el-upload>
                   </div>
+                  <!-- <div class="my-6" v-else>
+                    <div class="flex gap-2 mb-2">
+                      <div class="flex items-center">
+                        <label class="block text-base font-semibold mb-1"
+                          >첨부파일</label
+                        >
+                      </div>
+                      <div>
+                        <el-button
+                          type="button"
+                          class="btn-select-custom"
+                          @click="openModal"
+                        >
+                          파일 추가
+                        </el-button>
+                      </div>
+                    </div>
+
+                    <div
+                      class="border-t border-b border-gray-200 divide-y divide-gray-100"
+                    >
+                      <div
+                        v-for="(file, index) in fileList"
+                        :key="index"
+                        class="py-2 flex items-center justify-between group"
+                      >
+                        <div class="flex items-center gap-2 flex-1">
+                          <svg
+                            class="w-5 h-5 text-gray-500 shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                            ></path>
+                          </svg>
+
+                          <div
+                            class="flex items-center gap-1 cursor-pointer"
+                            @click="attachmentDownload(file)"
+                          >
+                            <span
+                              class="text-[14px] font-medium text-gray-700 group-hover:text-blue-600 transition-colors my-1"
+                            >
+                              {{ file.fileName }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="flex items-center gap-6">
+                          <button
+                            type="button"
+                            @click="removeFile(file)"
+                            class="text-[13px] text-gray-600 hover:text-blue-600 flex items-center gap-1"
+                          >
+                            ❌
+                          </button>
+                        </div>
+                      </div>
+
+                      <div
+                        v-if="!fileList || fileList.length === 0"
+                        class="py-4 text-center text-sm text-gray-400"
+                      >
+                        등록된 서류가 없습니다.
+                      </div>
+                    </div>
+                  </div> -->
                   <div v-if="!isModified" class="notification-area">
                     <el-button
                       type="button"
@@ -226,7 +297,11 @@
               </div>
               <div class="card">
                 <div class="news-btn">
-                  <button type="button" class="btn-sub">
+                  <button
+                    type="button"
+                    class="btn-sub"
+                    @click="getContentByGemmini()"
+                  >
                     AI 요약 및 업무 추천
                   </button>
                 </div>
@@ -287,7 +362,7 @@ const memberList = ref([]); // 구성원 테이블
 const alarmList = ref([]); // 알림대상 추가된 회원 목록
 
 // 공지사항 생성 버튼
-const submitForm = async (formEl) => {
+const submitForm = async formEl => {
   console.log(formEl.validate);
   await formEl.validate(async (valid, fields) => {
     if (valid) {
@@ -312,7 +387,7 @@ const submitForm = async (formEl) => {
         );
 
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach((file) => {
+          fileList.value.forEach(file => {
             formData.append("files", file.raw);
             console.log("file정체", file.raw);
           });
@@ -330,14 +405,14 @@ const submitForm = async (formEl) => {
           ];
 
           if (alarmList.value.length > 0) {
-            alarmList.value.forEach((al) => {
+            alarmList.value.forEach(al => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
               });
             });
           } else {
-            memberList.value.forEach((al) => {
+            memberList.value.forEach(al => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
@@ -376,8 +451,27 @@ const submitForm = async (formEl) => {
           editorUserId: userInfo.value.userId,
           meetingDate: form.meetingDate,
           place: form.meetingRoom,
+          attachmentGroupId: form.attachmentGroupId,
         };
-        await meetingStore.modifyMeeting(obj);
+
+        const formData = new FormData();
+        formData.append(
+          "obj",
+          new Blob([JSON.stringify(obj)], {
+            type: "application/json",
+          }),
+        );
+
+        if (fileList.value && fileList.value.length > 0) {
+          fileList.value.forEach(file => {
+            if (file.isExisting == null) {
+              console.log(file);
+              formData.append("files", file.raw);
+            }
+          });
+        }
+
+        await meetingStore.modifyMeeting(formData);
       }
 
       router.push({
@@ -398,13 +492,18 @@ const submitForm = async (formEl) => {
 };
 
 // 알림대상 모달 추가버튼 데이터 받기\
-const memberInsert = (mem) => {
+const memberInsert = mem => {
   modalOpen.value = false;
   alarmList.value = mem;
 };
 
-const handleClose = (tag) => {
+const handleClose = tag => {
   alarmList.value.splice(alarmList.value.indexOf(tag), 1);
+};
+
+// 회의록 내용 요약 받기
+const getContentByGemmini = async form => {
+  await meetingStore.getContentByGemmini(form.content);
 };
 
 onBeforeMount(async () => {
@@ -428,12 +527,24 @@ onBeforeMount(async () => {
     let meetingInfo = meetingStore.meetingDetail;
 
     // 폼에 대입
-    form.meetingType = meetingInfo.meetingTypeCode;
-    form.author = meetingInfo.userName;
-    form.date = meetingInfo.meetingDate;
-    form.title = meetingInfo.title;
-    form.content = meetingInfo.content;
-    form.meetingRoom = meetingInfo.place;
+    form.meetingType = meetingInfo.meetingList.meetingTypeCode;
+    form.author = meetingInfo.meetingList.userName;
+    form.date = meetingInfo.meetingList.meetingDate;
+    form.title = meetingInfo.meetingList.title;
+    form.content = meetingInfo.meetingList.content;
+    form.meetingRoom = meetingInfo.meetingList.place;
+    form.attachmentGroupId = meetingInfo.meetingList.attachmentGroupId;
+    meetingInfo.attachmentList.forEach(att => {
+      let obj = {
+        name: att.fileName,
+        uid: att.attachmentId,
+        url: att.filePath,
+        status: "success",
+        isExisting: true,
+      };
+      fileList.value.push(obj);
+    });
+
     Swal.close();
   } else {
     form.author = userInfo.value.name;
@@ -501,17 +612,21 @@ const rules = reactive({
   ],
 });
 
-const resetForm = (formEl) => {
+const resetForm = formEl => {
   if (!formEl) return;
   formEl.resetFields();
 };
 
 // 첨부파일api
-const file = ref([]);
 const fileList = ref([]);
 
 const handleChange = (uploadFile, uploadFiles) => {
-  fileList.value = uploadFiles;
+  console.log(uploadFile, uploadFiles);
+};
+
+// 첨부파일 삭제
+const removeFile = file => {
+  fileList.value = fileList.value.filter(val => val != file);
 };
 </script>
 

@@ -10,7 +10,7 @@ import java.util.Map;
 public interface AttachmentService {
 
 //    첨부파일 등록
-    public int registerAttachments(List<MultipartFile> files) throws IOException;
+    public int registerAttachments(List<MultipartFile> files, Integer id) throws IOException;
 
 
     //    첨부파일 조회
