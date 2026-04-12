@@ -1,8 +1,12 @@
 package com.example.gemini.controller;
 
+import com.example.gemini.service.GeminiService;
+import com.example.meeting.dto.MeetingDTO;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
@@ -17,27 +21,18 @@ import java.util.Map;
 @RequestMapping("/api")
 public class GeminiController {
 
-    private final WebClient webClient = WebClient.create("https://generativelanguage.googleapis.com");
+    private final GeminiService service;
 
-    @Value("${gemini.api.key}")
-    private String apiKey;
 
     @PostMapping("/gemini/simple")
-    public Mono<String> callGemini(@RequestBody String input) {
-        Map<String, Object> body = Map.of(
-                "contents", List.of(Map.of(
-                        "parts", List.of(Map.of("text", "요약해서 정리해줘:\n\n" + input))
-                ))
-        );
+    public Mono<String> callGemini(@RequestPart(value = "files", required = false) MultipartFile files,
+                                   @RequestPart(value = "prompt", required = false) String prompt) {
+        if (files != null && !files.isEmpty()) {
+            return service.getAudioResponse(files);
+        }
 
-        return webClient.post()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/v1beta/models/gemini-3-flash-preview:generateContent")
-                        .queryParam("key", apiKey)
-                        .build())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(String.class);
+      return service.getChatResponse(prompt);
+
     }
+
 }

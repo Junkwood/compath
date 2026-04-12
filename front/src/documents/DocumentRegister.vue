@@ -214,6 +214,7 @@ const projectStore = useProjectKJHStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
+const subId = route.params.subProjectId;
 const documentId = route.params.documentId;
 const userInfo = ref(); // 글 작성자 정보
 const roles = ref([]);
@@ -251,7 +252,7 @@ const submitForm = async (formEl) => {
       // 공지사항 등록
       if (!isModified.value) {
         let obj = {
-          projectId: id,
+          projectId: subId ? subId : id,
           title: form.title,
           content: form.content,
           isPinned: form.isPinned == true ? "O1" : "O2",
@@ -326,6 +327,7 @@ const submitForm = async (formEl) => {
         name: "documentDetail",
         params: {
           projectId: id,
+          subProjectId: subId,
           documentId:
             isModified == true
               ? documentId
@@ -403,7 +405,7 @@ const goBack = () => {
   console.log(id);
   router.push({
     name: "documentList",
-    params: { projectId: id },
+    params: { projectId: id, subProjectId: subId },
   });
 };
 

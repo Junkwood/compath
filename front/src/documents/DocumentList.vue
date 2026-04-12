@@ -261,6 +261,7 @@ const noticeStore = useNoticeStore();
 const documentStore = useDocumentStore();
 
 const projectId = route.params.projectId;
+let subId = route.params.subProjectId;
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
 
@@ -338,7 +339,7 @@ const handleCurrentChange = async (val) => {
 const goResister = () => {
   router.push({
     name: "documentRegister",
-    params: { projectId: projectId },
+    params: { projectId: projectId, subProjectId: subId },
   });
 };
 
@@ -347,7 +348,11 @@ const goDetail = (tr) => {
   console.log(tr);
   router.push({
     name: "documentDetail",
-    params: { projectId: projectId, documentId: tr.documentId },
+    params: {
+      projectId: projectId,
+      subProjectId: subId,
+      documentId: tr.documentId,
+    },
   });
 };
 
@@ -362,14 +367,20 @@ onBeforeMount(async () => {
       Swal.showLoading();
     },
   });
-  await taskStore.getProjectName(projectId);
+  if (subId) {
+    await taskStore.getProjectName(subId);
+    let obj = { projectId: subId, parentProjectId: subId };
+    await documentStore.getFilterList(obj);
+  } else {
+    await taskStore.getProjectName(projectId);
+    let obj = { projectId: projectId, parentProjectId: projectId };
+    await documentStore.getFilterList(obj);
+  }
   const projectInfo = taskStore.projectName;
   name.value = projectInfo.projectName; // 프로젝트 이름
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
 
-  let obj = { projectId: projectId, parentProjectId: projectId };
-  await documentStore.getFilterList(obj);
   Swal.close();
 
   filterList.value = documentStore.filterList;

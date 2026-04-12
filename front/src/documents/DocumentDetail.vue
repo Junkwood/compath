@@ -224,6 +224,7 @@ const sidebarOpen = ref(false);
 const documentInfo = ref({});
 const documentId = route.params.documentId;
 const projectId = route.params.projectId;
+const subId = route.params.subProjectId;
 
 const commentList = ref([]); // 댓글목록
 const comment = ref(); // 댓글
@@ -234,7 +235,7 @@ const goBack = () => {
   console.log(projectId);
   router.push({
     name: "documentList",
-    params: { projectId: projectId },
+    params: { projectId: projectId, subProjectId: subId },
   });
 };
 
@@ -242,7 +243,11 @@ const goBack = () => {
 const modifyDocument = () => {
   router.push({
     name: "documentRegister",
-    params: { projectId: projectId, documentId: documentId },
+    params: {
+      projectId: projectId,
+      subProjectId: subId,
+      documentId: documentId,
+    },
   });
 };
 

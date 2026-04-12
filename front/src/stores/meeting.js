@@ -8,6 +8,7 @@ export const useMeetingStore = defineStore("meeting", {
     meetingDetail: {},
     filterList: [],
     pagingList: [],
+    geminiContent: [],
   }),
   getters: {},
   actions: {
@@ -15,7 +16,7 @@ export const useMeetingStore = defineStore("meeting", {
     async getMeetingType() {
       await api //
         .get("/meeting/register/typeList")
-        .then(res => {
+        .then((res) => {
           this.meetingType = res.data;
         });
     },
@@ -26,7 +27,7 @@ export const useMeetingStore = defineStore("meeting", {
         .post("/meeting/register", formData, {
           headers: {},
         })
-        .then(res => {
+        .then((res) => {
           this.registeredMeeting = res.data;
           console.log("회의록 조회완료", this.registeredMeeting);
         });
@@ -38,7 +39,7 @@ export const useMeetingStore = defineStore("meeting", {
         .put("/meeting/modify", formData, {
           headers: {},
         })
-        .then(res => {
+        .then((res) => {
           this.meetingDetail = res.data;
         });
     },
@@ -48,7 +49,7 @@ export const useMeetingStore = defineStore("meeting", {
       console.log("생성값", arr);
       await api //
         .post("/meeting/alarm/register", arr)
-        .then(res => {
+        .then((res) => {
           console.log("알림발송 및 등록 완료", res.data);
         });
     },
@@ -57,7 +58,7 @@ export const useMeetingStore = defineStore("meeting", {
     async getMeetingById(id) {
       await api //
         .get("/meeting/detail/" + id)
-        .then(res => {
+        .then((res) => {
           this.meetingDetail = res.data;
         });
     },
@@ -68,7 +69,7 @@ export const useMeetingStore = defineStore("meeting", {
         .get("/meeting/list", {
           params: obj,
         })
-        .then(res => {
+        .then((res) => {
           this.filterList = res.data;
         });
     },
@@ -80,19 +81,20 @@ export const useMeetingStore = defineStore("meeting", {
         .get("/meeting/paging", {
           params: obj,
         })
-        .then(res => {
+        .then((res) => {
           this.pagingList = res.data;
         });
     },
 
     //  Gemini API 사용해서 작성내용 요약
-    async getContentByGemmini(content) {
+    async getContentByGemmini(obj) {
       await api //
-        .post("/api/gemini/simple", {
-          content: content,
+        .post("/gemini/simple", obj, {
+          headers: {},
         })
-        .then(res => {
+        .then((res) => {
           this.geminiContent = res.data;
+          console.log(this.geminiContent);
         });
     },
   },

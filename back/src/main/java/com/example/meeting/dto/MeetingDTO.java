@@ -27,6 +27,8 @@ public class MeetingDTO { // 회의록
     private String place;
     private Integer projectId;
     private Integer attachmentGroupId;
+    private String AiSummary;
+    private String sttText;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")

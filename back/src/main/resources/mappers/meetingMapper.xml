@@ -27,6 +27,8 @@
                                   content,
                                   created_by,
                                   created_at,
+                                  ai_summary,
+                                  stt_text,
                                   attachment_group_id )
         VALUES( #{meetingLogId},
                 #{projectId},
@@ -37,6 +39,8 @@
                 #{content},
                 #{createdBy},
                 SYSDATE,
+                #{aiSummary},
+                #{sttText},
                 #{attachmentGroupId} )
     </insert>
 
