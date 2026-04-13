@@ -8,6 +8,9 @@ export const useGanttChartStore = defineStore("ganttChart", {
     tasksData: [],
     priorityList: [],
     filteredTasksData: null,
+    createModalVisible: false,
+    createModalProjectId: null,
+
   }),
   getters: {
     // 필터 적용된 데이터

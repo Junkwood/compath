@@ -48,14 +48,22 @@
           <div class="gantt-card">
             <div ref="ganttContainer" class="gantt-wrapper" />
           </div>
+
+            <!-- 업무 생성 모달 -->
+          <TaskCreateModal
+            v-model="taskModalOpen"
+            :parentId="taskModalParentId"
+            :projectId="rootProjectId"
+            @submitted="onTaskSubmitted"
+          />
         </div>
       </main>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+s<script setup>
+import { ref,computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -64,6 +72,7 @@ import "@bryntum/gantt/gantt.css";
 import { useGanttChartStore } from "../stores/GantChart";
 import { TaskModel } from "@bryntum/gantt/gantt.module.js";
 import ProjectInfo from "../components/ProjectName.vue";
+import TaskCreateModal from "../task/TaskCreateModal.vue"; // ← 추가
 
 const router = useRouter();
 const route = useRoute();
@@ -72,6 +81,14 @@ const ganttContainer = ref(null);
 let ganttInstance = null;
 const store = useGanttChartStore();
 
+// ↓ 모달 상태
+const taskModalOpen = ref(false);
+const taskModalParentId = ref(null);
+const rootProjectId = computed(() => {
+  if (!store.rawProjects?.length) return route.params.projectId;
+  const root = store.rawProjects.find((p) => !p.parentProjectId);
+  return root?.projectId ?? route.params.projectId;
+});
 const activeView = ref("weekAndDay");
 const viewOptions = [
   { label: "일별", value: "weekAndDay", icon: "📅" },
@@ -99,7 +116,6 @@ const changeView = (preset) => {
   activeView.value = preset;
   if (ganttInstance) {
     ganttInstance.viewPreset = preset;
-    // 뷰 변경 후에도 오늘 날짜로 스크롤
     scrollToToday();
   }
 };
@@ -111,7 +127,6 @@ const getTaskColor = (percentDone) => {
   return "#dbeafe";
 };
 
-// 오늘 날짜로 스크롤
 const scrollToToday = () => {
   if (!ganttInstance) return;
   setTimeout(() => {
@@ -122,11 +137,22 @@ const scrollToToday = () => {
         edgeOffset: 100,
       });
     } catch (e) {
-      // fallback: 타임라인 직접 스크롤
       const el = ganttInstance.timeAxisSubGrid?.element;
       if (el) el.scrollLeft = 0;
     }
   }, 200);
+};
+
+// ↓ 모달 제출 후 간트 데이터 새로고침
+const onTaskSubmitted = async () => {
+  taskModalOpen.value = false;
+  await store.fetchGanttData(route.params.projectId);
+
+  // 간트 인스턴스 프로젝트 데이터 갱신
+  if (ganttInstance) {
+    ganttInstance.project.tasksData = store.tasksData;
+    await ganttInstance.project.loadInlineData({ tasks: store.tasksData });
+  }
 };
 
 const initGantt = async () => {
@@ -278,13 +304,14 @@ const initGantt = async () => {
     },
   });
 
-  // 렌더링 완료 후 오늘 날짜로 스크롤
   ganttInstance.on("render", () => {
     scrollToToday();
   });
 
+  // ↓ 페이지 이동 → 모달 오픈으로 변경
   window.__ganttAdd = (parentId) => {
-    router.push({ path: "/tasks/create", query: { parentId } });
+    taskModalParentId.value = String(parentId);
+    taskModalOpen.value = true;
   };
 };
 
