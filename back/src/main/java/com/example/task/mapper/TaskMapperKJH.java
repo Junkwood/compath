@@ -2,6 +2,7 @@ package com.example.task.mapper;
 
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
+import com.example.task.dto.TaskReqDtoJJW;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -47,4 +48,8 @@ public interface TaskMapperKJH {
 
 //  필터링 조건들 조회(PL/SQL)
   public void getAllFilterList(Map<String, Object> params);
+
+
+  // 추천 업무 등록(회의록)
+  void insert(TaskDetailDTOKJH vo);
 }

@@ -212,7 +212,7 @@
                 <!-- 데이터 없을 때 -->
                 <tr v-else>
                   <td :colspan="thList.length + 1" class="text-center py-10">
-                    <h5 class="text-gray-500">업무가 존재하지 않습니다.</h5>
+                    <h5 class="text-gray-500">회의록이 존재하지 않습니다.</h5>
                   </td>
                 </tr>
               </tbody>
@@ -252,6 +252,7 @@ const taskStore = usetaskKJHStore();
 const meetingStore = useMeetingStore();
 
 const projectId = route.params.projectId;
+const subId = route.params.subProjectId;
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
 
@@ -287,7 +288,7 @@ const handleCurrentChange = async (val) => {
 
   // 페이지 변환 목록 조회
   let obj = {
-    projectId: projectId,
+    projectId: subId != null ? subId : projectId,
     startNum: start,
     endNum: end,
     ...filteredList.value,
@@ -325,7 +326,7 @@ const handleCurrentChange = async (val) => {
 const goResister = () => {
   router.push({
     name: "meetingRegister",
-    params: { projectId: projectId },
+    params: { projectId: projectId, subProjectId: subId },
   });
 };
 
@@ -334,7 +335,11 @@ const goDetail = (tr) => {
   console.log(tr);
   router.push({
     name: "meetingDetail",
-    params: { projectId: projectId, meetingId: tr.meetingLogId },
+    params: {
+      projectId: projectId,
+      subProjectId: subId,
+      meetingId: tr.meetingLogId,
+    },
   });
 };
 
@@ -349,13 +354,15 @@ onBeforeMount(async () => {
       Swal.showLoading();
     },
   });
-  await taskStore.getProjectName(projectId);
+  let id = subId ? subId : projectId;
+  console.log(subId);
+  await taskStore.getProjectName(id);
   const projectInfo = taskStore.projectName;
   name.value = projectInfo.projectName; // 프로젝트 이름
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
 
-  let obj = { projectId: projectId };
+  let obj = { projectId: subId ? subId : projectId };
   await meetingStore.getFilterList(obj);
 
   filterList.value = meetingStore.filterList;

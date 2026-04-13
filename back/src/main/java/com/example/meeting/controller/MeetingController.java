@@ -5,6 +5,8 @@ import com.example.attachment.service.AttachmentService;
 import com.example.meeting.dto.MeetingAlarmDTO;
 import com.example.meeting.dto.MeetingDTO;
 import com.example.meeting.service.MeetingService;
+import com.example.task.dto.TaskReqDtoJJW;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -94,4 +96,16 @@ public class MeetingController {
     public List<MeetingDTO> getAllMeeting( MeetingDTO dto) {
         return service.getAllMeeting(dto);
     }
+
+    //추천 업무 등록(회의록)
+    @PostMapping("/tasks/insert")
+    public List<MeetingDTO> registerTasks(@Valid @RequestBody TaskReqDtoJJW dto){
+        return service.insert(dto);
+    };
+
+    // 연결 업무 해제
+    @DeleteMapping("/meeting/removeConnect")
+    public List<MeetingDTO> removeConnect(@RequestBody MeetingDTO dto) {
+        return service.removeConnectTask(dto);
+    };
 }

@@ -17,6 +17,7 @@ export const useTaskStore = defineStore("task", () => {
   const userModal = ref(false);
   const milestoneModal = ref(false);
   const projectList = ref([]);
+  const recommandTask = ref([]);
 
   // ───────────── computed ─────────────
   // 마일스톤 존재 여부
@@ -427,10 +428,23 @@ export const useTaskStore = defineStore("task", () => {
   // ───────────── 등록 ─────────────
   const createTask = async (createdBy) => {
     validateForm();
-    await api.post("/tasks", {
-      ...buildPayload(),
-      createdBy: createdBy,
-    });
+    let obj = buildPayload();
+    console.log(obj);
+    if (obj.assigneeUserId != "") {
+      await api.post("/tasks", {
+        ...obj,
+        createdBy: createdBy,
+      });
+    } else {
+      await api //
+        .post("/tasks/insert", {
+          ...obj,
+          createdBy: createdBy,
+        })
+        .then((res) => {
+          recommandTask.value = res.data;
+        });
+    }
   };
 
   // ───────────── 수정 ─────────────
@@ -532,5 +546,6 @@ export const useTaskStore = defineStore("task", () => {
     createTask,
     updateTask,
     rejectTask,
+    recommandTask,
   };
 });

@@ -9,6 +9,7 @@ export const useMeetingStore = defineStore("meeting", {
     filterList: [],
     pagingList: [],
     geminiContent: [],
+    connectTaskList: [],
   }),
   getters: {},
   actions: {
@@ -95,6 +96,17 @@ export const useMeetingStore = defineStore("meeting", {
         .then((res) => {
           this.geminiContent = res.data;
           console.log(this.geminiContent);
+        });
+    },
+
+    // 연결업무 연결 해제
+    async removeConnectTask(obj) {
+      await api //
+        .delete("/meeting/removeConnect", {
+          data: obj,
+        })
+        .then((res) => {
+          this.connectTaskList = res.data;
         });
     },
   },

@@ -100,7 +100,13 @@
                   </div>
 
                   <div class="grid grid-cols-10 gap-4">
-                    <div :class="isAiSummary ? 'col-span-6' : 'col-span-10'">
+                    <div
+                      :class="
+                        isAiSummary || form.aiSummary != ''
+                          ? 'col-span-6'
+                          : 'col-span-10'
+                      "
+                    >
                       <el-form-item label="내용" prop="content">
                         <el-input
                           :rows="15"
@@ -110,13 +116,17 @@
                         />
                       </el-form-item>
                     </div>
-                    <div v-if="isAiSummary" class="col-span-4">
+                    <div
+                      v-if="isAiSummary || form.aiSummary != ''"
+                      class="col-span-4"
+                    >
                       <el-form-item label="AI 요약 내용" prop="content">
                         <el-input
                           :rows="15"
                           class="input w-full"
                           v-model="form.aiSummary"
                           type="textarea"
+                          :readonly="isModified"
                         />
                       </el-form-item>
                     </div>
@@ -198,22 +208,40 @@
               </el-form>
             </div>
             <!-- 우측 카드 묶음 -->
-            <div class="side-col">
+            <div class="side-col" v-if="!isModified">
               <!-- 업무연결 -->
-              <div class="card">
+              <!-- 추천업무 -->
+              <div v-if="todoList.length > 0" class="card mb-5">
                 <div class="card-header">
-                  <span class="card-title">업무연결</span>
+                  <span class="card-title">연결 업무 목록</span>
+                  <span class="member-count"
+                    >{{ connectTaskList.length }}건</span
+                  >
                 </div>
-                <div class="h-32 place-items-center">
-                  <div class="h-20"></div>
-                  <div>
-                    <button @click="registerActualTime" class="btn-navy">
-                      <span class="text-lg"></span>업무 추가
-                    </button>
-                  </div>
+
+                <div class="member-body">
+                  <template v-if="todoList.length > 0">
+                    <div
+                      v-for="(task, idx) in connectTaskList"
+                      :key="idx"
+                      class="member-item"
+                    >
+                      <div class="member-info">
+                        <el-tooltip
+                          class="box-item"
+                          effect="dark"
+                          :content="task.content"
+                          placement="left"
+                        >
+                          <span class="member-name">{{ task.title }}</span>
+                        </el-tooltip>
+                      </div>
+                      <button type="button" @click="delTask(task)">x</button>
+                    </div>
+                  </template>
                 </div>
               </div>
-              <div>
+              <div v-if="!isModified">
                 <div class="card mb-2">
                   <div class="card-header">
                     <span class="card-title">음성파일로 내용작성</span>
@@ -255,7 +283,7 @@
                 </div>
               </div>
 
-              <div class="card">
+              <div class="card" v-if="!isModified">
                 <div class="news-btn">
                   <button
                     type="button"
@@ -267,22 +295,38 @@
                 </div>
               </div>
               <!-- 추천업무 -->
-              <div v-if="todoList.length > 0" class="card mb-5">
+              <div v-if="todoList.length > 0 && !isModified" class="card mb-5">
                 <div class="card-header">
-                  <span class="card-title">추천업무</span>
+                  <span class="card-title">추천 업무</span>
                   <span class="member-count">{{ todoList.length }}건</span>
                 </div>
 
                 <div class="member-body">
                   <template v-if="todoList.length > 0">
                     <div
-                      v-for="file in todoList"
-                      :key="file"
+                      v-for="(file, idx) in todoList"
+                      :key="idx"
                       class="member-item"
                     >
                       <div class="member-info">
-                        <span class="member-name">{{ file.task }}</span>
+                        <el-tooltip
+                          class="box-item"
+                          effect="dark"
+                          :content="Object.values(file)[0]"
+                          placement="left"
+                        >
+                          <span class="member-name">{{
+                            Object.keys(file)[0]
+                          }}</span>
+                        </el-tooltip>
                       </div>
+                      <button
+                        type="button"
+                        class="btn-create"
+                        @click="openCreateModal(file)"
+                      >
+                        업무 생성
+                      </button>
                     </div>
                   </template>
                 </div>
@@ -300,31 +344,40 @@
     :alarmList="alarmList"
     @member-insert="memberInsert"
   />
+  <meetingCreateTaskModal
+    v-model="createModalOpen"
+    :taskInfo="taskInfo"
+    @close-create-modal="closeCreateModal"
+    @register-task="registerTask"
+  />
 </template>
 
 <script setup>
-import { ref, onBeforeMount, reactive } from "vue";
+import { ref, onBeforeMount, reactive, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth";
+import { useTaskStore } from "../stores/useTaskStore";
 
 import { useProjectKJHStore } from "../stores/projectKJH";
 import { useMeetingStore } from "../stores/meeting";
 import Swal from "sweetalert2";
-import { useDocumentStore } from "../stores/document";
+import meetingCreateTaskModal from "./meetingCreateTaskModal.vue";
 import meetingNotifirationModal from "./meetingNotificationModal.vue";
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
-const documentStore = useDocumentStore();
 const meetingStore = useMeetingStore();
+const store = useTaskStore();
 
 const projectStore = useProjectKJHStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
+const subId = route.params.subProjectId;
 const meetingId = route.params.meetingId;
 const userInfo = ref(); // 글 작성자 정보
 const meetingType = ref([]);
@@ -338,13 +391,25 @@ const form = reactive({
   aiSummary: "",
 }); // 작성내용 담을 곳
 
+const { recommandTask } = storeToRefs(store);
+
 let isModified = ref(false); // 수정, 생성 구분
 let modalOpen = ref(false); // 알림대상 모달창
 const memberList = ref([]); // 구성원 테이블
 const alarmList = ref([]); // 알림대상 추가된 회원 목록
-const isAiSummary = ref(false);
-const todoList = ref([]); // 업무 추천 목록
-const isVoice = ref(false);
+const isAiSummary = ref(false); // ai 사용했는지 확인 여부
+const todoList = ref([{ 1: "1번" }, { 2: "2번" }]); // 업무 추천 목록
+const isVoice = ref(false); // 음성요약 파일 잇는지 확인
+const createModalOpen = ref(false); // 추천업무 생성 모달창 여는 거
+const taskInfo = ref([]);
+const connectTaskList = ref([]);
+
+watch(
+  () => recommandTask.value,
+  (newVal) => {
+    connectTaskList.value = newVal;
+  },
+);
 
 // 공지사항 생성 버튼
 const submitForm = async (formEl) => {
@@ -354,7 +419,7 @@ const submitForm = async (formEl) => {
       // 공지사항 등록
       if (!isModified.value) {
         let obj = {
-          projectId: id,
+          projectId: subId != null ? subId : id,
           title: form.title,
           content: form.content,
           meetingTypeCode: form.meetingType,
@@ -464,7 +529,7 @@ const submitForm = async (formEl) => {
       router.push({
         name: "meetingDetail",
         params: {
-          projectId: id,
+          projectId: subId != null ? subId : id,
           meetingId:
             isModified == true
               ? meetingId
@@ -509,18 +574,6 @@ const getContentByGemmini = async (val) => {
 
     formData.append("prompt", prompt);
   } else {
-    if (voiceList.value == 0) {
-      const result = await Swal.fire({
-        title: "파일을 선택해주세요",
-        text: "",
-        icon: "warning",
-        confirmButtonText: "확인",
-        reverseButtons: true,
-      });
-
-      return;
-    }
-
     voiceList.value.forEach((vo) => {
       formData.append("files", vo.raw);
     });
@@ -560,7 +613,19 @@ const getContentByGemmini = async (val) => {
 };
 
 const getVoiceByGemmini = async () => {
-  isVoice.value = true;
+  isVoice.value = voiceList.value.length > 0 ? true : false;
+
+  if (!isVoice.value) {
+    const result = await Swal.fire({
+      title: "파일을 선택해주세요",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    return;
+  }
 
   getContentByGemmini();
 };
@@ -593,6 +658,10 @@ onBeforeMount(async () => {
     form.content = meetingInfo.meetingList.content;
     form.meetingRoom = meetingInfo.meetingList.place;
     form.attachmentGroupId = meetingInfo.meetingList.attachmentGroupId;
+    form.aiSummary =
+      meetingInfo.meetingList.aiSummary == null
+        ? meetingInfo.meetingList.sttText
+        : meetingInfo.meetingList.aiSummary;
     if (meetingInfo.attachmentList) {
       meetingInfo.attachmentList.forEach((att) => {
         let obj = {
@@ -618,6 +687,42 @@ onBeforeMount(async () => {
   memberList.value = projectStore.memberList;
 });
 
+// 추천 업무 생성 버튼
+const openCreateModal = (value) => {
+  taskInfo.value = {
+    meetingLogId:
+      connectTaskList.value.length > 0
+        ? meetingStore.connectTaskList.meetingLogId
+        : null,
+    ...value,
+  };
+  createModalOpen.value = true;
+};
+
+// 추천 업무 생성 모달 취소버튼
+const closeCreateModal = () => {
+  createModalOpen.value = false;
+};
+
+// 추천 업무 생성 모달 생성 버튼
+const registerTask = async () => {
+  closeCreateModal();
+
+  await Swal.fire({
+    title: "추천업무생성이 완료되었습니다.",
+    text: "",
+    icon: "success",
+    confirmButtonText: "확인",
+    reverseButtons: true,
+  });
+};
+
+// 연결 업무 x 버튼
+const delTask = async (task) => {
+  console.log(task);
+  await meetingStore.removeConnectTask(task);
+  connectTaskList.value = meetingStore.connectTaskList;
+};
 // 알림대상 선택
 const openModal = () => {
   modalOpen.value = true;
@@ -628,7 +733,7 @@ const goBack = () => {
   console.log(id);
   router.push({
     name: "meetingList",
-    params: { projectId: id },
+    params: { projectId: id, subProjectId: subId },
   });
 };
 
@@ -683,11 +788,6 @@ const fileList = ref([]);
 
 const handleChange = (uploadFile, uploadFiles) => {
   console.log(uploadFile, uploadFiles);
-};
-
-// 첨부파일 삭제
-const removeFile = (file) => {
-  fileList.value = fileList.value.filter((val) => val != file);
 };
 
 // 첨부파일api(우측)
@@ -808,6 +908,7 @@ const voiceChange = (uploadFile, uploadFiles) => {
   box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
   transform: translateY(-1px);
 }
+
 .btn-red {
   height: 38px;
   padding: 0 20px;
@@ -1018,6 +1119,43 @@ const voiceChange = (uploadFile, uploadFiles) => {
   box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
   transform: translateY(-1px);
 }
+/* 업무 생성 */
+.btn-create {
+  height: 20px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  background: #1e3a5f;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
+}
+.btn-create:hover {
+  background: #162d4a;
+  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
+  transform: translateY(-1px);
+}
+.btn-delTask {
+  height: 20px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  background: #dc2626;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+}
+.btn-delTask:hover {
+  background: #b91c1c;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+  transform: translateY(-1px);
+}
 :deep(.input) {
   border-radius: 10px !important;
   border: 1px solid #e2e8f0 !important;
@@ -1146,5 +1284,21 @@ const voiceChange = (uploadFile, uploadFiles) => {
 .member-empty-text {
   font-size: 12px;
   color: #94a3b8;
+}
+
+.tooltip-base-box {
+  width: 600px;
+}
+.tooltip-base-box .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tooltip-base-box .center {
+  justify-content: center;
+}
+.tooltip-base-box .box-item {
+  width: 110px;
+  margin-top: 10px;
 }
 </style>

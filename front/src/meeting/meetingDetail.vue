@@ -5,7 +5,6 @@
     <div
       class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
     >
-      <!-- Header -->
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
@@ -13,6 +12,9 @@
 
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
+            회의록 상세
+          </h1>
           <el-alert
             v-if="meetingInfo.isDeleted === 'O1'"
             title="비활성화된 게시글입니다."
@@ -22,131 +24,145 @@
             :closable="false"
             class="mb-4"
           />
-          <!-- projectDashboard.vue와 동일한 제목 영역 -->
-          <div class="mb-6 proj-title-row flex justify-between">
-            <div class="proj-title-left">
-              <h2
-                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
-              >
-                회의록 상세
-              </h2>
 
-              <div class="proj-name-row">
-                <span class="proj-name"
-                  >【 {{ meetingInfo.projectName }} 】</span
-                >
-                <span class="proj-period">
-                  {{ meetingInfo.startDate }} ~ {{ meetingInfo.endDate }}
-                </span>
+          <!-- ① 상단 헤더 카드: 제목 + 메타정보 -->
+          <div class="detail-header-card mb-5">
+            <h2 class="detail-main-title">{{ meetingInfo.title }}</h2>
+            <div class="detail-meta-row grid grid-cols-4 gap-6">
+              <div class="detail-meta-item">
+                <span class="detail-meta-label">회의 일시</span>
+                <span class="detail-meta-value">{{
+                  meetingInfo.createdAt
+                }}</span>
+              </div>
+              <div class="detail-meta-item">
+                <span class="detail-meta-label">회의 장소</span>
+                <span class="detail-meta-value">{{
+                  meetingInfo.roleName == null ? "전체" : meetingInfo.roleName
+                }}</span>
+              </div>
+              <div class="detail-meta-item">
+                <span class="detail-meta-label">참석자</span>
+                <span class="detail-meta-value">{{
+                  meetingInfo.userName
+                }}</span>
+              </div>
+              <div class="detail-meta-item">
+                <span class="detail-meta-label">작성자</span>
+                <span class="detail-meta-value">{{
+                  meetingInfo.userName
+                }}</span>
               </div>
             </div>
           </div>
 
-          <div
-            class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mb-0 p-6"
-          >
-            <div
-              class="text-xl md:text-2xl text-gray-800 dark:text-gray-100 font-bold mb-8"
-            >
-              <h4>{{ meetingInfo.title }}</h4>
-            </div>
-            <div class="grid grid-cols-3 gap-6 mb-8">
-              <div class="flex flex-row gap-10">
-                <label class="block text-base font-semibold mb-1"
-                  >카테고리</label
+          <!-- ② 하단 2단 레이아웃 -->
+          <div class="detail-body-row">
+            <!-- 좌측: 회의 내용 -->
+            <div class="detail-content-card">
+              <h3 class="detail-section-title">회의 내용</h3>
+              <div class="detail-content-body">
+                <textarea
+                  rows="12"
+                  class="input w-full"
+                  :value="meetingInfo.content"
+                  disabled
+                />
+              </div>
+
+              <!-- 첨부파일 -->
+              <div class="mt-6">
+                <label class="block text-sm font-semibold mb-2 text-gray-600"
+                  >첨부파일</label
                 >
-                <span>{{
-                  meetingInfo.roleName == null ? "전체" : meetingInfo.roleName
-                }}</span>
-              </div>
-              <div class="flex flex-row gap-10">
-                <label class="block text-base font-semibold mb-1">작성자</label>
-                <span>{{ meetingInfo.userName }}</span>
-              </div>
-              <div class="flex flex-row gap-10">
-                <label class="block text-base font-semibold mb-1">등록일</label>
-                <span>{{ meetingInfo.createdAt }}</span>
-              </div>
-            </div>
-
-            <div class="mb-6">
-              <label class="block text-base font-semibold mb-1"
-                >문서 설명</label
-              >
-              <textarea
-                rows="5"
-                class="input w-full"
-                :value="meetingInfo.content"
-                disabled
-              />
-            </div>
-            <div class="my-6">
-              <label class="block text-base font-semibold mb-1">첨부파일</label>
-
-              <div
-                class="border-t border-b border-gray-200 divide-y divide-gray-100"
-              >
                 <div
-                  v-for="(file, index) in attachmentList"
-                  :key="index"
-                  class="py-2 flex items-center justify-between group"
+                  class="border-t border-b border-gray-200 divide-y divide-gray-100"
                 >
-                  <div class="flex items-center gap-2 flex-1">
-                    <svg
-                      class="w-5 h-5 text-gray-500 shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                      ></path>
-                    </svg>
-
+                  <div
+                    v-for="(file, index) in attachmentList"
+                    :key="index"
+                    class="py-2 flex items-center justify-between group"
+                    v-if="attachmentList && attachmentList.length > 0"
+                  >
                     <div
-                      class="flex items-center gap-1 cursor-pointer"
+                      class="flex items-center gap-2 flex-1 cursor-pointer"
                       @click="attachmentDownload(file)"
                     >
+                      <svg
+                        class="w-4 h-4 text-gray-400 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                        />
+                      </svg>
                       <span
-                        class="text-[14px] font-medium text-gray-700 group-hover:text-blue-600 transition-colors my-1"
+                        class="text-[13px] text-gray-700 group-hover:text-blue-600 transition-colors"
                       >
                         {{ file.fileName }}
                       </span>
                     </div>
-                  </div>
-
-                  <div class="flex items-center gap-6">
                     <button
-                      @click="handleDownload(file)"
-                      class="text-[13px] text-gray-600 hover:text-blue-600 flex items-center gap-1"
+                      @click="attachmentDownload(file)"
+                      class="text-[12px] text-gray-500 hover:text-blue-600 flex items-center gap-1"
                     >
-                      다운로드 <span class="text-[10px] text-gray-400">〉</span>
+                      다운로드 <span class="text-[10px] text-gray-300">〉</span>
                     </button>
                   </div>
+                  <div class="py-11 flex justify-center">
+                    <span>첨부파일이 존재하지 않습니다.</span>
+                  </div>
                 </div>
+              </div>
+            </div>
 
+            <!-- 우측: 연결된 일감 -->
+            <div class="detail-task-card">
+              <div class="detail-task-header">
+                <h3 class="detail-section-title">연결된 일감</h3>
+                <div class="detail-task-actions">
+                  <button class="task-btn-secondary">연결일감 추가</button>
+                  <button
+                    class="task-btn-primary"
+                    type="button"
+                    @click="goRegister()"
+                  >
+                    일감 생성
+                  </button>
+                </div>
+              </div>
+
+              <div class="detail-task-list">
                 <div
-                  v-if="!attachmentList || attachmentList.length === 0"
-                  class="py-4 text-center text-sm text-gray-400"
+                  v-for="(item, index) in []"
+                  :key="index"
+                  class="task-item"
+                  @click="goMilestoneDetail(item)"
                 >
-                  등록된 서류가 없습니다.
+                  <span class="task-name">{{ item.name }}</span>
+                  <span class="task-status">진행중</span>
+                  <span class="task-arrow">〉</span>
+                </div>
+
+                <!-- 예시 더미 (데이터 없을 때 빈 상태 표시) -->
+                <div v-if="true" class="task-empty">
+                  연결된 일감이 없습니다.
                 </div>
               </div>
             </div>
+          </div>
 
-            <div class="flex flex-row justify-between">
-              <div class="flex flex-row gap-10">
-                <button @click="goBack" type="button" class="btn-navy">
-                  ← 목록으로
-                </button>
-              </div>
-              <div class="flex flex-row gap-2">
-                <button @click="modifyDocument" class="btn-green">수정</button>
-              </div>
-            </div>
+          <!-- 하단 버튼 -->
+          <div class="detail-footer-row mt-4">
+            <button @click="goBack" type="button" class="btn-navy">
+              ← 목록으로
+            </button>
+            <button @click="modifyDocument" class="btn-green">수정</button>
           </div>
         </div>
       </main>
@@ -172,6 +188,14 @@ const meetingInfo = ref({});
 const attachmentList = ref([]);
 const meetingId = route.params.meetingId;
 const projectId = route.params.projectId;
+
+// 업무생성 페이지 이동
+const goRegister = () => {
+  router.push({
+    name: "taskRegister",
+    params: { projectId: projectId },
+  });
+};
 
 // 목록으로
 const goBack = () => {
@@ -204,40 +228,247 @@ onBeforeMount(async () => {
 });
 </script>
 <style scoped>
-/* 상단 */
-.proj-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+/* ── 상단 헤더 카드 ── */
+.detail-header-card {
+  background: #fff;
+  border: 1px solid #e8edf2;
+  border-radius: 16px;
+  padding: 28px 32px 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
-.proj-title-left {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.proj-name-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.proj-name {
-  font-size: 18px;
+.detail-main-title {
+  font-size: 25px;
   font-weight: 700;
   color: #0f172a;
+  margin: 0 0 20px 0;
   letter-spacing: -0.02em;
 }
 
-.proj-period {
-  font-size: 13px;
-  color: #64748b;
-  font-weight: 500;
+.detail-meta-row {
+  display: grid;
+  gap: 48px;
+  grid-column: 4;
 }
+
+.detail-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-meta-label {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.detail-meta-value {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* ── 하단 2단 레이아웃 ── */
+.detail-body-row {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .detail-body-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 회의 내용 카드 ── */
+.detail-content-card {
+  background: #fff;
+  border: 1px solid #e8edf2;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  min-height: 360px;
+}
+
+.detail-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 16px 0;
+}
+
+.detail-textarea {
+  border-radius: 10px !important;
+  border: none !important;
+  background: transparent !important;
+  resize: none;
+  font-size: 14px;
+  color: #334155;
+  line-height: 1.75;
+  padding: 0 !important;
+}
+
+/* ── 연결된 일감 카드 ── */
+.detail-task-card {
+  background: #fff;
+  border: 1px solid #e8edf2;
+  border-radius: 16px;
+  padding: 24px 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  min-height: 566.5px;
+}
+
+.detail-task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail-task-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.task-btn-secondary {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1.5px solid #64b5f6;
+  background: #e3f2fd;
+  color: #1565c0;
+  transition: all 0.15s;
+}
+
+.task-btn-secondary:hover {
+  background: #bbdefb;
+}
+
+.task-btn-primary {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  background: #2e7d32;
+  color: #fff;
+  transition: all 0.15s;
+}
+
+.task-btn-primary:hover {
+  background: #1b5e20;
+}
+
+/* ── 일감 목록 ── */
+.detail-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid #e8edf2;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: #f8fafc;
+}
+
+.task-item:hover {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.task-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  flex: 1;
+}
+
+.task-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  margin-right: 10px;
+}
+
+.task-arrow {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.task-empty {
+  padding: 200px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* ── 하단 버튼 영역 ── */
+.detail-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── 공통 버튼 ── */
+.btn-navy {
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #1e3a5f;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
+}
+
+.btn-navy:hover {
+  background: #162d4a;
+  transform: translateY(-1px);
+}
+
+.btn-green {
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #1882c9;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(24, 130, 201, 0.25);
+}
+
+.btn-green:hover {
+  background: #60aee2;
+  transform: translateY(-1px);
+}
+
 /* 인풋 전체 라운드 */
 :deep(.input) {
   border-radius: 10px !important;
@@ -271,238 +502,18 @@ onBeforeMount(async () => {
   background: #f1f5f9 !important;
   color: #475569 !important; /* #94a3b8 → #475569 으로 변경! */
 }
-/* 목록으로 */
-.btn-navy {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #1e3a5f;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
-}
-.btn-navy:hover {
-  background: #162d4a;
-  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
-  transform: translateY(-1px);
-}
-/* 수정버튼 */
-.btn-green {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #1882c9;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
-  letter-spacing: 0.01em;
-}
-.btn-green:hover {
-  background: #60aee2;
-  box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
-  transform: translateY(-1px);
-}
 
-/* 비활성 버튼 */
-.btn-red {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #dc2626;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
-  letter-spacing: 0.01em;
-}
-.btn-red:hover {
-  background: #b91c1c;
-  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-  transform: translateY(-1px);
-}
-/* ── 카드 공통 ── */
-.card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-}
-.card-header {
-  padding: 14px 20px;
-  border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.card-title {
-  font-weight: 600;
-  font-size: 14px;
-  color: #1a1a2e;
-}
-.filter-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-}
-
-.filter-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 120px;
-  flex: 1;
-}
-
-.filter-item--wide {
-  flex: 2;
-  min-width: 180px;
-}
-
-.filter-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #6b7280;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* ── 검색어 ── */
-.search-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.search-input {
-  width: 100%;
-  height: 100px;
-  padding: 8px 10px 70px 8px;
-  margin-right: 3px;
-  border: 1px solid #d1d5db;
-  border-radius: 7px;
-  font-size: 0.85rem;
-  color: #374151;
-  background: #f9fafb;
-  outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-}
-.search-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  background: #fff;
-}
-
-/* ── 버튼 ── */
-.filter-actions {
-  display: flex;
-  gap: 8px;
-  padding-bottom: 1px;
-}
-.btn-search {
-  flex: 1;
-  padding: 8px 20px;
-  background: #334155;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 7px;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
-  height: 100px;
-}
-.btn-search:hover {
-  background: #1e293b;
-}
-
-:deep(.el-button + .el-button) {
-  margin-left: 0px;
-}
-
-/* 1. 파일 목록 전체 감싸는 영역 (위아래 선) */
-.attachment-container {
-  border-top: 1px solid #e5e7eb;
-  border-bottom: 1px solid #e5e7eb;
-  margin-top: 1rem;
-}
-
-/* 2. 각 파일 행 (간격 좁게) */
-.file-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0; /* 사진처럼 촘촘한 간격 */
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.file-row:last-child {
-  border-bottom: none;
-}
-
-/* 3. 파일 이름 & 메타 정보 (왼쪽 정렬) */
-.file-link-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  flex: 1; /* 왼쪽으로 바짝 붙게 함 */
-}
-
-.file-name-text {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-}
-
-.file-meta-text {
-  font-size: 13px;
-  color: #9ca3af; /* 사진 속 회색 느낌 */
-}
-
-/* 4. 우측 액션 버튼 (다운로드, 바로보기) */
-.action-group {
-  display: flex;
-  gap: 20px; /* 버튼 사이 간격 */
-}
-
-.action-btn {
-  font-size: 13px;
-  color: #4b5563;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: color 0.2s;
-}
-
-.action-btn:hover {
-  color: #2563eb; /* 호버 시 파란색 */
-}
-
-.arrow-icon {
-  font-size: 10px;
-  color: #d1d5db; /* 화살표는 연하게 */
-  font-family: sans-serif;
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .detail-meta-row {
+    gap: 20px;
+  }
+  .detail-header-card {
+    padding: 20px;
+  }
+  .detail-content-card,
+  .detail-task-card {
+    padding: 18px;
+  }
 }
 </style>
