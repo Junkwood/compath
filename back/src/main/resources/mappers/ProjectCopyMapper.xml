@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.project.mapper.ProjectCopyMapper">
+
+    <select id="copyProjectProc" statementType="CALLABLE" parameterType="map">
+        { CALL COPY_PROJECT_PROC(
+        #{sourceProjectId, mode=IN, jdbcType=INTEGER},
+        #{projectName, mode=IN, jdbcType=VARCHAR},
+        #{identifier, mode=IN, jdbcType=VARCHAR},
+        #{description, mode=IN, jdbcType=VARCHAR},
+        #{startDate, mode=IN, jdbcType=VARCHAR},
+        #{endDate, mode=IN, jdbcType=VARCHAR},
+        #{isPublic, mode=IN, jdbcType=VARCHAR},
+        #{useMilestone, mode=IN, jdbcType=VARCHAR},
+        #{pmUserId, mode=IN, jdbcType=INTEGER},
+        #{plUserId, mode=IN, jdbcType=INTEGER},
+        #{createdBy, mode=IN, jdbcType=INTEGER},
+        #{copyMembers, mode=IN, jdbcType=VARCHAR},
+        #{copyMilestones, mode=IN, jdbcType=VARCHAR},
+        #{copyTasks, mode=IN, jdbcType=VARCHAR},
+        #{newProjectId, mode=OUT, jdbcType=INTEGER}
+        ) }
+    </select>
+
+</mapper>
