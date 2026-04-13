@@ -8,6 +8,7 @@ export const useMeetingStore = defineStore("meeting", {
     meetingDetail: {},
     filterList: [],
     pagingList: [],
+    geminiContent: [],
   }),
   getters: {},
   actions: {
@@ -22,7 +23,6 @@ export const useMeetingStore = defineStore("meeting", {
 
     // 회의록 등록
     async registerMeeting(formData) {
-      console.log("회의록 등록전", formData);
       await api //
         .post("/meeting/register", formData, {
           headers: {},
@@ -30,6 +30,17 @@ export const useMeetingStore = defineStore("meeting", {
         .then((res) => {
           this.registeredMeeting = res.data;
           console.log("회의록 조회완료", this.registeredMeeting);
+        });
+    },
+
+    // 회의록 수정
+    async modifyMeeting(formData) {
+      await api //
+        .put("/meeting/modify", formData, {
+          headers: {},
+        })
+        .then((res) => {
+          this.meetingDetail = res.data;
         });
     },
 
@@ -47,15 +58,6 @@ export const useMeetingStore = defineStore("meeting", {
     async getMeetingById(id) {
       await api //
         .get("/meeting/detail/" + id)
-        .then((res) => {
-          this.meetingDetail = res.data;
-        });
-    },
-
-    // 회의록 수정
-    async modifyMeeting(obj) {
-      await api //
-        .put("/meeting/modify", obj)
         .then((res) => {
           this.meetingDetail = res.data;
         });
@@ -81,6 +83,18 @@ export const useMeetingStore = defineStore("meeting", {
         })
         .then((res) => {
           this.pagingList = res.data;
+        });
+    },
+
+    //  Gemini API 사용해서 작성내용 요약
+    async getContentByGemmini(obj) {
+      await api //
+        .post("/gemini/simple", obj, {
+          headers: {},
+        })
+        .then((res) => {
+          this.geminiContent = res.data;
+          console.log(this.geminiContent);
         });
     },
   },

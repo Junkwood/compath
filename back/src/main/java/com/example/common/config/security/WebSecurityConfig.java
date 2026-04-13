@@ -57,6 +57,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/", "/login", "/auth/**").permitAll() // 인증 없이 접근 가능
+                        .requestMatchers("/api/gemini/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         //.requestMatchers("/api/**","/api/notifications/subscribe/**").hasAnyRole("ADMIN", "USER")
                         //.requestMatchers("/api/**").authenticated()

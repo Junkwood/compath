@@ -34,7 +34,8 @@ public class MeetingController {
                                           @RequestPart("obj") MeetingDTO dto) throws IOException {
 
         if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
-            int id = attachmentService.registerAttachments(files);
+            int groupId = 0;
+            int id = attachmentService.registerAttachments(files, groupId);
             dto.setAttachmentGroupId(id);
         }
 
@@ -70,7 +71,15 @@ public class MeetingController {
 
 //    회의록 수정
         @PutMapping("/meeting/modify")
-    public MeetingDTO modifyMeeting(@RequestBody MeetingDTO dto) {
+    public MeetingDTO modifyMeeting(@RequestPart(value = "files", required = false) List<MultipartFile> files,
+                                    @RequestPart("obj") MeetingDTO dto) throws IOException {
+
+        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+            int groupId = dto.getAttachmentGroupId();
+            int id = attachmentService.registerAttachments(files, groupId);
+            dto.setAttachmentGroupId(id);
+        }
+
         return service.modifyMeeting(dto);
     }
 

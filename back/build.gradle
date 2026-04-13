@@ -72,10 +72,14 @@ dependencies {
     //hibernate
     implementation 'org.hibernate.orm:hibernate-community-dialects:6.5.2.Final'
 
-//    첨부파일
+    // 첨부파일
     implementation 'commons-io:commons-io:2.11.0'
 
+    // Gemini API
+    implementation 'com.google.genai:google-genai:1.0.0'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
+
 
 
 

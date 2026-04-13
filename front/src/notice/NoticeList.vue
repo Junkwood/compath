@@ -244,6 +244,7 @@ const taskStore = usetaskKJHStore();
 const noticeStore = useNoticeStore();
 
 const projectId = route.params.projectId;
+const subId = route.params.subProjectId;
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
 
@@ -308,7 +309,7 @@ const handleCurrentChange = async (val) => {
 
   // 페이지 변환 목록 조회
   let obj = {
-    projectId: projectId,
+    projectId: subId ? subId : projectId,
     startNum: start,
     endNum: end,
     ...filteredList.value,
@@ -346,7 +347,7 @@ const handleCurrentChange = async (val) => {
 const goResister = () => {
   router.push({
     name: "noticeRegister",
-    params: { projectId: projectId },
+    params: { projectId: projectId, subProjectId: subId },
   });
 };
 
@@ -355,7 +356,11 @@ const goDetail = (tr) => {
   console.log(tr);
   router.push({
     name: "noticeDetail",
-    params: { projectId: projectId, noticeId: tr.noticeId },
+    params: {
+      projectId: projectId,
+      subProjectId: subId,
+      noticeId: tr.noticeId,
+    },
   });
 };
 
@@ -370,13 +375,17 @@ onBeforeMount(async () => {
       Swal.showLoading();
     },
   });
-  await taskStore.getProjectName(projectId);
+  let id = subId ? subId : projectId;
+  await taskStore.getProjectName(id);
   const projectInfo = taskStore.projectName;
   name.value = projectInfo.projectName; // 프로젝트 이름
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
 
-  let obj = { projectId: projectId, parentProjectId: projectId };
+  let obj = {
+    projectId: subId ? subId : projectId,
+    parentProjectId: subId ? subId : projectId,
+  };
   await noticeStore.getFilterList(obj);
   filterList.value = noticeStore.filterList;
   pagingList.value = noticeStore.filterList.noticeList;

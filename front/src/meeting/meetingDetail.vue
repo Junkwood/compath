@@ -192,7 +192,8 @@ const modifyDocument = () => {
 
 // 파일 다운로드
 const attachmentDownload = async (file) => {
-  await attachmentStore.downloadFile(file.filePath);
+  console.log(file);
+  await attachmentStore.downloadFile(file);
 };
 
 onBeforeMount(async () => {

@@ -447,7 +447,7 @@
                     v-if="currentProjectId"
                     :to="{
                       name: 'noticeList',
-                      params: { projectId: currentProjectId },
+                      params: sub,
                     }"
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -475,7 +475,7 @@
                     v-if="currentProjectId"
                     :to="{
                       name: 'documentList',
-                      params: { projectId: currentProjectId },
+                      params: sub,
                     }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
