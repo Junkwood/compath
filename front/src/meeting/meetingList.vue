@@ -170,7 +170,7 @@
                 <!-- 데이터 있을 때 -->
                 <template v-else-if="!listLoading && listLength > 0">
                   <tr
-                    @click="goDetail(document)"
+                    @click="goDetail(meeting)"
                     v-for="meeting in pagingList"
                     :key="meeting.num"
                     class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
@@ -333,8 +333,8 @@ const goResister = () => {
 const goDetail = (tr) => {
   console.log(tr);
   router.push({
-    name: "documentDetail",
-    params: { projectId: projectId, documentId: tr.documentId },
+    name: "meetingDetail",
+    params: { projectId: projectId, meetingId: tr.meetingLogId },
   });
 };
 

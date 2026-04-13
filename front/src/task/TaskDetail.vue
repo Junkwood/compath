@@ -120,12 +120,22 @@
                 <div class="card-header">
                   <span class="card-title">업무 설명</span>
                 </div>
-                <div class="min-h-48 text-base pl-4 pt-2">
-                  <span
-                    v-if="taskInfo.content != null || taskInfo.content != ''"
-                    >{{ taskInfo.content }}</span
-                  >
-                  <span v-else>등록된 설명이 없습니다.</span>
+                <div class="min-h-48 text-base px-4 py-2">
+                  <textarea
+                    v-model="taskInfo.content"
+                    rows="5"
+                    class="input w-full"
+                    disabled=""
+                    v-if="taskInfo.content != null"
+                  />
+
+                  <textarea
+                    v-model="taskInfo.content"
+                    rows="5"
+                    class="input w-full"
+                    disabled=""
+                    v-else
+                  />
                 </div>
               </div>
               <!-- ────────── 하단: 프로젝트 목록 ────────── -->
@@ -443,7 +453,10 @@ const goBack = () => {
 
 // 수정 버튼(업무 수정 페이지로 이동)
 const goModify = () => {
-  router.push({ name: "taskModify", params: { taskId: taskId.value } });
+  router.push({
+    name: "taskModify",
+    params: { taskId: taskId.value, subProjectId: subId.value },
+  });
 };
 
 // 모달창 등록시
@@ -931,5 +944,25 @@ const cellStyle = () => ({
 :deep(.el-descriptions) {
   --el-descriptions-table-border: 1px solid #eef2f7;
   --el-descriptions-item-label-background: #f8fafc;
+}
+
+:deep(.input) {
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  font-size: 13px;
+}
+:deep(.input:focus) {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15) !important;
+  background: #fff !important;
+  outline: none;
+}
+:deep(.input:disabled) {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
 }
 </style>

@@ -156,11 +156,11 @@ import Swal from "sweetalert2";
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
-const roleStore = useRoleStore();
 const noticeStore = useNoticeStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
+const subId = route.params.subProjectId;
 const noticeId = route.params.noticeId;
 const userInfo = ref(); // 글 작성자 정보
 const roles = ref([
@@ -197,7 +197,7 @@ const submitForm = async (formEl) => {
       // 공지사항 등록
       if (!isModified.value) {
         let obj = {
-          projectId: id,
+          projectId: subId ? subId : id,
           title: form.title,
           content: form.content,
           isPinned: form.isPinned == true ? "B1" : "B2",
@@ -232,7 +232,7 @@ const submitForm = async (formEl) => {
       router.push({
         name: "noticeDetail",
         params: {
-          projectId: id,
+          projectId: subId ? subId : id,
           noticeId:
             isModified == true
               ? noticeId
@@ -279,15 +279,15 @@ onBeforeMount(async () => {
 
   form.date = changeDate(new Date()); // 작성 당일 날짜 생성
 
-  await noticeStore.getProjectRoles(id);
+  let projectId = subId ? subId : id;
+  await noticeStore.getProjectRoles(projectId);
   roles.value = noticeStore.projectRoles; // 전체 역할정보
 });
 
 const goBack = () => {
-  console.log(id);
   router.push({
     name: "noticeList",
-    params: { projectId: id },
+    params: { projectId: id, subProjectId: subId },
   });
 };
 
