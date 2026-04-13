@@ -21,15 +21,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class EmpServiceImplSJW implements EmpServiceSJW {
     private final EmpMapperSJW empMapper;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
     private final JavaMailSender javaMailSender;
+
     @Override
     public List<EmpDTOSJW> getAll() {
         return empMapper.getAll();
     }
+
     @Override
     public List<EmpVOSJW> getAllForGroup() {
         return empMapper.getAllForGroup();
@@ -45,10 +48,10 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
         Map<String, Object> params = new HashMap<>();
         params.put("emp_id", id);
         empMapper.modifyStatusById(params);
-        String result =(String) params.get("changed_status");
-        if(result.equals("O1")) {
+        String result = (String) params.get("changed_status");
+        if (result.equals("O1")) {
             return "Y";
-        }else{
+        } else {
             return "N";
         }
     }
@@ -56,9 +59,9 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
     @Override
     public Integer registerEmp(EmpVOSJW emp) {
         emp.setPassword(encoder.encode(emp.getPassword()));
-        if(emp.getUserType().equals("ADMIN")) {
+        if (emp.getUserType().equals("ADMIN")) {
             emp.setUserType("M1");
-        }else{
+        } else {
             emp.setUserType("M2");
         }
         empMapper.registerEmp(emp);
@@ -73,21 +76,21 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
         String password = emp.getPassword();
         EmpVOSJW result = this.getById(id);
 
-        if(encoder.matches(password, result.getPassword())) {
+        if (encoder.matches(password, result.getPassword())) {
             result.setPassword(null);
             return result;
-        }
-        else  {
+        } else {
             return null;
         }
     }
+
     @Transactional
     @Override
     public Boolean modifyEmpById(EmpVOSJW vo, Integer userId) {
-        if(empMapper.getById(userId)==null){
+        if (empMapper.getById(userId) == null) {
             return false;
         }
-    // 1. 유저 정보 업데이트
+        // 1. 유저 정보 업데이트
         if (vo.getPassword() != null && !vo.getPassword().isEmpty()) {
             vo.setPassword(encoder.encode(vo.getPassword()));
         }
@@ -99,7 +102,7 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
             List<Integer> oldGroups = empMapper.selectActiveGroupIds(vo.getUserId());
             // 화면에서 넘어온 '새로운' 그룹 목록 (null 방지)
             List<Integer> newGroups = vo.getGroupIds() != null ? vo.getGroupIds() : new ArrayList<>();
-            for(Integer groupId : newGroups){
+            for (Integer groupId : newGroups) {
                 log.error(String.valueOf(groupId));
             }
             // [STEP 2] 비교해서 3가지 리스트로 찢기!
@@ -131,7 +134,7 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
             for (Integer groupId : toAdd) {
 
                 String isPrimary = groupId.equals(vo.getPrimaryGroupId()) ? "Y" : "N";
-                EmpVOSJW emp =  new EmpVOSJW();
+                EmpVOSJW emp = new EmpVOSJW();
                 emp.setUserId(vo.getUserId());
                 emp.setGroupId(groupId);
                 emp.setIsPrimary(isPrimary);
@@ -152,7 +155,7 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
     public Integer sendEmail(String toEmail, Integer userId) {
         // 먼저 해당 사번이 존재하는지 확인
         EmpVOSJW emp = empMapper.getById(userId);
-        if(emp == null) {
+        if (emp == null) {
             return 0;
         }
         // 1. 완벽해진 6자리 난수 생성 로직!
@@ -183,8 +186,8 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
 
     @Override
     public Boolean verifyCode(Integer code, Integer emailId) {
-        Integer result = empMapper.verifyAuthCode(code,emailId);
-        if(result > 0 ){
+        Integer result = empMapper.verifyAuthCode(code, emailId);
+        if (result > 0) {
             empMapper.cleanUpOldCodes(emailId);
             return true;
         }
@@ -196,6 +199,30 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
         EmpVOSJW emp = empMapper.getByIdForMyPage(id);
         emp.setPassword(null);
         return emp;
+    }
+
+    @Override
+    public Boolean modifyPasswordById(EmpDTOSJW emp, Integer id) {
+        EmpVOSJW empInfo = empMapper.getById(id);
+        if (encoder.matches(emp.getCurrentPassword(), empInfo.getPassword())) {
+            log.error("encoder matched : {}", emp.getCurrentPassword());
+            emp.setUserId(id);
+            if (emp.getNewPassword() != null && !emp.getNewPassword().isEmpty()) {
+                emp.setNewPassword(encoder.encode(emp.getNewPassword()));
+            }
+            Integer result = empMapper.modifyUserById(emp);
+            if (result > 0) {
+                return true;
+            }
+        }
+        log.error("encoder not matched : {}", emp.getCurrentPassword());
+        log.error("empInfo's Id : {}", empInfo.getUserId());
+        return false;
+    }
+
+    @Override
+    public EmpDTOSJW getAdminSummary() {
+        return empMapper.getAdminSummary();
     }
 
 }

@@ -48,7 +48,10 @@
         FROM users u
         LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1'
         LEFT JOIN groups g ON gm.group_id = g.group_id
-        ORDER BY u.user_id desc
+        ORDER BY
+        u.user_id DESC,
+        -- 💡 대표 그룹('Y')이면 1순위, 아니면 2순위로 정렬하여 무조건 위로 올림!
+        CASE WHEN gm.is_primary = 'Y' THEN 1 ELSE 2 END ASC
     </select>
     <select id="getAllForGroup" resultMap="Emp4GroupResultMap">
         SELECT
@@ -101,6 +104,14 @@
             <if test="password != null and password != ''">password = #{password},</if>
             <if test="userType != null and userType != ''">user_type = role(#{userType}),</if>
             <if test="isActive != null and isActive != ''">is_active = #{isActive},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+    <update id="modifyUserById" parameterType="com.example.emp.dto.EmpDTOSJW">
+        UPDATE users
+        <set>
+            <if test="email != null and email != ''">email = #{email},</if>
+            <if test="newPassword != null and newPassword != ''">password = #{newPassword},</if>
         </set>
         WHERE user_id = #{userId}
     </update>
@@ -163,5 +174,22 @@
         LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary='Y'
         LEFT JOIN groups g ON gm.group_id = g.group_id
         WHERE u.user_id=#{id}
+    </select>
+    <select id="getAdminSummary" resultType="com.example.emp.dto.EmpDTOSJW">
+        <![CDATA[
+    SELECT
+        -- 1. 전체 가입자 수 (모든 유저)
+        (SELECT COUNT(user_id) FROM users) AS totalUsers,
+
+        -- 2. 활성 유저 수
+        (SELECT COUNT(user_id) FROM users WHERE is_active = 'O1') AS activeUsers,
+
+        -- 3. 비활성 유저 수 (활성이 아닌 모든 유저)
+        (SELECT COUNT(user_id) FROM users WHERE is_active != 'O1' OR is_active IS NULL) AS inactiveUsers,
+
+        -- 4. 진행 중인 프로젝트 수
+        (SELECT COUNT(project_id) FROM projects WHERE status = 'F1') AS activeProjects
+    FROM DUAL
+    ]]>
     </select>
 </mapper>

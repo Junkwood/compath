@@ -236,7 +236,7 @@
 
             <div
               class="bg-white dark:bg-gray-800 shadow-lg rounded-sm border border-gray-200 dark:border-gray-700/60 flex flex-col"
-              style="min-height: 500px"
+              style="min-height: 500px; max-height: 620px"
             >
               <header
                 class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0"
@@ -246,7 +246,9 @@
                 </h2>
               </header>
 
-              <div class="flex-1 overflow-y-auto p-5">
+              <div
+                class="flex-1 overflow-y-auto overflow-x-hidden p-5 custom-scrollbar"
+              >
                 <div
                   v-if="!group.logs || group.logs.length === 0"
                   class="flex items-center justify-center py-16 text-gray-400 dark:text-gray-500 text-sm"
