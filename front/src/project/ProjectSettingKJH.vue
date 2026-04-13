@@ -121,19 +121,19 @@
           <el-table-column
             prop="userName"
             label="이름"
-            width="300"
+            width="200"
             align="center"
           />
           <el-table-column
             prop="userId"
             label="사번"
-            width="300"
+            width="200"
             align="center"
           />
           <el-table-column
             prop="email"
             label="이메일"
-            width="500"
+            min-width="500"
             align="center"
           />
           <el-table-column

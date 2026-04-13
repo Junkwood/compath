@@ -52,6 +52,8 @@
                m.place,
                m.content,
                m.created_by,
+               m.ai_summary,
+               m.stt_text,
                u.user_name,
                m.created_at,
                m.meeting_log_id,
@@ -167,4 +169,60 @@
         WHERE ROWNUM BETWEEN 1 AND #{endNum})b
         WHERE b.num >= #{startNum}
     </select>
+
+    <!--    회의록 업무 테이블 등록-->
+    <insert id="registerMeetingTask">
+        <selectKey order="BEFORE" resultType="int" keyProperty="meetingtaskId">
+            SELECT NVL(max(meeting_task_id),0) + 1
+            FROM meeting_tasks
+        </selectKey>
+        INSERT INTO meeting_tasks( meeting_task_id,
+                                   meeting_log_id,
+                                   task_id,
+                                   created_at )
+        VALUES( #{meetingtaskId},
+                #{meetingLogId},
+                #{taskId},
+                SYSDATE )
+    </insert>
+
+<!--    등록된 연결업무 조회-->
+    <select id="getRecommandTask">
+        SELECT mt.meeting_task_id,
+               mt.meeting_log_id,
+               mt.task_id,
+               t.title,
+               t.content
+        FROM meeting_tasks mt
+        JOIN tasks t ON mt.task_id = t.task_id
+        WHERE mt.meeting_log_id = #{id}
+    </select>
+<!--    연결된 업무 연결 해제-->
+    <delete id="removeConnectTask">
+        DELETE FROM meeting_tasks
+        WHERE meeting_task_id = #{id}
+    </delete>
+
+<!--    빈회의록 삭제-->
+    <delete id="removeNullMeeting">
+        DELETE FROM meeting_logs
+        WHERE meeting_log_id = #{id}
+    </delete>
+
+<!--    빈회의록 등록-->
+    <update id="modifyNullMeeting">
+        UPDATE meeting_logs
+        SET title = #{title},
+            content = #{content},
+            meeting_type_code = #{meetingTypeCode},
+            editor_user_id = #{editorUserId},
+            place = #{place},
+        project_id = #{projectId},
+        created_by=#{createdBy},
+        created_at=SYSDATE,
+        ai_summary = #{aiSummary},
+        stt_text = #{sttText},
+        attachment_group_id = #{attachmentGroupId}
+        WHERE meeting_log_id = #{meetingLogId}
+    </update>
 </mapper>

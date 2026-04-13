@@ -2,7 +2,9 @@ package com.example.task.controller;
 
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
+import com.example.task.dto.TaskReqDtoJJW;
 import com.example.task.service.TaskServiceKJH;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

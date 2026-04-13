@@ -37,4 +37,20 @@ public interface MeetingMapper {
 
 //  페이징 목록
   public List<MeetingDTO> getAllMeeting(MeetingDTO dto);
+
+//    회의록 업무 등록
+  public int registerMeetingTask(MeetingDTO dto);
+
+//  회의록 별 연결 업무 조회
+  public List<MeetingDTO> getRecommandTask(Integer id);
+
+  //  회의록 연결 업무 연결 해제
+  public int removeConnectTask(Integer id);
+
+  //  빈회의록 삭제-
+  public int removeNullMeeting(Integer id);
+
+  //  빈회의록 수정
+  public int modifyNullMeeting(MeetingDTO dto);
+
 }

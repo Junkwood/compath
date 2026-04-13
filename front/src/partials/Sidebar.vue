@@ -389,7 +389,7 @@
                     v-if="currentProjectId"
                     :to="{
                       name: 'meetingList',
-                      params: { projectId: currentProjectId },
+                      params: sub,
                     }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"

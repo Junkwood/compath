@@ -539,6 +539,10 @@ const goDetail = (task) => {
 const changeDateType = (val) => {
   console.log(val);
   for (let i = 0; i < val.length; i++) {
+    // 담당자 미지정
+    if (val[i].userName == null) {
+      val[i].userName = "미지정";
+    }
     // 날짜 형식 변경
     if (val[i].startDate != null) {
       val[i].startDate = changeDate(val[i].startDate);
