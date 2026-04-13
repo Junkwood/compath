@@ -3,6 +3,7 @@ package com.example.task.service.impl;
 import com.example.alarm.dto.NotificationDto;
 import com.example.alarm.mapper.NotificationMapper;
 import com.example.alarm.service.NotificationService;
+import com.example.project.dto.ProjectDtoJJW;
 import com.example.task.dto.*;
 import com.example.task.mapper.TaskMapperJJW;
 import com.example.task.service.TaskServiceJJW;
@@ -114,7 +115,15 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
         result.put("taskTypeList", params.get("taskTypeList"));
         result.put("milestoneList", params.get("milestoneList"));
         result.put("statusList", params.get("statusList"));
+        result.put("timeEntryList", params.get("timeEntryList"));
 
         return result;
+
+
     }
+
+    @Override
+    public List<ProjectDtoJJW> getProjectList() {
+        return taskMapperJJW.getProjectList();    }
+
 }

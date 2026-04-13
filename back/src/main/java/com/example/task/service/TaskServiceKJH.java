@@ -2,6 +2,7 @@ package com.example.task.service;
 
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
+import com.example.task.dto.TaskReqDtoJJW;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ public interface TaskServiceKJH {
 
     // 활동내역 목록조회
     public List<TaskDetailDTOKJH> getTimeLog(Integer id);
-
 
 
 }

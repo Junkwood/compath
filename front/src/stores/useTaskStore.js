@@ -17,6 +17,7 @@ export const useTaskStore = defineStore("task", () => {
   const userModal = ref(false);
   const milestoneModal = ref(false);
   const projectList = ref([]);
+  const recommandTask = ref([]);
 
   // ───────────── computed ─────────────
   // 마일스톤 존재 여부
@@ -371,6 +372,7 @@ export const useTaskStore = defineStore("task", () => {
       String(form.value.taskStatusId).replace(/[^0-9]/g, ""),
     );
     const isFinished = finishedIds.value.includes(status) || status === 3;
+
     const payload = {
       ...form.value,
       taskStatusId: status,
@@ -391,23 +393,25 @@ export const useTaskStore = defineStore("task", () => {
       );
 
       if (detailSum > 0) {
-        // 상세 기록이 있으면 그합계를 소요시간으로 사용
         payload.actualHours = detailSum;
       } else {
-        // 상세 기록이 없으면, watch로 자동 계산된 actualHours 사용
-        payload.actualHours = actualHours.value
-          ? parseInt(String(actualHours.value).replace(/[^0-9]/g, ""))
-          : 0;
+        const { startDate, dueDate } = form.value;
+        if (startDate && dueDate) {
+          const workdays = countWorkdays(
+            new Date(startDate),
+            new Date(dueDate),
+          );
+          payload.actualHours = Math.max(1, workdays) * 8;
+        } else {
+          payload.actualHours = 0;
+        }
       }
       payload.progressRate = 100;
     } else {
       payload.actualHours = null;
-      payload.actual_hours = null;
       payload.progressRate = Number(form.value.progressRate) || 0;
-      form.value.actualHours = null;
-      form.value.actual_hours = null;
-      actualHours.value = "";
     }
+
     return payload;
   };
 
@@ -424,14 +428,33 @@ export const useTaskStore = defineStore("task", () => {
   // ───────────── 등록 ─────────────
   const createTask = async (createdBy) => {
     validateForm();
-    await api.post("/tasks", {
-      ...buildPayload(),
-      createdBy: createdBy,
-    });
+    let obj = buildPayload();
+    console.log(obj);
+    if (obj.assigneeUserId != "") {
+      await api.post("/tasks", {
+        ...obj,
+        createdBy: createdBy,
+      });
+    } else {
+      await api //
+        .post("/tasks/insert", {
+          ...obj,
+          createdBy: createdBy,
+        })
+        .then((res) => {
+          recommandTask.value = res.data;
+        });
+    }
   };
 
   // ───────────── 수정 ─────────────
   const updateTask = async (taskId, editorUserId) => {
+    console.log("finishedIds:", finishedIds.value);
+    console.log("taskStatusId:", form.value.taskStatusId);
+    console.log("startDate:", form.value.startDate);
+    console.log("dueDate:", form.value.dueDate);
+    console.log("displayActualHours:", form.value.displayActualHours);
+    console.log("buildPayload:", JSON.stringify(buildPayload(), null, 2));
     const status = Number(form.value.taskStatusId);
 
     // 반려 처리
@@ -523,5 +546,6 @@ export const useTaskStore = defineStore("task", () => {
     createTask,
     updateTask,
     rejectTask,
+    recommandTask,
   };
 });

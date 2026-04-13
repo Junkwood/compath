@@ -56,6 +56,10 @@ public class TaskControllerJJW {
             @RequestParam(value = "projectId", required = false) Integer projectId) {
         return taskServiceJJW.getTaskInitData(taskId, projectId);
     }
+    @GetMapping("/project/list")
+    public List<ProjectDtoJJW> getProjectList() {
+        return taskServiceJJW.getProjectList();
+    }
 
     //업무 상세 조회
 //    @ResponseBody

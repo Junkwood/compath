@@ -15,4 +15,10 @@ public class EmpDTOSJW {
     private String email;
     private String isActive;
     private String userType;
+    private String currentPassword;
+    private String newPassword;
+    private Integer totalUsers;
+    private Integer activeProjects;
+    private Integer activeUsers;
+    private Integer inactiveUsers;
 }

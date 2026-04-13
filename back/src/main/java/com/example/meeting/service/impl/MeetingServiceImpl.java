@@ -4,10 +4,13 @@ import com.example.meeting.dto.MeetingAlarmDTO;
 import com.example.meeting.dto.MeetingDTO;
 import com.example.meeting.mapper.MeetingMapper;
 import com.example.meeting.service.MeetingService;
+import com.example.task.dto.TaskReqDtoJJW;
+import com.example.task.mapper.TaskMapperJJW;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +21,7 @@ import java.util.Map;
 public class MeetingServiceImpl implements MeetingService {
 
     private final MeetingMapper mapper;
+    private final TaskMapperJJW taskMapperJJW;
 
     @Override
     public List<MeetingDTO> getMeetingType() {
@@ -27,9 +31,13 @@ public class MeetingServiceImpl implements MeetingService {
     @Override
     public MeetingDTO registerMeeting(MeetingDTO dto) {
 
+        Integer id = dto.getMeetingLogId();
+        if(id != null && id > 0) {
+            mapper.modifyNullMeeting(dto);
+        } else {
         mapper.registerMeeting(dto);
-
-        int id = dto.getMeetingLogId();
+            id = dto.getMeetingLogId();
+        }
 
         return mapper.getMeetingById(id);
     }
@@ -90,4 +98,46 @@ public class MeetingServiceImpl implements MeetingService {
     public List<MeetingDTO> getAllMeeting(MeetingDTO dto) {
         return mapper.getAllMeeting(dto);
     }
+
+    // 추천 업무 등록
+    @Override
+    public List<MeetingDTO> insert(TaskReqDtoJJW taskDto) {
+        // 업무 생성
+        taskMapperJJW.insert(taskDto);
+        int taskId = taskDto.getTaskId();
+
+        // 빈회의록 등록
+        MeetingDTO meetDto = new MeetingDTO();
+        meetDto.setProjectId(taskDto.getProjectId());
+        mapper.registerMeeting(meetDto);
+
+        // 회의록 업무 테이블 등록
+        meetDto.setTaskId(taskId);
+        mapper.registerMeetingTask(meetDto);
+
+        // 회의록 별 연결 업무 목록 조회
+        int id = meetDto.getMeetingLogId();
+        return mapper.getRecommandTask(id);
+    }
+
+    @Override
+    public List<MeetingDTO> removeConnectTask(MeetingDTO dto) {
+
+        // 연결 테이블 삭제
+        int connectId = dto.getMeetingtaskId();
+        mapper.removeConnectTask(connectId);
+
+        // 연결 테이블 조회(빈회의록 삭제하기위해)
+        int meetingId = dto.getMeetingLogId();
+        List<MeetingDTO> list = mapper.getRecommandTask(meetingId);
+
+        // null이거나 길이가  0일때 삭제
+        if(list != null || !list.isEmpty()){
+            mapper.removeNullMeeting(meetingId);
+            return new ArrayList<>();
+        }
+
+        return list;
+    }
+
 }

@@ -20,7 +20,7 @@ public interface TaskServiceJJW {
     void insert1 (TaskRejectDtoJJW re);
     //프로시져 curssor
     Map<String, Object> getTaskInitData(Integer taskId, Integer projectId);
-
+    List<ProjectDtoJJW> getProjectList();
 
     //선택 모달 조회
 //    List<ProjectDtoJJW> getProjectList();

@@ -86,6 +86,7 @@
 import { ref, reactive, onMounted, computed, watch, nextTick } from "vue";
 import { useGroupStore } from "../stores/groupSJW";
 import { useEmpStore } from "../stores/empSJW";
+import Swal from "sweetalert2"; // 💡 [추가] SweetAlert 임포트
 
 const groupStore = useGroupStore();
 const empStore = useEmpStore();
@@ -102,7 +103,9 @@ const plOptions = computed(() => groupStore.activeGroupList);
 const formRef = ref(null);
 const submitting = ref(false);
 
-// 💡 [수정됨] form 변수를 먼저 선언해서 undefined 에러를 막습니다!
+// 💡 [추가] 모달이 열릴 때의 원본 상태를 저장할 스냅샷 변수
+let originalFormSnapshot = "";
+
 const defaultForm = () => ({
   userId: "",
   name: "",
@@ -134,7 +137,6 @@ const validatePasswordConfirm = (rule, value, callback) => {
   callback();
 };
 
-// 💡 [수정됨] rules 변수도 위로 올렸습니다.
 const rules = reactive({
   email: [
     { required: true, message: "이메일을 입력하세요", trigger: "blur" },
@@ -147,30 +149,24 @@ const rules = reactive({
   name: [{ required: true, message: "이름을 입력하세요", trigger: "blur" }],
   password: [
     {
-      required: true, // 초기값 설정 (watch에서 바꿈)
+      required: true,
       message: "비밀번호를 입력하세요",
       trigger: "blur",
     },
   ],
   passwordc: [
     {
-      required: true, // 초기값 설정
+      required: true,
       validator: validatePasswordConfirm,
       trigger: "blur",
     },
   ],
 });
 
-// 💡 [수정됨] watch 로직을 변수 선언들 아래로 배치했습니다.
 watch(
   () => props.modelValue,
   async (isOpen) => {
     if (isOpen) {
-      console.log("1. 넘어온 그룹ID:", props.editData.primaryGroupId);
-      console.log(
-        "2. 현재 옵션 목록:",
-        plOptions.value.map((g) => g.groupId),
-      );
       if (isEditMode.value) {
         // ⭐ 수정 모드
         Object.assign(form, {
@@ -184,14 +180,16 @@ watch(
         });
         rules.password[0].required = false;
         rules.passwordc[0].required = false;
+
+        // 💡 [추가] 데이터 세팅이 끝난 직후 원본 스냅샷 저장!
+        originalFormSnapshot = JSON.stringify(form);
       } else {
         // ⭐ 생성 모드
         Object.assign(form, defaultForm());
         rules.password[0].required = true;
         rules.passwordc[0].required = true;
       }
-
-      // 💡 [핵심] 폼 값과 룰이 완전히 적용된 것을 기다린 후 빨간 불 지우기!
+      console.log(form);
       await nextTick();
       formRef.value?.clearValidate();
     }
@@ -207,7 +205,6 @@ const handleClose = () => {
   visible.value = false;
 };
 
-// 💡 [추가됨] 모달이 화면에서 완전히 사라졌을 때 백지 상태로 세탁
 const handleClosed = () => {
   Object.assign(form, defaultForm());
   rules.password[0].required = true;
@@ -224,19 +221,35 @@ const handleSubmit = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
   if (!valid) return;
 
+  // 💡 [추가] 변경 사항 체크 로직 (수정 모드일 때만 작동)
+  if (isEditMode.value && JSON.stringify(form) === originalFormSnapshot) {
+    Swal.fire({
+      icon: "info",
+      title: "변경 사항 없음",
+      text: "수정된 내용이 없습니다.",
+      confirmButtonColor: "#6b7280",
+    });
+    return; // ❌ 여기서 함수 종료. API 호출 막음!
+  }
+
   submitting.value = true;
   try {
     if (isEditMode.value) {
-      form.groupIds = [...form.primaryGroupId];
-      form.primaryGroupId = form.primaryGroupId;
+      form.groupIds = [form.primaryGroupId];
       await empStore.updateEmp(form);
     } else {
       await empStore.registerEmp(form);
     }
     emit("submitted", { ...form });
-    visible.value = false; // 성공하면 모달 닫기 -> 자동으로 handleClosed 실행됨
+    visible.value = false;
   } catch (err) {
-    console.error("사원 등록 실패:", err);
+    console.error("사원 처리 실패:", err);
+    Swal.fire({
+      icon: "error",
+      title: "처리 실패",
+      text: "계정 처리에 실패했습니다.",
+      confirmButtonColor: "#2563eb",
+    });
   } finally {
     submitting.value = false;
     empStore.getEmpList();

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -35,7 +37,7 @@ public class TaskReqDtoJJW {
     Date startDate;
     Date dueDate;
     Integer estimatedHours;
-    String actualHours;
+    Integer actualHours;
     String isDeleted;
     Integer createdBy;
     @NotNull(message = "우선순위는 필수입니다.")
@@ -45,5 +47,8 @@ public class TaskReqDtoJJW {
 
     Integer totalTimeEntries;
     Integer finalActualHours;
+
+    List<Map<String, Object>> timeEntryList;
+
 
 }

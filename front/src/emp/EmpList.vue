@@ -86,7 +86,7 @@
                   <div class="tag-wrap">
                     <template v-if="row.groupList && row.groupList.length > 0">
                       <el-tag
-                        v-for="(group, i) in row.groupList"
+                        v-for="(group, i) in row.groupList.slice(0, 2)"
                         :key="i"
                         size="small"
                         type="primary"
@@ -94,6 +94,16 @@
                         style="margin: 2px"
                       >
                         {{ group }}
+                      </el-tag>
+
+                      <el-tag
+                        v-if="row.groupList.length > 2"
+                        size="small"
+                        type="info"
+                        effect="plain"
+                        style="margin: 2px; font-weight: bold"
+                      >
+                        외 {{ row.groupList.length - 2 }}개
                       </el-tag>
                     </template>
                     <span v-else class="text-gray-400">-</span>
@@ -376,6 +386,10 @@ export default {
 </script>
 
 <style scoped>
+/* SweetAlert 모달 z-index 방어용 */
+:global(.swal2-container) {
+  z-index: 9999 !important;
+}
 .card {
   background: #fff;
   border-radius: 12px;

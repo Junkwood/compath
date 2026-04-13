@@ -392,7 +392,7 @@
 <script>
 import { ref, computed, watch, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import Swal from "sweetalert2"; // 💡 SweetAlert2 임포트
+import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useEmpStore } from "../stores/empSJW";
@@ -426,6 +426,10 @@ export default {
     const originalGroupName = ref("");
     const isNameChecked = ref(false);
     const isNameValid = ref(false);
+
+    // 💡 [추가] 변경사항 체크를 위한 원본 스냅샷 변수
+    let originalFormSnapshot = "";
+    let originalMembersSnapshot = "";
 
     const isOriginalName = computed(
       () => form.value.groupName === originalGroupName.value,
@@ -559,7 +563,7 @@ export default {
       );
     };
 
-    // ── 💡 중복 확인 (SweetAlert) ──
+    // ── 중복 확인 ──
     const checkDuplicate = async () => {
       if (!form.value.groupName.trim()) {
         Swal.fire({
@@ -579,8 +583,29 @@ export default {
       isNameChecked.value = true;
     };
 
-    // ── 💡 수정 제출 (SweetAlert) ──
+    // ── 💡 수정 제출 (변경 사항 체크 추가) ──
     const submitUpdate = async () => {
+      // 💡 [핵심] 현재 상태와 스냅샷 비교 (기본 정보 + 멤버 목록)
+      const currentFormStr = JSON.stringify(form.value);
+      const currentMembersStr = JSON.stringify(
+        // 멤버 배열에서 비교에 필요한 핵심 데이터(userId, roleId)만 뽑아서 비교
+        groupMembers.value.map((m) => ({ userId: m.userId, roleId: m.roleId })),
+      );
+
+      if (
+        currentFormStr === originalFormSnapshot &&
+        currentMembersStr === originalMembersSnapshot
+      ) {
+        Swal.fire({
+          icon: "info",
+          title: "변경 사항 없음",
+          text: "수정된 내용이 없습니다.",
+          confirmButtonColor: "#6b7280",
+        });
+        return; // 변경된 게 없으면 함수 강제 종료!
+      }
+
+      // 기존 유효성 검사
       if (!isOriginalName.value && !isNameChecked.value) {
         Swal.fire({
           icon: "warning",
@@ -643,7 +668,7 @@ export default {
 
     const goBack = () => router.back();
 
-    // ── 💡 초기 데이터 로드 (SweetAlert) ──
+    // ── 💡 초기 데이터 로드 (스냅샷 저장 추가) ──
     onMounted(async () => {
       const groupId = route.params.id || route.params.groupId;
       try {
@@ -662,7 +687,7 @@ export default {
           groupId: data.groupId,
           groupName: data.groupName,
           groupType: data.groupType,
-          description: data.description,
+          description: data.description || "", // null 방지
           isActive: data.isActive,
         };
         originalGroupName.value = data.groupName;
@@ -671,6 +696,16 @@ export default {
           ...m,
           isNew: false,
         }));
+
+        // 💡 [핵심] 데이터 바인딩이 모두 끝난 후 스냅샷 찰칵!
+        originalFormSnapshot = JSON.stringify(form.value);
+        // 멤버는 이름이나 기타 UI용 데이터가 섞여있으므로 서버에 보낼 핵심 데이터만 추출해서 스냅샷 찍기
+        originalMembersSnapshot = JSON.stringify(
+          groupMembers.value.map((m) => ({
+            userId: m.userId,
+            roleId: m.roleId,
+          })),
+        );
       } catch {
         Swal.fire({
           icon: "error",
@@ -718,5 +753,20 @@ export default {
 /* SweetAlert2 모달 Z-index 방어용 */
 :global(.swal2-container) {
   z-index: 9999 !important;
+}
+
+/* 💡 Tailwind Forms 플러그인 보라색 강제 오버라이드 */
+input[type="checkbox"].form-checkbox:checked,
+input[type="radio"].form-radio:checked {
+  background-color: #2563eb !important; /* 체크 시 파란색 배경 */
+  border-color: #2563eb !important; /* 테두리 파란색 */
+  color: #2563eb !important; /* SVG 내부 채움색 파란색 */
+}
+
+/* 💡 클릭(포커스) 할 때 겉에 퍼지는 링(그림자) 색상도 파란색으로 통일 */
+input[type="checkbox"].form-checkbox:focus,
+input[type="radio"].form-radio:focus {
+  --tw-ring-color: #bfdbfe !important; /* Tailwind의 blue-200 색상 */
+  border-color: #2563eb !important;
 }
 </style>

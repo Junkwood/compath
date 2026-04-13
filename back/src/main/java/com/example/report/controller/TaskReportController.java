@@ -15,7 +15,7 @@ public class TaskReportController {
     final TaskReportService taskReportService;
 
     @ResponseBody
-    @GetMapping("/taskReport")
+    @GetMapping("/time-entry-report")
     public List<TaskReportDto> list(@ModelAttribute TaskReportDto dto) {
         return taskReportService.getReportAll(dto);
     }
