@@ -11,16 +11,12 @@
       />
 
       <main class="grow">
-        <div class="sub-header flex justify-between items-center">
+        <div class="sub-header">
           <div class="breadcrumb">
             <span class="bc-home">홈</span>
             <span class="bc-sep">/</span>
             <span class="bc-cur">Main Dashboard</span>
           </div>
-          <el-button class="btn-highlight-project" @click="handleCreateProject">
-            <el-icon class="mr-2"><Plus /></el-icon>
-            새 프로젝트 생성
-          </el-button>
         </div>
 
         <div class="page-container">
@@ -87,8 +83,9 @@
                     <template #default="{ row }">
                       <span
                         :class="{ 'text-red-500 font-bold': row.rejected > 0 }"
-                        >{{ row.rejected }}</span
                       >
+                        {{ row.rejected }}
+                      </span>
                     </template>
                   </el-table-column>
                   <el-table-column
@@ -109,6 +106,25 @@
                   background
                 />
               </div>
+
+              <!-- 여기로 이동 -->
+              <div class="panel-action-row">
+                <el-button
+                  class="action-btn btn-create-project"
+                  @click="handleCreateProject"
+                >
+                  <el-icon><Plus /></el-icon>
+                  <span>새 프로젝트 생성</span>
+                </el-button>
+
+                <el-button
+                  class="action-btn btn-copy-project"
+                  @click="handleCopyProject"
+                >
+                  <el-icon><CopyDocument /></el-icon>
+                  <span>프로젝트 복사</span>
+                </el-button>
+              </div>
             </div>
 
             <div class="side-stack">
@@ -119,9 +135,9 @@
                 <div class="task-inner">
                   <div class="task-summary">
                     <span class="label">총 업무량</span>
-                    <span class="value"
-                      >{{ totalTaskCount }} <small>건</small></span
-                    >
+                    <span class="value">
+                      {{ totalTaskCount }} <small>건</small>
+                    </span>
                   </div>
                   <div class="task-list">
                     <div
@@ -130,9 +146,9 @@
                       class="task-item"
                     >
                       <span class="item-label">{{ item.label }}</span>
-                      <span class="item-cnt" :style="{ color: item.color }">{{
-                        item.count
-                      }}</span>
+                      <span class="item-cnt" :style="{ color: item.color }">
+                        {{ item.count }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -152,9 +168,9 @@
                       <i class="dot" :style="{ backgroundColor: item.color }" />
                       <span>{{ item.label }}</span>
                     </div>
-                    <span class="news-badge" :class="{ accent: item.accent }">{{
-                      item.count
-                    }}</span>
+                    <span class="news-badge" :class="{ accent: item.accent }">
+                      {{ item.count }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -210,9 +226,9 @@
               />
               <el-table-column label="상태" width="100" align="center">
                 <template #default="{ row }">
-                  <span :class="['status-pill', statusClass(row)]">{{
-                    statusLabel(row)
-                  }}</span>
+                  <span :class="['status-pill', statusClass(row)]">
+                    {{ statusLabel(row) }}
+                  </span>
                 </template>
               </el-table-column>
             </el-table>
@@ -231,32 +247,45 @@
       </main>
     </div>
   </div>
+
   <ProjectCreateModal v-model="createProjectModalOpen" />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { Plus } from "@element-plus/icons-vue";
+import { Plus, CopyDocument } from "@element-plus/icons-vue";
 import api from "../utils/api";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectCreateModal from "../project/ProjectCreateModal.vue";
 
 const router = useRouter();
+
 const sidebarOpen = ref(false);
 const createProjectModalOpen = ref(false);
+
 const myTaskOnly = ref(true);
 const myProjectOnly = ref(true);
+
 const workPage = ref(1);
 const workPageSize = 5;
+
 const projectPage = ref(1);
 const projectPageSize = 8;
+
 const loadingTasks = ref(false);
 const loadingProjects = ref(false);
+
 const taskProjects = ref([]);
 const projectList = ref([]);
-const myTasks = ref({ inProgress: 5, done: 10, rejected: 3, deadline: 1 });
+
+const myTasks = ref({
+  inProgress: 5,
+  done: 10,
+  rejected: 3,
+  deadline: 1,
+});
 
 const taskStatusList = computed(() => [
   { label: "진행중", count: myTasks.value.inProgress, color: "#1B5C9C" },
@@ -266,8 +295,9 @@ const taskStatusList = computed(() => [
 ]);
 
 const totalTaskCount = computed(() =>
-  Object.values(myTasks.value).reduce((s, v) => s + v, 0),
+  Object.values(myTasks.value).reduce((sum, value) => sum + value, 0)
 );
+
 const newsList = [
   { label: "메세지", count: 5, color: "#3b82f6", accent: false },
   { label: "새 공지사항", count: 3, color: "#10b981", accent: false },
@@ -304,15 +334,18 @@ onMounted(() => {
 });
 
 const pagedTaskData = computed(() => {
-  const s = (workPage.value - 1) * workPageSize;
+  const start = (workPage.value - 1) * workPageSize;
   return taskProjects.value
-    .slice(s, s + workPageSize)
-    .map((item, i) => ({ ...item, no: s + i + 1 }));
+    .slice(start, start + workPageSize)
+    .map((item, index) => ({
+      ...item,
+      no: start + index + 1,
+    }));
 });
 
 const pagedProjectData = computed(() => {
-  const s = (projectPage.value - 1) * projectPageSize;
-  return projectList.value.slice(s, s + projectPageSize);
+  const start = (projectPage.value - 1) * projectPageSize;
+  return projectList.value.slice(start, start + projectPageSize);
 });
 
 const statusLabel = (row) => {
@@ -334,16 +367,26 @@ const headerStyle = () => ({
   fontWeight: "600",
   height: "44px",
 });
+
 const cellStyle = () => ({
   color: "#1f2937",
   fontSize: "13px",
   padding: "10px 0",
 });
+
 const handleCreateProject = () => {
   createProjectModalOpen.value = true;
 };
+
+const handleCopyProject = () => {
+  console.log("프로젝트 복사 클릭");
+};
+
 const goProjectDashboard = (row) => {
-  router.push({ name: "projectDash", params: { projectId: row.projectId } });
+  router.push({
+    name: "projectDash",
+    params: { projectId: row.projectId },
+  });
 };
 </script>
 
@@ -352,6 +395,7 @@ const goProjectDashboard = (row) => {
   font-family: "Pretendard", sans-serif;
   background-color: #f3f4f6;
 }
+
 .sub-header {
   background: #fff;
   padding: 12px 24px;
@@ -360,37 +404,25 @@ const goProjectDashboard = (row) => {
   top: 0;
   z-index: 10;
 }
+
 .breadcrumb {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
 }
+
 .bc-home {
   color: #9ca3af;
 }
+
 .bc-sep {
   color: #d1d5db;
 }
+
 .bc-cur {
   color: #111827;
   font-weight: 600;
-}
-
-.btn-highlight-project {
-  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
-  color: white !important;
-  border: none !important;
-  padding: 10px 20px !important;
-  height: 40px !important;
-  border-radius: 8px !important;
-  font-weight: 700 !important;
-  box-shadow: 0 4px 14px rgba(27, 92, 156, 0.3) !important;
-  transition: all 0.3s ease !important;
-}
-.btn-highlight-project:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
 }
 
 .page-container {
@@ -400,7 +432,6 @@ const goProjectDashboard = (row) => {
   gap: 24px;
 }
 
-/* 핵심 해결 포인트: align-items: start 를 추가하여 자식들이 강제로 늘어나는걸 방지 */
 .top-grid {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -421,6 +452,7 @@ const goProjectDashboard = (row) => {
   border: 1px solid #e5e7eb;
   overflow: hidden;
 }
+
 .panel-head {
   padding: 16px 20px;
   display: flex;
@@ -428,15 +460,21 @@ const goProjectDashboard = (row) => {
   justify-content: space-between;
   border-bottom: 1px solid #f3f4f6;
 }
+
 .panel-title {
   font-size: 15px;
   font-weight: 700;
   color: #111827;
 }
 
+.panel-body {
+  background: #fff;
+}
+
 .task-inner {
   padding: 20px;
 }
+
 .task-summary {
   display: flex;
   justify-content: space-between;
@@ -445,26 +483,31 @@ const goProjectDashboard = (row) => {
   padding-bottom: 15px;
   border-bottom: 1px dashed #e5e7eb;
 }
+
 .task-summary .label {
   color: #6b7280;
   font-size: 13px;
 }
+
 .task-summary .value {
   color: #1b5c9c;
   font-size: 24px;
   font-weight: 800;
 }
+
 .task-summary .value small {
   font-size: 14px;
   font-weight: 400;
   color: #9ca3af;
 }
+
 .task-item {
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
   font-size: 13px;
 }
+
 .item-cnt {
   font-weight: 700;
 }
@@ -472,26 +515,31 @@ const goProjectDashboard = (row) => {
 .news-inner {
   padding: 5px 0;
 }
+
 .news-item {
   display: flex;
   justify-content: space-between;
   padding: 12px 20px;
   border-bottom: 1px solid #f9fafb;
 }
+
 .news-item:last-child {
   border-bottom: none;
 }
+
 .news-info {
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 13px;
 }
+
 .dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
 }
+
 .news-badge {
   background: #f3f4f6;
   padding: 2px 10px;
@@ -499,6 +547,7 @@ const goProjectDashboard = (row) => {
   font-size: 11px;
   font-weight: 700;
 }
+
 .news-badge.accent {
   background: #fef3c7;
   color: #92400e;
@@ -510,22 +559,27 @@ const goProjectDashboard = (row) => {
   font-size: 11px;
   font-weight: 700;
 }
+
 .pill-blue {
   background: #eff6ff;
   color: #1e40af;
 }
+
 .pill-green {
   background: #ecfdf5;
   color: #065f46;
 }
+
 .pill-orange {
   background: #fff7ed;
   color: #9a3412;
 }
+
 .pill-gray {
   background: #f9fafb;
   color: #4b5563;
 }
+
 .num-hi {
   color: #1b5c9c;
   font-weight: 700;
@@ -534,6 +588,7 @@ const goProjectDashboard = (row) => {
 :deep(.el-table) {
   --el-table-header-bg-color: #f9fafb;
 }
+
 .pag-wrap {
   padding: 16px;
   display: flex;
@@ -542,14 +597,78 @@ const goProjectDashboard = (row) => {
   background: #f9fafb;
 }
 
+.panel-action-row {
+  min-height: 150px;
+  padding: 28px 36px 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: end;
+  background: #fff;
+}
+
+.action-btn {
+  width: 100%;
+  height: 78px !important;
+  border: none !important;
+  border-radius: 14px !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease !important;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-create-project {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(27, 92, 156, 0.22) !important;
+}
+
+.btn-create-project:hover {
+  filter: brightness(1.05);
+}
+
+.btn-copy-project {
+  background: linear-gradient(135deg, #ffa32a 0%, #ff9a17 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(71, 85, 105, 0.2) !important;
+}
+
+.btn-copy-project:hover {
+  filter: brightness(1.05);
+}
+
+.action-btn :deep(.el-icon) {
+  font-size: 20px;
+}
+
 @media (max-width: 1200px) {
   .top-grid {
     grid-template-columns: 1fr;
   }
+
   .side-stack {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
+  }
+
+  .panel-action-row {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    min-height: auto;
+  }
+
+  .action-btn {
+    height: 68px !important;
+    font-size: 16px !important;
   }
 }
 </style>

@@ -26,4 +26,8 @@ public interface EmpMapperSJW {
     void cleanUpOldCodes(Integer emailId);
 
     EmpVOSJW getByIdForMyPage(Integer id);
+
+    Integer modifyUserById(EmpDTOSJW empInfo);
+
+    EmpDTOSJW getAdminSummary();
 }

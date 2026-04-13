@@ -151,13 +151,13 @@
         <![CDATA[
     SELECT
         -- 1. 진행 중 (완료가 아니고, 마감일이 안 지난 것)
-        COUNT(CASE WHEN ts.is_final = 'O2' AND TRUNC(t.due_date) >= TRUNC(SYSDATE) THEN 1 END) AS inProgress,
+        COUNT(CASE WHEN ts.is_final = 'O2' AND TRUNC(NVL(t.due_date,t.est_end_date)) >= TRUNC(SYSDATE) THEN 1 END) AS inProgress,
 
         -- 2. 지연됨 (완료가 아니고, 마감일이 지난 것)
-        COUNT(CASE WHEN ts.is_final = 'O2' AND TRUNC(t.due_date) < TRUNC(SYSDATE) THEN 1 END) AS delayed,
+        COUNT(CASE WHEN ts.is_final = 'O2' AND TRUNC(NVL(t.due_date,t.est_end_date)) < TRUNC(SYSDATE) THEN 1 END) AS delayed,
 
         -- 3. 마감 임박 (완료가 아니고, 마감일이 오늘부터 3일 이내인 것)
-        COUNT(CASE WHEN ts.is_final = 'O2' AND (TRUNC(t.due_date) - TRUNC(SYSDATE)) BETWEEN 0 AND 3 THEN 1 END) AS pendingPR,
+        COUNT(CASE WHEN ts.is_final = 'O2' AND (TRUNC(NVL(t.due_date,t.est_end_date)) - TRUNC(SYSDATE)) BETWEEN 0 AND 3 THEN 1 END) AS pendingPR,
 
         -- 4. 완료 처리됨
         COUNT(CASE WHEN ts.is_final = 'O1' THEN 1 END) AS done
@@ -174,7 +174,7 @@
         t.project_id AS projectId,
         p.parent_project_id AS parentProjectId, -- 💡 상위 프로젝트 ID 추출
         t.title AS title,
-        (TRUNC(t.due_date) - TRUNC(SYSDATE)) AS dDay,
+        (TRUNC(NVL(t.due_date,t.est_end_date)) - TRUNC(SYSDATE)) AS dDay,
         common(t.priority_code) AS priority,
         tt.type_name AS typeName,
         ts.status_name AS statusName,

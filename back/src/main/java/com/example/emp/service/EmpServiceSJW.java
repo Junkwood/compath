@@ -27,4 +27,8 @@ public interface EmpServiceSJW {
     Boolean verifyCode(Integer code, Integer emailId);
 
     EmpVOSJW getByIdForMyPage(Integer id);
+
+    Boolean modifyPasswordById(EmpDTOSJW emp, Integer id);
+
+    EmpDTOSJW getAdminSummary();
 }

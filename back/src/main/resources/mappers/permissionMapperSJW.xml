@@ -1,25 +1,36 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.permission.mapper.PermissionMapper" >
+
     <select id="isUrlRegisteredInDb" resultType="boolean">
         SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
         FROM permissions
         WHERE permission_url = #{urlPattern}
           AND permission_method = #{method}
     </select>
+
     <select id="checkUserPermission" resultType="int">
         SELECT COUNT(1)
         FROM project_members pm
-                 -- 1. 멤버가 가진 역할(Role)들을 찾기 위해 다대다 연결 테이블 조인!
                  JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
-            -- 2. 해당 역할에 매핑된 권한 아이디 찾기
                  JOIN role_permissions rp ON pmr.role_id = rp.role_id
-            -- 3. 권한의 상세 정보(URL, 메서드) 매칭
                  JOIN permissions p ON rp.permission_id = p.permission_id
         WHERE pm.user_id = #{userId}
           AND pm.project_id = #{projectId}
           AND p.permission_method = #{method}
           AND p.permission_url = #{url}
-        -- (선택) 만약 is_active가 'O1'인 활성 멤버만 권한을 줘야 한다면 아래 조건 추가
-        -- AND pm.is_active = 'O1'
     </select>
+
+    <select id="checkProjectAccess" resultType="boolean">
+        <![CDATA[
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM projects p
+                 LEFT JOIN project_members pm ON p.project_id = pm.project_id AND pm.user_id = #{userId}
+        WHERE p.project_id = #{projectId}
+          AND (
+            p.is_public = 'P1'           -- 조건 1: 전체 공개 프로젝트이거나
+                OR pm.user_id IS NOT NULL    -- 조건 2: 멤버 테이블에 내 ID가 존재하거나
+            )
+        ]]>
+    </select>
+
 </mapper>

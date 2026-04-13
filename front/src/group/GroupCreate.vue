@@ -559,9 +559,7 @@ const submitGroup = async () => {
   }
 };
 
-const goBack = () => {
-  router.back();
-};
+const goBack = () => router.push({ name: "group" });
 
 const expandedGroups = ref([]);
 
@@ -630,8 +628,23 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* SweetAlert 모달 겹침 방어용 */
+/* SweetAlert2 모달 Z-index 방어용 */
 :global(.swal2-container) {
   z-index: 9999 !important;
+}
+
+/* 💡 Tailwind Forms 플러그인 보라색 강제 오버라이드 */
+input[type="checkbox"].form-checkbox:checked,
+input[type="radio"].form-radio:checked {
+  background-color: #2563eb !important; /* 체크 시 파란색 배경 */
+  border-color: #2563eb !important; /* 테두리 파란색 */
+  color: #2563eb !important; /* SVG 내부 채움색 파란색 */
+}
+
+/* 💡 클릭(포커스) 할 때 겉에 퍼지는 링(그림자) 색상도 파란색으로 통일 */
+input[type="checkbox"].form-checkbox:focus,
+input[type="radio"].form-radio:focus {
+  --tw-ring-color: #bfdbfe !important; /* Tailwind의 blue-200 색상 */
+  border-color: #2563eb !important;
 }
 </style>

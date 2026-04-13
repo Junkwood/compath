@@ -21,6 +21,7 @@
           </div>
 
           <div class="mypage-layout">
+            <!-- ===================== LEFT: 프로필 카드 ===================== -->
             <div class="profile-card">
               <div class="profile-edit-btn-wrap">
                 <button
@@ -79,37 +80,40 @@
               </div>
             </div>
 
-            <div class="right-col">
+            <!-- ===================== RIGHT: 일반 사용자 ===================== -->
+            <div v-if="!authStore.isAdmin" class="right-col">
+              <!-- 내 작업 요약 -->
               <div class="summary-card">
                 <div class="summary-title">내 작업 요약 (전체)</div>
                 <div class="summary-grid">
                   <div class="summary-item">
                     <span class="summary-label">진행 중인 업무</span>
                     <span class="summary-value text-blue-600">{{
-                      taskSummary.inProgress
+                      myPageStore.taskSummary.inProgress
                     }}</span>
                   </div>
                   <div class="summary-item">
                     <span class="summary-label">지연됨</span>
                     <span class="summary-value text-rose-500">{{
-                      taskSummary.delayed
+                      myPageStore.taskSummary.delayed
                     }}</span>
                   </div>
                   <div class="summary-item">
                     <span class="summary-label">마감 임박</span>
                     <span class="summary-value text-orange-500">{{
-                      taskSummary.pendingPR
+                      myPageStore.taskSummary.pendingPR
                     }}</span>
                   </div>
                   <div class="summary-item">
                     <span class="summary-label">완료 처리됨</span>
                     <span class="summary-value text-emerald-500">{{
-                      taskSummary.done
+                      myPageStore.taskSummary.done
                     }}</span>
                   </div>
                 </div>
               </div>
 
+              <!-- 업무 목록 -->
               <div class="summary-card">
                 <div class="summary-title">
                   나에게 할당된 진행 중인 업무 (마감 임박순)
@@ -120,7 +124,7 @@
                 </div>
 
                 <div
-                  v-else-if="taskList.length === 0"
+                  v-else-if="myPageStore.taskList === 0"
                   class="task-empty bg-gray-50 rounded-lg"
                 >
                   진행 중인 업무가 없습니다.
@@ -128,7 +132,7 @@
 
                 <div v-else class="task-list">
                   <div
-                    v-for="task in taskList"
+                    v-for="task in myPageStore.taskList"
                     :key="task.taskId"
                     @click="
                       goToTask(
@@ -219,7 +223,6 @@
                             {{ task.progressRate || 0 }}%
                           </span>
                         </div>
-
                         <el-progress
                           :percentage="task.progressRate || 0"
                           :stroke-width="5"
@@ -246,12 +249,57 @@
                 </div>
               </div>
             </div>
+
+            <!-- ===================== RIGHT: 관리자 ===================== -->
+            <div v-else class="right-col">
+              <div class="summary-card">
+                <div class="summary-title">시스템 요약 현황</div>
+                <div class="summary-grid summary-grid-2">
+                  <div
+                    class="summary-item"
+                    @click="goToUsers()"
+                    style="cursor: pointer"
+                  >
+                    <span class="summary-label">전체 가입자</span>
+                    <span class="summary-value text-violet-600"
+                      >{{ myPageStore.adminSummary.totalUsers || 0 }}명</span
+                    >
+                    <div class="flex items-center gap-2 mt-1">
+                      <span
+                        class="text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded"
+                      >
+                        활성 {{ myPageStore.adminSummary.activeUsers || 0 }}
+                      </span>
+                      <span
+                        class="text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded"
+                      >
+                        비활성 {{ myPageStore.adminSummary.inactiveUsers || 0 }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    class="summary-item justify-center"
+                    @click="goToProjects()"
+                    style="cursor: pointer"
+                  >
+                    <span class="summary-label">진행중 프로젝트</span>
+                    <span class="summary-value text-violet-600"
+                      >{{
+                        myPageStore.adminSummary.activeProjects || 0
+                      }}개</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
     </div>
   </div>
 
+  <!-- 정보 수정 모달 -->
   <el-dialog
     v-model="editModalVisible"
     title="내 정보 수정"
@@ -283,24 +331,78 @@
             show-password
           />
         </el-form-item>
-
+        <!-- 새 비밀번호 -->
         <el-form-item label="새 비밀번호" prop="newPassword">
-          <el-input
-            v-model="editForm.newPassword"
-            type="password"
-            placeholder="변경할 비밀번호 (선택)"
-            show-password
-            @input="onNewPasswordInput"
-          />
+          <div class="relative w-full">
+            <el-input
+              v-model="editForm.newPassword"
+              :type="showPassword.new ? 'text' : 'password'"
+              placeholder="변경할 비밀번호 (선택, 6자 이상)"
+              @input="onNewPasswordInput"
+            >
+              <template #suffix>
+                <el-icon
+                  class="cursor-pointer"
+                  @click="showPassword.new = !showPassword.new"
+                >
+                  <View v-if="!showPassword.new" />
+                  <Hide v-else />
+                </el-icon>
+              </template>
+            </el-input>
+          </div>
+
+          <!-- 비밀번호 강도 -->
+          <div v-if="editForm.newPassword" style="margin-top: 6px; width: 100%">
+            <div style="display: flex; gap: 4px; margin-bottom: 4px">
+              <div
+                v-for="n in 4"
+                :key="n"
+                :style="{
+                  flex: 1,
+                  height: '4px',
+                  borderRadius: '4px',
+                  transition: 'background 0.2s',
+                  background:
+                    passwordStrength >= n ? strengthColorHex : '#e2e8f0',
+                }"
+              />
+            </div>
+            <p :style="{ fontSize: '12px', color: strengthTextHex }">
+              {{ strengthLabel }}
+            </p>
+          </div>
         </el-form-item>
 
+        <!-- 비밀번호 확인 -->
         <el-form-item label="비밀번호 확인" prop="confirmPassword">
           <el-input
             v-model="editForm.confirmPassword"
-            type="password"
+            :type="showPassword.confirm ? 'text' : 'password'"
             placeholder="새 비밀번호 재입력"
-            show-password
-          />
+            :class="confirmInputClass"
+            @input="onNewPasswordInput"
+          >
+            <template #suffix>
+              <el-icon
+                class="cursor-pointer"
+                @click="showPassword.confirm = !showPassword.confirm"
+              >
+                <View v-if="!showPassword.confirm" />
+                <Hide v-else />
+              </el-icon>
+            </template>
+          </el-input>
+          <!-- 일치 여부 메시지 -->
+          <p
+            v-if="
+              editForm.confirmPassword &&
+              editForm.newPassword === editForm.confirmPassword
+            "
+            style="font-size: 12px; margin-top: 4px; color: #10b981"
+          >
+            비밀번호가 일치합니다.
+          </p>
         </el-form-item>
       </div>
     </el-form>
@@ -327,47 +429,38 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from "vue";
+import { ref, reactive, onMounted, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth.js";
 import { useEmpStore } from "../stores/empSJW.js";
+import { userMypageStore } from "../stores/myPageSJW.js";
 import api from "../utils/api.js";
+import { View, Hide } from "@element-plus/icons-vue";
 
 const router = useRouter();
 const sidebarOpen = ref(false);
 const authStore = useAuthStore();
 const empStore = useEmpStore();
-
+const myPageStore = userMypageStore();
 const isLoadingTasks = ref(false);
-
-// ── 작업 요약 상태 ──
-const taskSummary = reactive({
-  inProgress: 0,
-  delayed: 0,
-  pendingPR: 0,
-  done: 0,
-});
-
-// ── 업무 목록 ──
-const taskList = ref([]);
 
 // ── D-Day 로직 ──
 const formatDDay = (dDay) => {
   if (dDay === undefined || dDay === null) return "기한 없음";
   if (dDay === 0) return "D-Day";
   if (dDay > 0) return `D+${dDay}`;
-  return `D${dDay}`; // 음수 표기 (지연)
+  return `D${dDay}`;
 };
 
 const dDayClass = (dDay) => {
   if (dDay === undefined || dDay === null) return "text-gray-400";
   if (dDay === 0) return "text-rose-500 bg-rose-50";
-  if (dDay < 0) return "text-rose-600 bg-rose-100"; // 지연됨
-  if (dDay <= 3) return "text-orange-500 bg-orange-50"; // 임박
-  return "text-blue-600 bg-blue-50"; // 여유
+  if (dDay < 0) return "text-rose-600 bg-rose-100";
+  if (dDay <= 3) return "text-orange-500 bg-orange-50";
+  return "text-blue-600 bg-blue-50";
 };
 
 // ── 우선순위 로직 ──
@@ -384,12 +477,11 @@ const priorityClass = (priority) => {
   return "text-gray-500 bg-gray-50 border border-gray-200";
 };
 
-// ── 상태 컬러 로직 (isFinal 기준) ──
-const statusDotClass = (isFinal) => {
-  return isFinal === "O1" ? "bg-emerald-500" : "bg-blue-500";
-};
+// ── 상태 dot 색상 ──
+const statusDotClass = (isFinal) =>
+  isFinal === "O1" ? "bg-emerald-500" : "bg-blue-500";
 
-// ── 💡 상세 페이지 이동 로직 (상위/하위 프로젝트 구분) ──
+// ── 업무 상세 이동 ──
 const goToTask = (parentProjectId, projectId, taskId) => {
   if (!projectId || !taskId) {
     Swal.fire({
@@ -400,30 +492,47 @@ const goToTask = (parentProjectId, projectId, taskId) => {
     });
     return;
   }
-
   if (parentProjectId) {
-    // 💡 하위 프로젝트인 경우 (예: /project/1/sub/5/task/1024)
     router.push({
       name: "taskDetail",
-      params: {
-        projectId: parentProjectId,
-        subProjectId: projectId,
-        taskId: taskId,
-      },
+      params: { projectId: parentProjectId, subProjectId: projectId, taskId },
     });
   } else {
-    // 💡 최상위 프로젝트인 경우 (예: /project/1/task/1028)
-    router.push({
-      name: "taskDetail",
-      params: {
-        projectId: projectId,
-        taskId: taskId,
-      },
-    });
+    router.push({ name: "taskDetail", params: { projectId, taskId } });
   }
 };
+const goToUsers = () => {
+  router.push({
+    name: "emp",
+  });
+};
+const goToProjects = () => {
+  router.push({ name: "projectListAll" });
+};
+// ── 화면 로드 ──
+onMounted(async () => {
+  try {
+    if (authStore.user?.userId) {
+      await empStore.getUser(authStore.user.userId);
+    }
 
-// ── 정보 수정 모달 상태 ──
+    if (authStore.isAdmin) {
+      // ✅ 관리자용
+      myPageStore.getAdminSummary();
+    } else {
+      // ✅ 일반 사용자용
+      isLoadingTasks.value = true;
+      myPageStore.getTaskList(authStore.user.userId);
+      myPageStore.getTaskSummary(authStore.user.userId);
+    }
+  } catch (err) {
+    console.error("마이페이지 데이터 로드 에러:", err);
+  } finally {
+    isLoadingTasks.value = false;
+  }
+});
+
+// ── 정보 수정 모달 ──
 const editModalVisible = ref(false);
 const submitting = ref(false);
 const formRef = ref(null);
@@ -444,7 +553,40 @@ const validateConfirmPassword = (rule, value, callback) => {
     callback();
   }
 };
+// showPassword 추가
+const showPassword = reactive({ new: false, confirm: false });
+// ── 비밀번호 강도 ──
+const passwordStrength = computed(() => {
+  const p = editForm.newPassword;
+  let score = 0;
+  if (p.length >= 6) score++;
+  if (/[A-Z]/.test(p)) score++;
+  if (/[0-9]/.test(p)) score++;
+  if (/[^A-Za-z0-9]/.test(p)) score++;
+  return score;
+});
 
+const strengthColorHex = computed(
+  () =>
+    ["#f87171", "#fb923c", "#facc15", "#34d399"][passwordStrength.value - 1] ||
+    "#e2e8f0",
+);
+const strengthTextHex = computed(
+  () =>
+    ["#ef4444", "#f97316", "#eab308", "#10b981"][passwordStrength.value - 1] ||
+    "",
+);
+const strengthLabel = computed(
+  () => ["매우 약함", "약함", "보통", "강함"][passwordStrength.value - 1] || "",
+);
+
+// 비밀번호 확인 input 테두리 색상
+const confirmInputClass = computed(() => {
+  if (!editForm.confirmPassword) return "";
+  return editForm.newPassword === editForm.confirmPassword
+    ? "confirm-match"
+    : "confirm-mismatch";
+});
 const editRules = reactive({
   email: [
     { required: true, message: "이메일을 입력하세요", trigger: "blur" },
@@ -461,42 +603,71 @@ const editRules = reactive({
       trigger: "blur",
     },
   ],
+  newPassword: [
+    {
+      validator: (rule, value, callback) => {
+        if (value && value.length < 6) {
+          callback(new Error("비밀번호는 6자 이상이어야 합니다."));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur",
+    },
+  ],
+  confirmPassword: [
+    {
+      validator: (rule, value, callback) => {
+        // 새 비밀번호를 입력했을 때만 일치 확인
+        if (editForm.newPassword && value !== editForm.newPassword) {
+          callback(new Error("비밀번호가 일치하지 않습니다."));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur",
+    },
+  ],
   confirmPassword: [{ validator: validateConfirmPassword, trigger: "blur" }],
 });
 
 const onNewPasswordInput = () => {
-  if (editForm.confirmPassword) {
-    formRef.value?.validateField("confirmPassword");
-  }
+  if (editForm.confirmPassword) formRef.value?.validateField("confirmPassword");
 };
 
 const handleEditInfo = () => {
   Object.assign(editForm, defaultEditForm());
   editModalVisible.value = true;
-  nextTick(() => {
-    formRef.value?.clearValidate();
-  });
+  nextTick(() => formRef.value?.clearValidate());
 };
 
 const handleEditModalClose = () => {
   editModalVisible.value = false;
 };
 
-// ── 정보 수정 제출 로직 ──
 const handleSubmitEdit = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
   if (!valid) return;
-
+  // 새 비밀번호 입력했는데 6자 미만이면 차단
+  if (editForm.newPassword && editForm.newPassword.length < 6) {
+    Swal.fire({
+      icon: "warning",
+      title: "비밀번호는 6자 이상이어야 합니다.",
+      confirmButtonColor: "#2563eb",
+    });
+    return;
+  }
   submitting.value = true;
   try {
-    await api.put(`/api/mypage/edit/${authStore.user.userId}`, {
+    const res = await api.put(`/mypage/modify/${authStore.user.userId}`, {
       email: editForm.email,
       currentPassword: editForm.currentPassword,
       newPassword: editForm.newPassword || null,
     });
-
-    if (empStore.user) {
-      empStore.user.email = editForm.email;
+    if (res.data) {
+      if (empStore.user) empStore.user.email = editForm.email;
+    } else {
+      throw new Exception();
     }
 
     editModalVisible.value = false;
@@ -504,7 +675,7 @@ const handleSubmitEdit = async () => {
       toast: true,
       position: "top-end",
       icon: "success",
-      title: "내 정보가 안전하게 수정되었습니다.",
+      title: "내 정보가 수정되었습니다.",
       showConfirmButton: false,
       timer: 2000,
     });
@@ -522,83 +693,6 @@ const handleSubmitEdit = async () => {
     submitting.value = false;
   }
 };
-
-// ── 화면 로드 시 실행 ──
-onMounted(async () => {
-  try {
-    if (authStore.user?.userId) {
-      await empStore.getUser(authStore.user.userId);
-    }
-
-    isLoadingTasks.value = true;
-
-    //  💡 실제 백엔드 연동 시 주석 해제
-    const [summaryRes, listRes] = await Promise.all([
-      api.get(`/mypage/taskSummary/${authStore.user.userId}`),
-      api.get(`/mypage/taskList/${authStore.user.userId}`),
-    ]);
-    Object.assign(taskSummary, summaryRes.data);
-    taskList.value = listRes.data;
-
-    // // --- 더미 데이터 영역 (화면 테스트용) ---
-    // taskSummary.inProgress = 5;
-    // taskSummary.delayed = 1;
-    // taskSummary.pendingPR = 2; // 마감 임박으로 사용
-    // taskSummary.done = 18;
-
-    // taskList.value = [
-    //   {
-    //     taskId: 1024,
-    //     projectId: 1,
-    //     title: "메인 대시보드 UI 퍼블리싱",
-    //     dDay: -2,
-    //     priority: "긴급",
-    //     typeName: "프론트엔드",
-    //     statusName: "이슈 수정 중",
-    //     isFinal: "O2",
-    //     progressRate: 40,
-    //   },
-    //   {
-    //     taskId: 1028,
-    //     projectId: 1,
-    //     title: "로그인 시큐리티 필터 버그 픽스",
-    //     dDay: 0,
-    //     priority: "상",
-    //     typeName: "버그 픽스",
-    //     statusName: "코드 리뷰 중",
-    //     isFinal: "O2",
-    //     progressRate: 85,
-    //   },
-    //   {
-    //     taskId: 1033,
-    //     projectId: 2,
-    //     title: "AWS 배포 파이프라인 구축",
-    //     dDay: 2,
-    //     priority: "중",
-    //     typeName: "데브옵스",
-    //     statusName: "인프라 세팅",
-    //     isFinal: "O2",
-    //     progressRate: 20,
-    //   },
-    //   {
-    //     taskId: 1041,
-    //     projectId: 3,
-    //     title: "마이페이지 비밀번호 암호화 연동",
-    //     dDay: null,
-    //     priority: "하",
-    //     typeName: "백엔드",
-    //     statusName: "개발 중",
-    //     isFinal: "O2",
-    //     progressRate: 50,
-    //   },
-    // ];
-    // ------------------------------------------
-  } catch (err) {
-    console.error("마이페이지 데이터 로드 에러:", err);
-  } finally {
-    isLoadingTasks.value = false;
-  }
-});
 </script>
 
 <style scoped>
@@ -628,7 +722,6 @@ onMounted(async () => {
   justify-content: flex-end;
   margin-bottom: 16px;
 }
-
 .avatar-wrap {
   display: flex;
   justify-content: center;
@@ -651,7 +744,6 @@ onMounted(async () => {
   height: 70px;
   margin-top: 10px;
 }
-
 .profile-info {
   display: flex;
   flex-direction: column;
@@ -705,6 +797,9 @@ onMounted(async () => {
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
+.summary-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
 .summary-item {
   background: #f8fafc;
   border: 1px solid #f1f5f9;
@@ -745,31 +840,23 @@ onMounted(async () => {
   flex-direction: column;
   gap: 4px;
   max-height: 380px;
-
-  /* 💡 세로 스크롤은 유지하고, 가로 스크롤은 강제로 숨깁니다! */
   overflow-y: auto;
   overflow-x: hidden;
-
   padding-right: 4px;
 }
-/* 💡 혹시라도 내부 요소가 카드를 뚫고 나가지 않도록 방어하는 CSS 추가 */
 .task-row {
-  /* 내부 요소들이 지정된 너비를 넘어가지 못하게 막습니다 */
   min-width: 0;
 }
-
-/* 💡 제목이 길어지면 줄바꿈하지 않고 말줄임표(...) 처리 (이미 HTML에 truncate 클래스가 있지만 확실히 보장하기 위해) */
 .task-name {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  min-width: 0; /* flex 자식 요소가 부모 밖으로 밀려나지 않게 하는 마법의 속성 */
+  min-width: 0;
 }
-/* ── 커스텀 스크롤바 (가로 스크롤 방지를 위해 height도 명시) ── */
 .task-list::-webkit-scrollbar {
   width: 6px;
-  height: 0px; /* 💡 가로 스크롤바 자체의 두께를 0으로 만들어 완전히 숨김 */
+  height: 0px;
 }
 .task-list::-webkit-scrollbar-track {
   background: #f1f5f9;
@@ -782,7 +869,8 @@ onMounted(async () => {
 .task-list::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-/* ── 모달 & 공통 요소 ── */
+
+/* ── 모달 ── */
 :deep(.el-dialog__title) {
   font-weight: 700;
   font-size: 16px;
@@ -795,5 +883,11 @@ onMounted(async () => {
 }
 :global(.swal2-container) {
   z-index: 9999 !important;
+}
+:deep(.confirm-match .el-input__wrapper) {
+  box-shadow: 0 0 0 1px #10b981 inset !important;
+}
+:deep(.confirm-mismatch .el-input__wrapper) {
+  box-shadow: 0 0 0 1px #ef4444 inset !important;
 }
 </style>
