@@ -192,9 +192,11 @@
                mt.meeting_log_id,
                mt.task_id,
                t.title,
-               t.content
+               t.content,
+               ts.status_name
         FROM meeting_tasks mt
-        JOIN tasks t ON mt.task_id = t.task_id
+        LEFT JOIN tasks t ON mt.task_id = t.task_id
+        LEFT JOIN task_statuses ts ON t.task_status_id = ts.task_status_id
         WHERE mt.meeting_log_id = #{id}
     </select>
 <!--    연결된 업무 연결 해제-->
@@ -225,4 +227,5 @@
         attachment_group_id = #{attachmentGroupId}
         WHERE meeting_log_id = #{meetingLogId}
     </update>
+
 </mapper>

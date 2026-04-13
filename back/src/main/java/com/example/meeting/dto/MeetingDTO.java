@@ -63,6 +63,7 @@ public class MeetingDTO { // 회의록
 //    추천 업무 등록시(빈 회의록 생성 후 번호로 추천 업무 생성 후 추후 업데이트 하는 방식)
     private Integer meetingtaskId;
     private Integer taskId;
+    private String statusName;
 
 //    페이징
     private Integer startNum = 1;
