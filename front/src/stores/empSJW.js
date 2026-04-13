@@ -25,7 +25,7 @@ export const useEmpStore = defineStore("emp", {
       return response.data;
     },
     async chageStatus(id) {
-      const response = await admin.get(`/emp/${id}/status`);
+      const response = await admin.put(`/emp/${id}/status`);
       return response.data;
     },
     async registerEmp(data) {

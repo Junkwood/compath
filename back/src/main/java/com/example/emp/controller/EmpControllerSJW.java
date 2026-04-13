@@ -83,5 +83,13 @@ public class EmpControllerSJW {
     public EmpVOSJW getByIdForMyPage(@PathVariable Integer id) {
         return empService.getByIdForMyPage(id);
     }
+    @PutMapping("/api/mypage/modify/{id}")
+    public Boolean updatePasswordAndEmailById(@RequestBody EmpDTOSJW emp,@PathVariable Integer id) {
+        return  empService.modifyPasswordById(emp,id);
+    }
+    @GetMapping("/api/mypage/adminSummary")
+    public EmpDTOSJW getAdminSummary(){
+        return empService.getAdminSummary();
+    }
 
 }
