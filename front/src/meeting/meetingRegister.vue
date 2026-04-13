@@ -99,19 +99,31 @@
                     </div>
                   </div>
 
-                  <div>
-                    <el-form-item label="내용" prop="content">
-                      <el-input
-                        :rows="15"
-                        class="input w-full"
-                        v-model="form.content"
-                        type="textarea"
-                      />
-                    </el-form-item>
+                  <div class="grid grid-cols-10 gap-4">
+                    <div :class="isAiSummary ? 'col-span-6' : 'col-span-10'">
+                      <el-form-item label="내용" prop="content">
+                        <el-input
+                          :rows="15"
+                          class="input w-full"
+                          v-model="form.content"
+                          type="textarea"
+                        />
+                      </el-form-item>
+                    </div>
+                    <div v-if="isAiSummary" class="col-span-4">
+                      <el-form-item label="AI 요약 내용" prop="content">
+                        <el-input
+                          :rows="15"
+                          class="input w-full"
+                          v-model="form.aiSummary"
+                          type="textarea"
+                        />
+                      </el-form-item>
+                    </div>
                   </div>
                   <div class="mb-6">
                     <el-upload
-                      v-model:filet="file"
+                      v-model:file-list="fileList"
                       action="#"
                       :auto-upload="false"
                       class="w-full"
@@ -122,7 +134,6 @@
                         <div
                           class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 cursor-pointer"
                         >
-                          <i class="el-icon-paperclip text-gray-500"></i>
                           <span class="text-sm font-medium text-gray-700"
                             >파일 선택</span
                           >
@@ -136,6 +147,7 @@
                       </template>
                     </el-upload>
                   </div>
+
                   <div v-if="!isModified" class="notification-area">
                     <el-button
                       type="button"
@@ -187,7 +199,7 @@
             </div>
             <!-- 우측 카드 묶음 -->
             <div class="side-col">
-              <!-- 소요시간 -->
+              <!-- 업무연결 -->
               <div class="card">
                 <div class="card-header">
                   <span class="card-title">업무연결</span>
@@ -201,34 +213,78 @@
                   </div>
                 </div>
               </div>
-              <div class="card">
-                <div class="card-header">
-                  <span class="card-title">음성파일로 내용작성</span>
-                </div>
-                <div>
-                  <el-upload
-                    class="upload-demo"
-                    drag
-                    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                    multiple
-                  >
-                    <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                    <div class="el-upload__text">
-                      Drop file here or <em>click to upload</em>
-                    </div>
-                    <template #tip class="flex items-center">
-                      <div class="el-upload__tip">
-                        음성파일은 최대 500kb까지 가능합니다.
+              <div>
+                <div class="card mb-2">
+                  <div class="card-header">
+                    <span class="card-title">음성파일로 내용작성</span>
+                  </div>
+                  <div>
+                    <el-upload
+                      class="upload-demo"
+                      drag
+                      action="#"
+                      v-model:voice-list="vocieList"
+                      :auto-upload="false"
+                      multiple
+                      :on-change="voiceChange"
+                    >
+                      <el-icon class="el-icon--upload"
+                        ><upload-filled
+                      /></el-icon>
+                      <div class="el-upload__text">
+                        Drop file here or <em>click to upload</em>
                       </div>
-                    </template>
-                  </el-upload>
+                      <template #tip class="flex items-center">
+                        <div class="el-upload__tip">
+                          음성파일은 최대 500kb까지 가능합니다.
+                        </div>
+                      </template>
+                    </el-upload>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="news-btn">
+                    <button
+                      type="button"
+                      class="btn-voice"
+                      @click="getVoiceByGemmini()"
+                    >
+                      음성파일로 내용 작성
+                    </button>
+                  </div>
                 </div>
               </div>
+
               <div class="card">
                 <div class="news-btn">
-                  <button type="button" class="btn-sub">
+                  <button
+                    type="button"
+                    class="btn-sub"
+                    @click="getContentByGemmini(form)"
+                  >
                     AI 요약 및 업무 추천
                   </button>
+                </div>
+              </div>
+              <!-- 추천업무 -->
+              <div v-if="todoList.length > 0" class="card mb-5">
+                <div class="card-header">
+                  <span class="card-title">추천업무</span>
+                  <span class="member-count">{{ todoList.length }}건</span>
+                </div>
+
+                <div class="member-body">
+                  <template v-if="todoList.length > 0">
+                    <div
+                      v-for="file in todoList"
+                      :key="file"
+                      class="member-item"
+                    >
+                      <div class="member-info">
+                        <span class="member-name">{{ file.task }}</span>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </div>
             </div>
@@ -279,12 +335,16 @@ const form = reactive({
   title: "",
   content: "",
   meetingRoom: "",
+  aiSummary: "",
 }); // 작성내용 담을 곳
 
 let isModified = ref(false); // 수정, 생성 구분
 let modalOpen = ref(false); // 알림대상 모달창
 const memberList = ref([]); // 구성원 테이블
 const alarmList = ref([]); // 알림대상 추가된 회원 목록
+const isAiSummary = ref(false);
+const todoList = ref([]); // 업무 추천 목록
+const isVoice = ref(false);
 
 // 공지사항 생성 버튼
 const submitForm = async (formEl) => {
@@ -301,6 +361,8 @@ const submitForm = async (formEl) => {
           meetingDate: form.date,
           place: form.meetingRoom,
           createdBy: userInfo.value.userId,
+          aiSummary: isVoice.value ? null : form.aiSummary,
+          sttText: isVoice.value ? form.aiSummary : null,
         };
 
         const formData = new FormData();
@@ -376,8 +438,27 @@ const submitForm = async (formEl) => {
           editorUserId: userInfo.value.userId,
           meetingDate: form.meetingDate,
           place: form.meetingRoom,
+          attachmentGroupId: form.attachmentGroupId,
         };
-        await meetingStore.modifyMeeting(obj);
+
+        const formData = new FormData();
+        formData.append(
+          "obj",
+          new Blob([JSON.stringify(obj)], {
+            type: "application/json",
+          }),
+        );
+
+        if (fileList.value && fileList.value.length > 0) {
+          fileList.value.forEach((file) => {
+            if (file.isExisting == null) {
+              console.log(file);
+              formData.append("files", file.raw);
+            }
+          });
+        }
+
+        await meetingStore.modifyMeeting(formData);
       }
 
       router.push({
@@ -407,6 +488,83 @@ const handleClose = (tag) => {
   alarmList.value.splice(alarmList.value.indexOf(tag), 1);
 };
 
+// 회의록 내용 요약 받기
+const getContentByGemmini = async (val) => {
+  const formData = new FormData();
+  if (!isVoice.value) {
+    console.log(val);
+    if (val.content == "" || val.content == " ") {
+      const result = await Swal.fire({
+        title: "내용을 작성해주세요",
+        text: "",
+        icon: "warning",
+        confirmButtonText: "확인",
+        reverseButtons: true,
+      });
+
+      return;
+    }
+
+    let prompt = val.content;
+
+    formData.append("prompt", prompt);
+  } else {
+    if (voiceList.value == 0) {
+      const result = await Swal.fire({
+        title: "파일을 선택해주세요",
+        text: "",
+        icon: "warning",
+        confirmButtonText: "확인",
+        reverseButtons: true,
+      });
+
+      return;
+    }
+
+    voiceList.value.forEach((vo) => {
+      formData.append("files", vo.raw);
+    });
+  }
+
+  Swal.fire({
+    title: "잠시만 기다려주세요...",
+    html: "내용 요약 및 추천 업무를 생성 중입니다.",
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    showCancelButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+
+  await meetingStore.getContentByGemmini(formData);
+  form.aiSummary = meetingStore.geminiContent;
+  const todoRegex = /\[\s*{.*}\s*\]/s;
+
+  // 2. 목록 추출 (match)
+  const match = form.aiSummary.match(todoRegex);
+  if (match) {
+    console.log(match);
+    const jsonStr = match[0].replace(/'/g, '"');
+    console.log(jsonStr);
+    todoList.value = JSON.parse(jsonStr);
+  }
+
+  form.aiSummary = form.aiSummary.replace(
+    todoRegex,
+    "(추천 업무는 우측 목록에서 확인 가능합니다)",
+  );
+  isAiSummary.value = true;
+
+  Swal.close();
+};
+
+const getVoiceByGemmini = async () => {
+  isVoice.value = true;
+
+  getContentByGemmini();
+};
+
 onBeforeMount(async () => {
   userInfo.value = authStore.user; // 작성자 정보 받아오기
 
@@ -428,12 +586,26 @@ onBeforeMount(async () => {
     let meetingInfo = meetingStore.meetingDetail;
 
     // 폼에 대입
-    form.meetingType = meetingInfo.meetingTypeCode;
-    form.author = meetingInfo.userName;
-    form.date = meetingInfo.meetingDate;
-    form.title = meetingInfo.title;
-    form.content = meetingInfo.content;
-    form.meetingRoom = meetingInfo.place;
+    form.meetingType = meetingInfo.meetingList.meetingTypeCode;
+    form.author = meetingInfo.meetingList.userName;
+    form.date = meetingInfo.meetingList.meetingDate;
+    form.title = meetingInfo.meetingList.title;
+    form.content = meetingInfo.meetingList.content;
+    form.meetingRoom = meetingInfo.meetingList.place;
+    form.attachmentGroupId = meetingInfo.meetingList.attachmentGroupId;
+    if (meetingInfo.attachmentList) {
+      meetingInfo.attachmentList.forEach((att) => {
+        let obj = {
+          name: att.fileName,
+          uid: att.attachmentId,
+          url: att.filePath,
+          status: "success",
+          isExisting: true,
+        };
+        fileList.value.push(obj);
+      });
+    }
+
     Swal.close();
   } else {
     form.author = userInfo.value.name;
@@ -506,12 +678,23 @@ const resetForm = (formEl) => {
   formEl.resetFields();
 };
 
-// 첨부파일api
-const file = ref([]);
+// 첨부파일api(좌측)
 const fileList = ref([]);
 
 const handleChange = (uploadFile, uploadFiles) => {
-  fileList.value = uploadFiles;
+  console.log(uploadFile, uploadFiles);
+};
+
+// 첨부파일 삭제
+const removeFile = (file) => {
+  fileList.value = fileList.value.filter((val) => val != file);
+};
+
+// 첨부파일api(우측)
+const voiceList = ref([]);
+
+const voiceChange = (uploadFile, uploadFiles) => {
+  voiceList.value.push(uploadFile);
 };
 </script>
 
@@ -815,6 +998,26 @@ const handleChange = (uploadFile, uploadFiles) => {
 .btn-sub:hover {
   background: #6d28d9;
 }
+.btn-voice {
+  width: 100%;
+  flex: 1;
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #1e3a5f;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
+}
+.btn-voice:hover {
+  background: #162d4a;
+  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
+  transform: translateY(-1px);
+}
 :deep(.input) {
   border-radius: 10px !important;
   border: 1px solid #e2e8f0 !important;
@@ -842,5 +1045,106 @@ const handleChange = (uploadFile, uploadFiles) => {
 }
 :deep(textarea.input) {
   border-radius: 10px !important;
+}
+
+/* ────────────────────────────────────────────
+   프로젝트 구성원
+──────────────────────────────────────────── */
+.member-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* padding: 10px 12px; */
+}
+
+.member-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.member-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.member-name {
+  font-size: 13px;
+  color: #000000;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.member-role-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.role-pm {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.role-pl {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+
+.role-dev {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.role-qa {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.role-mgr {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
+.member-empty-row {
+  padding: 18px 12px;
+  text-align: center;
+  border: 1px dashed #dbe2ea;
+  border-radius: 12px;
+  background: #fafcff;
+}
+
+.member-empty-text {
+  font-size: 12px;
+  color: #94a3b8;
 }
 </style>

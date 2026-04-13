@@ -28,8 +28,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     private String baseDir;
 
     @Override
-    public int registerAttachments(List<MultipartFile> files) throws IOException {
-        int sharedGroupId = 0;
+    public int registerAttachments(List<MultipartFile> files, Integer id) throws IOException {
+        int sharedGroupId = id;
 
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
