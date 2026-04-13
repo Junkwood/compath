@@ -57,6 +57,16 @@
         <result property="isFinal" column="IS_FINAL"/>
     </resultMap>
 
+    <resultMap id="timeEntryMap" type="map">
+        <result property="timeEntryId" column="TIME_ENTRY_ID"/>
+        <result property="userId"      column="USER_ID"/>
+        <result property="userName"    column="USER_NAME"/>
+        <result property="workDate"    column="WORK_DATE"/>
+        <result property="hours"       column="HOURS"/>
+        <result property="taskDesc"    column="TASK_DESC"/>
+        <result property="createdAt"   column="CREATED_AT"/>
+    </resultMap>
+
     <!-- ───────────── 업무 등록 ───────────── -->
     <insert id="insert" parameterType="TaskReqDtoJJW">
         <selectKey keyProperty="taskId" resultType="int" order="BEFORE">
@@ -112,7 +122,7 @@
         priority_code  = #{priorityCode},
         assignee_user_id = #{assigneeUserId},
         progress_rate  = #{progressRate},
-<!--        actual_hours   = #{actualHours},-->
+        actual_hours   = #{actualHours},
         start_date     = #{startDate},
         due_date       = #{dueDate},
         updated_at     = SYSDATE,
@@ -146,7 +156,8 @@
         #{userList,     mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=userMap},
         #{taskTypeList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=typeMap},
         #{milestoneList,mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=milestoneMap},
-        #{statusList,   mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=statusMap}
+        #{statusList,   mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=statusMap},
+        #{timeEntryList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=timeEntryMap}
         )}
     </select>
 

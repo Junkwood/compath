@@ -28,6 +28,10 @@ public class TimeEntryReportDto {
     private Integer taskTypeId;
     private Integer projectId;
     private String  projectName;
+    private Integer progressRate;
+    private Date    startDate;
+    private Date    dueDate;
+
 
     // 담당자
     private Integer userId;
@@ -41,5 +45,9 @@ public class TimeEntryReportDto {
     private Date    firstWorkDate;
     private Date    lastWorkDate;
     private Integer entryCount;
+
+    private String parentProjectName;  // 상위 프로젝트명
+    private String subProjectName;     // 하위 프로젝트명
+
 
 }

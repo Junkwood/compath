@@ -115,6 +115,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
         result.put("taskTypeList", params.get("taskTypeList"));
         result.put("milestoneList", params.get("milestoneList"));
         result.put("statusList", params.get("statusList"));
+        result.put("timeEntryList", params.get("timeEntryList"));
 
         return result;
 
