@@ -23,11 +23,11 @@
             p.editor_user_id,
             c3.code_name AS use_milestone
         FROM projects p
-        JOIN common_code c1 ON p.status = c1.code_value
-        JOIN common_code c2 ON p.is_public = c2.code_value
-        JOIN common_code c3 ON p.use_milestone = c3.code_value
-        JOIN users u1 ON p.pm_user_id = u1.user_id
-        JOIN users u2 ON p.pl_user_id = u2.user_id
+        LEFT OUTER JOIN common_code c1 ON p.status = c1.code_value
+        LEFT OUTER JOIN common_code c2 ON p.is_public = c2.code_value
+        LEFT OUTER JOIN common_code c3 ON p.use_milestone = c3.code_value
+        LEFT OUTER JOIN users u1 ON p.pm_user_id = u1.user_id
+        LEFT OUTER JOIN users u2 ON p.pl_user_id = u2.user_id
         WHERE project_id=#{projectId}
     </select>
 
