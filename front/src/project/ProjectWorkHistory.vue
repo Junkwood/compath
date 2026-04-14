@@ -22,7 +22,6 @@
             <span>{{ projectInfo.projectName }}</span>
             <span class="bc-sep">›</span>
             <span class="bc-cur">작업내역</span>
-
           </div>
         </div>
 
@@ -30,10 +29,9 @@
           <!-- 페이지 타이틀 -->
           <div class="activity-title-row">
             <div class="activity-title-left">
-              <h2 class="page-title">작업내역</h2>
               <div class="activity-sub-row">
                 <span class="activity-project-name">
-                  【 {{ projectInfo.projectName }} 】
+                   {{ projectInfo.projectName }} 작업내역
                 </span>
                 <span class="activity-project-period">
                   {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
@@ -44,9 +42,6 @@
 
           <!-- 상단 필터 카드 -->
           <section class="panel activity-filter-card">
-            <div class="panel-head">
-              <h3 class="panel-title">필터</h3>
-            </div>
 
             <div class="panel-body filter-card-body">
               <div class="filter-row">
