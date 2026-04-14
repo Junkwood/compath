@@ -17,7 +17,7 @@
         JOIN groups g ON gm.group_id = g.group_id AND g.is_active='O1'
         JOIN roles r ON gm.role_id = r.role_id
         JOIN users u ON gm.user_id = u.user_id
-        WHERE g.group_type = 'C2' AND g.is_active = 'O1' AND u.is_active = 'O1'
+        WHERE g.group_type = 'C2' AND g.is_active = 'O1' AND u.is_active = 'O1' AND u.user_type='M2'
         ORDER BY gm.group_id
     </select>
     <select id="getAllForGroup" >
@@ -28,8 +28,9 @@
         g.group_type,
         g.group_id
         FROM users u
-        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y' AND u.is_active='O1' AND u.user_type='M2'
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y'
         LEFT JOIN groups g ON gm.group_id = g.group_id AND g.is_active='O1'
+        WHERE u.is_active='O1' AND u.user_type='M2'
         ORDER BY u.user_id
     </select>
 

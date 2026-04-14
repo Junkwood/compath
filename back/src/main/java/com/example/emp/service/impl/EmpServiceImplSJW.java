@@ -58,6 +58,7 @@ public class EmpServiceImplSJW implements EmpServiceSJW {
 
     @Override
     public Integer registerEmp(EmpVOSJW emp) {
+        emp.setGroupId(emp.getPrimaryGroupId());
         emp.setPassword(encoder.encode(emp.getPassword()));
         if (emp.getUserType().equals("ADMIN")) {
             emp.setUserType("M1");
