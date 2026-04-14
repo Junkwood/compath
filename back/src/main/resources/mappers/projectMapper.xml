@@ -48,38 +48,41 @@
         <selectKey keyProperty="projectId" resultType="int" order="BEFORE">
             SELECT project_seq.NEXTVAL FROM dual
         </selectKey>
+
         INSERT INTO PROJECTS (
-            PROJECT_ID,
-            PARENT_PROJECT_ID,
-            PROJECT_NAME,
-            DESCRIPTION,
-            START_DATE,
-            END_DATE,
-            STATUS,
-            IS_PUBLIC,
-            CREATED_AT,
-            UPDATED_AT,
-            CREATED_BY,
-            PM_USER_ID,
-            PL_USER_ID,
-            EDITOR_USER_ID,
-            USE_MILESTONE
+        PROJECT_ID,
+        IDENTIFIER,
+        PARENT_PROJECT_ID,
+        PROJECT_NAME,
+        DESCRIPTION,
+        START_DATE,
+        END_DATE,
+        STATUS,
+        IS_PUBLIC,
+        CREATED_AT,
+        UPDATED_AT,
+        CREATED_BY,
+        PM_USER_ID,
+        PL_USER_ID,
+        EDITOR_USER_ID,
+        USE_MILESTONE
         ) VALUES (
-            #{projectId},
-            NULL,
-            #{projectName},
-            #{description},
-            #{startDate},
-            #{endDate},
-            'F1',
-            #{isPublic},
-            sysdate,
-            NULL,
-            #{createdBy},
-            #{pmUserId},
-            #{plUserId},
-            NULL,
-            #{useMilestone}
+        #{projectId},
+        FN_GEN_PROJECT_IDENTIFIER(),
+        NULL,
+        #{projectName},
+        #{description},
+        #{startDate},
+        #{endDate},
+        'F1',
+        #{isPublic},
+        SYSDATE,
+        NULL,
+        #{createdBy},
+        #{pmUserId},
+        #{plUserId},
+        NULL,
+        #{useMilestone}
         )
     </insert>
 
@@ -118,6 +121,8 @@
         SELECT
         P.PROJECT_ID                         AS projectId,
         P.PROJECT_NAME                       AS projectName,
+        P.IDENTIFIER                         AS identifier,
+        P.DESCRIPTION                        AS description,
         TO_CHAR(P.START_DATE, 'YYYY-MM-DD') AS startDate,
         TO_CHAR(P.END_DATE, 'YYYY-MM-DD')   AS endDate,
         U.USER_NAME                          AS managerName

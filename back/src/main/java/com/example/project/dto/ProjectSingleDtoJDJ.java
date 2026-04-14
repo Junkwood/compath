@@ -15,4 +15,6 @@ public class ProjectSingleDtoJDJ {
     private LocalDate startDate;
     private LocalDate endDate;
     private String managerName;
+    private String identifier;
+    private String description;
 }
