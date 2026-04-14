@@ -1,3 +1,4 @@
+<!-- MainDashboard -->
 <template>
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />

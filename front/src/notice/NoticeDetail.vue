@@ -1,110 +1,113 @@
 <template>
-  <div class="flex min-h-screen overflow-hidden">
+  <div class="dashboard-page flex min-h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <div
-      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
     >
-      <!-- Header -->
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
 
       <main class="grow">
-        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span class="bc-home">홈</span>
+            <span class="bc-sep">›</span>
+            <span> {{ noticeInfo.projectName }}</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur"> 공지사항 상세</span>
+          </div>
+        </div>
+
+        <div class="page-container">
           <el-alert
-            v-if="noticeInfo.isDeleted === 'O1'"
+            v-if="noticeInfo.isDeleted === 'Q1'"
             title="비활성화된 게시글입니다."
             type="warning"
             description="관리자만 열람 가능하며 일반 사용자에게는 노출되지 않습니다."
             show-icon
             :closable="false"
-            class="mb-4"
+            class="top-alert"
           />
 
-          <!-- projectDashboard.vue와 동일한 제목 영역 -->
-          <div class="mb-6 proj-title-row flex justify-between mt-5">
-            <div class="proj-title-left">
-              <h2
-                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
-              >
-                공지사항 상세
-              </h2>
-
-              <div class="proj-name-row">
-                <span class="proj-name"
-                  >【 {{ noticeInfo.projectName }} 】</span
-                >
+          <!-- 상단 프로젝트 정보 -->
+          <div class="pg-row">
+            <div class="pg-left">
+              <div class="proj-meta">
+                <span class="proj-name"> {{ noticeInfo.projectName }}</span>
                 <span class="proj-period">
                   {{ noticeInfo.startDate }} ~ {{ noticeInfo.endDate }}
                 </span>
               </div>
             </div>
+
+            <button @click="goBack" type="button" class="btn-back-top">
+              목록으로
+            </button>
           </div>
 
-          <div
-            class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mb-0 p-6"
-          >
-            <div
-              class="text-xl md:text-2xl text-gray-800 dark:text-gray-100 font-bold mb-8"
-            >
-              <h4>
-                {{ noticeInfo.title
-                }}<span
-                  class="text-base"
-                  v-if="noticeInfo.isPinned == 'B1' ? true : false"
-                  >[긴급🚨]</span
-                >
-              </h4>
-            </div>
-            <div class="grid grid-cols-3 gap-6 mb-8">
-              <div class="flex flex-row gap-10">
-                <label class="block text-base font-semibold mb-1"
-                  >카테고리</label
-                >
-                <span>{{ noticeInfo.roleName }}</span>
-              </div>
-              <div class="flex flex-row gap-10">
-                <label class="block text-base font-semibold mb-1">작성자</label>
-                <span>{{ noticeInfo.userName }}</span>
-              </div>
-              <div class="flex flex-row gap-10">
-                <label class="block text-base font-semibold mb-1">등록일</label>
-                <span>{{ noticeInfo.createdAt }}</span>
-              </div>
-            </div>
+          <!-- 공지 본문 -->
+          <div class="panel notice-panel">
+            <div class="notice-article">
+              <div class="notice-top-row">
+                <div class="notice-badge-wrap">
+                  <span
+                    v-if="noticeInfo.isPinned === 'B1'"
+                    class="notice-badge badge-emergency"
+                  >
+                    긴급
+                  </span>
+                  <span class="notice-badge badge-category">
+                    {{ noticeInfo.roleName || "일반" }}
+                  </span>
+                  <span
+                    v-if="noticeInfo.isDeleted === 'Q1'"
+                    class="notice-badge badge-disabled"
+                  >
+                    비활성
+                  </span>
+                </div>
 
-            <div class="mb-6">
-              <label class="block text-base font-semibold mb-1"
-                >프로젝트 설명</label
-              >
-              <textarea
-                rows="5"
-                class="input w-full"
-                :value="noticeInfo.content"
-                disabled
-              />
-            </div>
+                <div class="notice-action-wrap">
+                  <button
+                    v-if="noticeInfo.isDeleted === 'Q2'"
+                    @click="modifyNotice"
+                    class="btn-edit"
+                  >
+                    수정
+                  </button>
 
-            <div class="flex flex-row justify-between">
-              <div class="flex flex-row gap-10">
-                <button @click="goBack" type="button" class="btn-navy">
-                  ← 목록으로
-                </button>
+                  <button @click="lockNotice" class="btn-lock">
+                    <el-icon><Lock /></el-icon>
+                    <span>{{
+                      noticeInfo.isDeleted === "Q1" ? "비활성 해제" : "비활성"
+                    }}</span>
+                  </button>
+                </div>
               </div>
-              <div class="flex flex-row gap-2">
-                <button
-                  v-if="noticeInfo.isDeleted === 'O2'"
-                  @click="modifyNotice"
-                  class="btn-green"
-                >
-                  수정
-                </button>
-                <button @click="lockNotice" class="btn-red">
-                  <el-icon><Lock /></el-icon
-                  >{{ noticeInfo.isDeleted == "O1" ? "비활성 해제" : "비활성" }}
-                </button>
+
+              <h2 class="notice-title">{{ noticeInfo.title }}</h2>
+
+              <div class="notice-meta">
+                <span class="meta-item">
+                  <span class="meta-label">작성자</span>
+                  <span class="meta-value">{{ noticeInfo.userName || "-" }}</span>
+                </span>
+                <span class="meta-divider"></span>
+                <span class="meta-item">
+                  <span class="meta-label">등록일</span>
+                  <span class="meta-value">{{ noticeInfo.createdAt || "-" }}</span>
+                </span>
+              </div>
+
+              <div class="notice-divider"></div>
+
+              <div class="notice-content-wrap">
+                <div class="notice-content">
+                  {{ noticeInfo.content || "내용이 없습니다." }}
+                </div>
               </div>
             </div>
           </div>
@@ -137,11 +140,7 @@ const memberList = ref([]); // 구성원 테이블
 
 // 목록으로
 const goBack = () => {
-  console.log(projectId);
-  router.push({
-    name: "noticeList",
-    params: { projectId: projectId },
-  });
+  router.back();
 };
 
 // 수정 버튼
@@ -154,8 +153,8 @@ const modifyNotice = () => {
 
 // 비활성 및 해제 버튼
 const lockNotice = async () => {
-  let lock = noticeInfo.value.isDeleted == "O2" ? true : false;
-  let isDeleted = noticeInfo.value.isDeleted == "O2" ? "O1" : "O2";
+  let lock = noticeInfo.value.isDeleted == "Q2" ? true : false;
+  let isDeleted = noticeInfo.value.isDeleted == "Q2" ? "Q1" : "Q2";
 
   if (lock) {
     const result = await Swal.fire({
@@ -199,23 +198,80 @@ watch(
   },
 );
 </script>
+
 <style scoped>
-/* 상단 */
-.proj-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+.dashboard-page {
+  font-family: "Pretendard", sans-serif;
+  background-color: #f3f4f6;
 }
 
-.proj-title-left {
+.sub-header {
+  background: #fff;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bc-home {
+  color: #9ca3af;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
+
+.page-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.top-alert {
+  margin-bottom: -8px;
+}
+
+/* 상단 프로젝트 카드 */
+.pg-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pg-left {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.proj-name-row {
+.pg-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.proj-meta {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -223,127 +279,263 @@ watch(
 }
 
 .proj-name {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.02em;
+  color: #1b5c9c;
 }
 
 .proj-period {
   font-size: 13px;
-  color: #64748b;
-  font-weight: 500;
-}
-/* 인풋 전체 라운드 */
-:deep(.input) {
-  border-radius: 10px !important;
-  border: 1px solid #e2e8f0 !important;
-  background: #f8fafc !important;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-  font-size: 13px;
-}
-:deep(.input:focus) {
-  border-color: #94a3b8 !important;
-  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15) !important;
-  background: #fff !important;
-  outline: none;
-}
-:deep(.input:disabled) {
-  background: #f1f5f9 !important;
-  color: #94a3b8 !important;
-}
-:deep(select.input) {
-  border-radius: 10px !important;
-  appearance: auto !important;
-  -webkit-appearance: auto !important;
-  padding-right: 28px !important;
-}
-:deep(textarea.input) {
-  border-radius: 10px !important;
-}
-:deep(.input:disabled) {
-  background: #f1f5f9 !important;
-  color: #475569 !important; /* #94a3b8 → #475569 으로 변경! */
-}
-/* 목록으로 */
-.btn-navy {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #1e3a5f;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
-}
-.btn-navy:hover {
-  background: #162d4a;
-  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
-  transform: translateY(-1px);
-}
-/* 수정버튼 */
-.btn-green {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #1882c9;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
-  letter-spacing: 0.01em;
-}
-.btn-green:hover {
-  background: #60aee2;
-  box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
-  transform: translateY(-1px);
+  color: #6b7280;
 }
 
-/* 비활성 버튼 */
-.btn-red {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
+/* 상단 돌아가기 버튼 */
+.btn-back-top {
+  height: 40px;
+  padding: 0 18px;
   border-radius: 10px;
+  border: 1px solid #dbe4f0;
+  background: #fff;
+  color: #1b5c9c;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  border: none;
-  background: #dc2626;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
-  letter-spacing: 0.01em;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
-.btn-red:hover {
-  background: #b91c1c;
-  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-  transform: translateY(-1px);
+
+.btn-back-top:hover {
+  background: #eff6ff;
+  border-color: #bfd3f6;
 }
-/* ── 카드 공통 ── */
-.card {
+
+/* 공통 패널 */
+.panel {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
   overflow: hidden;
 }
-.card-header {
-  padding: 14px 20px;
-  border-bottom: 1px solid #f0f0f0;
+
+/* 공지 본문 */
+.notice-panel {
+  overflow: hidden;
+}
+
+.notice-article {
+  padding: 28px 32px 32px;
+}
+
+.notice-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.notice-badge-wrap {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.card-title {
-  font-weight: 600;
+
+.notice-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.badge-emergency {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge-category {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.badge-disabled {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.notice-action-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.notice-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+
+.notice-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.meta-value {
   font-size: 14px;
-  color: #1a1a2e;
+  color: #334155;
+  font-weight: 500;
+}
+
+.meta-divider {
+  width: 1px;
+  height: 14px;
+  background: #d1d5db;
+}
+
+.notice-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 22px 0 24px;
+}
+
+.notice-content-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.content-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.notice-content {
+  min-height: 260px;
+  padding: 0;
+  color: #334155;
+  font-size: 15px;
+  line-height: 1.95;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+/* 버튼 */
+.btn-edit,
+.btn-lock {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(27, 92, 156, 0.22);
+}
+
+.btn-edit:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.btn-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.btn-lock:hover {
+  transform: translateY(-1px);
+  background: #dc2626;
+}
+
+@media (max-width: 768px) {
+  .sub-header {
+    padding: 12px 16px;
+  }
+
+  .page-container {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .pg-row {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pg-title {
+    font-size: 20px;
+  }
+
+  .notice-article {
+    padding: 18px 16px 20px;
+  }
+
+  .notice-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notice-title {
+    font-size: 21px;
+    line-height: 1.5;
+  }
+
+  .notice-meta {
+    gap: 10px;
+  }
+
+  .meta-divider {
+    display: none;
+  }
+
+  .notice-action-wrap {
+    width: 100%;
+  }
+
+  .btn-edit,
+  .btn-lock {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .btn-back-top {
+    width: 100%;
+  }
 }
 </style>

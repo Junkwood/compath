@@ -11,44 +11,43 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin")
 public class RoleControllerSJW {
     private final RoleServiceSJW roleService;
 
-    @GetMapping("/role")
+    @GetMapping("/admin/role")
     public List<RoleDTOSJW> getAllRoles() {
         return roleService.getAll();
     }
-    @GetMapping("/role/active")
+    @GetMapping("/api/role/active")
     public List<RoleDTOSJW> getActiveRoles() {
         return roleService.getActiveRoles();
     }
-    @GetMapping("/role/{roleId}")
+    @GetMapping("/admin/role/{roleId}")
     public RoleDTOSJW getRole(@PathVariable Integer roleId) {
         return roleService.getRole(roleId);
     }
 
-    @GetMapping("/permission")
+    @GetMapping("/admin/permission")
     public List<PermissionDTOSJW> getAllPermission() {
         return roleService.getAllPermission();
     }
 
-    @PostMapping("/role")
+    @PostMapping("/admin/role")
     public RoleDTOSJW registerRole(@RequestBody RoleDTOSJW role) {
         return roleService.registerRole(role);
     }
 
-    @PutMapping("/role/{roleId}")
+    @PutMapping("/admin/role/{roleId}")
     public RoleDTOSJW modifyRole(@RequestBody RoleDTOSJW role,@PathVariable Integer roleId) {
         return roleService.modifyRole(role);
     }
 
-    @PutMapping("/role/{id}/activation")
+    @PutMapping("/admin/role/{id}/activation")
     public Boolean modifyRoleActivation(@RequestBody RoleDTOSJW role,@PathVariable Integer id) {
         return roleService.modifyRoleActivation(role,id);
     }
 
-    @DeleteMapping("/role")
+    @DeleteMapping("/admin/role")
     public Boolean removeRole(Integer roleId) {
         return roleService.removeRole(roleId);
     }

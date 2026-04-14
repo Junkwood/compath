@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class NoticeDtoJDJ {
+    private Integer noticeId;
     private String title;
     private LocalDateTime createdAt;
     private String isPinned;

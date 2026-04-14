@@ -9,23 +9,27 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
       <main class="grow">
-        <div class="px-4 sm:px-6 lg:px-8 py-6 w-full max-w-9xl mx-auto">
-          <!-- 헤더 영역 -->
-          <div class="gantt-header">
-            <!-- 왼쪽: 제목 + 프로젝트 정보 -->
-            <div class="gantt-header-left">
-              <div class="gantt-title-row">
-                <h1 class="gantt-title">간트 차트</h1>
+        <div class="gantt-page">
+          <!-- 서브헤더 -->
+          <div class="sub-header">
+            <div class="sub-header-left">
+              <div class="breadcrumb">
+                <span>홈</span><span class="bc-sep">›</span>
+                <span>{{ projectInfo.projectName }}</span
+                ><span class="bc-sep">›</span>
+                <span class="bc-cur">간트 차트</span>
               </div>
-              <ProjectInfo
-                :projectName="projectInfo.projectName"
-                :startDate="projectInfo.startDate"
-                :endDate="projectInfo.endDate"
-              />
+              <div class="project-meta">
+                <span class="meta-name">{{ projectInfo.projectName }}</span>
+                <span class="meta-sep">·</span>
+                <span class="meta-date"
+                  >{{ projectInfo.startDate }} – {{ projectInfo.endDate }}</span
+                >
+              </div>
             </div>
 
-            <!-- 오른쪽: 뷰 토글 + 목록으로 버튼 -->
-            <div class="gantt-header-right">
+            <div class="sub-header-right">
+              <!-- 뷰 토글 -->
               <div class="view-toggle">
                 <button
                   v-for="v in viewOptions"
@@ -33,23 +37,20 @@
                   :class="['toggle-btn', activeView === v.value && 'active']"
                   @click="changeView(v.value)"
                 >
-                  <span class="toggle-icon">{{ v.icon }}</span>
-                  <span>{{ v.label }}</span>
+                  {{ v.label }}
                 </button>
               </div>
-              <button @click="goBack" class="btn-back">
-                <span class="btn-back-arrow">←</span>
-                목록으로
-              </button>
+              <!-- 목록으로 -->
+              <button @click="goBack" class="btn-back">← 목록으로</button>
             </div>
           </div>
 
-          <!-- 간트 차트 본체 -->
+          <!-- 간트 카드 -->
           <div class="gantt-card">
             <div ref="ganttContainer" class="gantt-wrapper" />
           </div>
 
-            <!-- 업무 생성 모달 -->
+          <!-- 업무 생성 모달 -->
           <TaskCreateModal
             v-model="taskModalOpen"
             :parentId="taskModalParentId"
@@ -62,8 +63,8 @@
   </div>
 </template>
 
-s<script setup>
-import { ref,computed, onMounted, onBeforeUnmount } from "vue";
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -71,8 +72,7 @@ import { Gantt } from "@bryntum/gantt/gantt.module.js";
 import "@bryntum/gantt/gantt.css";
 import { useGanttChartStore } from "../stores/GantChart";
 import { TaskModel } from "@bryntum/gantt/gantt.module.js";
-import ProjectInfo from "../components/ProjectName.vue";
-import TaskCreateModal from "../task/TaskCreateModal.vue"; // ← 추가
+import TaskCreateModal from "../task/TaskCreateModal.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -81,7 +81,6 @@ const ganttContainer = ref(null);
 let ganttInstance = null;
 const store = useGanttChartStore();
 
-// ↓ 모달 상태
 const taskModalOpen = ref(false);
 const taskModalParentId = ref(null);
 const rootProjectId = computed(() => {
@@ -89,11 +88,12 @@ const rootProjectId = computed(() => {
   const root = store.rawProjects.find((p) => !p.parentProjectId);
   return root?.projectId ?? route.params.projectId;
 });
+
 const activeView = ref("weekAndDay");
 const viewOptions = [
-  { label: "일별", value: "weekAndDay", icon: "📅" },
-  { label: "주별", value: "weekAndMonth", icon: "🗓️" },
-  { label: "월별", value: "monthAndYear", icon: "📆" },
+  { label: "일별", value: "weekAndDay" },
+  { label: "주별", value: "weekAndMonth" },
+  { label: "월별", value: "monthAndYear" },
 ];
 
 class CustomTaskModel extends TaskModel {
@@ -121,10 +121,10 @@ const changeView = (preset) => {
 };
 
 const getTaskColor = (percentDone) => {
-  if (percentDone >= 100) return "linear-gradient(90deg, #93c5fd, #60a5fa)";
-  if (percentDone >= 60) return "linear-gradient(90deg, #bae6fd, #7dd3fc)";
-  if (percentDone >= 30) return "linear-gradient(90deg, #bfdbfe, #93c5fd)";
-  return "#dbeafe";
+  if (percentDone >= 100) return "#2563eb";
+  if (percentDone >= 60) return "#3b82f6";
+  if (percentDone >= 30) return "#60a5fa";
+  return "#93c5fd";
 };
 
 const scrollToToday = () => {
@@ -132,23 +132,20 @@ const scrollToToday = () => {
   setTimeout(() => {
     try {
       ganttInstance.scrollToDate(new Date(), {
-        block: "start",
-        animate: true,
-        edgeOffset: 100,
+        block: "center",
+        animate: false,
+        edgeOffset: 150,
       });
     } catch (e) {
       const el = ganttInstance.timeAxisSubGrid?.element;
       if (el) el.scrollLeft = 0;
     }
-  }, 200);
+  }, 300);
 };
 
-// ↓ 모달 제출 후 간트 데이터 새로고침
 const onTaskSubmitted = async () => {
   taskModalOpen.value = false;
   await store.fetchGanttData(route.params.projectId);
-
-  // 간트 인스턴스 프로젝트 데이터 갱신
   if (ganttInstance) {
     ganttInstance.project.tasksData = store.tasksData;
     await ganttInstance.project.loadInlineData({ tasks: store.tasksData });
@@ -160,7 +157,7 @@ const initGantt = async () => {
 
   await store.fetchGanttData(route.params.projectId);
 
-  if (store.rawProjects && store.rawProjects.length > 0) {
+  if (store.rawProjects?.length) {
     const rootProject =
       store.rawProjects.find((p) => !p.parentProjectId) || store.rawProjects[0];
     if (rootProject) {
@@ -176,11 +173,7 @@ const initGantt = async () => {
 
   const allDates = store.rawTasks
     .flatMap((t) => [t.estStartDate ?? t.startDate, t.estEndDate ?? t.dueDate])
-    .filter((d) => {
-      if (!d) return false;
-      const date = new Date(d);
-      return !isNaN(date.getTime());
-    })
+    .filter((d) => d && !isNaN(new Date(d).getTime()))
     .map((d) => new Date(d));
 
   const minDate = new Date(Math.min(...allDates));
@@ -195,6 +188,7 @@ const initGantt = async () => {
     viewPreset: activeView.value,
     tbar: null,
     readOnly: true,
+    rowHeight: 36,
 
     features: {
       timeRanges: { showCurrentTimeLine: true },
@@ -204,22 +198,22 @@ const initGantt = async () => {
     },
 
     columns: [
-      { type: "name", text: "작업명", width: 180, htmlEncode: false },
+      { type: "name", text: "작업명", width: 200, htmlEncode: false },
       {
         text: "시작",
         field: "startDate",
         type: "date",
-        format: "YYYY-MM-DD",
-        width: 100,
+        format: "MM-DD",
+        width: 80,
       },
       {
         text: "종료",
         field: "endDate",
         type: "date",
-        format: "YYYY-MM-DD",
-        width: 100,
+        format: "MM-DD",
+        width: 80,
       },
-      { text: "담당자", field: "assignee", width: 90 },
+      { text: "담당자", field: "assignee", width: 80 },
       {
         text: "우선순위",
         field: "priority",
@@ -228,60 +222,56 @@ const initGantt = async () => {
         renderer({ record }) {
           const map = {
             H1: "background:#fee2e2;color:#b91c1c",
-            H2: "background:#fef3c7;color:#b45309",
-            H3: "background:#dcfce7;color:#166534",
-            H4: "background:#f1f5f9;color:#475569",
+            H2: "background:#fef3c7;color:#92400e",
+            H3: "background:#f0fdf4;color:#166534",
+            H4: "background:#f8fafc;color:#64748b",
           };
           const s = map[record.priorityCode];
-          if (!s) return "-";
-          return `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:0.3px;${s}">${record.priority}</span>`;
+          if (!s) return `<span style="color:#cbd5e1;">—</span>`;
+          return `<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:0.2px;${s}">${record.priority}</span>`;
         },
       },
       {
         text: "진척도",
         field: "percentDone",
-        width: 100,
+        width: 90,
         htmlEncode: false,
         renderer({ record }) {
           const p = Math.round(record.percentDone ?? 0);
-          let style, icon;
-          if (p >= 100) {
-            style = "background:#dbeafe;color:#1d4ed8";
-            icon = "✓";
-          } else if (p >= 60) {
-            style = "background:#dcfce7;color:#15803d";
-            icon = "▶";
-          } else if (p >= 30) {
-            style = "background:#fef9c3;color:#a16207";
-            icon = "◐";
-          } else {
-            style = "background:#f1f5f9;color:#475569";
-            icon = "○";
-          }
-          return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;${style}">${icon} ${p}%</span>`;
+          const fill =
+            p >= 100
+              ? "#2563eb"
+              : p >= 60
+                ? "#3b82f6"
+                : p >= 30
+                  ? "#60a5fa"
+                  : "#cbd5e1";
+          return `
+            <div style="display:flex;align-items:center;gap:7px;">
+              <div style="flex:1;height:5px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
+                <div style="width:${p}%;height:100%;background:${fill};border-radius:99px;"></div>
+              </div>
+              <span style="font-size:11px;color:#94a3b8;width:26px;text-align:right;">${p}%</span>
+            </div>`;
         },
       },
       {
-        text: "추가",
-        width: 50,
+        text: "",
+        width: 44,
         htmlEncode: false,
         renderer({ record }) {
           const id = String(record.id);
           if (id.startsWith("p_")) {
-            return `<button
-              onclick="window.__ganttAdd('${id.replace("p_", "")}')"
-              title="업무 추가"
-              style="width:22px;height:22px;border-radius:50%;border:1px solid #bfdbfe;
-                     background:#eff6ff;color:#3b82f6;font-size:15px;line-height:1;
-                     cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>`;
+            return `<button onclick="window.__ganttAdd('${id.replace("p_", "")}')" title="업무 추가"
+              style="width:24px;height:24px;border-radius:6px;border:1px solid #bfdbfe;
+                     background:#eff6ff;color:#3b82f6;font-size:14px;line-height:1;
+                     cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">+</button>`;
           }
           if (!id.startsWith("root_") && record.statusCode === "REJECTED") {
-            return `<button
-              onclick="window.__ganttAdd('${record.id}')"
-              title="업무 재생성"
-              style="width:22px;height:22px;border-radius:50%;border:1px solid #fecaca;
-                     background:#fef2f2;color:#dc2626;font-size:15px;line-height:1;
-                     cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>`;
+            return `<button onclick="window.__ganttAdd('${record.id}')" title="업무 재생성"
+              style="width:24px;height:24px;border-radius:6px;border:1px solid #fecaca;
+                     background:#fef2f2;color:#dc2626;font-size:14px;line-height:1;
+                     cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">↺</button>`;
           }
           return "";
         },
@@ -289,10 +279,11 @@ const initGantt = async () => {
     ],
 
     taskRenderer({ taskRecord, renderData }) {
+      const p = taskRecord.percentDone ?? 0;
       if (taskRecord.isParent) {
-        renderData.style = `background: #475569; border-radius: 8px;`;
+        renderData.style = `background:#475569;border-radius:4px;`;
       } else {
-        renderData.style = `background: ${getTaskColor(taskRecord.percentDone)}; border-radius: 8px;`;
+        renderData.style = `background:${getTaskColor(p)};border-radius:4px;`;
       }
       return "";
     },
@@ -304,11 +295,9 @@ const initGantt = async () => {
     },
   });
 
-  ganttInstance.on("render", () => {
+  ganttInstance.project.commitAsync().then(() => {
     scrollToToday();
   });
-
-  // ↓ 페이지 이동 → 모달 오픈으로 변경
   window.__ganttAdd = (parentId) => {
     taskModalParentId.value = String(parentId);
     taskModalOpen.value = true;
@@ -325,83 +314,107 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ───────────────────────────────
-   헤더 레이아웃
-─────────────────────────────── */
-.gantt-header {
+/* ─────────────────────────────────
+   페이지 래퍼
+───────────────────────────────── */
+.gantt-page {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  height: 100%;
+  background: #f1f5f9;
 }
 
-.gantt-header-left {
+/* ─────────────────────────────────
+   서브헤더
+───────────────────────────────── */
+.sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  flex-shrink: 0;
+}
+
+.sub-header-left {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.gantt-title-row {
+.breadcrumb {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  font-size: 12px;
+  color: #94a3b8;
 }
 
-.gantt-icon {
-  font-size: 20px;
-  line-height: 1;
+.bc-sep {
+  color: #cbd5e1;
+}
+.bc-cur {
+  color: #0f172a;
+  font-weight: 600;
 }
 
-.gantt-title {
-  font-size: 22px;
-  font-weight: 700;
+.project-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.meta-name {
+  font-size: 13px;
+  font-weight: 600;
   color: #1e293b;
-  margin: 0;
 }
 
-.dark .gantt-title {
-  color: #f1f5f9;
+.meta-sep {
+  color: #cbd5e1;
+  font-size: 12px;
 }
 
-.gantt-header-right {
+.meta-date {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.sub-header-right {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* ───────────────────────────────
-   뷰 토글 버튼
-─────────────────────────────── */
+/* ─────────────────────────────────
+   뷰 토글
+───────────────────────────────── */
 .view-toggle {
   display: flex;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 4px;
+  border-radius: 8px;
+  padding: 3px;
   gap: 2px;
 }
 
 .toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  height: 32px;
+  height: 30px;
   padding: 0 14px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  border-radius: 9px;
+  border-radius: 6px;
   border: none;
   background: transparent;
   color: #64748b;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.15s;
   white-space: nowrap;
-}
-
-.toggle-btn .toggle-icon {
-  font-size: 13px;
 }
 
 .toggle-btn:hover {
@@ -410,31 +423,26 @@ onBeforeUnmount(() => {
 }
 
 .toggle-btn.active {
-  background: #fff;
+  background: #ffffff;
   color: #2563eb;
   font-weight: 700;
-  box-shadow:
-    0 2px 8px rgba(37, 99, 235, 0.15),
-    0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* ───────────────────────────────
+/* ─────────────────────────────────
    목록으로 버튼
-─────────────────────────────── */
+───────────────────────────────── */
 .btn-back {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 16px;
-  font-size: 13px;
+  height: 32px;
+  padding: 0 14px;
+  font-size: 12px;
   font-weight: 600;
-  border-radius: 10px;
-  border: 1.5px solid #cbd5e1;
-  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
   color: #475569;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.15s;
   white-space: nowrap;
 }
 
@@ -442,82 +450,138 @@ onBeforeUnmount(() => {
   background: #f8fafc;
   border-color: #94a3b8;
   color: #1e293b;
-  transform: translateX(-2px);
 }
 
-.btn-back-arrow {
-  font-size: 15px;
-  line-height: 1;
-  transition: transform 0.18s ease;
-}
-
-.btn-back:hover .btn-back-arrow {
-  transform: translateX(-3px);
-}
-
-/* ───────────────────────────────
+/* ─────────────────────────────────
    간트 카드
-─────────────────────────────── */
+───────────────────────────────── */
 .gantt-card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.06),
-    0 4px 16px rgba(0, 0, 0, 0.06);
+  flex: 1;
+  margin: 16px 20px 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
   overflow: hidden;
-  border: 1px solid #e8edf2;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
 }
 
-.dark .gantt-card {
-  background: #1e293b;
-  border-color: #334155;
-}
-
-/* ───────────────────────────────
-   간트 래퍼
-─────────────────────────────── */
 .gantt-wrapper {
-  height: calc(100vh - 200px);
+  height: calc(100vh - 160px);
   min-height: 400px;
 }
 
-/* ───────────────────────────────
-   Bryntum 간트 커스텀
-─────────────────────────────── */
+/* ─────────────────────────────────
+   Bryntum 커스텀
+───────────────────────────────── */
 :deep(.b-toolbar) {
   display: none !important;
 }
+
 :deep(.b-gantt) {
-  font-family: inherit;
+  font-family: inherit !important;
   font-size: 13px !important;
+  border: none !important;
 }
-:deep(.b-grid-header) {
+
+/* 헤더 */
+:deep(.b-grid-header-container) {
   background: #f8fafc !important;
-  color: #475569 !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
   border-bottom: 1px solid #e2e8f0 !important;
 }
-:deep(.b-grid-cell) {
-  font-size: 12px !important;
-}
-:deep(.b-grid-row:hover .b-grid-cell) {
-  background: #f1f5f9 !important;
-}
-:deep(.b-gantt-task) {
-  border-radius: 8px !important;
+
+:deep(.b-grid-header) {
+  background: #f8fafc !important;
+  color: #94a3b8 !important;
   font-size: 11px !important;
+  font-weight: 600 !important;
+  border-right: 1px solid #f1f5f9 !important;
 }
+
+/* 행 */
+:deep(.b-grid-row) {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+:deep(.b-grid-row:hover .b-grid-cell) {
+  background: #f8fafc !important;
+}
+
+:deep(.b-grid-row.b-selected .b-grid-cell) {
+  background: #eff6ff !important;
+}
+
+/* 셀 */
+:deep(.b-grid-cell) {
+  font-size: 12.5px !important;
+  color: #374151 !important;
+  border-right: 1px solid #f1f5f9 !important;
+  padding: 0 10px !important;
+}
+
+/* 트리 아이템 */
 :deep(.b-tree-cell-value) {
-  font-size: 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
 }
+
+/* 타임라인 헤더 */
 :deep(.b-sch-header-timeaxis-cell) {
-  font-size: 12px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: #94a3b8 !important;
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
+
+/* 타임라인 배경 줄무늬 */
+:deep(.b-sch-column-line) {
+  border-left: 1px solid #f1f5f9 !important;
+}
+
+/* 오늘 라인 */
 :deep(.b-sch-current-time) {
-  border-left: 2px dashed #f97316 !important;
+  border-left: 2px solid #f97316 !important;
+  opacity: 0.8;
 }
+
 :deep(.b-sch-current-time-indicator) {
   background: #f97316 !important;
+  border-radius: 2px !important;
+}
+
+/* 태스크 바 */
+:deep(.b-gantt-task) {
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+}
+
+:deep(.b-gantt-task-wrap) {
+  padding: 3px 0 !important;
+}
+
+/* 부모 태스크 (롤업 바) */
+:deep(.b-gantt-task.b-milestone) {
+  background: #334155 !important;
+}
+
+/* 스크롤바 */
+:deep(.b-virtual-scroller::-webkit-scrollbar) {
+  height: 6px !important;
+  width: 6px !important;
+}
+:deep(.b-virtual-scroller::-webkit-scrollbar-thumb) {
+  background: #cbd5e1 !important;
+  border-radius: 3px !important;
+}
+:deep(.b-virtual-scroller::-webkit-scrollbar-track) {
+  background: transparent !important;
+}
+
+/* 분할선 (그리드 | 차트) */
+:deep(.b-grid-splitter) {
+  background: #e2e8f0 !important;
+  width: 4px !important;
 }
 </style>

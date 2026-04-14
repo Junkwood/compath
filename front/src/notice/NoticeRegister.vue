@@ -163,14 +163,16 @@ const id = route.params.projectId;
 const subId = route.params.subProjectId;
 const noticeId = route.params.noticeId;
 const userInfo = ref(); // 글 작성자 정보
+
 const roles = ref([
   // 전체 역할 정보
-  { roleId: 1, roleName: "PM" },
-  { roleId: 2, roleName: "상PL" },
-  { roleId: 3, roleName: "하PL" },
+  { roleId: 1, roleName: "개발일정" },
+  { roleId: 2, roleName: "산출물" },
+  { roleId: 3, roleName: "디자인" },
   { roleId: 4, roleName: "개발" },
   { roleId: 5, roleName: "QA" },
 ]);
+
 const form = reactive({
   roleId: "",
   author: "",

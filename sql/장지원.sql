@@ -20,6 +20,26 @@ SELECT * FROM notification_targets;
 SELECT * FROM task_rejections;
 SELECT * FROM time_entries;
 
+
+DELETE FROM notification_targets;
+DELETE FROM notifications;
+COMMIT;
+
+-- 시퀀스도 초기화
+DROP SEQUENCE notifications_seq;
+CREATE SEQUENCE notifications_seq
+  START WITH 1
+  INCREMENT BY 1
+  NOCACHE
+  NOCYCLE;
+
+DROP SEQUENCE notification_targets_seq;
+CREATE SEQUENCE notification_targets_seq
+  START WITH 1
+  INCREMENT BY 1
+  NOCACHE;
+
+
 -- 1. 시퀀스 현재값 한번 뽑기
 SELECT notification_targets_seq.NEXTVAL FROM DUAL;
 ALTER SEQUENCE notification_targets_seq INCREMENT BY 500;

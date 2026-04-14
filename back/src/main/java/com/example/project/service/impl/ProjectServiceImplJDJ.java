@@ -28,6 +28,8 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
     //프로젝트 생성
     @Override
     public void registerProject(ProjectCreateDtoJDJ dto) {
+        dto.setPmUserId(dto.getCreatedBy());
+
         projectMapperJDJ.registerProject(dto);
         // 총괄PL한테 알림
         notificationService.sendToOne(

@@ -14,7 +14,7 @@
                 r.role_name,
                 r.role_id
         FROM group_members gm
-        JOIN groups g ON gm.group_id = g.group_id
+        JOIN groups g ON gm.group_id = g.group_id AND g.is_active='O1'
         JOIN roles r ON gm.role_id = r.role_id
         JOIN users u ON gm.user_id = u.user_id
         WHERE g.group_type = 'C2' AND g.is_active = 'O1' AND u.is_active = 'O1'
@@ -24,12 +24,12 @@
         SELECT
         u.user_id,
         u.user_name AS name,
-        g.group_name,
+        NVL(g.group_name,'그룹 없음') as group_name,
         g.group_type,
         g.group_id
         FROM users u
-        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y' AND u.is_active='O1'
-        LEFT JOIN groups g ON gm.group_id = g.group_id
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y' AND u.is_active='O1' AND u.user_type='M2'
+        LEFT JOIN groups g ON gm.group_id = g.group_id AND g.is_active='O1'
         ORDER BY u.user_id
     </select>
 

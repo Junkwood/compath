@@ -1,9 +1,8 @@
-<!-- project dashboard -->
 <template>
-<div class="dashboard-page flex h-screen overflow-hidden">
-      <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
+  <div class="dashboard-page flex h-screen overflow-hidden">
+    <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-<div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50">
+    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50">
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
@@ -26,13 +25,24 @@
           <div class="pg-row">
             <div class="pg-left">
               <h1 class="pg-title">프로젝트 대시보드</h1>
+
               <div class="proj-meta">
                 <span class="proj-name">{{ projectInfo.projectName }}</span>
-                <span class="proj-period"
-                  >{{ projectInfo.startDate }} ~ {{ projectInfo.endDate }}</span
-                >
+
+                <span v-if="projectInfo.identifier" class="proj-id">
+                  {{ projectInfo.identifier }}
+                </span>
+
+                <span class="proj-period">
+                  {{ projectInfo.startDate }} ~ {{ projectInfo.endDate }}
+                </span>
+              </div>
+
+              <div v-if="projectInfo.description" class="proj-desc">
+                {{ projectInfo.description }}
               </div>
             </div>
+
             <el-button class="btn-setting" @click="handleProjectSetting">
               ⚙ 프로젝트 설정
             </el-button>
@@ -46,10 +56,11 @@
               <div class="panel">
                 <div class="panel-head">
                   <span class="panel-title">업무 현황</span>
-                  <el-button class="btn-sub" @click="handleViewTasks"
-                    >업무 목록 보기</el-button
-                  >
+                  <el-button class="btn-sub" @click="handleViewTasks">
+                    업무 목록 보기
+                  </el-button>
                 </div>
+
                 <el-table
                   :data="taskSummaryData"
                   style="width: 100%"
@@ -95,6 +106,7 @@
                 <div class="panel-head">
                   <span class="panel-title">공지사항</span>
                 </div>
+
                 <div class="notice-body">
                   <ul v-if="noticeList.length > 0" class="notice-list">
                     <li
@@ -108,8 +120,9 @@
                         <span
                           v-if="item.pinStatusCode === 'B1'"
                           class="badge-pin"
-                          >고정</span
                         >
+                          고정
+                        </span>
                         <span v-if="item.isNew" class="badge-new">NEW</span>
                       </div>
                       <span class="notice-date">{{ item.createdAt }}</span>
@@ -125,15 +138,17 @@
               <div class="panel">
                 <div class="panel-head">
                   <span class="panel-title">하위 프로젝트 목록</span>
-                  <el-button class="btn-sub" @click="handleAddSubProject"
-                    >+ 하위 프로젝트 생성</el-button
-                  >
+                  <el-button class="btn-sub" @click="handleAddSubProject">
+                    + 하위 프로젝트 생성
+                  </el-button>
                 </div>
+
                 <div class="sub-body">
                   <template v-if="currentMilestone">
                     <div class="sub-milestone-title">
                       마일스톤 {{ currentMilestone?.milestoneName }}
                     </div>
+
                     <el-table
                       :data="currentMilestone.projects || []"
                       style="width: 100%"
@@ -148,6 +163,7 @@
                         </template>
                       </el-table-column>
                     </el-table>
+
                     <div class="pag-wrap" v-if="pagedMilestones.length > 1">
                       <el-pagination
                         v-model:current-page="milestonePage"
@@ -158,6 +174,7 @@
                       />
                     </div>
                   </template>
+
                   <div v-else class="empty-text">하위 프로젝트가 없습니다.</div>
                 </div>
               </div>
@@ -169,10 +186,11 @@
               <div class="panel">
                 <div class="panel-head">
                   <span class="panel-title">프로젝트 구성원</span>
-                  <span class="member-count-badge"
-                    >{{ projectMembers.length }}명</span
-                  >
+                  <span class="member-count-badge">
+                    {{ projectMembers.length }}명
+                  </span>
                 </div>
+
                 <div class="member-body">
                   <template v-if="projectMembers.length > 0">
                     <div
@@ -188,16 +206,19 @@
                       >
                         {{ member.userName?.charAt(0) }}
                       </div>
+
                       <div class="member-info">
                         <span class="member-name">{{ member.userName }}</span>
                         <span
                           class="member-role"
                           :class="getRoleClass(member.roleName)"
-                          >{{ member.roleName }}</span
                         >
+                          {{ member.roleName }}
+                        </span>
                       </div>
                     </div>
                   </template>
+
                   <div v-else class="empty-text">
                     구성원이 아직 지정되지 않았습니다.
                   </div>
@@ -208,10 +229,11 @@
               <div class="panel">
                 <div class="panel-head">
                   <span class="panel-title">나의 메모</span>
-                  <el-button class="btn-memo-add" @click="handleAddMemo" circle
-                    >+</el-button
-                  >
+                  <el-button class="btn-memo-add" @click="handleAddMemo" circle>
+                    +
+                  </el-button>
                 </div>
+
                 <div class="memo-body">
                   <template v-if="memoList.length > 0">
                     <div
@@ -225,14 +247,17 @@
                         <div class="memo-date">{{ memo.createdAt }}</div>
                         <div class="memo-text">{{ memo.memoContent }}</div>
                       </div>
+
                       <el-button
                         class="memo-del"
                         @click="handleDeleteMemo(memo.memoId)"
                         text
-                        >✕</el-button
                       >
+                        ✕
+                      </el-button>
                     </div>
                   </template>
+
                   <div v-else class="empty-text">등록된 메모가 없습니다.</div>
                 </div>
               </div>
@@ -294,12 +319,14 @@ const fetchTaskSummary = async () => {
 
 // ── 공지사항
 const noticeList = ref([]);
+
 const formatDate = (value) => {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 };
+
 const isWithin7Days = (value) => {
   if (!value) return false;
   const target = new Date(value);
@@ -308,6 +335,7 @@ const isWithin7Days = (value) => {
     (new Date().getTime() - target.getTime()) / (1000 * 60 * 60 * 24);
   return diff >= 0 && diff <= 7;
 };
+
 const fetchNoticeList = async () => {
   try {
     const res = await api.get(
@@ -315,8 +343,8 @@ const fetchNoticeList = async () => {
     );
     const rawList = Array.isArray(res.data) ? res.data : [];
     noticeList.value = rawList
-      .map((item, index) => ({
-        noticeId: item.noticeId ?? item.id ?? index,
+      .map((item) => ({
+        noticeId: item.noticeId,
         title: item.title,
         createdAt: formatDate(item.createdAt),
         rawCreatedAt: item.createdAt,
@@ -362,6 +390,7 @@ const handleEditMemo = (memo) => {
   editingMemoText.value = memo.memoContent;
   memoModalVisible.value = true;
 };
+
 const fetchMemoList = async () => {
   try {
     const res = await api.get(`/MemoList/${route.params.projectId}`, {
@@ -372,8 +401,10 @@ const fetchMemoList = async () => {
     console.error("메모 목록 조회 실패:", err);
   }
 };
+
 const getMemoColorClass = (index) =>
   ["memo-blue", "memo-yellow", "memo-pink", "memo-green"][index % 4];
+
 const handleDeleteMemo = async (memoId) => {
   const result = await Swal.fire({
     title: "메모를 삭제할까요?",
@@ -384,6 +415,7 @@ const handleDeleteMemo = async (memoId) => {
     reverseButtons: true,
   });
   if (!result.isConfirmed) return;
+
   try {
     await api.post("/MemoStatUpdate", {
       memoId,
@@ -399,11 +431,13 @@ const handleDeleteMemo = async (memoId) => {
     console.error("메모 삭제 불가:", err);
   }
 };
+
 const handleMemoSubmitted = async (payload) => {
   try {
     const projectId = route.params.projectId;
     const userId = authStore.user?.userId;
     if (!userId) return;
+
     if (isMemoEditMode.value) {
       await api.post("/MemoContentUpdate", {
         memoId: editingMemoId.value,
@@ -418,6 +452,7 @@ const handleMemoSubmitted = async (payload) => {
         memoContent: payload.text,
       });
     }
+
     memoModalVisible.value = false;
     isMemoEditMode.value = false;
     editingMemoId.value = null;
@@ -427,6 +462,7 @@ const handleMemoSubmitted = async (payload) => {
     console.error("메모 저장 실패:", err);
   }
 };
+
 const handleAddMemo = () => {
   isMemoEditMode.value = false;
   editingMemoId.value = null;
@@ -438,13 +474,23 @@ const handleAddMemo = () => {
 const projectInfo = ref({
   projectId: null,
   projectName: "",
+  identifier: "",
+  description: "",
   startDate: "",
   endDate: "",
 });
+
 const fetchProjectDetail = async () => {
   try {
     const res = await api.get(`/ProjectDetail/${route.params.projectId}`);
-    projectInfo.value = res.data;
+    projectInfo.value = {
+      projectId: res.data?.projectId ?? null,
+      projectName: res.data?.projectName ?? "",
+      identifier: res.data?.identifier ?? "",
+      description: res.data?.description ?? "",
+      startDate: res.data?.startDate ?? "",
+      endDate: res.data?.endDate ?? "",
+    };
   } catch (err) {
     console.error("프로젝트 상세 조회 실패:", err);
   }
@@ -453,6 +499,7 @@ const fetchProjectDetail = async () => {
 // ── 하위 프로젝트
 const subProjects = ref([]);
 const milestonePage = ref(1);
+
 const fetchSubProject = async () => {
   try {
     const res = await api.get(`/ProjectSubList/${route.params.projectId}`);
@@ -463,25 +510,29 @@ const fetchSubProject = async () => {
     subProjects.value = [];
   }
 };
+
 const pagedMilestones = computed(() => {
   const map = new Map();
+
   subProjects.value.forEach((item) => {
-    if (!map.has(item.milestoneId))
+    if (!map.has(item.milestoneId)) {
       map.set(item.milestoneId, {
         milestoneId: item.milestoneId,
         milestoneName: item.milestoneName,
         projects: [],
       });
-    map
-      .get(item.milestoneId)
-      .projects.push({
-        projectId: item.projectId,
-        projectName: item.projectName,
-        userName: item.userName,
-      });
+    }
+
+    map.get(item.milestoneId).projects.push({
+      projectId: item.projectId,
+      projectName: item.projectName,
+      userName: item.userName,
+    });
   });
+
   return Array.from(map.values());
 });
+
 const currentMilestone = computed(() => {
   if (!pagedMilestones.value.length) return null;
   return pagedMilestones.value[
@@ -495,16 +546,19 @@ const handleProjectSetting = () =>
     name: "projectSetting",
     params: { id: route.params.projectId },
   });
+
 const handleViewTasks = () =>
   router.push({
     name: "taskList",
     params: { projectId: route.params.projectId },
   });
+
 const handleNoticeClick = (item) =>
   router.push({
     name: "noticeDetail",
     params: { projectId: route.params.projectId, noticeId: item.noticeId },
   });
+
 const handleSubProjectRowClick = (row) =>
   router.push({
     name: "subProjectDashboard",
@@ -522,6 +576,7 @@ const headerStyle = () => ({
   fontWeight: "500",
   borderBottom: "1px solid var(--el-border-color)",
 });
+
 const cellStyle = () => ({
   fontSize: "12px",
   color: "var(--el-text-color-primary)",
@@ -536,6 +591,7 @@ const getRoleClass = (roleName) => {
   if (roleName.includes("관리")) return "role-mgr";
   return "role-dev";
 };
+
 const getAvatarColor = (roleName) => {
   if (!roleName) return "#10b981";
   if (roleName.includes("PM")) return "#1B5C9C";
@@ -636,9 +692,29 @@ onMounted(() => {
   color: #1b5c9c;
 }
 
+.proj-id {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .proj-period {
   font-size: 13px;
   color: #6b7280;
+}
+
+.proj-desc {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.6;
+  white-space: pre-line;
+  word-break: break-word;
 }
 
 /* 메인 대시보드 버튼 톤 맞춤 */

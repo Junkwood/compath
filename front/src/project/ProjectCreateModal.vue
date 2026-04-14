@@ -15,51 +15,63 @@
     >
       <!-- 프로젝트 명 -->
       <el-form-item label="프로젝트 명" prop="projectName">
-        <el-input v-model="form.projectName" placeholder="" />
+        <el-input
+          v-model="form.projectName"
+          placeholder="프로젝트명을 입력하세요"
+        />
       </el-form-item>
 
-      <!-- 프로젝트 식별자 + 총괄PL -->
-      <el-form-item label="프로젝트 식별자" prop="projectCode">
-        <div class="row-fields">
-          <el-input v-model="form.projectCode" placeholder="" style="flex: 1" />
-          <div class="pl-field">
-            <span class="pl-label">총괄PL</span>
-            <el-select
-              v-model="form.plUserId"
-              placeholder="선택"
-              style="width: 140px"
-            >
-              <el-option
-                v-for="user in plOptions"
-                :key="user.userId"
-                :label="user.userName"
-                :value="user.userId"
-              />
-            </el-select>
-          </div>
-        </div>
+      <!-- 프로젝트 식별자 -->
+      <el-form-item label="프로젝트 식별자">
+        <el-input
+          model-value="저장 시 자동 생성"
+          disabled
+          placeholder="저장 시 자동 생성"
+        />
+      </el-form-item>
+
+      <!-- PL -->
+      <el-form-item label="총괄PL" prop="plUserId">
+        <el-select
+          v-model="form.plUserId"
+          placeholder="선택"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="user in plOptions"
+            :key="user.userId"
+            :label="user.userName"
+            :value="user.userId"
+          />
+        </el-select>
       </el-form-item>
 
       <!-- 프로젝트 기간 -->
-      <el-form-item label="프로젝트 기간" prop="startDate">
+      <el-form-item label="프로젝트 기간">
         <div class="date-row">
-          <el-date-picker
-            v-model="form.startDate"
-            type="date"
-            placeholder="시작일"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="flex: 1"
-          />
+          <el-form-item prop="startDate" class="date-item">
+            <el-date-picker
+              v-model="form.startDate"
+              type="date"
+              placeholder="시작일"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+            />
+          </el-form-item>
+
           <span class="date-sep">~</span>
-          <el-date-picker
-            v-model="form.endDate"
-            type="date"
-            placeholder="종료일"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="flex: 1"
-          />
+
+          <el-form-item prop="endDate" class="date-item">
+            <el-date-picker
+              v-model="form.endDate"
+              type="date"
+              placeholder="종료일"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+            />
+          </el-form-item>
         </div>
       </el-form-item>
 
@@ -69,7 +81,7 @@
           v-model="form.description"
           type="textarea"
           :rows="3"
-          placeholder=""
+          placeholder="프로젝트 설명을 입력하세요"
         />
       </el-form-item>
 
@@ -87,15 +99,14 @@
           <el-switch v-model="form.isPublic" />
           <span class="switch-desc">
             모든 사용자에게 공개<br />
-            <span class="switch-sub"
-              >공개된 프로젝트는 누구나 조회할 수 있습니다.</span
-            >
+            <span class="switch-sub">
+              공개된 프로젝트는 누구나 조회할 수 있습니다.
+            </span>
           </span>
         </div>
       </el-form-item>
     </el-form>
 
-    <!-- 푸터 버튼 -->
     <template #footer>
       <div class="modal-footer">
         <el-button class="btn-list" @click="handleClose">← 목록으로</el-button>
@@ -124,6 +135,7 @@ const authStore = useAuthStore();
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
 });
+
 const emit = defineEmits(["update:modelValue", "submitted"]);
 
 const visible = computed({
@@ -131,22 +143,22 @@ const visible = computed({
   set: (v) => emit("update:modelValue", v),
 });
 
-// ── PL 옵션 (백엔드 연결 시 API로 교체) ──
+const formRef = ref(null);
+const submitting = ref(false);
 const plOptions = ref([]);
 
 const fetchPlList = async () => {
-  const res = await api.get("/ProjectPlList");
-  console.log(res.data);
-  plOptions.value = res.data;
+  try {
+    const res = await api.get("/ProjectPlList");
+    plOptions.value = res.data || [];
+  } catch (err) {
+    console.error("PL 목록 조회 실패:", err);
+    plOptions.value = [];
+  }
 };
 
-const formRef = ref(null);
-const submitting = ref(false);
-
-//폼의 초기값
 const defaultForm = () => ({
   projectName: "",
-  projectCode: "",
   plUserId: null,
   startDate: "",
   endDate: "",
@@ -161,14 +173,15 @@ const rules = {
   projectName: [
     { required: true, message: "프로젝트 명을 입력하세요", trigger: "blur" },
   ],
-  projectCode: [
-    {
-      required: true,
-      message: "프로젝트 식별자를 입력하세요",
-      trigger: "blur",
-    },
+  plUserId: [
+    { required: true, message: "총괄PL을 선택하세요", trigger: "change" },
   ],
-  userId: [{ required: true, message: "총괄PL을 선택하세요", trigger: "blur" }],
+  startDate: [
+    { required: true, message: "시작일을 선택하세요", trigger: "change" },
+  ],
+  endDate: [
+    { required: true, message: "종료일을 선택하세요", trigger: "change" },
+  ],
 };
 
 const handleClose = () => {
@@ -184,21 +197,27 @@ const handleSubmit = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
   if (!valid) return;
 
+  if (form.startDate && form.endDate && form.startDate > form.endDate) {
+    alert("종료일은 시작일보다 빠를 수 없습니다.");
+    return;
+  }
+
   submitting.value = true;
+
   try {
     const payload = {
       projectName: form.projectName,
-      identifier: form.projectCode,
-      plUserId: form.plUserId,
+      description: form.description,
       startDate: form.startDate,
       endDate: form.endDate,
-      description: form.description,
-      useMilestone: form.useMilestone ? "O1" : "O2",
       isPublic: form.isPublic ? "O1" : "O2",
       createdBy: authStore.user.userId,
+      plUserId: form.plUserId,
+      useMilestone: form.useMilestone ? "O1" : "O2",
     };
 
     await api.post("/ProjectRegister", payload);
+
     visible.value = false;
     handleReset();
     emit("submitted");
@@ -215,75 +234,65 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 인라인 필드 묶음 */
-.row-fields {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-.pl-field {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.pl-label {
-  font-size: 13px;
-  color: #374151;
-  white-space: nowrap;
-}
-
-/* 날짜 행 */
 .date-row {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
 }
+
+.date-item {
+  flex: 1;
+  margin-bottom: 0;
+}
+
 .date-sep {
   color: #9ca3af;
   flex-shrink: 0;
 }
 
-/* 스위치 행 */
 .switch-row {
   display: flex;
   align-items: flex-start;
   gap: 12px;
 }
+
 .switch-desc {
   font-size: 13px;
   color: #374151;
   line-height: 1.6;
 }
+
 .switch-sub {
   font-size: 12px;
   color: #9ca3af;
 }
 
-/* 푸터 */
 .modal-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .footer-right {
   display: flex;
   gap: 8px;
 }
+
 .btn-list {
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   color: #374151;
   font-size: 13px;
 }
+
 .btn-reset {
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   color: #374151;
   font-size: 13px;
 }
+
 .btn-submit {
   background: #1d4ed8;
   border: none;
@@ -291,18 +300,23 @@ onMounted(() => {
   font-size: 13px;
   font-weight: 600;
 }
+
 .btn-submit:hover {
   background: #1e40af;
 }
 
-/* el-dialog 오버라이드 */
 :deep(.el-dialog__title) {
   font-weight: 700;
   font-size: 15px;
   color: #1a1a2e;
 }
+
 :deep(.el-form-item__label) {
   font-size: 13px;
   color: #374151;
+}
+
+:deep(.date-item .el-form-item__content) {
+  margin-left: 0 !important;
 }
 </style>

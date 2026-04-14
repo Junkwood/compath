@@ -14,10 +14,11 @@
         <div class="sub-header">
           <div class="breadcrumb">
             <span class="bc-home">홈</span>
-            <span class="bc-sep">/</span>
-            <span>프로젝트</span>
-            <span class="bc-sep">/</span>
-            <span class="bc-cur">{{ projectInfo.projectName }}</span>
+            <span class="bc-sep">></span>
+            <span>{{ projectInfo.projectName }}</span>
+            <span class="bc-sep">></span>
+            <span class="bc-cur">마일스톤</span>
+
           </div>
         </div>
 
@@ -27,7 +28,7 @@
             <div class="pg-left">
               <h1 class="pg-title">마일스톤 대시보드</h1>
               <div class="proj-meta">
-                <span class="proj-name">【 {{ projectInfo.projectName }} 】</span>
+                <span class="proj-name"> {{ projectInfo.projectName }} </span>
                 <span class="proj-period">
                   {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
                 </span>
@@ -47,12 +48,6 @@
                 <div class="milestone-title-wrap">
                   <div class="milestone-title-row">
                     <h3 class="panel-title milestone-title">마일스톤</h3>
-                    <el-button
-                      class="btn-highlight-project"
-                      @click="handleCreateMilestone"
-                    >
-                      마일스톤 생성
-                    </el-button>
                   </div>
 
                   <div class="milestone-guide">
@@ -60,6 +55,14 @@
                     <p>해당 마일스톤을 선택하면 마일스톤 상세 페이지로 이동합니다.</p>
                   </div>
                 </div>
+
+                <el-button
+                  class="btn-highlight-project milestone-create-btn"
+                  @click="handleCreateMilestone"
+                >
+                  마일스톤 생성
+                </el-button>
+              
               </div>
             </div>
 

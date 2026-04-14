@@ -37,7 +37,7 @@
             <div>
               <div class="flex flex-row gap-10">
                 <button @click="goBack" type="button" class="btn-navy mb-4">
-                  ← 목록으로
+                  돌아가기
                 </button>
               </div>
               <div class="card main-col">
@@ -385,9 +385,13 @@ onBeforeMount(async () => {
   taskInfo.value.createdAt = changeDate(taskInfo.value.createdAt);
 
   //time_entries 합계가 있으면 표시
-  if (taskInfo.value.totalTimeEntries > 0) {
-    taskInfo.value.actualHours = taskInfo.value.totalTimeEntries;
-  }
+  // if (taskInfo.value.totalTimeEntries > 0) {
+  //   taskInfo.value.actualHours = taskInfo.value.totalTimeEntries;
+  // }
+  taskInfo.value.actualHours =
+    taskInfo.value.totalTimeEntries > 0
+      ? taskInfo.value.totalTimeEntries
+      : (taskInfo.value.actualHours ?? 0);
 
   // 상위 프로젝트가 없을 때 구분
   if (taskInfo.value.parentProjectName != null) {
@@ -445,10 +449,7 @@ const goCreateSubTask = () => {
 
 // 목록으로 버튼
 const goBack = () => {
-  router.push({
-    name: "taskList",
-    params: { projectId: projectId.value, subProjectId: subId.value },
-  });
+  router.back();
 };
 
 // 수정 버튼(업무 수정 페이지로 이동)
@@ -767,7 +768,7 @@ const cellStyle = () => ({
 /* ── 반응형 ── */
 @media (max-width: 1024px) {
   .dashboard-top {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .side-col {
     flex-direction: row;

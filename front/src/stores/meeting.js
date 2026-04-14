@@ -121,7 +121,7 @@ export const useMeetingStore = defineStore("meeting", {
     },
 
     // 연결업무 연결 해제（상세）
-    async removeConnectTask(obj) {
+    async removeDetailConnectTask(obj) {
       await api //
         .delete("/meeting/removeDetailConnect", {
           data: obj,
