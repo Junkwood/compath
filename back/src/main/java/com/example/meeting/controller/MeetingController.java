@@ -58,10 +58,11 @@ public class MeetingController {
         // 결과 담을 그릇
         Map<String, Object> result = new HashMap<>();
 
-        MeetingDTO dto = service.getMeetingById(id);
-        result.put("meetingList", dto);
+        Map<String, Object> info = service.getMeetingById(id);
+        result.put("meetingList", info);
 
-         Integer groupId = dto.getAttachmentGroupId();
+        MeetingDTO detail = (MeetingDTO) info.get("meetingDetail");
+        Integer groupId = detail.getAttachmentGroupId();
 
          if(groupId != null) {
             List<AttachmentDTO> list = attachmentService.getFileList(groupId);
@@ -103,9 +104,23 @@ public class MeetingController {
         return service.insert(dto);
     };
 
-    // 연결 업무 해제
+    // 연결 업무 해제(등록시)
     @DeleteMapping("/meeting/removeConnect")
     public List<MeetingDTO> removeConnect(@RequestBody MeetingDTO dto) {
         return service.removeConnectTask(dto);
     };
+
+    //회의록 업무 등록(회의록 상세)
+    @PostMapping("/tasks/registerDetailConnect")
+    public List<MeetingDTO> registerDetailConnect(@RequestBody List<MeetingDTO> dto){
+
+        return service.registerDetailConnect(dto);
+
+    };
+
+    // 연결 업무 해제(상세)
+    @DeleteMapping("/meeting/removeDetailConnect")
+    public List<MeetingDTO> removeDetailConnect(@RequestBody MeetingDTO dto) {
+        return service.removeDetailConnect(dto);
+    }
 }

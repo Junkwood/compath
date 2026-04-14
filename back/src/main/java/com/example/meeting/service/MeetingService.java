@@ -18,7 +18,7 @@ public interface MeetingService {
     public int registerCommentAlarm(List<MeetingAlarmDTO> list);
 
 //    회의록 단건 조회
-    public MeetingDTO getMeetingById(Integer id);
+    public Map<String, Object> getMeetingById(Integer id);
 
     //  회의록 수정
     public MeetingDTO modifyMeeting(MeetingDTO dto);
@@ -32,7 +32,12 @@ public interface MeetingService {
     //추천 업무 생성(회의록)
     public List<MeetingDTO> insert(TaskReqDtoJJW dto);
 
-    //  회의록 연결 업무 연결 해제
+    //  회의록 연결 업무 연결 해제(등록시)
     public List<MeetingDTO> removeConnectTask(MeetingDTO dto);
 
+    //추천 업무 생성(회의록)
+    public List<MeetingDTO> registerDetailConnect(List<MeetingDTO> dto);
+
+    //  회의록 연결 업무 연결 해제(상세)
+    public List<MeetingDTO> removeDetailConnect(MeetingDTO dto);
 }

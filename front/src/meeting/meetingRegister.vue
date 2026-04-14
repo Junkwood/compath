@@ -419,7 +419,7 @@ const submitForm = async (formEl) => {
       // 공지사항 등록
       if (!isModified.value) {
         let obj = {
-          projectId: subId != null ? subId : id,
+          projectId: subId != "" ? subId : id,
           title: form.title,
           content: form.content,
           meetingTypeCode: form.meetingType,
@@ -529,7 +529,7 @@ const submitForm = async (formEl) => {
       router.push({
         name: "meetingDetail",
         params: {
-          projectId: subId != null ? subId : id,
+          projectId: subId != "" ? subId : id,
           meetingId:
             isModified == true
               ? meetingId
@@ -691,9 +691,7 @@ onBeforeMount(async () => {
 const openCreateModal = (value) => {
   taskInfo.value = {
     meetingLogId:
-      connectTaskList.value.length > 0
-        ? meetingStore.connectTaskList.meetingLogId
-        : null,
+      connectTaskList.value.length > 0 ? connectTaskList.meetingLogId : null,
     ...value,
   };
   createModalOpen.value = true;

@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -31,14 +33,22 @@ public class AttachmentServiceImpl implements AttachmentService {
     public int registerAttachments(List<MultipartFile> files, Integer id) throws IOException {
         int sharedGroupId = id;
 
+        Path path = Paths.get(baseDir).toAbsolutePath().normalize();
+        if (!Files.exists(path)) {
+            Files.createDirectories(path);
+        }
+
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
 
             // 1. FileUtils를 사용하여 날짜 폴더 + UUID 파일명 계획 생성
             FileUtils.FilePlan plan = FileUtils.dateFolderWithUuidName(baseDir, file.getOriginalFilename());
 
+            // 실제 저장될 파일의 절대 경로
+            Path targetPath = plan.getFullPath().toAbsolutePath().normalize();
+
             // 2. 물리적 파일 저장 (fullPath 사용)
-            file.transferTo(plan.getFullPath().toFile());
+            file.transferTo(targetPath.toFile());
 
             // 3. DB 저장을 위한 dto 세팅
             AttachmentDTO dto = new AttachmentDTO();
@@ -46,7 +56,7 @@ public class AttachmentServiceImpl implements AttachmentService {
 
             // DB에는 baseDir을 제외한 상대 경로만 저장하는 것이 관리상 유리합니다.
             // 예: 2026/04/10/uuid.png
-            String relativePath = Paths.get(baseDir).relativize(plan.getFullPath()).toString().replace("\\", "/");
+            String relativePath = path.relativize(targetPath).toString().replace("\\", "/");
             dto.setFilePath(relativePath);
 
             // 확장자 추출

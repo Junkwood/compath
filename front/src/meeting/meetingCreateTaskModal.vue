@@ -239,6 +239,7 @@ watch(
   (newVal) => {
     form.value.title = Object.keys(newVal)[0];
     form.value.content = Object.values(newVal)[0];
+    form.value.meetingLogId = newVal.meetingLogId;
   },
 );
 </script>
