@@ -378,7 +378,7 @@ const methodColor = (method) => {
 };
 
 // ── 액션 로직 ──
-const handleGoBack = () => router.push("/amdin/role");
+const handleGoBack = () => router.push({ name: "roleList" });
 
 const handleSubmit = async () => {
   const valid = await formRef.value?.validate().catch(() => false);

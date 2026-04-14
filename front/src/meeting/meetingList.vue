@@ -288,7 +288,7 @@ const handleCurrentChange = async (val) => {
 
   // 페이지 변환 목록 조회
   let obj = {
-    projectId: subId != null ? subId : projectId,
+    projectId: subId != "" ? subId : projectId,
     startNum: start,
     endNum: end,
     ...filteredList.value,
@@ -354,15 +354,15 @@ onBeforeMount(async () => {
       Swal.showLoading();
     },
   });
-  let id = subId ? subId : projectId;
-  console.log(subId);
+  console.log(subId == "");
+  let id = subId != "" ? subId : projectId;
   await taskStore.getProjectName(id);
   const projectInfo = taskStore.projectName;
   name.value = projectInfo.projectName; // 프로젝트 이름
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
 
-  let obj = { projectId: subId ? subId : projectId };
+  let obj = { projectId: subId != "" ? subId : projectId };
   await meetingStore.getFilterList(obj);
 
   filterList.value = meetingStore.filterList;

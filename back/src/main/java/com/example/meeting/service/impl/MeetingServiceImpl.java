@@ -62,8 +62,21 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     @Override
-    public MeetingDTO getMeetingById(Integer id) {
-        return mapper.getMeetingById(id);
+    public Map<String, Object> getMeetingById(Integer id) {
+        // 단건 조회
+        MeetingDTO detailDto = mapper.getMeetingById(id);
+
+        // 결과값 담을 곳
+        Map<String, Object> result = new HashMap<>();
+        result.put("meetingDetail", detailDto);
+
+        // 연결업무 조회
+        int meetingId = detailDto.getMeetingLogId();
+        List<MeetingDTO> list = mapper.getRecommandTask(meetingId);
+
+        result.put("connectDetail", list);
+
+        return result;
     }
 
     @Override
@@ -106,10 +119,17 @@ public class MeetingServiceImpl implements MeetingService {
         taskMapperJJW.insert(taskDto);
         int taskId = taskDto.getTaskId();
 
+        Integer meetingLogId = taskDto.getMeetingLogId();
+
         // 빈회의록 등록
         MeetingDTO meetDto = new MeetingDTO();
         meetDto.setProjectId(taskDto.getProjectId());
+
+        if(meetingLogId == null) {
         mapper.registerMeeting(meetDto);
+        } else {
+            meetDto.setMeetingLogId(meetingLogId);
+        }
 
         // 회의록 업무 테이블 등록
         meetDto.setTaskId(taskId);
@@ -138,6 +158,32 @@ public class MeetingServiceImpl implements MeetingService {
         }
 
         return list;
+    }
+
+    @Override
+    public List<MeetingDTO> registerDetailConnect(List<MeetingDTO> dto) {
+
+        int meetingId=0;
+
+        for(MeetingDTO dt : dto) {
+            // 회의록 업무 테이블 등록
+            mapper.registerMeetingTask(dt);
+            meetingId = dt.getMeetingLogId();
+        }
+
+        return mapper.getRecommandTask(meetingId);
+    }
+
+    @Override
+    public List<MeetingDTO> removeDetailConnect(MeetingDTO dto) {
+
+        // 연결 업무 제거
+        int id = dto.getMeetingtaskId();
+        mapper.removeConnectTask(id);
+
+        // 조회 후 반환
+        int meetingId = dto.getMeetingLogId();
+        return mapper.getRecommandTask(meetingId);
     }
 
 }

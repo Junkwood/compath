@@ -75,7 +75,8 @@
                        p.project_id,
                        p.parent_project_id,
                        t2.type_name,
-                       t3.status_name
+                       t3.status_name,
+                       t3.task_status_id
                     FROM tasks t
                     JOIN projects p ON t.project_id = p.project_id
                     JOIN task_types t2 ON t.task_type_id = t2.task_type_id
