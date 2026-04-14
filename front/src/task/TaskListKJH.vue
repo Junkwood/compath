@@ -1,321 +1,277 @@
 <template>
-  <div class="flex h-screen overflow-hidden">
+  <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <div
-      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
     >
-      <!-- Header -->
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
 
       <main class="grow">
-        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <!-- projectDashboard.vue와 동일한 제목 영역 -->
-          <div class="mb-6 proj-title-row flex justify-between">
-            <div class="proj-title-left">
-              <h2
-                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
-              >
-                프로젝트 업무 목록
-              </h2>
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span class="bc-home">홈</span>
+            <span class="bc-sep">›</span>
+            <span>{{name}}</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur">업무 목록</span>
+          </div>
+        </div>
 
-              <div class="proj-name-row">
-                <span class="proj-name">【 {{ name }} 】</span>
+        <div class="page-container">
+          <div class="pg-row">
+            <div class="pg-left">
+              <div class="proj-meta">
+                <span class="proj-name">{{ name }}</span>
                 <span class="proj-period">
                   {{ projectStartDate }} ~ {{ projectendDate }}
                 </span>
               </div>
             </div>
-            <div class="self-end">
-              <el-button class="new-project-btn" @click="goResister()">
-                + &nbsp; 업무 생성
-              </el-button>
-            </div>
+
+            <el-button class="btn-create-task" @click="goResister()">
+              + 업무 생성
+            </el-button>
           </div>
-          <div
-            class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mb-0 p-4"
-          >
-            <form action="#">
-              <div class="grid grid-cols-4 gap-4">
-                <div class="mb-4">
-                  <label
-                    for="taskName"
-                    class="block mb-2.5 text-sm font-medium text-heading"
-                    >업무명</label
-                  >
-                  <select
-                    class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                    v-model="filteredList.taskId"
-                  >
-                    <option value="">전체</option>
-                    <option
-                      :value="title.taskId"
-                      v-for="title in filterInfo.taskTitleList"
-                    >
-                      {{ title.title }}
-                    </option>
-                  </select>
-                </div>
-                <div class="mb-4">
-                  <label
-                    for="password"
-                    class="block mb-2.5 text-sm font-medium text-heading"
-                    >담당자 이름</label
-                  >
-                  <select
-                    class="input border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                    v-model="filteredList.assigneeUserId"
-                  >
-                    <option value="">전체</option>
-                    <option
-                      :value="user.assigneeUserId"
-                      v-for="user in filterInfo.userNameList"
-                    >
-                      {{ user.userName }}
-                    </option>
-                  </select>
-                </div>
-                <div class="mb-4">
-                  <label
-                    for="password"
-                    class="block mb-2.5 text-sm font-medium text-heading"
-                    >업무 유형</label
-                  >
-                  <select
-                    class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                    v-model="filteredList.taskTypeId"
-                  >
-                    <option value="">전체</option>
-                    <option
-                      :value="type.taskTypeId"
-                      v-for="type in filterInfo.taskTypeList"
-                    >
-                      {{ type.typeName }}
-                    </option>
-                  </select>
-                </div>
-                <div>
-                  <label
-                    for="password"
-                    class="block mb-2.5 text-sm font-medium text-heading"
-                    >업무 상태</label
-                  >
-                  <select
-                    class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                    v-model="filteredList.taskStatusId"
-                  >
-                    <option value="">전체</option>
-                    <option
-                      :value="status.taskStatusId"
-                      v-for="status in filterInfo.taskStatusList"
-                    >
-                      {{ status.statusName }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <div class="grid grid-cols-4 gap-4">
-                <div>
-                  <label
-                    for="password"
-                    class="block mb-2.5 text-sm font-medium text-heading"
-                    >시작일</label
-                  >
-                  <input
-                    v-model="filteredList.startDate"
-                    type="date"
-                    class="input w-full"
-                  />
-                </div>
-                <div>
-                  <label
-                    for="password"
-                    class="block mb-2.5 text-sm font-medium text-heading"
-                    >종료일</label
-                  >
-                  <input
-                    v-model="filteredList.endDate"
-                    type="date"
-                    class="input w-full"
-                  />
-                </div>
-                <div>
-                  <label
-                    for="password"
-                    class="block mb-2.5 text-sm font-medium text-heading"
-                    >우선순위</label
-                  >
-                  <select
-                    class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                    v-model="filteredList.priorityCode"
-                  >
-                    <option value="">전체</option>
-                    <option
-                      :value="priority.priorityCode"
-                      v-for="priority in filterInfo.taskPriorityList"
-                    >
-                      {{ priority.codeName }}
-                    </option>
-                  </select>
-                </div>
-                <div>
-                  <label
-                    for="password"
-                    class="block mb-2.5 text-sm font-medium text-heading"
-                    >하위 프로젝트명</label
-                  >
-                  <select
-                    class="input bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 bm-2 shadow-xs placeholder:text-body"
-                    v-model="filteredList.parentProjectId"
-                  >
-                    <option value="">전체</option>
-                    <option
-                      :value="small.projectId"
-                      v-for="small in filterInfo.smallProjectList"
-                    >
-                      {{ small.projectName }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <div class="flex flex-row-reverse gap-2 mt-2">
-                <button type="button" @click="filteringList()" class="btn-navy">
-                  검색
-                </button>
-                <button type="button" @click="resetForm()" class="btn-red">
+
+          <div class="panel">
+            <div class="panel-head search-panel-head">
+              <span class="panel-title">검색 조건</span>
+
+              <div class="search-head-actions">
+                <button type="button" @click="resetForm()" class="btn-reset">
                   초기화
                 </button>
+                <button type="button" @click="filteringList()" class="btn-search">
+                  검색
+                </button>
               </div>
-            </form>
-          </div>
-          <div
-            class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mt-4"
-          >
-            <div>
-              <div class="flex flex-row-reverse">
-                <span class="member-role-badge my-2"
-                  >총 {{ listLength }}건
-                </span>
-              </div>
-              <!-- Table -->
-              <table class="table-auto w-full dark:text-gray-300">
-                <!-- Table header -->
-                <thead
-                  class="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs"
-                >
-                  <tr>
-                    <th class="p-2" v-for="th in thList">
-                      <div class="text-center">{{ th }}</div>
-                    </th>
-                  </tr>
-                </thead>
-                <!-- Table body -->
-                <tbody
-                  class="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60"
-                >
-                  <tr v-if="listLoading">
-                    <td :colspan="thList.length" class="text-center py-10">
-                      <h5 class="text-gray-500">⌛로딩중입니다.</h5>
-                    </td>
-                  </tr>
-                  <template v-if="!listLoading && listLength > 0">
-                    <tr
-                      v-for="task in taskList"
-                      :key="task.id"
-                      @click="goDetail(task)"
+            </div>
+
+            <div class="panel-body search-body">
+              <div class="search-layout">
+                <!-- 1행 -->
+                <div class="search-row primary-row">
+                  <div class="form-item">
+                    <label>업무명</label>
+                    <select class="input w-full" v-model="filteredList.taskId">
+                      <option value="">전체</option>
+                      <option
+                        v-for="title in filterInfo.taskTitleList"
+                        :key="title.taskId"
+                        :value="title.taskId"
+                      >
+                        {{ title.title }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="form-item">
+                    <label>담당자 이름</label>
+                    <select
+                      class="input w-full"
+                      v-model="filteredList.assigneeUserId"
                     >
-                      <td class="p-2 w-80">
-                        <div class="text-left">
-                          <span
-                            v-if="task.parentTaskId"
-                            :style="{
-                              marginLeft: (task.level - 1) * 20 + 'px',
-                            }"
-                          >
-                            ㄴ [하위] </span
-                          >{{ task.title }}
+                      <option value="">전체</option>
+                      <option
+                        v-for="user in filterInfo.userNameList"
+                        :key="user.assigneeUserId"
+                        :value="user.assigneeUserId"
+                      >
+                        {{ user.userName }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="form-item">
+                    <label>업무 상태</label>
+                    <select
+                      class="input w-full"
+                      v-model="filteredList.taskStatusId"
+                    >
+                      <option value="">전체</option>
+                      <option
+                        v-for="status in filterInfo.taskStatusList"
+                        :key="status.taskStatusId"
+                        :value="status.taskStatusId"
+                      >
+                        {{ status.statusName }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="form-item">
+                    <label>하위 프로젝트명</label>
+                    <select
+                      class="input w-full"
+                      v-model="filteredList.parentProjectId"
+                    >
+                      <option value="">전체</option>
+                      <option
+                        v-for="small in filterInfo.smallProjectList"
+                        :key="small.projectId"
+                        :value="small.projectId"
+                      >
+                        {{ small.projectName }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- 2행 -->
+                <div class="search-row secondary-row">
+                  <div class="form-item">
+                    <label>업무 유형</label>
+                    <select
+                      class="input w-full"
+                      v-model="filteredList.taskTypeId"
+                    >
+                      <option value="">전체</option>
+                      <option
+                        v-for="type in filterInfo.taskTypeList"
+                        :key="type.taskTypeId"
+                        :value="type.taskTypeId"
+                      >
+                        {{ type.typeName }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="form-item">
+                    <label>우선순위</label>
+                    <select
+                      class="input w-full"
+                      v-model="filteredList.priorityCode"
+                    >
+                      <option value="">전체</option>
+                      <option
+                        v-for="priority in filterInfo.taskPriorityList"
+                        :key="priority.priorityCode"
+                        :value="priority.priorityCode"
+                      >
+                        {{ priority.codeName }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="form-item date-range-item">
+                    <label>기간</label>
+                    <div class="date-range-row">
+                      <input
+                        v-model="filteredList.startDate"
+                        type="date"
+                        class="input w-full"
+                      />
+                      <span class="range-sep">~</span>
+                      <input
+                        v-model="filteredList.endDate"
+                        type="date"
+                        class="input w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head list-head">
+              <span class="panel-title">업무 목록</span>
+              <span class="count-badge">총 {{ listLength }}건</span>
+            </div>
+
+            <div class="panel-body list-body">
+              <div class="table-wrap">
+                <table class="task-table">
+                  <thead>
+                    <tr>
+                      <th v-for="th in thList" :key="th">
+                        <div
+                          class="th-text"
+                          :class="{
+                            left: th === '업무명' || th === '프로젝트명',
+                          }"
+                        >
+                          {{ th }}
                         </div>
-                      </td>
-                      <td class="p-2">
-                        <div class="text-center">
-                          {{ task.userName }}
-                        </div>
-                      </td>
-                      <td class="p-2 w-24">
-                        <div class="text-center">
-                          {{ task.statusName }}
-                        </div>
-                      </td>
-                      <td class="p-2 w-18">
-                        <div class="text-center">
-                          {{ task.typeName }}
-                        </div>
-                      </td>
-                      <td class="p-2 w-18">
-                        <div class="text-center">
-                          {{ task.codeName }}
-                        </div>
-                      </td>
-                      <td class="p-2">
-                        <div class="progress-wrap">
-                          <el-progress
-                            :percentage="task.progressRate"
-                            :stroke-width="8"
-                            :show-text="false"
-                            color="#2563eb"
-                            style="flex: 1"
-                          />
-                          <span class="progress-text"
-                            >{{ task.progressRate }}%</span
-                          >
-                        </div>
-                      </td>
-                      <td class="p-2">
-                        <div class="text-center">
-                          {{ task.startDate }}
-                        </div>
-                      </td>
-                      <td class="p-2">
-                        <div class="text-center">
-                          {{ task.dueDate }}
-                        </div>
-                      </td>
-                      <td class="p-2 w-80">
-                        <div class="text-left">
-                          {{ task.projectName }}
-                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr v-if="listLoading">
+                      <td :colspan="thList.length" class="empty-cell">
+                        ⌛ 로딩중입니다.
                       </td>
                     </tr>
-                    <!-- <el-popover :visible="visible" placement="top" :width="180">
-                  <p>Are you sure to delete this?</p>
-                  <div style="text-align: right; margin: 0">
-                    <el-button size="small" text @click="visible = false"
-                      >cancel</el-button
-                    >
-                    <el-button
-                      size="small"
-                      type="primary"
-                      @click="visible = false"
-                    >
-                      confirm
-                    </el-button>
-                  </div>
-                  <template #reference>
-                    <el-button @click="visible = true">Delete</el-button>
-                  </template>
-                </el-popover> -->
-                  </template>
 
-                  <tr v-else-if="listLoading == false && listLength == 0">
-                    <td :colspan="thList.length" class="text-center py-10">
-                      <h5 class="text-gray-500">업무가 존재하지 않습니다</h5>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                    <template v-else-if="listLength > 0">
+                      <tr
+                        v-for="task in taskList"
+                        :key="task.taskId"
+                        class="table-row"
+                        @click="goDetail(task)"
+                      >
+                        <td class="task-title-cell">
+                          <div class="text-left">
+                            <span
+                              v-if="task.parentTaskId"
+                              :style="{ marginLeft: (task.level - 1) * 20 + 'px' }"
+                              class="sub-task-prefix"
+                            >
+                              ㄴ [하위]
+                            </span>
+                            {{ task.title }}
+                          </div>
+                        </td>
+
+                        <td class="text-center">{{ task.userName }}</td>
+                        <td class="text-center">{{ task.statusName }}</td>
+                        <td class="text-center">{{ task.typeName }}</td>
+
+                        <td class="text-center">
+                          <span
+                            class="priority-pill"
+                            :class="getPriorityClass(task.codeName)"
+                          >
+                            {{ task.codeName }}
+                          </span>
+                        </td>
+
+                        <td>
+                          <div class="progress-wrap">
+                            <el-progress
+                              :percentage="task.progressRate"
+                              :stroke-width="8"
+                              :show-text="false"
+                              style="flex: 1"
+                              :color="
+                                task.progressRate >= 100 ? '#10b981' : '#1B5C9C'
+                              "
+                            />
+                            <span class="progress-text">{{ task.progressRate }}%</span>
+                          </div>
+                        </td>
+
+                        <td class="text-center">{{ task.startDate }}</td>
+                        <td class="text-center">{{ task.dueDate }}</td>
+                        <td class="project-name-cell">{{ task.projectName }}</td>
+                      </tr>
+                    </template>
+
+                    <tr v-else>
+                      <td :colspan="thList.length" class="empty-cell">
+                        업무가 존재하지 않습니다.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
               <div class="pagination-wrap">
                 <el-pagination
                   :current-page="nowPage"
@@ -338,7 +294,6 @@
 <script setup>
 import { onBeforeMount, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
 import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -351,12 +306,12 @@ const taskStore = usetaskKJHStore();
 const route = useRoute();
 const router = useRouter();
 
-let taskList = ref(); // 업무 목록
+let taskList = ref([]);
 let listLoading = ref(false);
 const filterList = ref([]);
-let name = ref(); // 프로젝트명
-let projectStartDate = ref(); // 프로젝트 날짜
-let projectendDate = ref(); // 프로젝트 날짜
+let name = ref();
+let projectStartDate = ref();
+let projectendDate = ref();
 
 let thList = ref([
   "업무명",
@@ -370,7 +325,14 @@ let thList = ref([
   "프로젝트명",
 ]);
 
-let filterInfo = ref([]);
+let filterInfo = ref({
+  taskTitleList: [],
+  userNameList: [],
+  taskTypeList: [],
+  taskStatusList: [],
+  taskPriorityList: [],
+  smallProjectList: [],
+});
 
 let filteredList = ref({
   taskId: "",
@@ -387,9 +349,8 @@ const listNum = ref(10);
 const real = ref(true);
 const nowPage = ref(1);
 
-let listLength = ref();
+let listLength = ref(0);
 
-// 필터링 조건들
 let id = route.params.projectId;
 let subId = route.params.subProjectId;
 
@@ -404,43 +365,38 @@ onBeforeMount(async () => {
       Swal.showLoading();
     },
   });
-  // 프로젝트 이름 조회
+
   await taskStore.getProjectName(id);
   const projectInfo = taskStore.projectName;
   name.value = projectInfo.projectName;
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.startDate;
 
-  // url에 subProjectId가 있을 경우
-  console.log(subId);
   if (subId) {
     filteredList.value.parentProjectId = subId;
   }
-  // 전체 목록 조회
+
   await handleCurrentChange(1);
 
-  // 필터링 조건 조회
   await taskStore.getAllFilterInfo(id);
-  filterInfo.value = taskStore.filterInfo;
+  filterInfo.value = taskStore.filterInfo || filterInfo.value;
 
   Swal.close();
 });
 
-// 페이지네이션
 const handleCurrentChange = async (val) => {
-  console.log("페이징", val);
   nowPage.value = val;
 
   let start = (val - 1) * listNum.value + 1;
   let end = val * listNum.value;
 
-  // 페이지 변환 목록 조회
   let obj = {
     projectId: id,
     startNum: start,
     endNum: end,
     ...filteredList.value,
   };
+
   Swal.fire({
     title: "잠시만 기다려주세요...",
     html: "데이터를 불러오는 중입니다.",
@@ -454,12 +410,13 @@ const handleCurrentChange = async (val) => {
 
   try {
     await taskStore.getAllTask(obj);
-    Swal.close();
-
-    taskList.value = taskStore.taskAllList;
-
+    taskList.value = taskStore.taskAllList || [];
     listLength.value =
-      taskList.value.length == 0 ? 0 : taskList.value[0].taskCounts;
+      taskList.value.length === 0 ? 0 : taskList.value[0].taskCounts;
+
+    if (listLength.value > 0) {
+      await changeDateType(taskList.value);
+    }
   } catch (err) {
     Swal.fire({
       icon: "error",
@@ -468,18 +425,12 @@ const handleCurrentChange = async (val) => {
   } finally {
     Swal.close();
   }
-
-  if (listLength.value > 0) {
-    await changeDateType(taskList.value);
-  }
 };
 
-// 업무생성 버튼
 const goResister = () => {
   router.push({ name: "taskRegister" });
 };
 
-// 검색 버튼
 const filteringList = async () => {
   let count = 0;
   let bool = Object.values(filteredList.value).filter((el) => {
@@ -496,7 +447,7 @@ const filteringList = async () => {
       text: "조건을 선택 또는 입력해주세요",
       icon: "warning",
       showCancelButton: false,
-      confirmButtonText: "활성",
+      confirmButtonText: "확인",
       reverseButtons: true,
     });
 
@@ -504,9 +455,7 @@ const filteringList = async () => {
   }
 };
 
-// 초기화 버튼
 const resetForm = async () => {
-  // 필터링 조건 초기화
   filteredList.value = {
     taskId: "",
     assigneeUserId: "",
@@ -519,31 +468,61 @@ const resetForm = async () => {
   };
 
   await handleCurrentChange(1);
-
-  console.log("업무목록", filterList.value.length);
 };
 
-// 업무 상세페이지 이동
 const goDetail = (task) => {
-  console.log(task);
-  subId = task.parentProjectId != null && task.projectId != null ? subId : null;
+  subId =
+    task.parentProjectId != null && task.projectId != null ? subId : null;
 
-  console.log(subId);
   router.push({
     name: "taskDetail",
     params: { projectId: id, subProjectId: subId, taskId: task.taskId },
   });
 };
 
-// 날짜 null 일 경우 형식 변경
+const getPriorityClass = (priorityName) => {
+  const value = String(priorityName || "").trim();
+
+  if (
+    value.includes("긴급") ||
+    value.includes("최우선") ||
+    value.toUpperCase() === "URGENT"
+  ) {
+    return "priority-urgent";
+  }
+
+  if (
+    value === "상" ||
+    value.includes("높음") ||
+    value.toUpperCase() === "HIGH"
+  ) {
+    return "priority-high";
+  }
+
+  if (
+    value === "중" ||
+    value.includes("보통") ||
+    value.toUpperCase() === "MEDIUM"
+  ) {
+    return "priority-medium";
+  }
+
+  if (
+    value === "하" ||
+    value.includes("낮음") ||
+    value.toUpperCase() === "LOW"
+  ) {
+    return "priority-low";
+  }
+
+  return "priority-default";
+};
+
 const changeDateType = (val) => {
-  console.log(val);
   for (let i = 0; i < val.length; i++) {
-    // 담당자 미지정
     if (val[i].userName == null) {
       val[i].userName = "미지정";
     }
-    // 날짜 형식 변경
     if (val[i].startDate != null) {
       val[i].startDate = changeDate(val[i].startDate);
     } else {
@@ -557,23 +536,75 @@ const changeDateType = (val) => {
   }
 };
 </script>
+
 <style scoped>
-/* 상단 */
-.proj-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+.dashboard-page {
+  font-family: "Pretendard", sans-serif;
+  background-color: #f3f4f6;
 }
 
-.proj-title-left {
+.sub-header {
+  background: #fff;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bc-home {
+  color: #9ca3af;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
+
+.page-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pg-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pg-left {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.proj-name-row {
+.pg-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.proj-meta {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -581,146 +612,413 @@ const changeDateType = (val) => {
 }
 
 .proj-name {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.02em;
+  color: #1b5c9c;
 }
 
 .proj-period {
   font-size: 13px;
-  color: #64748b;
-  font-weight: 500;
-}
-/* 하단 버튼 */
-.btn-navy {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #1e3a5f;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
-  letter-spacing: 0.01em;
-}
-.btn-navy:hover {
-  background: #162d4a;
-  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
-  transform: translateY(-1px);
+  color: #6b7280;
 }
 
-.btn-red {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #dc2626;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
-  letter-spacing: 0.01em;
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
 }
-.btn-red:hover {
-  background: #b91c1c;
-  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-  transform: translateY(-1px);
+
+.panel-head {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #f3f4f6;
 }
-/* ── 프로젝트 목록 ── */
-.progress-wrap {
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.panel-body {
+  background: #fff;
+}
+
+.btn-create-task {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 18px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(27, 92, 156, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-create-task:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.search-panel-head {
+  align-items: center;
+}
+
+.search-head-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.progress-text {
+
+.search-body {
+  padding: 16px 18px;
+}
+
+.search-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.search-row {
+  display: grid;
+  gap: 12px;
+  align-items: end;
+}
+
+.primary-row {
+  grid-template-columns: 1.6fr 1fr 1fr 1.2fr;
+}
+
+.secondary-row {
+  grid-template-columns: 1fr 1fr 1.8fr;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.form-item label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b5563;
+  line-height: 1.2;
+}
+
+.date-range-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.range-sep {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.btn-search,
+.btn-reset {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-search {
+  border: none;
+  background: #1b5c9c;
+  color: #fff;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(27, 92, 156, 0.18);
+}
+
+.btn-search:hover {
+  background: #144677;
+}
+
+.btn-reset {
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.16);
+}
+
+.btn-reset:hover {
+  background: #dc2626;
+}
+
+.list-head {
+  align-items: center;
+}
+
+.list-body {
+  padding: 0;
+}
+
+.count-badge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.task-table thead {
+  background: #f9fafb;
+}
+
+.task-table th {
+  height: 46px;
+  padding: 0 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #2563eb;
-  min-width: 32px;
+  color: #4b5563;
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
 }
-.pagination-wrap {
+
+.th-text {
+  text-align: center;
+}
+
+.th-text.left {
+  text-align: left;
+  padding-left: 12px;
+}
+
+.task-table td {
+  padding: 14px 12px;
+  font-size: 13px;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.table-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background: #f9fbff;
+}
+
+.task-title-cell {
+  width: 320px;
+}
+
+.task-title-cell .text-left {
+  text-align: left;
+}
+
+.project-name-cell {
+  text-align: left;
+  min-width: 220px;
+}
+
+.sub-task-prefix {
+  color: #64748b;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.progress-wrap {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 130px;
+}
+
+.progress-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1b5c9c;
+  min-width: 40px;
+  text-align: right;
+}
+
+.priority-pill {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  padding: 12px 0;
-  border-top: 1px solid #f0f0f0;
+  min-width: 44px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
 }
-.new-project-btn {
-  background: #c7d9f5;
-  border: none;
-  color: #1a1a2e;
-  font-weight: 500;
-  font-size: 14px;
-  border-radius: 8px;
-  height: 40px;
+
+.priority-urgent {
+  background: #fee2e2;
+  color: #b91c1c;
 }
-.new-project-btn:hover {
-  background: #a8c4ef;
+
+.priority-high {
+  background: #ffedd5;
+  color: #c2410c;
 }
-.member-role-badge {
-  font-size: 15px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 99px;
-  letter-spacing: 0.03em;
-  margin-right: 15px;
+
+.priority-medium {
   background: #dbeafe;
   color: #1d4ed8;
 }
 
-/* 인풋 전체 라운드 */
+.priority-low {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.priority-default {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.empty-cell {
+  text-align: center;
+  padding: 48px 20px !important;
+  font-size: 14px;
+  color: #9ca3af !important;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  border-top: 1px solid #f3f4f6;
+  background: #f9fafb;
+}
+
 :deep(.input) {
-  border-radius: 10px !important;
+  height: 36px;
+  border-radius: 8px !important;
   border: 1px solid #e2e8f0 !important;
   background: #f8fafc !important;
   transition:
     border-color 0.2s,
-    box-shadow 0.2s;
-  font-size: 13px;
+    box-shadow 0.2s,
+    background 0.2s;
+  font-size: 12px;
+  padding: 0 10px;
+  color: #111827;
 }
+
 :deep(.input:focus) {
-  border-color: #94a3b8 !important;
-  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15) !important;
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
   background: #fff !important;
   outline: none;
 }
-:deep(.input:disabled) {
-  background: #f1f5f9 !important;
-  color: #94a3b8 !important;
-}
+
 :deep(select.input) {
-  border-radius: 10px !important;
   appearance: auto !important;
   -webkit-appearance: auto !important;
-  padding-right: 28px !important;
+  padding-right: 24px !important;
 }
-:deep(textarea.input) {
-  border-radius: 10px !important;
+
+:deep(.el-pagination.is-background .btn-next),
+:deep(.el-pagination.is-background .btn-prev),
+:deep(.el-pagination.is-background .el-pager li) {
+  border-radius: 8px;
 }
-:deep(.input:disabled) {
-  background: #f1f5f9 !important;
-  color: #475569 !important; /* #94a3b8 → #475569 으로 변경! */
+
+@media (max-width: 1200px) {
+  .search-row.primary,
+  .search-row.secondary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-head-actions {
+    margin-left: auto;
+  }
 }
-:deep(.text-left) {
-  text-align: left;
-  padding-left: 15px;
-}
-:deep(th:nth-child(1) .text-center) {
-  text-align: left;
-  padding-left: 15px;
-}
-:deep(th:nth-child(9) .text-center) {
-  text-align: left;
-  padding-left: 15px;
-}
-tbody tr:hover {
-  background-color: #f9fafb; /* 살짝 밝은 회색으로 강조 */
-  cursor: pointer;
-  transition: background-color 0.2s;
+
+@media (max-width: 768px) {
+  .sub-header {
+    padding: 12px 16px;
+  }
+
+  .page-container {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .pg-row {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pg-title {
+    font-size: 20px;
+  }
+
+  .panel-head {
+    padding: 14px 16px;
+  }
+
+  .search-panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-head-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .search-body {
+    padding: 14px 12px;
+  }
+
+  .search-row.primary,
+  .search-row.secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .date-range-row {
+    grid-template-columns: 1fr;
+  }
+
+  .range-sep {
+    display: none;
+  }
+
+  .btn-search,
+  .btn-reset,
+  .btn-create-task {
+    width: 100%;
+  }
+
+  .task-table th,
+  .task-table td {
+    white-space: nowrap;
+  }
 }
 </style>

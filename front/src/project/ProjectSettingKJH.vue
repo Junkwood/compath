@@ -37,10 +37,14 @@
 
           <!-- 기본 설정 패널 -->
           <div class="panel">
-            <div class="panel-head">
-              <span class="panel-title">기본 설정</span>
+          <div class="panel-head">
+            <span class="panel-title">기본 설정</span>
+
+            <div class="panel-head-actions">
               <button @click="openModfyModal" class="btn-primary">수정</button>
+              <button @click="handleGoBack" class="btn-line">돌아가기</button>
             </div>
+          </div>
 
             <div class="panel-body setting-body">
               <div class="setting-table-wrap">
@@ -196,7 +200,7 @@ import { onBeforeMount, ref, watch, computed } from "vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { useProjectKJHStore } from "../stores/projectKJH";
 import { useAuthStore } from "../stores/auth";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectModifyModal from "./ProjectModifyModal.vue";
@@ -207,6 +211,7 @@ const route = useRoute();
 const taskStore = usetaskKJHStore();
 const authStore = useAuthStore();
 const projectStore = useProjectKJHStore();
+const router = useRouter();
 
 const sidebarOpen = ref(false);
 
@@ -256,6 +261,11 @@ const roleTabs = computed(() => {
 
   return [...tabs, ...Array.from(roleMap.values())];
 });
+
+// 돌아가기버튼
+const handleGoBack = () => {
+  router.back();
+};
 
 const filteredMemberList = computed(() => {
   if (activeRoleTab.value === "ALL") return memberList.value;
@@ -474,6 +484,13 @@ watch(
   border-bottom: 1px solid #f3f4f6;
 }
 
+.panel-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
 .panel-title {
   font-size: 15px;
   font-weight: 700;
@@ -497,6 +514,24 @@ watch(
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(27, 92, 156, 0.22);
+}
+
+.btn-line {
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid #d6e4f2;
+  border-radius: 10px;
+  background: #fff;
+  color: #1b5c9c;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-line:hover {
+  background: #eff6ff;
+  border-color: #bfd3f6;
 }
 
 .btn-primary:hover {

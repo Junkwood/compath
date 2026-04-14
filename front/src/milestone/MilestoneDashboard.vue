@@ -28,7 +28,7 @@
             <div class="pg-left">
               <h1 class="pg-title">마일스톤 대시보드</h1>
               <div class="proj-meta">
-                <span class="proj-name">【 {{ projectInfo.projectName }} 】</span>
+                <span class="proj-name"> {{ projectInfo.projectName }} </span>
                 <span class="proj-period">
                   {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
                 </span>
