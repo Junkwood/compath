@@ -50,5 +50,6 @@ public class TaskReqDtoJJW {
 
     List<Map<String, Object>> timeEntryList;
 
+    Integer meetingLogId;
 
 }

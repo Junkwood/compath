@@ -114,7 +114,10 @@
                       다운로드 <span class="text-[10px] text-gray-300">〉</span>
                     </button>
                   </div>
-                  <div class="py-11 flex justify-center">
+                  <div
+                    class="py-11 flex justify-center"
+                    v-if="attachmentList.length == 0"
+                  >
                     <span>첨부파일이 존재하지 않습니다.</span>
                   </div>
                 </div>
@@ -126,7 +129,13 @@
               <div class="detail-task-header">
                 <h3 class="detail-section-title">연결된 일감</h3>
                 <div class="detail-task-actions">
-                  <button class="task-btn-secondary">연결일감 추가</button>
+                  <button
+                    type="button"
+                    @click="openModal()"
+                    class="task-btn-secondary"
+                  >
+                    연결일감 추가
+                  </button>
                   <button
                     class="task-btn-primary"
                     type="button"
@@ -139,18 +148,23 @@
 
               <div class="detail-task-list">
                 <div
-                  v-for="(item, index) in []"
+                  v-for="(item, index) in connectList"
                   :key="index"
                   class="task-item"
-                  @click="goMilestoneDetail(item)"
+                  @click="gotaskDetail(item)"
                 >
-                  <span class="task-name">{{ item.name }}</span>
-                  <span class="task-status">진행중</span>
-                  <span class="task-arrow">〉</span>
+                  <span class="task-name">{{ item.title }}</span>
+                  <span class="task-status">{{ item.statusName }}</span>
+                  <button
+                    class="task-arrow"
+                    @click.stop="delDtailConnect(item)"
+                  >
+                    x
+                  </button>
                 </div>
 
                 <!-- 예시 더미 (데이터 없을 때 빈 상태 표시) -->
-                <div v-if="true" class="task-empty">
+                <div v-if="!connectList" class="task-empty">
                   연결된 일감이 없습니다.
                 </div>
               </div>
@@ -168,6 +182,11 @@
       </main>
     </div>
   </div>
+  <meetingConnectTaskModal
+    v-model="openConnectModal"
+    :projectInfo="projectInfo"
+    @close-modal="closeModal"
+  />
 </template>
 
 <script setup>
@@ -177,6 +196,7 @@ import { useAttachmentStore } from "../stores/attachment";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
+import meetingConnectTaskModal from "./meetingConnectTaskModal.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -188,6 +208,15 @@ const meetingInfo = ref({});
 const attachmentList = ref([]);
 const meetingId = route.params.meetingId;
 const projectId = route.params.projectId;
+const subId = route.params.subProjectId;
+const openConnectModal = ref(false);
+const connectList = ref([]);
+
+const projectInfo = ref({
+  projectId: subId != "" ? subId : projectId,
+  meetingLogId: meetingId,
+});
+1;
 
 // 업무생성 페이지 이동
 const goRegister = () => {
@@ -197,12 +226,24 @@ const goRegister = () => {
   });
 };
 
+// 일감 연결 버튼
+const openModal = () => {
+  openConnectModal.value = true;
+};
+
+// 모달창 연결버튼
+const closeModal = (val) => {
+  console.log(val);
+  openConnectModal.value = false;
+  connectList.value = meetingStore.detailConnectList;
+};
+
 // 목록으로
 const goBack = () => {
   console.log(projectId);
   router.push({
     name: "meetingList",
-    params: { projectId: projectId },
+    params: { projectId: projectId, subProjectId: subId },
   });
 };
 
@@ -214,6 +255,25 @@ const modifyDocument = () => {
   });
 };
 
+// 연결 업무 상세페이지 이동
+const gotaskDetail = (task) => {
+  router.push({
+    name: "taskDetail",
+    params: { projectId: projectId, subProjectId: subId, taskId: task.taskId },
+  });
+};
+
+// 연결 업무 해제
+const delDtailConnect = async (task) => {
+  console.log(task);
+  let obj = {
+    meetingtaskId: task.meetingtaskId,
+    meetingLogId: task.meetingLogId,
+  };
+  await meetingStore.removeConnectTask(obj);
+  connectList.value = meetingStore.connectTaskList;
+};
+
 // 파일 다운로드
 const attachmentDownload = async (file) => {
   console.log(file);
@@ -223,8 +283,12 @@ const attachmentDownload = async (file) => {
 onBeforeMount(async () => {
   // 문서 및 프로젝트 정보
   await meetingStore.getMeetingById(meetingId);
-  meetingInfo.value = meetingStore.meetingDetail.meetingList;
-  attachmentList.value = meetingStore.meetingDetail.attachmentList;
+  meetingInfo.value = meetingStore.meetingDetail.meetingList.meetingDetail;
+  attachmentList.value =
+    meetingStore.meetingDetail.attachmentList != null
+      ? meetingStore.meetingDetail.attachmentList
+      : [];
+  connectList.value = meetingStore.meetingDetail.meetingList.connectDetail;
 });
 </script>
 <style scoped>

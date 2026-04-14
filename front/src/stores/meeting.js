@@ -10,6 +10,7 @@ export const useMeetingStore = defineStore("meeting", {
     pagingList: [],
     geminiContent: [],
     connectTaskList: [],
+    detailConnectList: [],
   }),
   getters: {},
   actions: {
@@ -99,10 +100,30 @@ export const useMeetingStore = defineStore("meeting", {
         });
     },
 
-    // 연결업무 연결 해제
+    // 연결업무 연결 해제（등록）
     async removeConnectTask(obj) {
       await api //
         .delete("/meeting/removeConnect", {
+          data: obj,
+        })
+        .then((res) => {
+          this.connectTaskList = res.data;
+        });
+    },
+
+    // 회의록상세 업무 연결 등록
+    async registerDetailConnect(obj) {
+      await api //
+        .post("/tasks/registerDetailConnect", obj)
+        .then((res) => {
+          this.detailConnectList = res.data;
+        });
+    },
+
+    // 연결업무 연결 해제（상세）
+    async removeConnectTask(obj) {
+      await api //
+        .delete("/meeting/removeDetailConnect", {
           data: obj,
         })
         .then((res) => {
