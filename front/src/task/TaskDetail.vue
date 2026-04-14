@@ -768,7 +768,7 @@ const cellStyle = () => ({
 /* ── 반응형 ── */
 @media (max-width: 1024px) {
   .dashboard-top {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .side-col {
     flex-direction: row;

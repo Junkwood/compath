@@ -40,8 +40,8 @@
         g.group_id
         FROM users u
         LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active='O1'
-        LEFT JOIN groups g ON gm.group_id = g.group_id
-        WHERE u.user_id=#{id} AND g.group_type='C1' AND g.is_active='O1'
+        LEFT JOIN groups g ON gm.group_id = g.group_id AND g.group_type='C1' AND g.is_active='O1'
+        WHERE u.user_id=#{id} AND u.user_type='M2' AND u.is_active='O1'
     </select>
 
 </mapper>

@@ -196,7 +196,6 @@ import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useRoleStore } from "../stores/roleSJW";
-import api from "../utils/api";
 import admin from "../utils/admin";
 
 const route = useRoute();
