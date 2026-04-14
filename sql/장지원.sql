@@ -52,6 +52,7 @@ ALTER SEQUENCE notification_targets_seq INCREMENT BY 1;
 
 
 
+
 SELECT * FROM milestones;
 SELECT * FROM milestone_mapping;
 SELECT * FROM task_rejections;
@@ -302,6 +303,7 @@ WHERE t.task_id = p_task_id;
     	ORDER BY task_status_id;
 
 END;
+
 ------------------------------------------------------------------------
 
 --알림 전용 프로시저

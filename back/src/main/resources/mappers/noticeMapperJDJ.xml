@@ -6,12 +6,13 @@
 
 <select id="getNoticeListByPid" resultType="NoticeDtoJDJ">
     SELECT
+        NOTICE_ID,
         TITLE,
         CREATED_AT,
         IS_PINNED
     FROM NOTICES
     WHERE PROJECT_ID=#{projectId}
-        AND IS_DELETED='O2'
+        AND IS_DELETED='Q2'
     ORDER BY IS_PINNED, CREATED_AT
 </select>
 

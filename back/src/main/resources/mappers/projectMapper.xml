@@ -3,36 +3,44 @@
     <!-- 프로젝트 전체조회             ROUND(AVG(NVL(T.PROGRESS_RATE, 0)), 0)      AS progressRate
 -->
     <select id="getAllProject" resultType="ProjectListDTO">
-            SELECT
-                P2.PROJECT_ID                         AS projectId,
-                P2.PROJECT_NAME                       AS projectName,
-                P2.IDENTIFIER                         AS identifier,
-                TO_CHAR(P2.START_DATE, 'YYYY-MM-DD')  AS startDate,
-                TO_CHAR(P2.END_DATE, 'YYYY-MM-DD')    AS endDate,
-                PM.USER_NAME                          AS pmName,
-                PL.USER_NAME                          AS plName,
-                NVL(ROUND(AVG(NVL(T.PROGRESS_RATE, 0)), 0), 0) AS progressRate
-            FROM PROJECTS P2
-            LEFT JOIN USERS PM
-                ON PM.USER_ID = P2.PM_USER_ID
-            LEFT JOIN USERS PL
-                ON PL.USER_ID = P2.PL_USER_ID
-            LEFT JOIN PROJECTS P
-                ON P.PARENT_PROJECT_ID = P2.PROJECT_ID
-            AND P.STATUS = 'F1'
-            LEFT JOIN TASKS T
-                ON T.PROJECT_ID = P.PROJECT_ID
-            WHERE P2.PARENT_PROJECT_ID IS NULL
-                AND P2.STATUS = 'F1'
-            GROUP BY
-                P2.PROJECT_ID,
-                P2.PROJECT_NAME,
-                P2.IDENTIFIER,
-                P2.START_DATE,
-                P2.END_DATE,
-                PM.USER_NAME,
-                PL.USER_NAME
-            ORDER BY P2.PROJECT_ID
+        SELECT
+        P2.PROJECT_ID                         AS projectId,
+        P2.PROJECT_NAME                       AS projectName,
+        P2.IDENTIFIER                         AS identifier,
+        TO_CHAR(P2.START_DATE, 'YYYY-MM-DD') AS startDate,
+        TO_CHAR(P2.END_DATE, 'YYYY-MM-DD')   AS endDate,
+        P2.IS_PUBLIC                          AS isPublic,
+        P2.USE_MILESTONE                      AS useMilestone,
+        P2.PM_USER_ID                         AS pmUserId,
+        P2.PL_USER_ID                         AS plUserId,
+        PM.USER_NAME                          AS pmName,
+        PL.USER_NAME                          AS plName,
+        NVL(ROUND(AVG(NVL(T.PROGRESS_RATE, 0)), 0), 0) AS progressRate
+        FROM PROJECTS P2
+        LEFT JOIN USERS PM
+        ON PM.USER_ID = P2.PM_USER_ID
+        LEFT JOIN USERS PL
+        ON PL.USER_ID = P2.PL_USER_ID
+        LEFT JOIN PROJECTS P
+        ON P.PARENT_PROJECT_ID = P2.PROJECT_ID
+        AND P.STATUS = 'F1'
+        LEFT JOIN TASKS T
+        ON T.PROJECT_ID = P.PROJECT_ID
+        WHERE P2.PARENT_PROJECT_ID IS NULL
+        AND P2.STATUS = 'F1'
+        GROUP BY
+        P2.PROJECT_ID,
+        P2.PROJECT_NAME,
+        P2.IDENTIFIER,
+        P2.START_DATE,
+        P2.END_DATE,
+        P2.IS_PUBLIC,
+        P2.USE_MILESTONE,
+        P2.PM_USER_ID,
+        P2.PL_USER_ID,
+        PM.USER_NAME,
+        PL.USER_NAME
+        ORDER BY P2.PROJECT_ID
     </select>
 
     <!-- 프로젝트 생성 -->
@@ -108,12 +116,15 @@
     <!--  프로젝트 단건조회  -->
     <select id="getSingleProject" resultType="ProjectSingleDtoJDJ">
         SELECT
-            PROJECT_ID,
-            PROJECT_NAME,
-            START_DATE,
-            END_DATE
-        FROM PROJECTS
-        WHERE PROJECT_ID=#{projectId}
+        P.PROJECT_ID                         AS projectId,
+        P.PROJECT_NAME                       AS projectName,
+        TO_CHAR(P.START_DATE, 'YYYY-MM-DD') AS startDate,
+        TO_CHAR(P.END_DATE, 'YYYY-MM-DD')   AS endDate,
+        U.USER_NAME                          AS managerName
+        FROM PROJECTS P
+        LEFT JOIN USERS U
+        ON U.USER_ID = P.SUB_PL_USER_ID
+        WHERE P.PROJECT_ID = #{projectId}
     </select>
 
     <!-- 하위프로젝트 목록 조회 -->

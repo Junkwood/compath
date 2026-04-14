@@ -1,179 +1,180 @@
 <template>
-  <div class="flex h-screen overflow-hidden">
+  <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
+    >
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
 
       <main class="grow">
-        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <!-- 상단 -->
-          <div class="mb-6 proj-title-row flex justify-between">
-            <div class="proj-title-left">
-              <h2 class="text-2xl md:text-3xl text-gray-800 font-bold">
-                전체 프로젝트 리스트
-              </h2>
-            </div>
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span class="bc-home">홈</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur">전체 프로젝트 리스트</span>
+          </div>
+        </div>
 
-            <div class="self-end">
-              <el-button class="new-project-btn" @click="goRegister">
-                + &nbsp; 프로젝트 생성
-              </el-button>
+        <div class="page-container">
+          <!-- 상단 제목 카드 -->
+          <div class="pg-row">
+            <div class="pg-left">
+              <h1 class="pg-title">전체 프로젝트 리스트</h1>
+              <div class="proj-meta">
+                <span class="proj-desc">
+                  프로젝트를 검색하고 상세 대시보드로 이동할 수 있습니다.
+                </span>
+              </div>
             </div>
           </div>
 
-          <!-- 검색 영역 -->
-          <div class="col-span-full xl:col-span-8 bg-white shadow-xs rounded-xl mb-0 p-4">
-            <form @submit.prevent="searchProjects">
-              <div class="grid grid-cols-4 gap-4">
-                <div class="mb-4">
-                  <label class="block mb-2.5 text-sm font-medium text-heading">
-                    프로젝트명
-                  </label>
-                  <input
-                    v-model="searchForm.projectName"
-                    type="text"
-                    class="input w-full"
-                    placeholder="프로젝트명 검색"
-                  />
+          <!-- 검색 패널 -->
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">검색 조건</span>
+            </div>
+
+            <div class="panel-body search-body">
+              <form @submit.prevent="searchProjects">
+                <div class="search-grid">
+                  <div class="form-item">
+                    <label>프로젝트명</label>
+                    <input
+                      v-model="searchForm.projectName"
+                      type="text"
+                      class="input w-full"
+                      placeholder="프로젝트명 검색"
+                    />
+                  </div>
+
+                  <div class="form-item">
+                    <label>PM</label>
+                    <input
+                      v-model="searchForm.pmName"
+                      type="text"
+                      class="input w-full"
+                      placeholder="PM 이름 검색"
+                    />
+                  </div>
+
+                  <div class="form-item">
+                    <label>시작일</label>
+                    <input
+                      v-model="searchForm.startDate"
+                      type="date"
+                      class="input w-full"
+                    />
+                  </div>
+
+                  <div class="form-item">
+                    <label>종료일</label>
+                    <input
+                      v-model="searchForm.endDate"
+                      type="date"
+                      class="input w-full"
+                    />
+                  </div>
                 </div>
 
-                <div class="mb-4">
-                  <label class="block mb-2.5 text-sm font-medium text-heading">
-                    PM
-                  </label>
-                  <input
-                    v-model="searchForm.pmName"
-                    type="text"
-                    class="input w-full"
-                    placeholder="PM 이름 검색"
-                  />
+                <div class="search-action-row">
+                  <button type="button" @click="resetForm" class="btn-reset">
+                    초기화
+                  </button>
+                  <button type="submit" class="btn-search">검색</button>
                 </div>
-
-                <div class="mb-4">
-                  <label class="block mb-2.5 text-sm font-medium text-heading">
-                    시작일
-                  </label>
-                  <input
-                    v-model="searchForm.startDate"
-                    type="date"
-                    class="input w-full"
-                  />
-                </div>
-
-                <div class="mb-4">
-                  <label class="block mb-2.5 text-sm font-medium text-heading">
-                    종료일
-                  </label>
-                  <input
-                    v-model="searchForm.endDate"
-                    type="date"
-                    class="input w-full"
-                  />
-                </div>
-              </div>
-
-              <div class="flex flex-row-reverse gap-2 mt-2">
-                <button type="submit" class="btn-navy">검색</button>
-                <button type="button" @click="resetForm" class="btn-red">
-                  초기화
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
 
-          <!-- 테이블 -->
-          <div class="col-span-full xl:col-span-8 bg-white shadow-xs rounded-xl mt-4">
-            <div>
-              <div class="flex flex-row-reverse">
-                <span class="member-role-badge my-2">총 {{ filteredProjects.length }}건</span>
-              </div>
+          <!-- 목록 패널 -->
+          <div class="panel">
+            <div class="panel-head list-head">
+              <span class="panel-title">프로젝트 목록</span>
+              <span class="count-badge">총 {{ filteredProjects.length }}건</span>
+            </div>
 
-              <table class="table-auto w-full dark:text-gray-300">
-                <thead
-                  class="text-xs uppercase text-gray-400 bg-gray-50 rounded-xs"
-                >
-                  <tr>
-                    <th class="p-3"><div class="text-left pl-4">프로젝트명</div></th>
-                    <th class="p-3"><div class="text-center">식별자</div></th>
-                    <th class="p-3"><div class="text-center">시작일</div></th>
-                    <th class="p-3"><div class="text-center">종료일</div></th>
-                    <th class="p-3"><div class="text-center">PM</div></th>
-                    <th class="p-3"><div class="text-center">PL</div></th>
-                    <th class="p-3"><div class="text-center">진행률</div></th>
-                  </tr>
-                </thead>
+            <div class="panel-body list-body">
+              <div class="table-wrap">
+                <table class="project-table">
+                  <thead>
+                    <tr>
+                      <th class="text-left pl-4">프로젝트명</th>
+                      <th class="text-center">식별자</th>
+                      <th class="text-center">시작일</th>
+                      <th class="text-center">종료일</th>
+                      <th class="text-center">PM</th>
+                      <th class="text-center">PL</th>
+                      <th class="text-center">진행률</th>
+                    </tr>
+                  </thead>
 
-                <tbody class="text-sm font-medium divide-y divide-gray-100">
-                  <tr v-if="listLoading">
-                    <td colspan="7" class="text-center py-10">
-                      <h5 class="text-gray-500">⌛ 로딩중입니다.</h5>
-                    </td>
-                  </tr>
-
-                  <template v-else-if="pagedProjects.length > 0">
-                    <tr
-                      v-for="project in pagedProjects"
-                      :key="project.projectId"
-                      @click="goDetail(project)"
-                      class="table-row"
-                    >
-                      <td class="p-3">
-                        <div class="text-left pl-4 font-semibold text-gray-800">
-                          {{ project.projectName }}
-                        </div>
-                      </td>
-                      <td class="p-3">
-                        <div class="text-center">
-                          {{ project.identifier || "-" }}
-                        </div>
-                      </td>
-                      <td class="p-3">
-                        <div class="text-center">
-                          {{ project.startDate || "-" }}
-                        </div>
-                      </td>
-                      <td class="p-3">
-                        <div class="text-center">
-                          {{ project.endDate || "-" }}
-                        </div>
-                      </td>
-                      <td class="p-3">
-                        <div class="text-center">
-                          {{ project.pmName || "-" }}
-                        </div>
-                      </td>
-                      <td class="p-3">
-                        <div class="text-center">
-                          {{ project.plName || "-" }}
-                        </div>
-                      </td>
-                      <td class="p-3">
-                        <div class="progress-wrap">
-                          <el-progress
-                            :percentage="project.progressRate || 0"
-                            :stroke-width="8"
-                            :show-text="false"
-                            style="flex: 1"
-                          />
-                          <span class="progress-text">
-                            {{ project.progressRate || 0 }}%
-                          </span>
-                        </div>
+                  <tbody>
+                    <tr v-if="listLoading">
+                      <td colspan="7" class="empty-cell">
+                        ⌛ 로딩중입니다.
                       </td>
                     </tr>
-                  </template>
 
-                  <tr v-else>
-                    <td colspan="7" class="text-center py-10">
-                      <h5 class="text-gray-500">프로젝트가 존재하지 않습니다</h5>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                    <template v-else-if="pagedProjects.length > 0">
+                      <tr
+                        v-for="project in pagedProjects"
+                        :key="project.projectId"
+                        @click="goDetail(project)"
+                        class="table-row"
+                      >
+                        <td>
+                          <div class="project-name-cell">
+                            {{ project.projectName }}
+                          </div>
+                        </td>
+                        <td class="text-center">
+                          {{ project.identifier || "-" }}
+                        </td>
+                        <td class="text-center">
+                          {{ project.startDate || "-" }}
+                        </td>
+                        <td class="text-center">
+                          {{ project.endDate || "-" }}
+                        </td>
+                        <td class="text-center">
+                          {{ project.pmName || "-" }}
+                        </td>
+                        <td class="text-center">
+                          {{ project.plName || "-" }}
+                        </td>
+                        <td>
+                          <div class="progress-wrap">
+                            <el-progress
+                              :percentage="project.progressRate || 0"
+                              :stroke-width="8"
+                              :show-text="false"
+                              style="flex: 1"
+                              :color="
+                                (project.progressRate || 0) >= 100
+                                  ? '#10b981'
+                                  : '#1B5C9C'
+                              "
+                            />
+                            <span class="progress-text">
+                              {{ project.progressRate || 0 }}%
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
+
+                    <tr v-else>
+                      <td colspan="7" class="empty-cell">
+                        프로젝트가 존재하지 않습니다.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
               <div class="pagination-wrap">
                 <el-pagination
@@ -314,114 +315,372 @@ const goDetail = (project) => {
 </script>
 
 <style scoped>
-.proj-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+.dashboard-page {
+  font-family: "Pretendard", sans-serif;
+  background-color: #f3f4f6;
 }
 
-.proj-title-left {
+.sub-header {
+  background: #fff;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bc-home {
+  color: #9ca3af;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
+
+.page-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 상단 제목 카드 */
+.pg-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pg-left {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.btn-navy {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #1e3a5f;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
-}
-.btn-navy:hover {
-  background: #162d4a;
+.pg-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
 }
 
-.btn-red {
+.proj-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proj-desc {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* 버튼 */
+.btn-setting {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 18px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(27, 92, 156, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-setting:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.btn-search {
   height: 38px;
   padding: 0 20px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 10px;
   cursor: pointer;
   border: none;
-  background: #dc2626;
+  background: #1b5c9c;
   color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(27, 92, 156, 0.22);
 }
-.btn-red:hover {
-  background: #b91c1c;
+
+.btn-search:hover {
+  background: #144677;
+}
+
+.btn-reset {
+  height: 38px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.btn-reset:hover {
+  background: #dc2626;
+}
+
+/* 패널 공통 */
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.panel-head {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.panel-body {
+  background: #fff;
+}
+
+/* 검색 */
+.search-body {
+  padding: 20px;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-item label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4b5563;
+}
+
+.search-action-row {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 목록 */
+.list-head {
+  align-items: center;
+}
+
+.list-body {
+  padding: 0;
+}
+
+.count-badge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.project-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.project-table thead {
+  background: #f9fafb;
+}
+
+.project-table th {
+  height: 46px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
+}
+
+.project-table td {
+  padding: 14px 12px;
+  font-size: 13px;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.project-name-cell {
+  padding-left: 4px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.table-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background: #f9fbff;
 }
 
 .progress-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  min-width: 150px;
 }
+
 .progress-text {
   font-size: 12px;
-  font-weight: 600;
-  color: #2563eb;
-  min-width: 32px;
+  font-weight: 700;
+  color: #1b5c9c;
+  min-width: 40px;
+  text-align: right;
 }
+
+.empty-cell {
+  text-align: center;
+  padding: 48px 20px !important;
+  font-size: 14px;
+  color: #9ca3af !important;
+}
+
 .pagination-wrap {
   display: flex;
   justify-content: center;
-  padding: 12px 0;
-  border-top: 1px solid #f0f0f0;
-}
-.new-project-btn {
-  background: #c7d9f5;
-  border: none;
-  color: #1a1a2e;
-  font-weight: 500;
-  font-size: 14px;
-  border-radius: 8px;
-  height: 40px;
-}
-.new-project-btn:hover {
-  background: #a8c4ef;
-}
-.member-role-badge {
-  font-size: 15px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 99px;
-  letter-spacing: 0.03em;
-  margin-right: 15px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  padding: 16px;
+  border-top: 1px solid #f3f4f6;
+  background: #f9fafb;
 }
 
+/* input */
 :deep(.input) {
+  height: 42px;
   border-radius: 10px !important;
   border: 1px solid #e2e8f0 !important;
   background: #f8fafc !important;
   transition:
     border-color 0.2s,
-    box-shadow 0.2s;
+    box-shadow 0.2s,
+    background 0.2s;
   font-size: 13px;
-  padding: 10px 12px;
+  padding: 0 12px;
+  color: #111827;
 }
+
 :deep(.input:focus) {
-  border-color: #94a3b8 !important;
-  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15) !important;
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
   background: #fff !important;
   outline: none;
 }
 
-.table-row:hover {
-  background-color: #f9fafb;
-  cursor: pointer;
-  transition: background-color 0.2s;
+:deep(.el-pagination.is-background .btn-next),
+:deep(.el-pagination.is-background .btn-prev),
+:deep(.el-pagination.is-background .el-pager li) {
+  border-radius: 8px;
+}
+
+@media (max-width: 1024px) {
+  .search-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .sub-header {
+    padding: 12px 16px;
+  }
+
+  .page-container {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .pg-row {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pg-title {
+    font-size: 20px;
+  }
+
+  .search-body {
+    padding: 16px;
+  }
+
+  .search-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .panel-head {
+    padding: 14px 16px;
+  }
+
+  .search-action-row {
+    justify-content: stretch;
+    flex-direction: column;
+  }
+
+  .btn-search,
+  .btn-reset {
+    width: 100%;
+  }
+
+  .project-table th,
+  .project-table td {
+    white-space: nowrap;
+  }
 }
 </style>
