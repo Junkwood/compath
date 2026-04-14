@@ -356,6 +356,7 @@ watch(
   () => props.connectList,
   (newId) => {
     if (newId) {
+      handleCurrentChange(1);
       allTasks.value = taskStore.taskAllList.filter(
         (task) => !newId.some((id) => id.taskId == task.taskId),
       );

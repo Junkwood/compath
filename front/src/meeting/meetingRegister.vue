@@ -165,6 +165,7 @@
                               : "Existing"
                           }}</span>
                           <button
+                            type="button"
                             @click="fileList.splice(index, 1)"
                             class="text-gray-400 hover:text-red-500"
                           >
@@ -742,11 +743,11 @@ onBeforeMount(async () => {
 // 추천 업무 생성 버튼
 const openCreateModal = (value) => {
   taskInfo.value = {
+    ...value,
     meetingLogId:
       connectTaskList.value.length > 0
         ? connectTaskList.value[0].meetingLogId
         : null,
-    ...value,
   };
   createModalOpen.value = true;
 };
