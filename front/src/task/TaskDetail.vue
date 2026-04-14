@@ -37,7 +37,7 @@
             <div>
               <div class="flex flex-row gap-10">
                 <button @click="goBack" type="button" class="btn-navy mb-4">
-                  ← 목록으로
+                  돌아가기
                 </button>
               </div>
               <div class="card main-col">
@@ -445,10 +445,7 @@ const goCreateSubTask = () => {
 
 // 목록으로 버튼
 const goBack = () => {
-  router.push({
-    name: "taskList",
-    params: { projectId: projectId.value, subProjectId: subId.value },
-  });
+  router.back();      
 };
 
 // 수정 버튼(업무 수정 페이지로 이동)

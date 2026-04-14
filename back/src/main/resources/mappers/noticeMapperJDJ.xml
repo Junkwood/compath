@@ -6,6 +6,7 @@
 
 <select id="getNoticeListByPid" resultType="NoticeDtoJDJ">
     SELECT
+        NOTICE_ID,
         TITLE,
         CREATED_AT,
         IS_PINNED

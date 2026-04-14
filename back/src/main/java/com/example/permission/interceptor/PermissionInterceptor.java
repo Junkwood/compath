@@ -1,6 +1,7 @@
 package com.example.permission.interceptor;
 
 import com.example.permission.mapper.PermissionMapper;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,14 @@ public class PermissionInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+
+        if (request.getDispatcherType() == DispatcherType.ASYNC || request.getDispatcherType() == DispatcherType.ERROR) {
+            return true;
+        }
+
+        if (!(handler instanceof HandlerMethod)) {
+            return true;
+        }
         if (!(handler instanceof HandlerMethod)) {
             return true; //정적 리소스는 통과
         }
