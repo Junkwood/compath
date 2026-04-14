@@ -252,7 +252,8 @@ const taskStore = usetaskKJHStore();
 const meetingStore = useMeetingStore();
 
 const projectId = route.params.projectId;
-const subId = route.params.subProjectId;
+const subId = route.params.subProjectId || "";
+
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
 
@@ -280,7 +281,7 @@ const thList = ["번호", "제목", "작성자", "등록일"];
 
 // 페이지네이션
 const handleCurrentChange = async (val) => {
-  val = val == undefined ? 1 : val;
+  val = val == null ? 1 : val;
   nowPage.value = val;
 
   let start = (val - 1) * listNum.value + 1;
@@ -356,6 +357,7 @@ onBeforeMount(async () => {
   });
   console.log(subId == "");
   let id = subId != "" ? subId : projectId;
+  console.log(id);
   await taskStore.getProjectName(id);
   const projectInfo = taskStore.projectName;
   name.value = projectInfo.projectName; // 프로젝트 이름
@@ -366,11 +368,10 @@ onBeforeMount(async () => {
   await meetingStore.getFilterList(obj);
 
   filterList.value = meetingStore.filterList;
-
-  listLength.value =
-    filterList.value.meetingList.length > 0
-      ? filterList.value.meetingList[0].taskCounts
-      : 0;
+  pagingList.value = meetingStore.filterList.meetingList.listLength;
+  filterList.value.meetingList.length > 0
+    ? filterList.value.meetingList[0].taskCounts
+    : 0;
   await handleCurrentChange(1);
   Swal.close();
 });
@@ -385,7 +386,6 @@ const resetForm = () => {
   };
   searchKeyword.value = "";
   workPage.value = 1;
-  handleCurrentChange(1);
 };
 </script>
 <style scoped>

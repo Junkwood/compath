@@ -41,7 +41,14 @@ public class MeetingController {
             dto.setAttachmentGroupId(id);
         }
 
-        return service.registerMeeting(dto);
+        MeetingDTO result = new MeetingDTO();
+        if(dto.getMeetingLogId() != null) {
+            result = service.modifyMeeting(dto);
+        } else {
+            result = service.registerMeeting(dto);
+        }
+
+        return result;
     }
 
 
@@ -98,7 +105,7 @@ public class MeetingController {
         return service.getAllMeeting(dto);
     }
 
-    //추천 업무 등록(회의록)
+    //추천 업무 등록(회의록 생성에서 ai 추천 업무)
     @PostMapping("/tasks/insert")
     public List<MeetingDTO> registerTasks(@Valid @RequestBody TaskReqDtoJJW dto){
         return service.insert(dto);
@@ -123,4 +130,12 @@ public class MeetingController {
     public List<MeetingDTO> removeDetailConnect(@RequestBody MeetingDTO dto) {
         return service.removeDetailConnect(dto);
     }
+
+    //회의록 업무 등록(회의록 생성 업무 추가)
+    @PostMapping("/tasks/registerConnect")
+    public List<MeetingDTO> registerConnect(@RequestBody List<MeetingDTO> dto){
+
+        return service.registerDetailConnect(dto);
+
+    };
 }

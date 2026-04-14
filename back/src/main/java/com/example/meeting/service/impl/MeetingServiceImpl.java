@@ -47,12 +47,23 @@ public class MeetingServiceImpl implements MeetingService {
 
         MeetingAlarmDTO dto = list.get(0);
 
+
+
+        // 알림테이블 등록
         mapper.registerMeetingAlarm(dto);
 
         int id = dto.getNotificationId();
 
         Integer result = 0;
         for(int i=1; i<list.size(); i++) {
+            // 참석자 테이블 등록
+            MeetingDTO mDto = new MeetingDTO();
+            mDto.setMeetingLogId(dto.getTargetId());
+            mDto.setProjectId(dto.getProjectId());
+            mDto.setUserId(list.get(i).getReceiverId());
+
+            mapper.registerMeetingMember(mDto);
+
             list.get(i).setNotificationId(id);
 
             result += mapper.registerAlarmTarget(list.get(i));
@@ -121,10 +132,11 @@ public class MeetingServiceImpl implements MeetingService {
 
         Integer meetingLogId = taskDto.getMeetingLogId();
 
-        // 빈회의록 등록
+
         MeetingDTO meetDto = new MeetingDTO();
         meetDto.setProjectId(taskDto.getProjectId());
 
+        // 빈회의록 등록
         if(meetingLogId == null) {
         mapper.registerMeeting(meetDto);
         } else {
@@ -141,29 +153,45 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     @Override
+// @Transactional을 메서드 레벨에서 제거하거나,
+// 클래스 상단에 붙어있다면 아래처럼 순수 로직만 남깁니다.
     public List<MeetingDTO> removeConnectTask(MeetingDTO dto) {
 
-        // 연결 테이블 삭제
+        // 1. 연결 업무 삭제
         int connectId = dto.getMeetingtaskId();
         mapper.removeConnectTask(connectId);
 
-        // 연결 테이블 조회(빈회의록 삭제하기위해)
+        // 2. 조회가 아니라 '남은 개수'를 숫자로 직접 세버리세요 (가장 정확함)
         int meetingId = dto.getMeetingLogId();
-        List<MeetingDTO> list = mapper.getRecommandTask(meetingId);
 
-        // null이거나 길이가  0일때 삭제
-        if(list != null || !list.isEmpty()){
+        // Mapper 인터페이스에 int getConnectCount(int meetingId) 하나 만드세요.
+        // 쿼리: SELECT COUNT(*) FROM meeting_tasks WHERE meeting_log_id = #{id}
+        int count = mapper.getConnectCount(meetingId);
+
+        if (count == 0) {
+            // 3. 개수가 0이면 확실하게 삭제
             mapper.removeNullMeeting(meetingId);
             return new ArrayList<>();
         }
 
-        return list;
+        return mapper.getRecommandTask(meetingId);
     }
 
     @Override
     public List<MeetingDTO> registerDetailConnect(List<MeetingDTO> dto) {
 
         int meetingId=0;
+
+
+        if(dto.get(0).getMeetingLogId() == null) {
+            MeetingDTO meetDto = new MeetingDTO();
+            meetDto.setProjectId(dto.get(0).getProjectId());
+            mapper.registerMeeting(meetDto);
+
+            for(MeetingDTO dt : dto) {
+                dt.setMeetingLogId(meetDto.getMeetingLogId());
+            }
+        }
 
         for(MeetingDTO dt : dto) {
             // 회의록 업무 테이블 등록

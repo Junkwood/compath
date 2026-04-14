@@ -70,6 +70,7 @@ export const useTaskStore = defineStore("task", () => {
     estTime: "",
     progressRate: "",
     parentTaskId: "",
+    meetingLogId: "",
   };
 
   const form = ref({ ...initialForm });

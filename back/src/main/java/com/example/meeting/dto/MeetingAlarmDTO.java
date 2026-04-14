@@ -28,6 +28,7 @@ public class MeetingAlarmDTO { // 문서
     private String title;
     private String Message;
     private Integer createdBy;
+    private Integer projectId;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
