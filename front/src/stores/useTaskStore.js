@@ -449,12 +449,6 @@ export const useTaskStore = defineStore("task", () => {
 
   // ───────────── 수정 ─────────────
   const updateTask = async (taskId, editorUserId) => {
-    console.log("finishedIds:", finishedIds.value);
-    console.log("taskStatusId:", form.value.taskStatusId);
-    console.log("startDate:", form.value.startDate);
-    console.log("dueDate:", form.value.dueDate);
-    console.log("displayActualHours:", form.value.displayActualHours);
-    console.log("buildPayload:", JSON.stringify(buildPayload(), null, 2));
     const status = Number(form.value.taskStatusId);
 
     // 반려 처리
