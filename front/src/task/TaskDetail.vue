@@ -445,7 +445,7 @@ const goCreateSubTask = () => {
 
 // 목록으로 버튼
 const goBack = () => {
-  router.back();      
+  router.back();
 };
 
 // 수정 버튼(업무 수정 페이지로 이동)
@@ -764,7 +764,7 @@ const cellStyle = () => ({
 /* ── 반응형 ── */
 @media (max-width: 1024px) {
   .dashboard-top {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .side-col {
     flex-direction: row;
