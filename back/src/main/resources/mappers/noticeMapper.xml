@@ -29,7 +29,7 @@
                SYSDATE,
                #{projectId},
                #{isPinned},
-               'B2')
+               'Q2')
     </insert>
 
 <!--    공지사항 단건 조회-->

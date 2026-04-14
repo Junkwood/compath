@@ -14,7 +14,7 @@
       <main class="grow">
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <el-alert
-            v-if="noticeInfo.isDeleted === 'O1'"
+            v-if="noticeInfo.isDeleted === 'Q1'"
             title="비활성화된 게시글입니다."
             type="warning"
             description="관리자만 열람 가능하며 일반 사용자에게는 노출되지 않습니다."
@@ -154,8 +154,8 @@ const modifyNotice = () => {
 
 // 비활성 및 해제 버튼
 const lockNotice = async () => {
-  let lock = noticeInfo.value.isDeleted == "O2" ? true : false;
-  let isDeleted = noticeInfo.value.isDeleted == "O2" ? "O1" : "O2";
+  let lock = noticeInfo.value.isDeleted == "Q2" ? true : false;
+  let isDeleted = noticeInfo.value.isDeleted == "Q2" ? "Q1" : "Q2";
 
   if (lock) {
     const result = await Swal.fire({
