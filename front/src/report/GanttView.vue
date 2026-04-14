@@ -15,8 +15,7 @@
             <div class="sub-header-left">
               <div class="breadcrumb">
                 <span>홈</span><span class="bc-sep">›</span>
-                <span>프로젝트</span><span class="bc-sep">›</span>
-                <span class="bc-cur">{{ projectInfo.projectName }}</span
+                <span>{{ projectInfo.projectName }}</span
                 ><span class="bc-sep">›</span>
                 <span class="bc-cur">간트 차트</span>
               </div>
@@ -133,15 +132,15 @@ const scrollToToday = () => {
   setTimeout(() => {
     try {
       ganttInstance.scrollToDate(new Date(), {
-        block: "start",
-        animate: true,
-        edgeOffset: 100,
+        block: "center",
+        animate: false,
+        edgeOffset: 150,
       });
     } catch (e) {
       const el = ganttInstance.timeAxisSubGrid?.element;
       if (el) el.scrollLeft = 0;
     }
-  }, 200);
+  }, 300);
 };
 
 const onTaskSubmitted = async () => {
@@ -296,8 +295,9 @@ const initGantt = async () => {
     },
   });
 
-  ganttInstance.on("render", () => scrollToToday());
-
+  ganttInstance.project.commitAsync().then(() => {
+    scrollToToday();
+  });
   window.__ganttAdd = (parentId) => {
     taskModalParentId.value = String(parentId);
     taskModalOpen.value = true;

@@ -10,9 +10,9 @@
       />
 
       <main class="page">
-        <!-- ── 페이지 헤더 ── -->
-        <div class="page-header">
-          <div class="page-header-left">
+        <!-- 서브헤더 -->
+        <div class="sub-header">
+          <div class="sub-header-left">
             <button class="btn-back" @click="goBack">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path
@@ -23,255 +23,255 @@
                   stroke-linejoin="round"
                 />
               </svg>
-              타임 리포트
+              목록으로
             </button>
-            <span class="breadcrumb-sep">/</span>
-            <div>
-              <h1 class="page-title">타임 엔트리</h1>
-              <p class="page-subtitle">
-                {{ taskInfo?.title ?? "" }} · 업무별 시간 기록 현황
-              </p>
+            <div class="breadcrumb">
+              <span>홈</span><span class="bc-sep">›</span> <span>프로젝트</span
+              ><span class="bc-sep">›</span> <span>타임 리포트</span
+              ><span class="bc-sep">›</span>
+              <span class="bc-cur">타임 엔트리</span>
             </div>
           </div>
         </div>
-
-        <!-- ── ① 프로젝트 헤더 바 ── -->
-        <div class="proj-header-bar">
-          <div class="proj-info">
-            <span class="proj-label">프로젝트 명</span>
-            <div class="select-wrap">
-              <select
-                v-model="selectedProject"
-                @change="selectProject(selectedProject)"
-              >
-                <option
-                  v-for="p in projectOptions"
-                  :key="p.value"
-                  :value="p.value"
+        <div class="page-inner">
+          <!-- ── ① 프로젝트 헤더 바 ── -->
+          <div class="proj-header-bar">
+            <div class="proj-info">
+              <span class="proj-label">프로젝트 명</span>
+              <div class="select-wrap">
+                <select
+                  v-model="selectedProject"
+                  @change="selectProject(selectedProject)"
                 >
-                  {{ p.label }}
-                </option>
-              </select>
-              <span class="select-arrow">▾</span>
+                  <option
+                    v-for="p in projectOptions"
+                    :key="p.value"
+                    :value="p.value"
+                  >
+                    {{ p.label }}
+                  </option>
+                </select>
+                <span class="select-arrow">▾</span>
+              </div>
+            </div>
+            <div class="period-wrap">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                style="color: #64748b"
+              >
+                <rect
+                  x="3"
+                  y="4"
+                  width="18"
+                  height="18"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <path
+                  d="M16 2v4M8 2v4M3 10h18"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span class="period-text">{{ periodLabel }}</span>
             </div>
           </div>
-          <div class="period-wrap">
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              style="color: #64748b"
-            >
-              <rect
-                x="3"
-                y="4"
-                width="18"
-                height="18"
-                rx="2"
-                stroke="currentColor"
-                stroke-width="2"
-              />
-              <path
-                d="M16 2v4M8 2v4M3 10h18"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
-            <span class="period-text">{{ periodLabel }}</span>
-          </div>
-        </div>
 
-        <!-- ── 메인 대시보드 그리드 ── -->
-        <div class="dashboard-grid">
-          <div class="charts-left">
-            <div class="chart-row">
-              <div class="chart-card">
-                <div class="chart-card-header">
-                  <span class="chart-card-title">소요시간 프로젝트</span>
-                  <span class="chart-unit"
-                    >US (Hour) · {{ selectedProjectLabel }}</span
-                  >
+          <!-- ── 메인 대시보드 그리드 ── -->
+          <div class="dashboard-grid">
+            <div class="charts-left">
+              <div class="chart-row">
+                <div class="chart-card">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">소요시간 프로젝트</span>
+                    <span class="chart-unit"
+                      >US (Hour) · {{ selectedProjectLabel }}</span
+                    >
+                  </div>
+                  <div class="chart-canvas-wrap">
+                    <canvas ref="barChart1"></canvas>
+                  </div>
+                  <div class="chart-legend">
+                    <span
+                      v-for="item in barLegend"
+                      :key="item.label"
+                      class="legend-item"
+                    >
+                      <span
+                        class="legend-sq"
+                        :style="{ background: item.color }"
+                      ></span>
+                      {{ item.label }}
+                    </span>
+                  </div>
                 </div>
-                <div class="chart-canvas-wrap">
-                  <canvas ref="barChart1"></canvas>
+
+                <div class="chart-card">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">담당자별 투입 현황</span>
+                    <span class="chart-unit"
+                      >US (Hour) · {{ selectedProjectLabel }}</span
+                    >
+                  </div>
+                  <div class="chart-canvas-wrap">
+                    <canvas ref="hbarChart1"></canvas>
+                  </div>
+                  <div class="hbar-footer">
+                    <span class="hbar-count"
+                      >담당자 합계 = {{ filteredUniqueAssignees }}명</span
+                    >
+                    <div class="mini-pager">
+                      <button
+                        class="mpg"
+                        @click="hPage1 = Math.max(1, hPage1 - 1)"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        v-for="p in hTotalPages1"
+                        :key="p"
+                        class="mpg"
+                        :class="{ on: p === hPage1 }"
+                        @click="hPage1 = p"
+                      >
+                        {{ p }}
+                      </button>
+                      <button
+                        class="mpg"
+                        @click="hPage1 = Math.min(hTotalPages1, hPage1 + 1)"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div class="chart-legend">
+              </div>
+
+              <div class="chart-row">
+                <div class="chart-card">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">날짜별 소요시간 추이</span>
+                    <span class="chart-unit"
+                      >US (Hour) · {{ selectedProjectLabel }}</span
+                    >
+                  </div>
+                  <div class="chart-canvas-wrap">
+                    <canvas ref="lineChart"></canvas>
+                  </div>
+                  <div class="chart-legend">
+                    <span class="legend-item">
+                      <span
+                        class="legend-sq"
+                        style="background: #3b82f6; border-radius: 50%"
+                      ></span>
+                      일별 투입시간
+                    </span>
+                  </div>
+                </div>
+
+                <div class="chart-card">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">업무명별 소요시간</span>
+                    <span class="chart-unit"
+                      >US (Hour) · {{ selectedProjectLabel }}</span
+                    >
+                  </div>
+                  <div class="chart-canvas-wrap">
+                    <canvas ref="hbarChart2"></canvas>
+                  </div>
+                  <div class="hbar-footer">
+                    <span class="hbar-count"
+                      >업무 합계 = {{ chartEntries.length }}건</span
+                    >
+                    <div class="mini-pager">
+                      <button
+                        class="mpg"
+                        @click="hPage2 = Math.max(1, hPage2 - 1)"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        v-for="p in hTotalPages2"
+                        :key="p"
+                        class="mpg"
+                        :class="{ on: p === hPage2 }"
+                        @click="hPage2 = p"
+                      >
+                        {{ p }}
+                      </button>
+                      <button
+                        class="mpg"
+                        @click="hPage2 = Math.min(hTotalPages2, hPage2 + 1)"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 오른쪽 도넛+통계 -->
+            <div class="charts-right">
+              <div class="chart-card donut-card">
+                <div
+                  class="chart-card-header"
+                  style="
+                    justify-content: center;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 2px;
+                  "
+                >
+                  <span class="chart-card-title">업무 유형별 비중</span>
+                  <span style="font-size: 11px; color: #94a3b8">{{
+                    selectedProjectLabel
+                  }}</span>
+                </div>
+                <div class="donut-canvas-wrap">
+                  <canvas ref="donutChart"></canvas>
+                  <div class="donut-center">
+                    <span class="donut-total">{{ chartTotalHours }}h</span>
+                    <span class="donut-total-lbl">총시간</span>
+                  </div>
+                </div>
+                <div class="donut-legend">
                   <span
-                    v-for="item in barLegend"
+                    v-for="item in donutData"
                     :key="item.label"
-                    class="legend-item"
+                    class="donut-leg-item"
                   >
                     <span
                       class="legend-sq"
                       :style="{ background: item.color }"
                     ></span>
-                    {{ item.label }}
+                    <span>{{ item.label }}</span>
                   </span>
                 </div>
               </div>
 
-              <div class="chart-card">
-                <div class="chart-card-header">
-                  <span class="chart-card-title">담당자별 투입 현황</span>
-                  <span class="chart-unit"
-                    >US (Hour) · {{ selectedProjectLabel }}</span
-                  >
+              <div class="stat-grid">
+                <div class="stat-card">
+                  <div class="stat-val">{{ chartTotalHours }}h</div>
+                  <div class="stat-lbl">총 소요시간</div>
                 </div>
-                <div class="chart-canvas-wrap">
-                  <canvas ref="hbarChart1"></canvas>
+                <div class="stat-card">
+                  <div class="stat-val">{{ chartEntries.length }}</div>
+                  <div class="stat-lbl">총 엔트리</div>
                 </div>
-                <div class="hbar-footer">
-                  <span class="hbar-count"
-                    >담당자 합계 = {{ filteredUniqueAssignees }}명</span
-                  >
-                  <div class="mini-pager">
-                    <button
-                      class="mpg"
-                      @click="hPage1 = Math.max(1, hPage1 - 1)"
-                    >
-                      ‹
-                    </button>
-                    <button
-                      v-for="p in hTotalPages1"
-                      :key="p"
-                      class="mpg"
-                      :class="{ on: p === hPage1 }"
-                      @click="hPage1 = p"
-                    >
-                      {{ p }}
-                    </button>
-                    <button
-                      class="mpg"
-                      @click="hPage1 = Math.min(hTotalPages1, hPage1 + 1)"
-                    >
-                      ›
-                    </button>
-                  </div>
+                <div class="stat-card">
+                  <div class="stat-val">{{ filteredUniqueAssignees }}</div>
+                  <div class="stat-lbl">참여 담당자</div>
                 </div>
-              </div>
-            </div>
-
-            <div class="chart-row">
-              <div class="chart-card">
-                <div class="chart-card-header">
-                  <span class="chart-card-title">날짜별 소요시간 추이</span>
-                  <span class="chart-unit"
-                    >US (Hour) · {{ selectedProjectLabel }}</span
-                  >
+                <div class="stat-card">
+                  <div class="stat-val">{{ filteredUniqueProjects }}</div>
+                  <div class="stat-lbl">프로젝트</div>
                 </div>
-                <div class="chart-canvas-wrap">
-                  <canvas ref="lineChart"></canvas>
-                </div>
-                <div class="chart-legend">
-                  <span class="legend-item">
-                    <span
-                      class="legend-sq"
-                      style="background: #3b82f6; border-radius: 50%"
-                    ></span>
-                    일별 투입시간
-                  </span>
-                </div>
-              </div>
-
-              <div class="chart-card">
-                <div class="chart-card-header">
-                  <span class="chart-card-title">업무명별 소요시간</span>
-                  <span class="chart-unit"
-                    >US (Hour) · {{ selectedProjectLabel }}</span
-                  >
-                </div>
-                <div class="chart-canvas-wrap">
-                  <canvas ref="hbarChart2"></canvas>
-                </div>
-                <div class="hbar-footer">
-                  <span class="hbar-count"
-                    >업무 합계 = {{ chartEntries.length }}건</span
-                  >
-                  <div class="mini-pager">
-                    <button
-                      class="mpg"
-                      @click="hPage2 = Math.max(1, hPage2 - 1)"
-                    >
-                      ‹
-                    </button>
-                    <button
-                      v-for="p in hTotalPages2"
-                      :key="p"
-                      class="mpg"
-                      :class="{ on: p === hPage2 }"
-                      @click="hPage2 = p"
-                    >
-                      {{ p }}
-                    </button>
-                    <button
-                      class="mpg"
-                      @click="hPage2 = Math.min(hTotalPages2, hPage2 + 1)"
-                    >
-                      ›
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 오른쪽 도넛+통계 -->
-          <div class="charts-right">
-            <div class="chart-card donut-card">
-              <div
-                class="chart-card-header"
-                style="
-                  justify-content: center;
-                  flex-direction: column;
-                  align-items: center;
-                  gap: 2px;
-                "
-              >
-                <span class="chart-card-title">업무 유형별 비중</span>
-                <span style="font-size: 11px; color: #94a3b8">{{
-                  selectedProjectLabel
-                }}</span>
-              </div>
-              <div class="donut-canvas-wrap">
-                <canvas ref="donutChart"></canvas>
-                <div class="donut-center">
-                  <span class="donut-total">{{ chartTotalHours }}h</span>
-                  <span class="donut-total-lbl">총시간</span>
-                </div>
-              </div>
-              <div class="donut-legend">
-                <span
-                  v-for="item in donutData"
-                  :key="item.label"
-                  class="donut-leg-item"
-                >
-                  <span
-                    class="legend-sq"
-                    :style="{ background: item.color }"
-                  ></span>
-                  <span>{{ item.label }}</span>
-                </span>
-              </div>
-            </div>
-
-            <div class="stat-grid">
-              <div class="stat-card">
-                <div class="stat-val">{{ chartTotalHours }}h</div>
-                <div class="stat-lbl">총 소요시간</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-val">{{ chartEntries.length }}</div>
-                <div class="stat-lbl">총 엔트리</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-val">{{ filteredUniqueAssignees }}</div>
-                <div class="stat-lbl">참여 담당자</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-val">{{ filteredUniqueProjects }}</div>
-                <div class="stat-lbl">프로젝트</div>
               </div>
             </div>
           </div>
@@ -716,6 +716,44 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.sub-header {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+.sub-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.btn-back:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
 *,
 *::before,
 *::after {
@@ -723,55 +761,66 @@ export default defineComponent({
   margin: 0;
   padding: 0;
 }
+
 .page {
-  padding: 24px 28px;
+  padding: 0;
   color: #1e293b;
   font-family: "Pretendard", "Noto Sans KR", sans-serif;
 }
 
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #e2e8f0;
+/* ── 서브헤더 ── */
+.sub-header {
+  background: #ffffff;
+  padding: 14px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
-.page-header-left {
+.breadcrumb {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
 }
-.btn-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  font-size: 12px;
-  font-weight: 500;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.btn-back:hover {
-  background: #e2e8f0;
-}
-.breadcrumb-sep {
+.bc-sep {
   color: #cbd5e1;
-  font-size: 14px;
 }
-.page-title {
-  font-size: 18px;
-  font-weight: 700;
+.bc-cur {
   color: #0f172a;
-  letter-spacing: -0.3px;
+  font-weight: 600;
 }
-.page-subtitle {
+.bc-link {
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.bc-link:hover {
+  color: #2563eb;
+}
+.sub-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.meta-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+.meta-sub {
   font-size: 12px;
   color: #94a3b8;
-  margin-top: 2px;
+}
+
+/* ── 페이지 내부 ── */
+.page-inner {
+  padding: 20px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .proj-header-bar {
@@ -782,7 +831,6 @@ export default defineComponent({
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   padding: 12px 18px;
-  margin-bottom: 14px;
 }
 .proj-info {
   display: flex;
