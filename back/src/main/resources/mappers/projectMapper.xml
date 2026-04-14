@@ -135,27 +135,28 @@
     <!-- 하위프로젝트 목록 조회 -->
     <select id="getSubpList" resultType="ProjectSubListDtoJDJ">
         SELECT
-            RT.PROJECT_NAME AS ROOT_PROJECT_NAME,
-            P.PROJECT_ID,
-            P.PROJECT_NAME,
-            P.SUB_PL_USER_ID,
-            M.MILESTONE_ID,
-            M.MILESTONE_NAME,
-            U.USER_NAME
+        RT.PROJECT_NAME AS ROOT_PROJECT_NAME,
+        P.PROJECT_ID,
+        P.PROJECT_NAME,
+        P.IDENTIFIER,
+        P.SUB_PL_USER_ID,
+        M.MILESTONE_ID,
+        M.MILESTONE_NAME,
+        U.USER_NAME
         FROM PROJECTS P
         JOIN PROJECTS RT
-            ON RT.PROJECT_ID = P.PARENT_PROJECT_ID
+        ON RT.PROJECT_ID = P.PARENT_PROJECT_ID
         LEFT JOIN MILESTONE_MAPPING MM
-            ON P.PROJECT_ID = MM.PROJECT_ID
+        ON P.PROJECT_ID = MM.PROJECT_ID
         LEFT JOIN MILESTONES M
-            ON MM.MILESTONE_ID = M.MILESTONE_ID
+        ON MM.MILESTONE_ID = M.MILESTONE_ID
         LEFT JOIN USERS U
-            ON U.USER_ID = P.SUB_PL_USER_ID
+        ON U.USER_ID = P.SUB_PL_USER_ID
         WHERE P.PARENT_PROJECT_ID = #{parentProjectId}
-            AND P.STATUS IN ('F1', 'F2')
+        AND P.STATUS IN ('F1', 'F2')
         ORDER BY
-            M.MILESTONE_ID NULLS LAST,
-            P.PROJECT_ID
+        M.MILESTONE_ID NULLS LAST,
+        P.PROJECT_ID
     </select>
 
     <!-- 하위프로젝트 생성 -->
@@ -163,39 +164,47 @@
         <selectKey keyProperty="projectId" resultType="int" order="BEFORE">
             SELECT project_seq.NEXTVAL FROM dual
         </selectKey>
+
         INSERT INTO PROJECTS (
-                            PROJECT_ID,
-                            IDENTIFIER,
-                            PARENT_PROJECT_ID,
-                            PROJECT_NAME,
-                            DESCRIPTION,
-                            START_DATE,
-                            END_DATE,
-                            IS_PUBLIC,
-                            CREATED_AT,
-                            CREATED_BY,
-                            PM_USER_ID,
-                            PL_USER_ID,
-                            USE_MILESTONE,
-                            SUB_PL_USER_ID
-                            )
+        PROJECT_ID,
+        IDENTIFIER,
+        PARENT_PROJECT_ID,
+        PROJECT_NAME,
+        DESCRIPTION,
+        START_DATE,
+        END_DATE,
+        STATUS,
+        IS_PUBLIC,
+        CREATED_AT,
+        UPDATED_AT,
+        CREATED_BY,
+        PM_USER_ID,
+        PL_USER_ID,
+        USE_MILESTONE,
+        SUB_PL_USER_ID,
+        EDITOR_USER_ID
+        )
         VALUES (
-                            #{projectId},
-                            #{identifier},
-                            #{parentProjectId},
-                            #{projectName},
-                            #{description},
-                            #{startDate},
-                            #{endDate},
-                            #{isPublic},
-                            SYSDATE,
-                            #{userId},
-                            (SELECT PM_USER_ID FROM PROJECTS WHERE PROJECT_ID = #{parentProjectId}),
-                            (SELECT PL_USER_ID FROM PROJECTS WHERE PROJECT_ID = #{parentProjectId}),
-                            (SELECT USE_MILESTONE FROM PROJECTS WHERE PROJECT_ID = #{parentProjectId}),
-                            #{subPlUserId}
-                            )
+        #{projectId},
+        FN_GEN_SUBPROJECT_IDENTIFIER(#{parentProjectId}),
+        #{parentProjectId},
+        #{projectName},
+        #{description},
+        #{startDate},
+        #{endDate},
+        'F1',
+        #{isPublic},
+        SYSDATE,
+        NULL,
+        #{userId},
+        (SELECT PM_USER_ID FROM PROJECTS WHERE PROJECT_ID = #{parentProjectId}),
+        (SELECT PL_USER_ID FROM PROJECTS WHERE PROJECT_ID = #{parentProjectId}),
+        (SELECT USE_MILESTONE FROM PROJECTS WHERE PROJECT_ID = #{parentProjectId}),
+        #{subPlUserId},
+        NULL
+        )
     </insert>
+
 
     <insert id="registerMilestoneMapping">
         <selectKey keyProperty="milestoneMappingId" resultType="int" order="BEFORE">
@@ -241,15 +250,14 @@
     <update id="modifySubProject" parameterType="ProjectSubCreateDtoJDJ">
         UPDATE PROJECTS
         SET
-            PROJECT_NAME = #{projectName},
-            IDENTIFIER = #{identifier},
-            DESCRIPTION = #{description},
-            START_DATE = #{startDate},
-            END_DATE = #{endDate},
-            IS_PUBLIC = #{isPublic},
-            SUB_PL_USER_ID = #{subPlUserId},
-            EDITOR_USER_ID = #{userId},
-            UPDATED_AT = SYSDATE
+        PROJECT_NAME = #{projectName},
+        DESCRIPTION = #{description},
+        START_DATE = #{startDate},
+        END_DATE = #{endDate},
+        IS_PUBLIC = #{isPublic},
+        SUB_PL_USER_ID = #{subPlUserId},
+        EDITOR_USER_ID = #{userId},
+        UPDATED_AT = SYSDATE
         WHERE PROJECT_ID = #{projectId}
     </update>
 

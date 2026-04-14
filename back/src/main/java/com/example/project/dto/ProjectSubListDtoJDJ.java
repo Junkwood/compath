@@ -15,4 +15,5 @@ public class ProjectSubListDtoJDJ {
     private Integer milestoneId;
     private String milestoneName;
     private String userName;
+    private String identifier;
 }
