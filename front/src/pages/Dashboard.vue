@@ -107,7 +107,6 @@
                 />
               </div>
 
-              <!-- 여기로 이동 -->
               <div class="panel-action-row">
                 <el-button
                   class="action-btn btn-create-project"
@@ -248,7 +247,15 @@
     </div>
   </div>
 
-  <ProjectCreateModal v-model="createProjectModalOpen" />
+  <ProjectCreateModal
+    v-model="createProjectModalOpen"
+    @submitted="handleCreateSubmitted"
+  />
+
+  <ProjectCopyModal
+    v-model="copyProjectModalOpen"
+    @submitted="handleCopySubmitted"
+  />
 </template>
 
 <script setup>
@@ -259,11 +266,13 @@ import api from "../utils/api";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectCreateModal from "../project/ProjectCreateModal.vue";
+import ProjectCopyModal from "../project/ProjectCopyModal.vue";
 
 const router = useRouter();
 
 const sidebarOpen = ref(false);
 const createProjectModalOpen = ref(false);
+const copyProjectModalOpen = ref(false);
 
 const myTaskOnly = ref(true);
 const myProjectOnly = ref(true);
@@ -295,7 +304,7 @@ const taskStatusList = computed(() => [
 ]);
 
 const totalTaskCount = computed(() =>
-  Object.values(myTasks.value).reduce((sum, value) => sum + value, 0)
+  Object.values(myTasks.value).reduce((sum, value) => sum + value, 0),
 );
 
 const newsList = [
@@ -310,7 +319,7 @@ const fetchTaskList = async () => {
     const res = await api.get("/TaskListDash");
     taskProjects.value = res.data || [];
   } catch (err) {
-    console.error(err);
+    console.error("업무 통합 현황 조회 실패:", err);
   } finally {
     loadingTasks.value = false;
   }
@@ -322,7 +331,7 @@ const fetchProjectList = async () => {
     const res = await api.get("/ProjectList");
     projectList.value = res.data || [];
   } catch (err) {
-    console.error(err);
+    console.error("프로젝트 목록 조회 실패:", err);
   } finally {
     loadingProjects.value = false;
   }
@@ -379,7 +388,17 @@ const handleCreateProject = () => {
 };
 
 const handleCopyProject = () => {
-  console.log("프로젝트 복사 클릭");
+  copyProjectModalOpen.value = true;
+};
+
+const handleCreateSubmitted = async () => {
+  createProjectModalOpen.value = false;
+  await fetchProjectList();
+};
+
+const handleCopySubmitted = async () => {
+  copyProjectModalOpen.value = false;
+  await fetchProjectList();
 };
 
 const goProjectDashboard = (row) => {
