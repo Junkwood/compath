@@ -102,6 +102,12 @@
           <span class="count-badge" v-if="filterList.length > 0">총 {{ listLength }}건</span>
           <span v-else></span>
           <div class="flex gap-2">
+           <button type="button" @click="goStats()" class="btn-export btn-export--stats">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M3 3v18h18M7 16l4-4 4 4 4-4"/>
+    </svg>
+    통계 보기
+  </button>
             <button type="button" @click="exportExcel()" class="btn-export btn-export--excel">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8.5 17l-1.5-2.5L5.5 17H4l2.2-3.3L4.1 10.5h1.5l1.4 2.3 1.4-2.3H10L8 13.7 10.1 17H8.5zm5.5 0h-1.3l-2.5-6.5H11l1.8 4.8 1.8-4.8H16L13.5 17h.5z"/>
@@ -291,6 +297,11 @@ const exportData = computed(() => {
   return allData.value.filter((task) => selectedTaskIds.value.includes(task.taskId));
 });
 
+///통계
+const goStats = () => {
+  router.push({ name: "TaskReportStats", params: { projectId } });
+};
+
 const exportExcel = () => {
   const rows = exportData.value.map((task) => ({
     담당자: task.userName,
@@ -438,6 +449,12 @@ const exportPdf = () => {
   background: #fff;
 }
 .filter-actions { display: flex; gap: 8px; align-items: flex-end; padding-bottom: 1px; }
+.btn-export--stats { 
+  background: #eff6ff; 
+  color: #2563eb; 
+  border: 1px solid #bfdbfe; 
+}
+.btn-export--stats:hover { background: #dbeafe; }
 .btn-reset {
   padding: 8px 16px;
   background: #f3f4f6;

@@ -33,17 +33,18 @@
             parameterType="com.example.report.dto.TaskReportDto"
             resultType="com.example.report.dto.TaskReportDto">
         SELECT
-        t.task_id,
-        t.parent_task_id,
-        p.project_name,
-        t.title,
-        t.assignee_user_id,
-        u.user_name,
-        t2.type_name,
-        t.progress_rate,
-        t.actual_hours,
-        t.start_date,
-        t.due_date
+        t.task_id          AS taskId,
+        t.parent_task_id   AS parentTaskId,
+        t.project_id       AS projectId,
+        p.project_name     AS projectName,
+        t.title            AS title,
+        t.assignee_user_id AS assigneeUserId,
+        u.user_name        AS userName,
+        t2.type_name       AS typeName,
+        t.progress_rate    AS progressRate,
+        t.actual_hours     AS actualHours,
+        t.start_date       AS startDate,
+        t.due_date         AS dueDate
         FROM tasks t
         LEFT JOIN projects p ON t.project_id = p.project_id
         LEFT JOIN task_types t2 ON t.task_type_id = t2.task_type_id
