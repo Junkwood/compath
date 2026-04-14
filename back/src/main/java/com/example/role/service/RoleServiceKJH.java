@@ -8,4 +8,7 @@ import java.util.List;
 
 public interface RoleServiceKJH {
     List<RoleDTOKJH> getNoticeRole(Integer id);
+
+    //    프로젝트별 권한 조회
+    List<RoleDTOKJH> getProjectRole(RoleDTOKJH dto);
 }

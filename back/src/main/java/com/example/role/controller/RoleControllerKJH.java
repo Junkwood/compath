@@ -23,4 +23,10 @@ public class RoleControllerKJH {
 
         return service.getNoticeRole(id);
     }
+
+//    프로젝트 내 권한 조회
+    @GetMapping("/role/roleList")
+    public List<RoleDTOKJH> getProjectRole( RoleDTOKJH dto) {
+        return service.getProjectRole(dto);
+    }
 }

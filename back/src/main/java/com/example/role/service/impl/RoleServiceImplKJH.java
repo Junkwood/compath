@@ -25,4 +25,9 @@ public class RoleServiceImplKJH implements RoleServiceKJH {
     public List<RoleDTOKJH> getNoticeRole(Integer id) {
         return mapper.getNoticeRole(id);
     }
+
+    @Override
+    public List<RoleDTOKJH> getProjectRole(RoleDTOKJH dto) {
+        return mapper.getProjectRole(dto);
+    }
 }

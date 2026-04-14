@@ -413,7 +413,7 @@ onBeforeMount(async () => {
 
   // url에 subProjectId가 있을 경우
   console.log(subId);
-  if (subId) {
+  if (subId > 0) {
     filteredList.value.parentProjectId = subId;
   }
   // 전체 목록 조회
