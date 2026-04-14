@@ -3,6 +3,7 @@ package com.example.meeting.mapper;
 import com.example.meeting.dto.MeetingAlarmDTO;
 import com.example.meeting.dto.MeetingDTO;
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -48,9 +49,15 @@ public interface MeetingMapper {
   public int removeConnectTask(Integer id);
 
   //  빈회의록 삭제-
-  public int removeNullMeeting(Integer id);
+  public int removeNullMeeting(@Param("id")Integer id);
 
   //  빈회의록 수정
   public int modifyNullMeeting(MeetingDTO dto);
+
+  //  회의록 별 연결 업무 조회
+  public int getConnectCount(Integer id);
+
+  //    회의록 업무 등록
+  public int registerMeetingMember(MeetingDTO dto);
 
 }

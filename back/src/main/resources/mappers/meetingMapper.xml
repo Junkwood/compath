@@ -110,6 +110,9 @@
             meeting_type_code = #{meetingTypeCode},
             editor_user_id = #{editorUserId},
             place = #{place},
+            ai_summary = #{aiSummary},
+            stt_text = #{sttText},
+            attachment_group_id = #{attachmentGroupId},
             updated_at = SYSDATE
         WHERE meeting_log_id = #{meetingLogId}
     </update>
@@ -146,8 +149,8 @@
                 m.attachment_group_id,
                 m.meeting_log_id
               FROM meeting_logs m
-              JOIN projects p ON m.project_id = p.project_id
-              JOIN users u ON m.created_by = u.user_id
+              LEFT JOIN projects p ON m.project_id = p.project_id
+              LEFT JOIN users u ON m.created_by = u.user_id
               LEFT JOIN common_code c ON m.meeting_type_code = c.code_value
               WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
               <if test=" createdBy!= null and createdBy != ''">
@@ -206,7 +209,7 @@
     </delete>
 
 <!--    빈회의록 삭제-->
-    <delete id="removeNullMeeting">
+    <delete id="removeNullMeeting" flushCache="true">
         DELETE FROM meeting_logs
         WHERE meeting_log_id = #{id}
     </delete>
@@ -227,5 +230,25 @@
         attachment_group_id = #{attachmentGroupId}
         WHERE meeting_log_id = #{meetingLogId}
     </update>
+
+    <select id="getConnectCount">
+        SELECT COUNT(*)
+        FROM meeting_tasks
+        WHERE meeting_log_id = #{id}
+    </select>
+
+<!--    회의록 참석자 테이블 등록-->
+    <insert id="registerMeetingMember">
+        <selectKey order="BEFORE" resultType="int" keyProperty="meetingParticipantId">
+            SELECT NVL(max(meeting_participant_id),0) + 1
+            FROM meeting_participants
+        </selectKey>
+        INSERT INTO meeting_participants ( meeting_participant_id,
+                                           meeting_log_id,
+                                           user_id )
+        VALUES ( #{meetingParticipantId},
+                 #{meetingLogId},
+                 #{userId} )
+    </insert>
 
 </mapper>

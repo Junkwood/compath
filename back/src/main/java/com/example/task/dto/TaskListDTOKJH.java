@@ -57,4 +57,6 @@ public class TaskListDTOKJH {
 //  계층형을 위해
     private Integer level;
 
+    private String search;
+
 }
