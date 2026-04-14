@@ -40,7 +40,6 @@ defineProps({
 
 defineEmits(["update:modelValue", "change"]);
 
-// 헤더를 "2026년 4월" → "2026 ▾  4월" 순으로 재배치
 const reorderHeader = (instance) => {
   const monthEl = instance.monthNav;
   if (!monthEl) return;
@@ -51,6 +50,7 @@ const reorderHeader = (instance) => {
   }
 };
 
+//주말 막기
 const config = {
   dateFormat: "Y-m-d",
   disableMobile: true,

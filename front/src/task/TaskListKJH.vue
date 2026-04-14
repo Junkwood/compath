@@ -476,9 +476,12 @@ const handleCurrentChange = async (val) => {
 
 // 업무생성 버튼
 const goResister = () => {
-  router.push({ name: "taskRegister" });
+  router.push({
+    name: "taskRegister",
+    params: { projectId: id },
+    query: { from: "taskList" },
+  });
 };
-
 // 검색 버튼
 const filteringList = async () => {
   let count = 0;

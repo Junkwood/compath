@@ -3,11 +3,9 @@
     <Transition name="modal-fade">
       <div v-if="modelValue" class="modal-backdrop" @click.self="handleClose">
         <div class="modal-box">
-
           <!-- ── 헤더 ── -->
           <div class="modal-header">
             <div class="modal-header-left">
-              <span class="modal-icon">✏️</span>
               <h2 class="modal-title">
                 {{ isSubTask ? "하위업무 생성" : "업무 생성" }}
               </h2>
@@ -17,12 +15,17 @@
 
           <!-- ── 바디 ── -->
           <div class="modal-body">
-
             <!-- 프로젝트명 / 하위프로젝트명 -->
             <div class="field-row">
               <div class="field">
-                <label class="field-label">프로젝트 명 <span class="req">*</span></label>
-                <input v-model="form.projectName" disabled class="field-input" />
+                <label class="field-label"
+                  >프로젝트 명 <span class="req">*</span></label
+                >
+                <input
+                  v-model="form.projectName"
+                  disabled
+                  class="field-input"
+                />
               </div>
               <div class="field">
                 <label class="field-label">하위 프로젝트 명</label>
@@ -37,16 +40,25 @@
                       {{ item.displaySubProjectName || item.projectName }}
                     </option>
                   </select>
-                  <button class="btn-confirm" @click="confirmSubProject">확인</button>
+                  <button class="btn-confirm" @click="confirmSubProject">
+                    확인
+                  </button>
                 </div>
-                <input v-else v-model="form.subProjectName" disabled class="field-input" />
+                <input
+                  v-else
+                  v-model="form.subProjectName"
+                  disabled
+                  class="field-input"
+                />
               </div>
             </div>
 
             <!-- 업무 유형 / 담당자 -->
             <div class="field-row">
               <div class="field">
-                <label class="field-label">업무 유형 <span class="req">*</span></label>
+                <label class="field-label"
+                  >업무 유형 <span class="req">*</span></label
+                >
                 <div class="input-group">
                   <select v-model="form.taskTypeId" class="field-input">
                     <option value="">업무 유형을 선택하세요</option>
@@ -61,17 +73,27 @@
                 </div>
               </div>
               <div class="field">
-                <label class="field-label">담당자 지정 <span class="req">*</span></label>
+                <label class="field-label"
+                  >담당자 지정 <span class="req">*</span></label
+                >
                 <div class="input-group">
-                  <input v-model="form.assigneeName" disabled class="field-input" />
-                  <button class="btn-select" @click="openUserModal">선택</button>
+                  <input
+                    v-model="form.assigneeName"
+                    disabled
+                    class="field-input"
+                  />
+                  <button class="btn-select" @click="openUserModal">
+                    선택
+                  </button>
                 </div>
               </div>
             </div>
 
             <!-- 업무명 -->
             <div class="field">
-              <label class="field-label">업무 명 <span class="req">*</span></label>
+              <label class="field-label"
+                >업무 명 <span class="req">*</span></label
+              >
               <input
                 v-model="form.title"
                 placeholder="업무 제목을 적으세요"
@@ -82,13 +104,19 @@
             <!-- 프로젝트 설명 -->
             <div class="field">
               <label class="field-label">업무 설명</label>
-              <textarea v-model="form.content" rows="3" class="field-input field-textarea" />
+              <textarea
+                v-model="form.content"
+                rows="3"
+                class="field-input field-textarea"
+              />
             </div>
 
             <!-- 업무상태 / 우선순위 / 마일스톤 -->
             <div class="field-row field-row-3">
               <div class="field">
-                <label class="field-label">업무 상태 <span class="req">*</span></label>
+                <label class="field-label"
+                  >업무 상태 <span class="req">*</span></label
+                >
                 <select v-model="form.taskStatusId" class="field-input">
                   <option value="">업무 상태를 선택하세요</option>
                   <option
@@ -101,8 +129,14 @@
                 </select>
               </div>
               <div class="field">
-                <label class="field-label">우선순위 <span class="req">*</span></label>
-                <select v-model="form.priorityCode" @change="onPriorityChange" class="field-input">
+                <label class="field-label"
+                  >우선순위 <span class="req">*</span></label
+                >
+                <select
+                  v-model="form.priorityCode"
+                  @change="onPriorityChange"
+                  class="field-input"
+                >
                   <option value="">우선순위를 선택하세요</option>
                   <option
                     v-for="item in priorityList"
@@ -112,10 +146,14 @@
                     {{ item.codeName }}
                   </option>
                 </select>
-                <p class="field-hint">우선순위 선택 시 마감기한이 자동 설정됩니다.</p>
+                <p class="field-hint">
+                  우선순위 선택 시 마감기한이 자동 설정됩니다.
+                </p>
               </div>
               <div v-if="hasMilestone" class="field">
-                <label class="field-label">마일스톤 <span class="req">*</span></label>
+                <label class="field-label"
+                  >마일스톤 <span class="req">*</span></label
+                >
                 <input
                   v-model="form.milestone"
                   disabled
@@ -144,7 +182,9 @@
                   class="field-input"
                   @change="calcEstTime(true)"
                 />
-                <p class="field-hint">우선순위 선택 시 마감기한이 자동 설정됩니다.</p>
+                <p class="field-hint">
+                  우선순위 선택 시 마감기한이 자동 설정됩니다.
+                </p>
               </div>
               <div class="field">
                 <label class="field-label">추정 시간</label>
@@ -154,7 +194,6 @@
 
             <!-- 에러 메시지 -->
             <p v-if="errorMsg" class="error-msg">⚠️ {{ errorMsg }}</p>
-
           </div>
 
           <!-- ── 푸터 ── -->
@@ -162,13 +201,16 @@
             <button class="btn-reset" @click="resetForm">초기화</button>
             <div class="footer-right">
               <button class="btn-cancel" @click="handleClose">취소</button>
-              <button class="btn-submit" :disabled="loading" @click="handleSubmit">
+              <button
+                class="btn-submit"
+                :disabled="loading"
+                @click="handleSubmit"
+              >
                 <span v-if="loading" class="spinner" />
                 {{ loading ? "등록 중..." : "업무 등록" }}
               </button>
             </div>
           </div>
-
         </div>
       </div>
     </Transition>
@@ -200,15 +242,15 @@ import { useAuthStore } from "../stores/auth";
 import ProjectSelectModal from "../components/SelectModal.vue";
 
 const props = defineProps({
-  modelValue:  { type: Boolean, default: false },   // v-model (open/close)
-  projectId:   { type: [String, Number], default: null },
-  parentId:    { type: [String, Number], default: null }, // 하위 프로젝트 ID (p_ 에서 추출된 값)
+  modelValue: { type: Boolean, default: false }, // v-model (open/close)
+  projectId: { type: [String, Number], default: null },
+  parentId: { type: [String, Number], default: null }, // 하위 프로젝트 ID (p_ 에서 추출된 값)
 });
 
 const emit = defineEmits(["update:modelValue", "submitted"]);
 
-const taskStore  = useTaskStore();
-const authStore  = useAuthStore();
+const taskStore = useTaskStore();
+const authStore = useAuthStore();
 
 const {
   form,
@@ -232,7 +274,7 @@ const {
   resetForm,
 } = taskStore;
 
-const loading  = ref(false);
+const loading = ref(false);
 const errorMsg = ref("");
 
 // 하위업무 여부: parentId가 숫자 형태(task id)일 때
@@ -258,14 +300,14 @@ watch(
     // 하위 프로젝트 ID가 있으면 폼에 직접 세팅
     if (props.parentId) {
       const subProj = subProjectList.value.find(
-        (p) => String(p.projectId) === String(props.parentId)
+        (p) => String(p.projectId) === String(props.parentId),
       );
       if (subProj) {
-        form.value.subProjectId   = subProj.projectId;
+        form.value.subProjectId = subProj.projectId;
         form.value.subProjectName = subProj.projectName;
       }
     }
-  }
+  },
 );
 
 // 하위 프로젝트 확인 버튼
@@ -290,7 +332,8 @@ const handleSubmit = async () => {
     emit("submitted");
     handleClose();
   } catch (e) {
-    errorMsg.value = e.message || "등록에 실패했습니다. 입력값을 확인해 주세요.";
+    errorMsg.value =
+      e.message || "등록에 실패했습니다. 입력값을 확인해 주세요.";
   } finally {
     loading.value = false;
   }
@@ -405,7 +448,9 @@ const handleSubmit = async () => {
   outline: none;
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
   font-family: inherit;
 }
 .field-input:focus {
@@ -467,7 +512,7 @@ select.field-input {
   background: #fff;
   border: 1px solid #e2e8f0;
   color: #475569;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .btn-select:hover {
   background: #f8fafc;
@@ -558,27 +603,50 @@ select.field-input {
 .spinner {
   width: 12px;
   height: 12px;
-  border: 2px solid rgba(255,255,255,0.35);
+  border: 2px solid rgba(255, 255, 255, 0.35);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
   flex-shrink: 0;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ── 트랜지션 ── */
-.modal-fade-enter-active { transition: opacity 0.2s ease; }
-.modal-fade-leave-active { transition: opacity 0.18s ease; }
+.modal-fade-enter-active {
+  transition: opacity 0.2s ease;
+}
+.modal-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
 .modal-fade-enter-active .modal-box,
-.modal-fade-leave-active .modal-box { transition: transform 0.2s ease; }
+.modal-fade-leave-active .modal-box {
+  transition: transform 0.2s ease;
+}
 .modal-fade-enter-from,
-.modal-fade-leave-to { opacity: 0; }
-.modal-fade-enter-from .modal-box { transform: translateY(-10px) scale(0.98); }
-.modal-fade-leave-to .modal-box   { transform: scale(0.98); }
+.modal-fade-leave-to {
+  opacity: 0;
+}
+.modal-fade-enter-from .modal-box {
+  transform: translateY(-10px) scale(0.98);
+}
+.modal-fade-leave-to .modal-box {
+  transform: scale(0.98);
+}
 
 /* ── 반응형 ── */
 @media (max-width: 640px) {
-  .modal-box { max-width: 100%; max-height: 100vh; border-radius: 0; }
-  .field-row, .field-row-3 { grid-template-columns: 1fr; }
+  .modal-box {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  .field-row,
+  .field-row-3 {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
