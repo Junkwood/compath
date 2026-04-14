@@ -1,98 +1,58 @@
 <template>
-  <VueFinalModal
-    v-model="modalOpenModel"
-    class="flex items-center justify-center"
-    content-class="bg-white rounded-xl shadow-xl w-96 p-5 border border-gray-200"
-    teleport-to="body"
-    :z-index="9999"
-  >
-    <div class="flex justify-between items-center mb-4 border-b pb-3">
-      <span class="font-semibold text-gray-700 text-sm">{{ title }}</span>
-      <button
-        @click="modalOpenModel = false"
-        class="text-gray-400 hover:text-gray-700 text-lg leading-none transition-colors"
-      >
-        ✕
-      </button>
-    </div>
-
-    <div class="min-h-[200px]">
-      <ul v-if="props.items.length > 0">
-        <li
-          v-for="item in pagedList"
-          :key="item.id || item.codeValue"
-          @click="selectItem(item)"
-          class="px-3 py-2.5 hover:bg-slate-50 cursor-pointer border-b last:border-none transition-colors rounded-lg"
-        >
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-700">{{
-              item.name || item.codeName
-            }}</span>
-            <span
-              v-if="item.userType"
-              :class="[
-                'text-xs font-semibold px-2 py-0.5 rounded-full',
-                item.userType === 'PM'
-                  ? 'bg-blue-100 text-blue-600'
-                  : item.userType === 'PL'
-                    ? 'bg-purple-100 text-purple-600'
-                    : 'bg-green-100 text-green-600',
-              ]"
-            >
-              {{ item.userType }}
-            </span>
-          </div>
-        </li>
-      </ul>
-
+  <Teleport to="body">
+    <Transition name="select-fade">
       <div
-        v-else
-        class="flex flex-col items-center justify-center py-10 text-gray-400"
+        v-if="modelValue"
+        class="select-backdrop"
+        @click.self="modalOpenModel = false"
       >
-        <span class="text-sm">데이터가 존재하지 않습니다.</span>
+        <div class="select-box">
+          <!-- 헤더 -->
+          <div class="select-header">
+            <span class="select-title">{{ title }}</span>
+            <button @click="modalOpenModel = false" class="select-close">✕</button>
+          </div>
+
+          <!-- 리스트 -->
+          <div class="select-body">
+            <ul v-if="props.items.length > 0">
+              <li
+                v-for="item in pagedList"
+                :key="item.id || item.codeValue"
+                @click="selectItem(item)"
+                class="select-item"
+              >
+                <span class="select-item-name">{{ item.name || item.codeName }}</span>
+                <span
+                  v-if="item.userType"
+                  :class="['select-badge', getBadgeClass(item.userType)]"
+                >
+                  {{ item.userType }}
+                </span>
+              </li>
+            </ul>
+            <div v-else class="select-empty">데이터가 존재하지 않습니다.</div>
+          </div>
+
+          <!-- 페이지네이션 -->
+          <div v-if="totalPages > 1" class="select-pagination">
+            <button @click="page--" :disabled="page === 1" class="page-btn">＜</button>
+            <button
+              v-for="n in totalPages"
+              :key="n"
+              @click="page = n"
+              :class="['page-btn', page === n && 'active']"
+            >{{ n }}</button>
+            <button @click="page++" :disabled="page === totalPages" class="page-btn">＞</button>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div
-      v-if="totalPages > 1"
-      class="flex justify-center items-center gap-1 mt-4 pt-3 border-t"
-    >
-      <button
-        @click="page--"
-        :disabled="page === 1"
-        class="w-8 h-8 rounded-lg hover:bg-gray-100 disabled:opacity-20 transition-all text-gray-500 text-sm"
-      >
-        ＜
-      </button>
-
-      <button
-        v-for="n in totalPages"
-        :key="n"
-        @click="page = n"
-        :class="[
-          'w-8 h-8 rounded-lg text-sm font-medium transition-all',
-          page === n
-            ? 'bg-[#1e3a5f] text-white'
-            : 'hover:bg-gray-100 text-gray-500',
-        ]"
-      >
-        {{ n }}
-      </button>
-
-      <button
-        @click="page++"
-        :disabled="page === totalPages"
-        class="w-8 h-8 rounded-lg hover:bg-gray-100 disabled:opacity-20 transition-all text-gray-500 text-sm"
-      >
-        ＞
-      </button>
-    </div>
-  </VueFinalModal>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
 import { ref, computed, watch } from "vue";
-import { VueFinalModal } from "vue-final-modal";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -110,37 +70,153 @@ const modalOpenModel = computed({
 const page = ref(1);
 const perPage = 5;
 
-watch(
-  () => props.modelValue,
-  (isOpen) => {
-    if (isOpen) page.value = 1;
-  },
-);
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen) page.value = 1;
+});
 
 const totalPages = computed(() => Math.ceil(props.items.length / perPage) || 1);
-
 const pagedList = computed(() => {
   const start = (page.value - 1) * perPage;
-  const result = props.items.slice(start, start + perPage);
-  console.log("pagedList items:", result);
-
   return props.items.slice(start, start + perPage);
 });
 
 const selectItem = (item) => {
-  const displayName = item.name || item.codeName;
   emit("select", {
-    name: displayName,
+    name: item.name || item.codeName,
     value: item.id || item.codeValue,
     userType: item.userType,
   });
   modalOpenModel.value = false;
 };
 
-const getRoleClass = (roleType) => {
-  const role = (roleType ?? "").toUpperCase();
-  if (role === "PM") return "bg-blue-100 text-blue-600";
-  if (role === "PL") return "bg-purple-100 text-purple-600";
-  return "bg-green-100 text-green-600"; // 일반 멤버 등
+const getBadgeClass = (userType) => {
+  if (userType === "PM") return "badge-pm";
+  if (userType === "PL") return "badge-pl";
+  return "badge-member";
 };
 </script>
+
+<style scoped>
+.select-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* ★ 핵심: 업무 모달(9999)보다 높게 */
+  z-index: 100000;
+}
+
+.select-box {
+  background: #fff;
+  border-radius: 14px;
+  width: 380px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.select-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.select-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+.select-close {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.select-close:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.select-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
+  padding: 8px 0;
+}
+
+.select-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border-bottom: 1px solid #f1f5f9;
+}
+.select-item:last-child { border-bottom: none; }
+.select-item:hover { background: #f8fafc; }
+
+.select-item-name {
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.select-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.badge-pm { background: #dbeafe; color: #1d4ed8; }
+.badge-pl { background: #ede9fe; color: #7c3aed; }
+.badge-member { background: #dcfce7; color: #15803d; }
+
+.select-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.select-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.page-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.page-btn:hover:not(:disabled) { background: #f1f5f9; }
+.page-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.page-btn.active { background: #1e3a5f; color: #fff; }
+
+/* 트랜지션 */
+.select-fade-enter-active { transition: opacity 0.18s ease; }
+.select-fade-leave-active { transition: opacity 0.15s ease; }
+.select-fade-enter-from, .select-fade-leave-to { opacity: 0; }
+</style>
