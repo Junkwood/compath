@@ -105,7 +105,6 @@
               <div class="notice-divider"></div>
 
               <div class="notice-content-wrap">
-                <div class="content-label">내용</div>
                 <div class="notice-content">
                   {{ noticeInfo.content || "내용이 없습니다." }}
                 </div>
