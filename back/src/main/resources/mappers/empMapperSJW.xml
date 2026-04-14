@@ -47,7 +47,7 @@
         g.group_name
         FROM users u
         LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1'
-        LEFT JOIN groups g ON gm.group_id = g.group_id
+        LEFT JOIN groups g ON gm.group_id = g.group_id AND g.is_active = 'O1'
         ORDER BY
         u.user_id DESC,
         -- 💡 대표 그룹('Y')이면 1순위, 아니면 2순위로 정렬하여 무조건 위로 올림!
@@ -60,7 +60,7 @@
         g.group_name
         FROM users u
         LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y' AND u.is_active='O1'
-        LEFT JOIN groups g ON gm.group_id = g.group_id
+        LEFT JOIN groups g ON gm.group_id = g.group_id AND g.is_active='O1'
         ORDER BY u.user_id
     </select>
     <select id="getById">
@@ -172,7 +172,7 @@
         g.group_name as primary_group_name
         FROM users u
         LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary='Y'
-        LEFT JOIN groups g ON gm.group_id = g.group_id
+        LEFT JOIN groups g ON gm.group_id = g.group_id AND g.is_active='O1'
         WHERE u.user_id=#{id}
     </select>
     <select id="getAdminSummary" resultType="com.example.emp.dto.EmpDTOSJW">

@@ -108,6 +108,9 @@
                     <if test="parentProjectId != null and parentProjectId != ''and parentProjectId != projectId">
                        AND t.project_id = #{parentProjectId}
                     </if>
+                    <if test="search != null and search != ''">
+                        AND t.title LIKE '%' || #{search} || '%'
+                    </if>
                     START WITH t.parent_task_id IS NULL
                     CONNECT BY PRIOR t.task_id = t.parent_task_id
                     ORDER SIBLINGS BY t.created_at DESC) A)B
@@ -145,7 +148,8 @@
                p2.project_name AS parent_project_name,
                t2.type_name,
                t.task_status_id,
-               t3.status_name
+               t3.status_name,
+        NVL((SELECT SUM(hours) FROM time_entries WHERE task_id = t.task_id), 0) AS total_time_entries
         FROM tasks t
         JOIN projects p ON t.project_id = p.project_id
         LEFT JOIN projects p2 ON p.parent_project_id = p2.project_id

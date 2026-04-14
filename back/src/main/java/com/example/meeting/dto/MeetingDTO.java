@@ -71,4 +71,8 @@ public class MeetingDTO { // 회의록
     private String search;
     private Integer taskCounts;
     private Integer num;
+
+//    참석자 테이블
+    private Integer meetingParticipantId;
+    private Integer userId;
 }

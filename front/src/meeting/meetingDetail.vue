@@ -185,6 +185,7 @@
   <meetingConnectTaskModal
     v-model="openConnectModal"
     :projectInfo="projectInfo"
+    :connectList="connectList"
     @close-modal="closeModal"
   />
 </template>
@@ -216,7 +217,6 @@ const projectInfo = ref({
   projectId: subId != "" ? subId : projectId,
   meetingLogId: meetingId,
 });
-1;
 
 // 업무생성 페이지 이동
 const goRegister = () => {
@@ -270,7 +270,7 @@ const delDtailConnect = async (task) => {
     meetingtaskId: task.meetingtaskId,
     meetingLogId: task.meetingLogId,
   };
-  await meetingStore.removeConnectTask(obj);
+  await meetingStore.removeDetailConnectTask(obj);
   connectList.value = meetingStore.connectTaskList;
 };
 

@@ -27,27 +27,12 @@
         class="flex-1"
         @input="handleSearch"
       />
-    </div>
-
-    <!-- 상태 필터 -->
-    <div class="flex gap-2 mb-3 flex-wrap">
-      <el-tag
-        v-for="f in filterOptions"
-        :key="f.value"
-        :type="currentFilter === f.value ? '' : 'info'"
-        :effect="currentFilter === f.value ? 'dark' : 'plain'"
-        class="cursor-pointer select-none !rounded-full"
-        @click="setFilter(f.value)"
-      >
-        {{ f.label }}
-      </el-tag>
+      <button type="button" @click="searchTitle">검색</button>
     </div>
 
     <!-- 결과 수 + 전체 선택 -->
     <div class="flex items-center justify-between mb-2">
-      <span class="text-xs text-gray-400"
-        >총 {{ allTasks[0].taskCounts }}건</span
-      >
+      <span class="text-xs text-gray-400">총 {{ listLength }}건</span>
       <el-checkbox
         v-model="isPageAllSelected"
         :indeterminate="isPageIndeterminate"
@@ -117,7 +102,7 @@
       <el-pagination
         v-model:current-page="currentPage"
         :page-size="PAGE_SIZE"
-        :total="allTasks[0].taskCounts"
+        :total="allTasks[0]?.taskCounts ?? 0"
         layout="prev, pager, next"
         small
         @current-change="onPageChange"
@@ -166,7 +151,7 @@
           }}
         </span>
         <div class="flex gap-2">
-          <el-button @click="dialogVisible = false">취소</el-button>
+          <el-button @click="closeModalTask()">취소</el-button>
           <el-button
             type="primary"
             :disabled="selectedIds.size === 0"
@@ -181,14 +166,7 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  computed,
-  reactive,
-  defineProps,
-  defineEmits,
-  onBeforeMount,
-} from "vue";
+import { ref, computed, reactive, defineProps, defineEmits, watch } from "vue";
 
 import { Search } from "@element-plus/icons-vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
@@ -200,6 +178,7 @@ const meetingStore = useMeetingStore();
 
 const props = defineProps({
   projectInfo: Object,
+  connectList: Array,
 });
 
 const emit = defineEmits(["closeModal"]);
@@ -215,11 +194,17 @@ const sortKey = ref("recent");
 const currentFilter = ref("all");
 const currentPage = ref(1);
 const selectedIds = reactive(new Set());
+const listLength = ref(0);
 
 const totalPages = computed(() => {
   if (!allTasks.value || allTasks.value.length === 0) return 1;
   return Math.max(1, Math.ceil(allTasks.value[0].taskCounts / PAGE_SIZE));
 });
+
+const closeModalTask = () => {
+  emit("closeModal");
+  onOpen();
+};
 
 /* ─── 전체 선택 상태 ─── */
 const isPageAllSelected = computed(
@@ -233,15 +218,13 @@ const isPageIndeterminate = computed(
     !isPageAllSelected.value,
 );
 
-/* ─── 이벤트 핸들러 ─── */
-function setFilter(val) {
-  currentFilter.value = val;
-  currentPage.value = 1;
-}
-
 function handleSearch() {
   currentPage.value = 1;
 }
+
+const searchTitle = async () => {
+  await handleCurrentChange(1);
+};
 
 function onPageChange(p) {
   handleCurrentChange(p);
@@ -273,9 +256,10 @@ function truncate(str, len) {
 
 function onOpen() {
   searchQuery.value = "";
-  sortKey.value = "recent";
+  sortKey.value = "";
   currentFilter.value = "all";
   currentPage.value = 1;
+  selectedIds.clear();
 }
 
 const handleConnect = async () => {
@@ -289,8 +273,11 @@ const handleConnect = async () => {
       taskId: id,
     });
   });
+
+  console.log(arr);
   await meetingStore.registerDetailConnect(arr);
   emit("closeModal", ids);
+  await onOpen();
 };
 
 /* ─── 상태 뱃지 타입 ─── */
@@ -311,21 +298,22 @@ const handleCurrentChange = async (val) => {
     projectId: props.projectInfo.projectId,
     startNum: start,
     endNum: end,
+    search: searchQuery.value == null ? "" : searchQuery.value,
   };
 
   try {
     await taskStore.getAllTask(obj);
 
-    allTasks.value = taskStore.taskAllList;
-
-    // listLength.value =
-    //   taskList.value.length == 0 ? 0 : taskList.value[0].taskCounts;
+    allTasks.value = [...taskStore.taskAllList].filter(
+      (task) => !props.connectList?.some((c) => c.taskId === task.taskId),
+    );
   } catch (err) {
   } finally {
   }
 
-  if (allTasks.value[0].taskCounts > 0) {
+  if (allTasks.value.length > 0) {
     await changeDateType(allTasks.value);
+    listLength.value = allTasks.value[0].taskCounts;
   }
   loading.value = false;
 };
@@ -352,9 +340,36 @@ const changeDateType = (val) => {
   }
 };
 
-onBeforeMount(async () => {
-  await handleCurrentChange(1);
-});
+watch(
+  () => props.projectInfo?.projectId,
+  (newId) => {
+    if (newId) {
+      console.log("프로젝트 ID 확인됨:", newId);
+      handleCurrentChange(1);
+      dialogVisible.value = true;
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  () => props.connectList,
+  (newId) => {
+    if (newId) {
+      handleCurrentChange(1);
+      allTasks.value = taskStore.taskAllList.filter(
+        (task) => !newId.some((id) => id.taskId == task.taskId),
+      );
+
+      console.log(taskStore.taskAllList.length);
+      listLength.value =
+        taskStore.taskAllList.length != 0
+          ? taskStore.taskAllList[0].taskCounts - newId.length
+          : 0;
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped>
