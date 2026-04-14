@@ -18,7 +18,7 @@
             <span class="bc-sep">›</span>
             <span>{{ name }}</span>
             <span class="bc-sep">›</span>
-            <span class="bc-cur">업무 목록</span>
+            <span class="bc-cur">회의록 목록</span>
           </div>
         </div>
 
@@ -40,95 +40,85 @@
           </div>
 
           <!-- 검색 필터 영역 -->
-          <div class="panel">
-            <div class="panel-head search-panel-head">
-              <span class="panel-title">검색 조건</span>
-              <div class="search-head-actions">
-                <button type="button" @click="resetForm()" class="btn-reset">
-                  초기화
-                </button>
-                <button
-                  type="button"
-                  @click="handleCurrentChange()"
-                  class="btn-search"
-                >
-                  검색
-                </button>
-              </div>
-            </div>
-
-            <div class="panel-body search-body">
-              <div class="search-layout">
-                <!-- 1행 -->
-                <div class="search-row primary-row">
-                  <!-- 작성자 -->
-                  <div class="form-item">
-                    <label>작성자</label>
-                    <select
-                      class="input w-full"
-                      v-model="filteredList.createdBy"
+          <div class="panel-body search-body">
+            <div class="search-layout">
+              <div class="search-row primary-row">
+                <div class="form-item">
+                  <label>작성자</label>
+                  <select class="input w-full" v-model="filteredList.createdBy">
+                    <option value="">전체</option>
+                    <option
+                      :value="user.createdBy"
+                      v-for="user in filterList.userList"
+                      :key="user.createdBy"
                     >
-                      <option value="">전체</option>
-                      <option
-                        :value="user.createdBy"
-                        v-for="user in filterList.userList"
-                        :key="user.createdBy"
-                      >
-                        {{ user.userName }}
-                      </option>
-                    </select>
-                  </div>
-
-                  <!-- 회의유형 -->
-                  <div class="form-item">
-                    <label>회의유형</label>
-                    <select
-                      class="input w-full"
-                      v-model="filteredList.meetingTypeCode"
-                    >
-                      <option value="">전체</option>
-                      <option
-                        :value="category.meetingTypeCode"
-                        v-for="category in filterList.typeList"
-                        :key="category.meetingTypeCode"
-                      >
-                        {{ category.typeName }}
-                      </option>
-                    </select>
-                  </div>
-
-                  <!-- 시작일 -->
-                  <div class="form-item">
-                    <label>시작일</label>
-                    <input
-                      v-model="filteredList.startDate"
-                      type="date"
-                      class="input w-full"
-                    />
-                  </div>
-
-                  <!-- 종료일 -->
-                  <div class="form-item">
-                    <label>종료일</label>
-                    <input
-                      v-model="filteredList.endDate"
-                      type="date"
-                      class="input w-full"
-                    />
-                  </div>
+                      {{ user.userName }}
+                    </option>
+                  </select>
                 </div>
 
-                <!-- 2행 -->
-                <div class="search-row secondary-row">
-                  <div class="form-item date-range-item">
-                    <label>검색어</label>
-                    <input
-                      v-model="filteredList.search"
-                      type="text"
-                      placeholder="프로젝트명을 입력해주세요."
-                      class="input w-full"
-                      @keyup.enter="handleCurrentChange()"
-                    />
+                <div class="form-item">
+                  <label>회의유형</label>
+                  <select
+                    class="input w-full"
+                    v-model="filteredList.meetingTypeCode"
+                  >
+                    <option value="">전체</option>
+                    <option
+                      :value="category.meetingTypeCode"
+                      v-for="category in filterList.typeList"
+                      :key="category.meetingTypeCode"
+                    >
+                      {{ category.typeName }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-item">
+                  <label>시작일</label>
+                  <input
+                    v-model="filteredList.startDate"
+                    type="date"
+                    class="input w-full"
+                  />
+                </div>
+
+                <div class="form-item">
+                  <label>종료일</label>
+                  <input
+                    v-model="filteredList.endDate"
+                    type="date"
+                    class="input w-full"
+                  />
+                </div>
+
+                <div class="form-item">
+                  <label>검색어</label>
+                  <input
+                    v-model="filteredList.search"
+                    type="text"
+                    placeholder="검색어 입력"
+                    class="input w-full"
+                    @keyup.enter="handleCurrentChange()"
+                  />
+                </div>
+
+                <div class="form-item search-btn-group">
+                  <div class="search-actions">
+                    <button
+                      type="button"
+                      @click="resetForm()"
+                      class="btn-reset"
+                    >
+                      초기화
+                    </button>
+                    <button
+                      type="button"
+                      @click="handleCurrentChange()"
+                      class="btn-search"
+                    >
+                      검색
+                    </button>
                   </div>
                 </div>
               </div>
@@ -176,14 +166,25 @@
                       >
                         <td class="text-center">{{ meeting.num }}</td>
                         <td class="text-center">
-                          [{{ meeting.typeName }}]{{ meeting.title
-                          }}<span
-                            class="text-base"
-                            v-if="
-                              meeting.attachmentGroupId !== null ? true : false
+                          <div
+                            style="
+                              display: inline-flex;
+                              align-items: center;
+                              justify-content: center;
+                              gap: 4px;
                             "
-                            >📋</span
                           >
+                            [{{ meeting.typeName }}]{{ meeting.title
+                            }}<el-icon
+                              class="text-lg"
+                              v-if="
+                                meeting.attachmentGroupId !== null
+                                  ? true
+                                  : false
+                              "
+                              ><Paperclip
+                            /></el-icon>
+                          </div>
                         </td>
                         <td class="text-center">{{ meeting.userName }}</td>
                         <td class="text-center">{{ meeting.createdAt }}</td>
@@ -228,6 +229,7 @@ import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import Swal from "sweetalert2";
 import { useMeetingStore } from "../stores/meeting";
+import { Paperclip } from "@element-plus/icons-vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -475,6 +477,10 @@ const resetForm = () => {
 
 .panel-body {
   background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .btn-create-task {
@@ -521,11 +527,7 @@ const resetForm = () => {
 }
 
 .primary-row {
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-}
-
-.secondary-row {
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 }
 
 .form-item {
@@ -540,40 +542,6 @@ const resetForm = () => {
   font-weight: 700;
   color: #4b5563;
   line-height: 1.2;
-}
-
-.btn-search,
-.btn-reset {
-  height: 36px;
-  padding: 0 16px;
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.btn-search {
-  border: none;
-  background: #1b5c9c;
-  color: #fff;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(27, 92, 156, 0.18);
-}
-
-.btn-search:hover {
-  background: #144677;
-}
-
-.btn-reset {
-  border: none;
-  background: #ef4444;
-  color: #fff;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.16);
-}
-
-.btn-reset:hover {
-  background: #dc2626;
 }
 
 .list-head {
@@ -727,7 +695,7 @@ const resetForm = () => {
   }
 
   .primary-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .btn-search,
@@ -740,5 +708,80 @@ const resetForm = () => {
   .task-table td {
     white-space: nowrap;
   }
+}
+
+.primary-row {
+  display: grid;
+  /* 필터 5개 + 버튼 영역 1개 = 총 6열 */
+  grid-template-columns: repeat(5, 1fr) 160px;
+  gap: 12px;
+  align-items: end; /* 중요: 라벨 아래 입력창과 버튼의 바닥선 일치 */
+}
+
+/* 버튼들을 감싸는 영역 */
+.search-btn-group {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-search,
+.btn-reset {
+  flex: 1;
+  height: 36px; /* input과 동일한 높이 */
+  white-space: nowrap;
+}
+
+/* 1200px 이하에서도 한 줄 유지를 원하시면 이 부분을 수정하세요 */
+@media (max-width: 1200px) {
+  .primary-row {
+    grid-template-columns: repeat(
+      3,
+      1fr
+    ); /* 너무 좁아지면 3열씩 2줄로 자동 변경 */
+  }
+}
+
+@media (max-width: 768px) {
+  .primary-row {
+    grid-template-columns: 1fr; /* 모바일은 1줄 */
+  }
+}
+
+.btn-reset {
+  padding: 8px 16px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 7px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-reset:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+.btn-search {
+  padding: 8px 20px;
+  background: #334155;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-search:hover {
+  background: #1e293b;
 }
 </style>

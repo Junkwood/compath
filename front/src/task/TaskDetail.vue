@@ -265,7 +265,11 @@
             <div class="side-col">
               <!-- 우측 상단 버튼들 -->
               <div class="flex justify-between">
-                <button @click="registerActualTime" class="btn-navy">
+                <button
+                  v-if="taskInfo.taskStatusId != 5"
+                  @click="registerActualTime"
+                  class="btn-navy"
+                >
                   <span class="text-lg">🕒</span>소요시간 등록
                 </button>
 
