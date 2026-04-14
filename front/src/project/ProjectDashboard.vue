@@ -294,12 +294,14 @@ const fetchTaskSummary = async () => {
 
 // ── 공지사항
 const noticeList = ref([]);
+
 const formatDate = (value) => {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 };
+
 const isWithin7Days = (value) => {
   if (!value) return false;
   const target = new Date(value);
@@ -308,6 +310,7 @@ const isWithin7Days = (value) => {
     (new Date().getTime() - target.getTime()) / (1000 * 60 * 60 * 24);
   return diff >= 0 && diff <= 7;
 };
+
 const fetchNoticeList = async () => {
   try {
     const res = await api.get(
@@ -315,8 +318,8 @@ const fetchNoticeList = async () => {
     );
     const rawList = Array.isArray(res.data) ? res.data : [];
     noticeList.value = rawList
-      .map((item, index) => ({
-        noticeId: item.noticeId ?? item.id ?? index,
+      .map((item) => ({
+        noticeId: item.noticeId,        
         title: item.title,
         createdAt: formatDate(item.createdAt),
         rawCreatedAt: item.createdAt,
