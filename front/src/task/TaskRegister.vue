@@ -9,10 +9,22 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
       <main class="grow">
+        <!-- 서브 헤더 -->
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span>홈</span>
+            <span class="bc-sep">›</span>
+            <span>프로젝트</span>
+            <span class="bc-sep">›</span>
+            <span>{{ form.projectName }}</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur">{{
+              isSubTask ? "하위업무 생성" : "업무 생성"
+            }}</span>
+          </div>
+        </div>
+
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            {{ isSubTask ? "하위업무 생성" : "업무 생성" }}
-          </h1>
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
             <div class="grid grid-cols-2 gap-6 mb-6">
               <div>
@@ -302,6 +314,30 @@ const goBack = () => router.back();
 </script>
 
 <style scoped>
+.sub-header {
+  background: #fff;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
 :deep(.input) {
   border-radius: 10px !important;
   border: 1px solid #e2e8f0 !important;
