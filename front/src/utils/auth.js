@@ -1,12 +1,11 @@
 import axios from "axios";
 import router from "../router/router.js"; // 라우터 파일 경로에 맞게 수정
-import { useAuthStore } from "../stores/auth"; // 스토어 파일 경로에 맞게 수정
 
 // 1. 커스텀 Axios 인스턴스 생성
 const auth = axios.create({
   baseURL: "http://localhost:8080/auth", // 백엔드 기본 URL (env 변수로 빼는 것 추천!)
   // timeout: 10000, // 10초 이상 응답 없으면 에러
-  withCredentials: true, // ⭐️ 세션 쿠키를 백엔드와 주고받으려면 무조건 true!
+  withCredentials: true, // 세션 쿠키를 백엔드와 주고받으려면 무조건 true
 });
 
 // 2. 요청(Request) 인터셉터 (옵션: JWT 토큰 등을 보낼 때 사용)
@@ -18,7 +17,7 @@ auth.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// 3. 응답(Response) 인터셉터 (⭐ 401 자동 로그아웃의 핵심!)
+// 3. 응답(Response) 인터셉터
 auth.interceptors.response.use(
   (response) => {
     // 정상 응답(2xx)은 그대로 통과
@@ -30,8 +29,8 @@ auth.interceptors.response.use(
       const status = error.response.status;
 
       if (status === 401) {
-        // 반드시 에러가 발생한 이 '시점(함수 내부)'에서 스토어를 호출해야 합니다!
-        // 비동기 처리: 확인 버튼을 누른 뒤에 로그아웃 및 라우팅!
+        // 반드시 에러가 발생한 이 '시점(함수 내부)'에서 스토어를 호출해야 합니다.
+        // 비동기 처리: 확인 버튼을 누른 뒤에 로그아웃 및 라우팅.
         Swal.fire({
           icon: "warning",
           title: "세션 만료",

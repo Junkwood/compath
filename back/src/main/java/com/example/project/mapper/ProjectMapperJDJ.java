@@ -2,6 +2,7 @@ package com.example.project.mapper;
 
 import com.example.project.dto.*;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -40,5 +41,10 @@ public interface ProjectMapperJDJ {
 
     //하위프로젝트 삭제 (상태값 업데이트 F1 에서 F2 로)
     int removeSubProjectStatus(ProjectSubCreateDtoJDJ dto);
+
+    //프로젝트 생성시 기본 멤버 등록
+    void registerProjectMember(@Param("userId") Integer userId,
+                               @Param("projectId") Integer projectId,
+                               @Param("roleId") Integer roleId);
 }
 

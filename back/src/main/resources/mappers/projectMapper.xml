@@ -274,4 +274,12 @@
         SET STATUS='F3'
         WHERE PROJECT_ID=#{projectId}
     </update>
+
+    <insert id="registerProjectMember" statementType="CALLABLE">
+        { CALL insert_project_member(
+                #{userId, mode=IN},
+                #{projectId, mode=IN},
+                #{roleId, mode=IN}
+               ) }
+    </insert>
 </mapper>
