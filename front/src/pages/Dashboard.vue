@@ -609,6 +609,22 @@ const goProjectDashboard = (row) => {
   --el-table-header-bg-color: #f9fafb;
 }
 
+/* 업무 통합 현황 hover 효과 제거 */
+.main-task-panel :deep(.el-table__body tr:hover > td) {
+  background-color: #ffffff !important;
+  cursor: default !important;
+}
+
+/* 프로젝트 목록 hover 효과 + 손가락 커서 */
+.project-list-panel :deep(.el-table__body tr.clickable-row) {
+  cursor: pointer !important;
+  transition: background-color 0.2s ease;
+}
+
+.project-list-panel :deep(.el-table__body tr.clickable-row:hover > td) {
+  background-color: #f5f9ff !important;
+}
+
 .pag-wrap {
   padding: 16px;
   display: flex;
