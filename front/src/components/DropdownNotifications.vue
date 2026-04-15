@@ -74,7 +74,9 @@
               <div class="notif-body">
                 <p class="notif-msg-title">{{ notif.title }}</p>
                 <p class="notif-msg">{{ notif.message }}</p>
-                <span class="notif-time">{{ notif.createdAt }}</span>
+                <span class="notif-time">{{
+                  formatTime(notif.createdAt)
+                }}</span>
               </div>
             </li>
           </ul>
@@ -88,11 +90,13 @@
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useNotificationStore } from "../stores/notification";
 import { useAuthStore } from "../stores/auth";
+import { useRouter } from "vue-router";
 
 export default {
   name: "DropdownNotifications",
   props: ["align"],
   setup() {
+    const router = useRouter();
     const dropdownOpen = ref(false);
     const trigger = ref(null);
     const dropdown = ref(null);
@@ -114,8 +118,23 @@ export default {
     const notifications = computed(() => notificationStore.notifications);
     const unreadCount = computed(() => notificationStore.unreadCount);
 
+    const formatTime = (dateStr) => {
+      if (!dateStr) return "";
+      return String(dateStr).substring(0, 16).replace("T", " ");
+    };
     const handleReadOne = (notif) => {
       notificationStore.readOne(notif, userId.value);
+      dropdownOpen.value = false;
+
+      if (notif.targetId) {
+        router.push({
+          name: "taskDetail",
+          params: {
+            projectId: notif.projectId,
+            taskId: notif.targetId,
+          },
+        });
+      }
     };
 
     const handleReadAll = () => {
@@ -151,6 +170,7 @@ export default {
       updatePosition,
       notifications,
       unreadCount,
+      formatTime,
       handleReadOne,
       handleReadAll,
     };

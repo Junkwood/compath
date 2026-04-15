@@ -18,7 +18,7 @@
       ]"
     >
       <!-- Sidebar header -->
-      <div class="flex justify-between mb-10 pr-3 sm:px-2">
+      <div class="flex items-center justify-between mb-10 pr-3 sm:px-2">
         <!-- Close button (mobile) -->
         <button
           ref="trigger"
@@ -40,21 +40,15 @@
         </button>
 
         <!-- Logo -->
-        <router-link class="block" to="/">
-          <div class="flex items-center justify-center gap-0">
-            <img
-              src="/src/images/whiteBgComPath.PNG"
-              class="w-6 mr-5 h-auto object-contain shrink-0"
-            />
-            <span
-              class="text-2xl font-bold text-white lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
-            >
-              ComPath
-            </span>
-          </div>
+        <router-link class="flex items-center gap-3 w-full" to="/">
+          <img src="/src/images/compath (5).png" class="w70px h80px -ml-4" />
+          <!-- <span
+            class="text-3xl text-white lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200 compath-logo"
+          >
+            ComPath
+          </span> -->
         </router-link>
       </div>
-
       <!-- Links -->
       <div class="space-y-8">
         <div>
@@ -911,3 +905,12 @@ export default {
   },
 };
 </script>
+<style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap");
+
+.compath-logo {
+  font-family: "Fjalla One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+</style>

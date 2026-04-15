@@ -51,19 +51,16 @@
 
                 <!-- 상위 프로젝트에서 바로 업무 생성 시 -->
                 <div v-if="!form.subProjectId" class="input-group">
-                  <select v-model="form.subProjectName" class="input">
+                  <select v-model="form.subProjectId" class="input">
                     <option value="">하위프로젝트를 선택하세요</option>
                     <option
                       v-for="item in subProjectList"
                       :key="item.projectId"
-                      :value="item.projectName"
+                      :value="item.projectId"
                     >
                       {{ item.displaySubProjectName }}
                     </option>
                   </select>
-                  <button class="btn btn-select" @click="confirmSubProject">
-                    확인
-                  </button>
                 </div>
 
                 <!-- 하위 프로젝트 있을 때 -->
@@ -240,7 +237,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import Sidebar from "../partials/Sidebar.vue";
@@ -290,14 +287,15 @@ onMounted(async () => {
   );
 });
 
-const confirmSubProject = () => {
-  const selected = subProjectList.value.find(
-    (p) => p.projectName === form.value.subProjectName,
-  );
-  if (selected) {
-    form.value.subProjectId = selected.projectId;
-  }
-};
+watch(
+  () => form.value.subProjectId,
+  (id) => {
+    const found = subProjectList.value.find((p) => p.projectId === id);
+    if (found) {
+      form.value.subProjectName = found.projectName;
+    }
+  },
+);
 
 const handleSubmit = async () => {
   try {

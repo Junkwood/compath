@@ -28,12 +28,30 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     public void insert(TaskReqDtoJJW re) {
         taskMapperJJW.insert(re);
 
-        notificationService.sendToProjectMembers(
-                re.getProjectId(), re.getAssigneeUserId(),
-                "R2", re.getTaskId(),
-                "업무 등록", "새로운 업무가 등록되었습니다.",
-                re.getAssigneeUserId()
-        );
+        // 🔹 상위 업무일 때만 알림
+        if (re.getParentTaskId() == null) {
+            notificationService.sendToProjectMembers(
+                    re.getProjectId(),
+                    re.getAssigneeUserId(),
+                    "R2",
+                    re.getTaskId(),
+                    "업무 등록",
+                    "새로운 업무가 등록되었습니다.",
+                    re.getAssigneeUserId()
+            );
+        }
+
+        // 🔹 하위 업무 알림 (선택)
+        else {
+            notificationService.sendToOne(
+                    re.getAssigneeUserId(),
+                    "R2",
+                    re.getTaskId(),
+                    "하위 업무 등록",
+                    "하위 업무가 추가되었습니다.",
+                    re.getAssigneeUserId()
+            );
+        }
     }
     //업무 수정
     @Override
