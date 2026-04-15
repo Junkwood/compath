@@ -433,7 +433,10 @@ const toggleAllCheckbox = (e) => {
 };
 
 const goDetail = (taskId) => {
-  router.push({ name: "TaskDetail", params: { taskId } });
+  router.push({
+    name: "taskDetail",
+    params: { taskId: taskId, projectId: projectId },
+  });
 };
 
 // 체크된 것만 or 전체
