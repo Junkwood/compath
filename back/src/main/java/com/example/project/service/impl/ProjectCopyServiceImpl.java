@@ -23,7 +23,6 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 
         params.put("sourceProjectId", dto.getSourceProjectId());
         params.put("projectName", dto.getProjectName());
-        params.put("identifier", dto.getIdentifier());
         params.put("description", dto.getDescription());
         params.put("startDate", dto.getStartDate());
         params.put("endDate", dto.getEndDate());

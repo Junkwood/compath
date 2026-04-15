@@ -8,7 +8,6 @@
         { CALL COPY_PROJECT_PROC(
         #{sourceProjectId, mode=IN, jdbcType=INTEGER},
         #{projectName, mode=IN, jdbcType=VARCHAR},
-        #{identifier, mode=IN, jdbcType=VARCHAR},
         #{description, mode=IN, jdbcType=VARCHAR},
         #{startDate, mode=IN, jdbcType=VARCHAR},
         #{endDate, mode=IN, jdbcType=VARCHAR},
