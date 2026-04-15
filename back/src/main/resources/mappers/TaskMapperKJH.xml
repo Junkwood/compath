@@ -83,7 +83,8 @@
                     JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
                     JOIN common_code c ON t.priority_code = c.code_value
                     LEFT JOIN users u ON t.assignee_user_id = u.user_id
-                    WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
+                    WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId}
+                    AND t.is_deleted != 'Q1')
                     <if test="taskId != null and taskId != ''">
                         AND t.task_id = #{taskId}
                     </if>
@@ -267,4 +268,40 @@
         )}
     </select>
 
+<!--    공지사항 및 문서 작성시 업무 유형 조회-->
+    <select id="getAllTaskType">
+        SELECT task_type_id,
+               type_name
+        FROM task_types
+        WHERE is_active = 'O1'
+    </select>
+
+<!--    업무 비활성-->
+    <update id="modifyTaskStatus">
+        UPDATE tasks
+        SET is_deleted = 'Q1'
+        WHERE task_id = #{id}
+    </update>
+    
+<!--   프로젝트의 담당자 추출-->
+    <select id="getProjectDeveloper">
+        SELECT  u.user_id,
+                u.user_name,
+                r.role_name
+        FROM users u
+        JOIN project_members pm ON u.user_id = pm.user_id
+        AND pm.project_id = #{id}
+        AND pm.is_active = 'O1'
+        JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+        JOIN roles r ON pmr.role_id = r.role_id
+        WHERE u.is_active = 'O1'
+        AND r.role_name = '개발자'
+    </select>
+
+    <!--    업무 담당자 지정(미지정이었을경우)-->
+    <update id="modifyTaskUser">
+        UPDATE tasks
+        SET assignee_user_id = #{assigneeUserId}
+        WHERE task_id = #{taskId}
+    </update>
 </mapper>

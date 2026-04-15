@@ -44,4 +44,19 @@
         WHERE u.user_id=#{id} AND u.user_type='M2' AND u.is_active='O1'
     </select>
 
+    <select id="getAdminList">
+        SELECT
+        u.user_id,
+        u.user_name as name,
+        u.password,
+        u.email,
+        role(u.user_type) as user_type,
+        active(u.is_active) as is_active,
+        g.group_id
+        FROM users u
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active='O1'
+        LEFT JOIN groups g ON gm.group_id = g.group_id AND g.group_type='C1' AND g.is_active='O1'
+        WHERE u.user_type='M1' AND u.is_active='O1'
+    </select>
+
 </mapper>

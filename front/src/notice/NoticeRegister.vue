@@ -26,15 +26,19 @@
               <div class="grid grid-cols-3 gap-6">
                 <div>
                   <el-form-item
-                    label="업무 유형"
+                    label="카테고리"
                     prop="roleId"
                     class="block text-sm font-medium mb-1"
                   >
-                    <el-select v-model="form.roleId" class="input flex-1">
+                    <el-select
+                      v-model="form.roleId"
+                      class="input flex-1"
+                      placeholder="선택해주세요"
+                    >
                       <el-option
-                        v-for="role in roles"
-                        :label="role.roleName"
-                        :value="role.roleId"
+                        v-for="type in types"
+                        :label="type.typeName"
+                        :value="type.taskTypeId"
                       />
                     </el-select>
                   </el-form-item>
@@ -73,7 +77,7 @@
                     prop="title"
                   >
                     <el-input
-                      placeholder="업무 제목을 적으세요"
+                      placeholder="제목을 입력해주세요"
                       class="w-full"
                       v-model="form.title"
                     />
@@ -148,7 +152,6 @@ import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth";
-import { useRoleStore } from "../stores/roleSJW";
 import { useNoticeStore } from "../stores/notice";
 import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
@@ -164,7 +167,7 @@ const subId = route.params.subProjectId;
 const noticeId = route.params.noticeId;
 const userInfo = ref(); // 글 작성자 정보
 
-const roles = ref([
+const types = ref([
   // 전체 역할 정보
   { roleId: 1, roleName: "개발일정" },
   { roleId: 2, roleName: "산출물" },
@@ -234,7 +237,8 @@ const submitForm = async (formEl) => {
       router.push({
         name: "noticeDetail",
         params: {
-          projectId: subId ? subId : id,
+          projectId: id,
+          subProjectId: subId,
           noticeId:
             isModified == true
               ? noticeId
@@ -274,7 +278,6 @@ onBeforeMount(async () => {
     form.content = noticeInfo.content;
     form.isPinned = noticeInfo.isPinned == "B1" ? true : false;
   }
-  // 생성일 때
   userInfo.value = authStore.user; // 작성자 정보 받아오기
 
   form.author = userInfo.value.name;
@@ -282,8 +285,8 @@ onBeforeMount(async () => {
   form.date = changeDate(new Date()); // 작성 당일 날짜 생성
 
   let projectId = subId ? subId : id;
-  await noticeStore.getProjectRoles(projectId);
-  roles.value = noticeStore.projectRoles; // 전체 역할정보
+  await noticeStore.getProjectType();
+  types.value = noticeStore.taskType; // 전체 역할정보
 });
 
 const goBack = () => {

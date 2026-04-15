@@ -93,12 +93,16 @@
               <div class="notice-meta">
                 <span class="meta-item">
                   <span class="meta-label">작성자</span>
-                  <span class="meta-value">{{ noticeInfo.userName || "-" }}</span>
+                  <span class="meta-value">{{
+                    noticeInfo.userName || "-"
+                  }}</span>
                 </span>
                 <span class="meta-divider"></span>
                 <span class="meta-item">
                   <span class="meta-label">등록일</span>
-                  <span class="meta-value">{{ noticeInfo.createdAt || "-" }}</span>
+                  <span class="meta-value">{{
+                    noticeInfo.createdAt || "-"
+                  }}</span>
                 </span>
               </div>
 
@@ -135,12 +139,16 @@ const projectStore = useProjectKJHStore();
 const noticeInfo = ref({});
 const noticeId = route.params.noticeId;
 const projectId = route.params.projectId;
+const subProjectId = route.params.subProjectId;
 
 const memberList = ref([]); // 구성원 테이블
 
 // 목록으로
 const goBack = () => {
-  router.back();
+  router.push({
+    name: "noticeList",
+    params: { projectId: projectId, subProjectId: subProjectId },
+  });
 };
 
 // 수정 버튼

@@ -42,8 +42,8 @@ public class NoticeDTO { // 공지사항
     private LocalDate endDate;
 
 //    역할 테이블
-    private String roleName;
-    private String roleId;
+    private Integer taskTypeId;
+    private String typeName;
 
 //    유저 테이블
     private String userName;

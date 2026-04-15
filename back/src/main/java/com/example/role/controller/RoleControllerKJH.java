@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -17,16 +18,10 @@ import java.util.List;
 public class RoleControllerKJH {
     private final RoleServiceKJH service;
 
-//    문서/공지사항 생성시 카테고리
-    @GetMapping("/notice/roleList/{id}")
-    public List<RoleDTOKJH> getAllRoles(@PathVariable Integer id) {
-
-        return service.getNoticeRole(id);
-    }
 
 //    프로젝트 내 권한 조회
     @GetMapping("/role/roleList")
-    public List<RoleDTOKJH> getProjectRole( RoleDTOKJH dto) {
+    public Map<String, Object> getProjectRole(RoleDTOKJH dto) {
         return service.getProjectRole(dto);
     }
 }

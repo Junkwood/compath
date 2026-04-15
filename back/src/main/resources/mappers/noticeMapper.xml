@@ -84,12 +84,12 @@
 
 <!--    공지사항 카테고리 목록(필터링 조건)-->
     <select id="getFilterCategroy">
-        SELECT DISTINCT(r.role_name),
-               r.role_id
+        SELECT DISTINCT(t.type_name),
+               t.task_type_id
         FROM notices n
-        JOIN roles r ON r.role_id = n.category
+        JOIN task_types t ON t.task_type_id = n.category
         JOIN projects p ON n.project_id = p.project_id
-        WHERE (p.parent_project_id = #{id} OR n.project_id = #{id}) AND r.is_active = 'O1'
+        WHERE (n.project_id = #{id}) AND t.is_active = 'O1'
     </select>
 
 <!--    공지사항 전체 목록-->

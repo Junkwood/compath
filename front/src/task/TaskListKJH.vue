@@ -215,7 +215,11 @@
                       <tr
                         v-for="task in taskList"
                         :key="task.taskId"
-                        class="table-row"
+                        :class="[
+                          task.assigneeUserId === null
+                            ? 'pinned-row'
+                            : 'table-row',
+                        ]"
                         @click="goDetail(task)"
                       >
                         <td class="text-left title-cell">
@@ -228,7 +232,17 @@
                             ㄴ [하위]&nbsp; </span
                           >{{ task.title }}
                         </td>
-                        <td class="text-center">{{ task.userName }}</td>
+                        <td
+                          :class="[
+                            task.assigneeUserId === null ||
+                            task.assigneeUserId === 'null'
+                              ? 'text-blue'
+                              : 'text-center',
+                          ]"
+                          @click.stop="selectingUser(task)"
+                        >
+                          {{ task.userName }}
+                        </td>
                         <td class="text-center">{{ task.statusName }}</td>
                         <td class="text-center">{{ task.typeName }}</td>
                         <td class="text-center">{{ task.codeName }}</td>
@@ -278,6 +292,13 @@
       </main>
     </div>
   </div>
+  <ProjectSelectModal
+    v-model="openModal"
+    title="담당자 선택"
+    :items="userList"
+    @select="selectUser"
+  />
+  />
 </template>
 
 <script setup>
@@ -288,6 +309,7 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { changeDate } from "../utils/commonFunc";
+import ProjectSelectModal from "../components/SelectModal.vue";
 
 const sidebarOpen = ref(false);
 const taskStore = usetaskKJHStore();
@@ -299,6 +321,7 @@ let listLoading = ref(false);
 let name = ref();
 let projectStartDate = ref();
 let projectendDate = ref();
+let userList = ref([]);
 
 const thList = [
   "업무명",
@@ -356,8 +379,59 @@ onBeforeMount(async () => {
   await taskStore.getAllFilterInfo(id);
   filterInfo.value = taskStore.filterInfo;
 
+  taskStore.filterInfo.developerList.forEach((task) => {
+    userList.value.push({
+      name: task.userName,
+      value: task.userId,
+      userType: task.roleName,
+    });
+  });
+
   Swal.close();
 });
+
+// 미지정일 경우 지정
+let selectedTask = ref({}); // 선택된 업무 정보
+let openModal = ref(false);
+
+const selectingUser = (task) => {
+  selectedTask.value = task;
+  console.log(task);
+  openModal.value = true;
+};
+
+const selectUser = async (val) => {
+  const result = await Swal.fire({
+    title: "정말 담당자로 지정하시겠습니까?",
+    text: "",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "지정",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  const selectedName = typeof val === "object" ? val.name || val.userName : val;
+  const found = userList.value.find(
+    (u) => u.name === selectedName || u.userName === selectedName,
+  );
+  if (found) {
+    console.log(found.name || found.userName);
+    console.log(found.value || found.userId);
+    openModal.value = false;
+
+    let obj = {
+      taskId: selectedTask.value.taskId,
+      assigneeUserId: found.value || found.userId,
+    };
+
+    await taskStore.modifyTaskUser(obj);
+
+    handleCurrentChange(1);
+  }
+};
 
 const handleCurrentChange = async (val) => {
   nowPage.value = val;
@@ -658,6 +732,15 @@ const changeDateType = (val) => {
 }
 
 /* 테이블 */
+:deep(.task-table td.text-blue) {
+  text-align: center;
+  color: #2563eb; /* text-blue-600 */
+  cursor: pointer;
+}
+
+:deep(.task-table td.text-blue:hover) {
+  text-decoration: underline;
+}
 .table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -806,5 +889,18 @@ const changeDateType = (val) => {
   .task-table td {
     white-space: nowrap;
   }
+}
+
+/* 담당자 미지정일 때 */
+.pinned-row {
+  background: #fcfcfc;
+}
+
+.pinned-row td {
+  background: rgba(255, 153, 102, 0.06);
+}
+
+.pinned-row:hover td {
+  background: rgba(255, 153, 102, 0.1);
 }
 </style>

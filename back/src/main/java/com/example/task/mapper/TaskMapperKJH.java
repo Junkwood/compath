@@ -52,4 +52,16 @@ public interface TaskMapperKJH {
 
   // 추천 업무 등록(회의록)
   void insert(TaskDetailDTOKJH vo);
+
+//  공지사항 및 문서 작성 시 카테고리
+  public List<TaskDetailDTOKJH> getAllTaskType();
+
+//  업무 비활성화
+  public int  modifyTaskStatus(Integer id);
+
+//  프로젝트 개발자들 모음
+  public List<TaskListDTOKJH> getProjectDeveloper(Integer id);
+
+  //  업무 담당자 지정(미지정)
+  public int  modifyTaskUser(TaskListDTOKJH dto);
 }

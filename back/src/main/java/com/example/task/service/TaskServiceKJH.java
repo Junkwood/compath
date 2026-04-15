@@ -30,5 +30,13 @@ public interface TaskServiceKJH {
     // 활동내역 목록조회
     public List<TaskDetailDTOKJH> getTimeLog(Integer id);
 
+    //  공지사항 및 문서 작성 시 카테고리
+    public List<TaskDetailDTOKJH> getAllTaskType();
+
+    //  업무 비활성화
+    public int  modifyTaskStatus(Integer id);
+
+    //  업무 담당자 지정(미지정)
+    public int  modifyTaskUser(TaskListDTOKJH dto);
 
 }

@@ -672,6 +672,17 @@ const resetForm = () => {
 .btn-export--pdf:hover {
   background: #fee2e2;
 }
+.btn-create-task {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 18px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(27, 92, 156, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
 
 /* ── 총 건수 배지 ── */
 .count-badge {

@@ -55,15 +55,15 @@
                 </div>
 
                 <div class="form-item">
-                  <label>공지유형</label>
+                  <label>카테고리</label>
                   <select class="input w-full" v-model="filteredList.category">
                     <option value="">전체</option>
                     <option
-                      :value="category.roleId"
+                      :value="category.taskTypeId"
                       v-for="category in filterList.categoryList"
-                      :key="category.roleId"
+                      :key="category.taskTypeId"
                     >
-                      {{ category.roleName }}
+                      {{ category.typeName }}
                     </option>
                   </select>
                 </div>
