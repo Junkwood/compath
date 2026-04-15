@@ -12,4 +12,17 @@
         JOIN roles r ON r.role_id = p.role_id
         WHERE p2.project_id = #{id} AND r.is_active = 'O1'
     </select>
+
+<!--    프로젝트 내 권한 구분-->
+    <select id="getProjectRole">
+        SELECT pm.user_id
+        FROM project_members pm
+        LEFT JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+        WHERE pm.project_id=#{projectId}
+        <if test="subProjectId != null and subProjectId != 0" >
+            OR pm.project_id=#{subProjectId}
+        </if>
+        AND pm.is_active = 'O1'
+        AND (pmr.role_id = 1 OR pmr.role_id = 3)
+    </select>
 </mapper>

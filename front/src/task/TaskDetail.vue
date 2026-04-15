@@ -88,7 +88,7 @@
                     <template #label>
                       <div class="cell-item">추정 시간</div>
                     </template>
-                    {{ taskInfo.estimatedHours }}
+                    {{ taskInfo.estimatedHours }}시간
                   </el-descriptions-item>
                   <el-descriptions-item>
                     <template #label>
@@ -265,7 +265,11 @@
             <div class="side-col">
               <!-- 우측 상단 버튼들 -->
               <div class="flex justify-between">
-                <button @click="registerActualTime" class="btn-navy">
+                <button
+                  v-if="taskInfo.taskStatusId != 5"
+                  @click="registerActualTime"
+                  class="btn-navy"
+                >
                   <span class="text-lg">🕒</span>소요시간 등록
                 </button>
 
@@ -301,12 +305,12 @@
               </div>
 
               <!-- 첨부파일 -->
-              <div class="card">
+              <!-- <div class="card">
                 <div class="card-header">
                   <span class="card-title">첨부파일</span>
                 </div>
                 <div class="news-body"></div>
-              </div>
+              </div> -->
               <!-- 소요시간 -->
               <div class="card">
                 <div class="news-btn">
@@ -349,8 +353,8 @@ const sidebarOpen = ref(false);
 const route = useRoute();
 const router = useRouter();
 let taskId = ref(route.params.taskId); // 업무 번호
-let projectId = ref(route.params.projectId); // 프로젝트 번호
 let subId = ref(route.params.subProjectId);
+let projectId = ref(route.params.projectId);
 let taskInfo = ref({
   actualHours: "",
   assigneeUserId: "",
@@ -384,10 +388,6 @@ onBeforeMount(async () => {
   taskInfo.value = { ...taskStore.taskDetail };
   taskInfo.value.createdAt = changeDate(taskInfo.value.createdAt);
 
-  //time_entries 합계가 있으면 표시
-  // if (taskInfo.value.totalTimeEntries > 0) {
-  //   taskInfo.value.actualHours = taskInfo.value.totalTimeEntries;
-  // }
   taskInfo.value.actualHours =
     taskInfo.value.totalTimeEntries > 0
       ? taskInfo.value.totalTimeEntries
@@ -409,6 +409,11 @@ onBeforeMount(async () => {
   // 소요시간 목록 조회
   await taskStore.getTimeEntries(taskId.value);
   timeEntriesList.value = taskStore.timeEntriesList;
+
+  // 프로젝트 내 pm, pl 권한인 사람 조회
+  let obj = { projectId: projectId.value, subProjectId: subId.value };
+  console.log(obj);
+  await taskStore.getProjectRole(obj);
 });
 
 // 소요시간 등록 버튼(모달 오픈)
@@ -431,7 +436,8 @@ const registerActualTime = () => {
 const isAssignee = computed(
   () =>
     Number(taskInfo.value.assigneeUserId) ===
-    Number(authStore.user?.userId || authStore.user?.id),
+      Number(authStore.user?.userId || authStore.user?.id) ||
+    taskStore.plPmList.includes(authStore.user?.userId),
 );
 // 반려+ 담당자일 때만 하위업무 버튼 노출
 const canCreateSubTask = computed(
@@ -513,7 +519,10 @@ const chageTaskDesc = async () => {
 };
 
 // 탭 선택시
-const handleClick = (tab) => {
+const handleClick = (tab, ev) => {
+  if (ev) {
+    ev.preventDefault();
+  }
   let name = tab.props.name;
   if (name == "first") {
     tableList.value = activityList.value;
@@ -891,7 +900,7 @@ const cellStyle = () => ({
   padding: 16px 20px 8px;
   background: #ffffff;
 
-  width: 100%;
+  min-height: 100%;
   overflow-x: auto;
 }
 :deep(.table-inner-wrap .el-table),
@@ -965,5 +974,9 @@ const cellStyle = () => ({
 :deep(.input:disabled) {
   background: #f1f5f9 !important;
   color: #475569 !important;
+}
+:deep(.el-tabs__item) {
+  outline: none !important;
+  box-shadow: none !important;
 }
 </style>

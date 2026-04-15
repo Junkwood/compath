@@ -15,4 +15,9 @@ import java.util.List;
 public class RoleDTOKJH {
     private Integer roleId;
     private String roleName;
+
+    private Integer userId;
+
+    private Integer projectId;
+    private Integer subProjectId;
 }
