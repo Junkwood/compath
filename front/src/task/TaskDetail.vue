@@ -462,7 +462,11 @@ const goBack = () => {
 const goModify = () => {
   router.push({
     name: "taskModify",
-    params: { taskId: taskId.value, subProjectId: subId.value },
+    params: { 
+      projectId: taskInfo.value.projectId,  
+      taskId: taskId.value 
+    },
+    query: { subProjectId: subId.value }  
   });
 };
 

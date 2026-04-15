@@ -437,7 +437,7 @@ export const useTaskStore = defineStore("task", () => {
         createdBy: createdBy,
       });
     } else {
-      await api //
+      await api
         .post("/tasks/insert", {
           ...obj,
           createdBy: createdBy,

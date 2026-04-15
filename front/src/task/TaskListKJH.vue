@@ -400,9 +400,13 @@ const handleCurrentChange = async (val) => {
 };
 
 const goResister = () => {
-  router.push({ name: "taskRegister" });
+  router.push({
+    name: "taskRegister",
+    params: { projectId: id },
+    query: { from: "taskList" },
+  });
 };
-
+// 검색 버튼
 const filteringList = async () => {
   const values = Object.values(filteredList.value);
   const isEmpty = values.every((v) => v === "" || v === null);

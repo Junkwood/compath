@@ -19,8 +19,19 @@
               isSubTask ? "하위업무 수정" : "업무 수정"
             }}</span>
           </div>
+          <button class="btn-back" @click="goBack">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 12H5M11 6l-6 6 6 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            목록으로
+          </button>
         </div>
-
         <div class="page-wrap">
           <div class="form-card">
             <!-- 잠금 배너 -->
@@ -249,7 +260,6 @@
 
             <!-- 하단 버튼 -->
             <div class="form-footer">
-              <button @click="goBack" class="btn btn-back">← 목록으로</button>
               <div class="form-footer-right">
                 <button
                   @click="() => resetForm('edit')"
@@ -374,11 +384,14 @@ main {
 
 .sub-header {
   background: #ffffff;
-  padding: 14px 32px;
+  padding: 12px 32px;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
   z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .breadcrumb {
@@ -532,11 +545,26 @@ main {
 }
 
 .btn-back {
-  background: #1e3a5f;
-  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
 }
 .btn-back:hover {
-  background: #172e4d;
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .btn-reset {
@@ -564,7 +592,7 @@ main {
 
 .form-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-top: 28px;
   padding-top: 24px;

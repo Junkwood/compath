@@ -146,6 +146,24 @@
           <div class="flex gap-2">
             <button
               type="button"
+              @click="goStats()"
+              class="btn-export btn-export--stats"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <path d="M3 3v18h18M7 16l4-4 4 4 4-4" />
+              </svg>
+              통계 보기
+            </button>
+            <button
+              type="button"
               @click="exportExcel()"
               class="btn-export btn-export--excel"
             >
@@ -426,6 +444,11 @@ const exportData = computed(() => {
   );
 });
 
+///통계
+const goStats = () => {
+  router.push({ name: "TaskReportStats", params: { projectId } });
+};
+
 const exportExcel = () => {
   const rows = exportData.value.map((task) => ({
     담당자: task.userName,
@@ -612,6 +635,14 @@ const exportPdf = () => {
   gap: 8px;
   align-items: flex-end;
   padding-bottom: 1px;
+}
+.btn-export--stats {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+.btn-export--stats:hover {
+  background: #dbeafe;
 }
 .btn-reset {
   padding: 8px 16px;
