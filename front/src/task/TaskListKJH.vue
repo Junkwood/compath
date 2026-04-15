@@ -222,15 +222,24 @@
                         ]"
                         @click="goDetail(task)"
                       >
+                        <td class="text-center">{{ task.num }}</td>
                         <td class="text-left title-cell">
-                          <span
-                            v-if="task.parentTaskId"
-                            :style="{
-                              marginLeft: (task.level - 1) * 20 + 'px',
-                            }"
+                          <el-tooltip
+                            class="box-item"
+                            effect="dark"
+                            :content="task.title"
+                            placement="top-start"
+                            :disabled="task.title.length < 20"
                           >
-                            ㄴ [하위]&nbsp; </span
-                          >{{ task.title }}
+                            <span
+                              v-if="task.parentTaskId"
+                              :style="{
+                                marginLeft: (task.level - 1) * 20 + 'px',
+                              }"
+                            >
+                              ㄴ [하위]&nbsp; </span
+                            >{{ changeTitleLength(task.title) }}</el-tooltip
+                          >
                         </td>
                         <td
                           :class="[
@@ -324,6 +333,7 @@ let projectendDate = ref();
 let userList = ref([]);
 
 const thList = [
+  "번호",
   "업무명",
   "담당자",
   "업무상태",
@@ -395,8 +405,12 @@ let selectedTask = ref({}); // 선택된 업무 정보
 let openModal = ref(false);
 
 const selectingUser = (task) => {
+  if (task.assigneeUserId != null) {
+    return;
+  }
+
   selectedTask.value = task;
-  console.log(task);
+
   openModal.value = true;
 };
 
@@ -528,6 +542,15 @@ const changeDateType = (val) => {
     val[i].dueDate = val[i].dueDate != null ? changeDate(val[i].dueDate) : "-";
   }
 };
+
+const changeTitleLength = (title) => {
+  console.log(title);
+  if (title.length > 20) {
+    console.log(title.slice(0, 19));
+    title = title.slice(0, 19) + ".....";
+  }
+  return title;
+};
 </script>
 
 <style scoped>
@@ -629,7 +652,7 @@ const changeDateType = (val) => {
   overflow: hidden;
 }
 .panel-head {
-  padding: 16px 20px;
+  padding: 10px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -842,6 +865,9 @@ const changeDateType = (val) => {
 :deep(.el-pagination.is-background .btn-prev),
 :deep(.el-pagination.is-background .el-pager li) {
   border-radius: 8px;
+}
+:deep9(.task-table th:nth-child(7), .task-table td:nth-child(7)) {
+  width: 20%;
 }
 
 /* 반응형 */
