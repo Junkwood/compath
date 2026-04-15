@@ -10,7 +10,6 @@ export const useGanttChartStore = defineStore("ganttChart", {
     filteredTasksData: null,
     createModalVisible: false,
     createModalProjectId: null,
-
   }),
   getters: {
     // 필터 적용된 데이터
@@ -113,15 +112,25 @@ export const useGanttChartStore = defineStore("ganttChart", {
       const priorityName = priorityObj
         ? priorityObj.codeName
         : task.priorityCode;
+      let startDate = task.estStartDate ?? task.startDate ?? null;
+      let endDate = task.estEndDate ?? task.dueDate ?? null;
+
+      if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + 1);
+        endDate = d.toISOString().split("T")[0];
+      }
+
       return {
         id: task.taskId,
         name: task.title,
-        startDate: task.estStartDate ?? task.startDate,
-        endDate: task.estEndDate ?? task.dueDate,
+        startDate,
+        endDate,
         assignee: task.assigneeName || "미지정",
         priority: priorityName,
         priorityCode: task.priorityCode,
         percentDone: task.progressRate ?? 0,
+        projectId: task.projectId,
       };
     },
   },
