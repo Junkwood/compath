@@ -13,6 +13,15 @@
         <!-- 서브헤더 -->
         <div class="sub-header">
           <div class="sub-header-left">
+            <div class="breadcrumb">
+              <span>홈</span><span class="bc-sep">›</span> <span>프로젝트</span
+              ><span class="bc-sep">›</span> <span>타임 리포트</span
+              ><span class="bc-sep">›</span>
+              <span class="bc-cur">타임 엔트리</span>
+            </div>
+          </div>
+
+          <div class="sub-header-right">
             <button class="btn-back" @click="goBack">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path
@@ -25,12 +34,6 @@
               </svg>
               목록으로
             </button>
-            <div class="breadcrumb">
-              <span>홈</span><span class="bc-sep">›</span> <span>프로젝트</span
-              ><span class="bc-sep">›</span> <span>타임 리포트</span
-              ><span class="bc-sep">›</span>
-              <span class="bc-cur">타임 엔트리</span>
-            </div>
           </div>
         </div>
         <div class="page-inner">
@@ -341,7 +344,13 @@ export default defineComponent({
         const { data } = await api.get("/task-total-info", {
           params: { taskId },
         });
-        taskInfo.value = data.taskDetail?.[0] ?? null;
+        taskInfo.value = data.taskDetail?.[0]
+          ? {
+              ...data.taskDetail[0],
+              startDate: data.taskDetail[0].estStartDate,
+              dueDate: data.taskDetail[0].estEndDate,
+            }
+          : null;
         projectList.value = data.projectList ?? [];
 
         const { data: reportData } = await api.get("/report/time-entry", {
@@ -679,6 +688,8 @@ export default defineComponent({
     /* ─── lifecycle ─── */
     onMounted(async () => {
       await fetchData();
+      console.log("taskInfo", taskInfo.value);
+
       rebuildAllCharts();
     });
 
@@ -719,7 +730,8 @@ export default defineComponent({
 .sub-header {
   display: flex;
   align-items: center;
-  background: #ffffff;
+  justify-content: space-between;
+  background: #fff;
   padding: 12px 32px;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
@@ -739,14 +751,13 @@ export default defineComponent({
   padding: 0 12px;
   font-size: 13px;
   font-weight: 600;
-  background: #ffffff;
+  background: #fff;
   color: #334155;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
-  flex-shrink: 0;
 }
 .btn-back:hover {
   background: #f1f5f9;

@@ -165,7 +165,7 @@
             <table>
               <thead>
                 <tr>
-                  <th class="col-cb">
+                  <th class="col-cb" style="text-align: center">
                     <input type="checkbox" v-model="selectAll" class="cb" />
                   </th>
                   <th class="col-project">프로젝트 명</th>
@@ -661,15 +661,14 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13.5px;
-  table-layout: auto;
+  table-layout: fixed;
 }
 thead {
   background: #f8fafc;
 }
-
 th {
-  padding: 11px 16px;
-  text-align: left;
+  padding: 10px 8px;
+  text-align: center;
   font-size: 11px;
   font-weight: 700;
   color: #64748b;
@@ -677,25 +676,28 @@ th {
   text-transform: uppercase;
   border-bottom: 1px solid #e2e8f0;
   white-space: nowrap;
+  overflow: hidden;
 }
 td {
-  padding: 13px 16px;
-  text-align: left;
+  padding: 10px 8px;
+  text-align: center;
   border-bottom: 1px solid #f1f5f9;
   color: #334155;
   vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
 /* 컬럼별 너비 */
 .col-cb {
   width: 44px;
-  text-align: center;
 }
 .col-project {
   width: 20%;
+  text-align: left;
 }
 .col-task {
-  width: 25%;
+  width: 28%;
+  text-align: left;
 }
 .col-date {
   width: 11%;
@@ -704,10 +706,24 @@ td {
   width: 9%;
 }
 .col-assignee {
-  width: 13%;
+  width: 14%;
 }
 .col-hours {
-  width: 11%;
+  width: 10%;
+}
+th.col-hours {
+  text-align: center;
+  padding-right: 8px;
+}
+td.col-hours {
+  text-align: center;
+  padding-right: 8px;
+}
+td.col-project {
+  text-align: left;
+}
+td.col-task {
+  text-align: left;
 }
 
 .td-center {
@@ -822,9 +838,10 @@ td {
   text-align: right;
   font-size: 13px;
   color: #64748b;
+  padding-right: 16px;
 }
 .total-value {
-  text-align: right;
+  text-align: center;
   color: #1d4ed8;
   font-size: 15px;
   font-weight: 700;
