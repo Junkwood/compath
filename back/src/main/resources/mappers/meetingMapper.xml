@@ -70,8 +70,8 @@
     <!--    알림 테이블 등록-->
     <insert id="registerMeetingAlarm">
         <selectKey order="BEFORE" resultType="int" keyProperty="notificationId">
-            SELECT max(notification_id) + 1
-            FROM notifications
+            SELECT notifications_seq.NEXTVAL
+            FROM dual
         </selectKey>
         INSERT INTO notifications( notification_id,
                                    notification_type,
@@ -96,10 +96,9 @@
         INSERT INTO notification_targets( notification_target_no,
         notification_id,
         receiver_id)
-        VALUES ( (SELECT max(notification_target_no) + 1
-        FROM notification_targets),
-        #{notificationId},
-        #{receiverId} )
+        VALUES ( notification_targets_seq.NEXTVAL,
+                 #{notificationId},
+                 #{receiverId} )
     </insert>
 
 <!--    회의록 수정-->
@@ -115,6 +114,23 @@
             attachment_group_id = #{attachmentGroupId},
             updated_at = SYSDATE,
             created_by = #{createdBy}
+        WHERE meeting_log_id = #{meetingLogId}
+    </update>
+
+    <!--    빈 회의록 내용 채우기-->
+    <update id="modifyNullMeeting">
+        UPDATE meeting_logs
+        SET title = #{title},
+            content = #{content},
+            meeting_type_code = #{meetingTypeCode},
+            place = #{place},
+            ai_summary = #{aiSummary},
+            stt_text = #{sttText},
+            attachment_group_id = #{attachmentGroupId},
+            created_by = #{createdBy},
+            created_at = SYSDATE,
+            project_id = #{projectId},
+            meeting_date = #{meetingDate}
         WHERE meeting_log_id = #{meetingLogId}
     </update>
 
@@ -214,23 +230,6 @@
         DELETE FROM meeting_logs
         WHERE meeting_log_id = #{id}
     </delete>
-
-<!--    빈회의록 등록-->
-    <update id="modifyNullMeeting">
-        UPDATE meeting_logs
-        SET title = #{title},
-            content = #{content},
-            meeting_type_code = #{meetingTypeCode},
-            editor_user_id = #{editorUserId},
-            place = #{place},
-        project_id = #{projectId},
-        created_by=#{createdBy},
-        created_at=SYSDATE,
-        ai_summary = #{aiSummary},
-        stt_text = #{sttText},
-        attachment_group_id = #{attachmentGroupId}
-        WHERE meeting_log_id = #{meetingLogId}
-    </update>
 
     <select id="getConnectCount">
         SELECT COUNT(*)

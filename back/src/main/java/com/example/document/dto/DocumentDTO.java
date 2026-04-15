@@ -26,6 +26,8 @@ public class DocumentDTO { // 문서
     private String isDeleted;
     private Integer isEditorUserId;
     private String isComment;
+    private String taskTypeId;
+    private String typeName;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")

@@ -10,6 +10,7 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     activityList: [],
     plPmList: [],
     modifyResult: 0,
+    projectName: [],
   }),
   getters: {},
   actions: {

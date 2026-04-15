@@ -272,6 +272,7 @@
                         <td class="text-center">{{ task.startDate }}</td>
                         <td class="text-center">{{ task.dueDate }}</td>
                         <td class="text-left">{{ task.projectName }}</td>
+                        <td class="text-center">{{ task.createdAt }}</td>
                       </tr>
                     </template>
 
@@ -343,6 +344,7 @@ const thList = [
   "시작일",
   "종료일",
   "프로젝트명",
+  "작성일",
 ];
 
 let filterInfo = ref([]);

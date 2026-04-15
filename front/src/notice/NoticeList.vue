@@ -14,9 +14,8 @@
         <div class="sub-header">
           <div class="breadcrumb">
             <span class="bc-home">홈</span>
-            <span class="bc-sep">›</span>
-            <span>{{ name }}</span>
-            <span class="bc-sep">›</span>
+            <span class="bc-sep">›</span
+            ><span v-for="info in taskPjList" :key="info">{{ info }} › </span>
             <span class="bc-cur">공지사항 목록</span>
           </div>
         </div>
@@ -254,6 +253,8 @@ const projectId = route.params.projectId;
 const subId = route.params.subProjectId;
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
+let taskPjList = ref([]);
+const projectInfo = ref([]);
 
 const filteredList = ref({
   category: "",
@@ -378,10 +379,18 @@ onBeforeMount(async () => {
 
   let id = subId ? subId : projectId;
   await taskStore.getProjectName(id);
-  const projectInfo = taskStore.projectName;
-  name.value = projectInfo.projectName;
-  projectStartDate.value = projectInfo.startDate;
-  projectendDate.value = projectInfo.endDate;
+  projectInfo.value = taskStore.projectName;
+  name.value = projectInfo.value.projectName;
+  projectStartDate.value = projectInfo.value.startDate;
+  projectendDate.value = projectInfo.value.endDate;
+  if (projectInfo.value.parentProjectName != null) {
+    taskPjList.value = [
+      projectInfo.value.parentProjectName,
+      projectInfo.value.projectName,
+    ];
+  } else {
+    taskPjList.value = [projectInfo.value.projectName];
+  }
 
   let obj = {
     projectId: subId ? subId : projectId,

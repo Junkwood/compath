@@ -88,12 +88,12 @@
 
 <!--    문서 카테고리 목록(필터링 조건)-->
     <select id="getFilterCategroy">
-        SELECT DISTINCT(r.role_name),
-               r.role_id
+        SELECT DISTINCT(t.type_name),
+               t.task_type_id
         FROM documents d
-        JOIN roles r ON r.role_id = d.category
+        JOIN task_types t ON t.task_type_id = d.category
         JOIN projects p ON d.project_id = p.project_id
-        WHERE (p.parent_project_id = #{id} OR d.project_id = #{id}) AND r.is_active = 'O1'
+        WHERE (d.project_id = #{id}) AND t.is_active = 'O1'
     </select>
 
 <!--    문서 전체 목록-->
@@ -108,7 +108,7 @@
                      d.is_deleted,
                      d.is_comment,
                      d.document_id,
-                     r.role_name,
+                     t.type_name,
                      (SELECT count(*)
                      FROM document_comments
                      WHERE document_id = d.document_id
@@ -116,7 +116,7 @@
               FROM documents d
               JOIN projects p ON d.project_id = p.project_id
               JOIN users u ON d.created_by = u.user_id
-              LEFT JOIN roles r ON d.category = r.role_id
+              LEFT JOIN task_types t ON d.category = t.task_type_id
               WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
               AND d.is_deleted = 'Q2'
         <if test=" userId!= null and userId != ''">
@@ -197,8 +197,8 @@
 <!--    알림 테이블 등록-->
     <insert id="registerCommentAlarm">
         <selectKey order="BEFORE" resultType="int" keyProperty="notificationId">
-            SELECT max(notification_id) + 1
-            FROM notifications
+            SELECT notifications_seq.NEXTVAL
+            FROM dual
         </selectKey>
         INSERT INTO notifications( notification_id,
                                    notification_type,
@@ -223,8 +223,7 @@
         INSERT INTO notification_targets( notification_target_no,
                                           notification_id,
                                           receiver_id)
-        VALUES ( (SELECT max(notification_target_no) + 1
-                  FROM notification_targets),
+        VALUES ( notification_targets_seq.NEXTVAL,
                   #{notificationId},
                   #{receiverId} )
     </insert>

@@ -41,14 +41,7 @@ public class MeetingController {
             dto.setAttachmentGroupId(id);
         }
 
-        MeetingDTO result = new MeetingDTO();
-        if(dto.getMeetingLogId() != null) {
-            result = service.modifyMeeting(dto);
-        } else {
-            result = service.registerMeeting(dto);
-        }
-
-        return result;
+        return service.registerMeeting(dto);
     }
 
 
