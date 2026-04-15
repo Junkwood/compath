@@ -31,6 +31,9 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
         dto.setPmUserId(dto.getCreatedBy());
 
         projectMapperJDJ.registerProject(dto);
+        //기본 멤버 등록처리
+        projectMapperJDJ.registerProjectMember(dto.getPmUserId(),dto.getProjectId(),1);
+        projectMapperJDJ.registerProjectMember(dto.getPlUserId(),dto.getProjectId(),2);
         // 총괄PL한테 알림
         notificationService.sendToOne(
                 dto.getPlUserId(),
