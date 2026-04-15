@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-page flex min-h-screen overflow-hidden">
+  <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <div
@@ -37,14 +37,16 @@
 
           <!-- 기본 설정 패널 -->
           <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">기본 설정</span>
+            <div class="panel-head">
+              <span class="panel-title">기본 설정</span>
 
-            <div class="panel-head-actions">
-              <button @click="openModfyModal" class="btn-primary">수정</button>
-              <button @click="handleGoBack" class="btn-line">돌아가기</button>
+              <div class="panel-head-actions">
+                <button @click="openModfyModal" class="btn-primary">
+                  수정
+                </button>
+                <button @click="handleGoBack" class="btn-line">돌아가기</button>
+              </div>
             </div>
-          </div>
 
             <div class="panel-body setting-body">
               <div class="setting-table-wrap">
@@ -101,76 +103,93 @@
               </button>
             </div>
 
-            <div class="member-tab-row">
-              <button
-                v-for="tab in roleTabs"
-                :key="tab.key"
-                class="member-tab"
-                :class="{ active: activeRoleTab === tab.key }"
-                @click="activeRoleTab = tab.key"
-              >
-                {{ tab.label }}
-                <span class="tab-count">
-                  {{
-                    tab.key === "ALL"
-                      ? memberList.length
-                      : memberList.filter(
-                          (member) =>
-                            (member.roleName || "기타") === tab.key,
-                        ).length
-                  }}
-                </span>
-              </button>
-            </div>
-
             <div class="panel-body table-body">
-              <el-table
-                :data="filteredMemberList"
-                style="width: 100%"
-                :header-cell-style="headerStyle"
-                :cell-style="cellStyle"
-              >
-                <el-table-column
-                  prop="userName"
-                  label="이름"
-                  width="180"
-                  align="center"
-                />
-                <el-table-column
-                  prop="userId"
-                  label="사번"
-                  width="180"
-                  align="center"
-                />
-                <el-table-column
-                  prop="email"
-                  label="이메일"
-                  min-width="360"
-                  align="center"
-                />
-                <el-table-column
-                  fixed="right"
-                  label="삭제"
-                  width="140"
-                  align="center"
+              <el-tabs v-model="activeRoleTab" @tab-click="handleClick">
+                <el-tab-pane
+                  v-for="tab in roleTabs"
+                  :key="tab.key"
+                  :name="tab.key"
+                  lazy
                 >
-                  <template #default="scope">
-                    <el-button
-                      size="small"
-                      type="danger"
-                      @click="handleDelete(scope.row)"
-                    >
-                      삭제
-                    </el-button>
+                  <template #label>
+                    {{ tab.label }}
+                    <span class="tab-count">{{
+                      tab.key === "ALL"
+                        ? memberList.length
+                        : memberList.filter(
+                            (member) => (member.roleName || "기타") === tab.key,
+                          ).length
+                    }}</span>
                   </template>
-                </el-table-column>
 
-                <template #empty>
-                  <div class="table-empty">
-                    <el-empty description="해당 역할의 구성원이 없습니다." />
+                  <div class="table-inner-wrap">
+                    <el-table
+                      v-loading="loadingProjects"
+                      :data="filteredMemberList"
+                      style="width: 100%"
+                      :header-cell-style="headerStyle"
+                      :cell-style="cellStyle"
+                    >
+                      <el-table-column
+                        prop="userName"
+                        label="이름"
+                        width="180"
+                        align="center"
+                      />
+                      <el-table-column
+                        prop="userId"
+                        label="사번"
+                        width="180"
+                        align="center"
+                      />
+                      <el-table-column
+                        prop="email"
+                        label="이메일"
+                        min-width="360"
+                        align="center"
+                      />
+
+                      <el-table-column
+                        fixed="right"
+                        label="삭제"
+                        width="140"
+                        align="center"
+                      >
+                        <template #default="scope">
+                          <el-button
+                            size="small"
+                            type="danger"
+                            @click="handleDelete(scope.row)"
+                          >
+                            삭제
+                          </el-button>
+                        </template>
+                      </el-table-column>
+
+                      <template #empty>
+                        <div class="table-empty">
+                          <el-empty
+                            description="해당 역할의 구성원이 없습니다."
+                          />
+                        </div>
+                      </template>
+                    </el-table>
+
+                    <div
+                      class="pagination-wrap"
+                      v-if="filteredMemberList.length > 0"
+                    >
+                      <el-pagination
+                        v-model:current-page="currentPage"
+                        :page-size="pageSize"
+                        :total="totalCount"
+                        layout="prev, pager, next"
+                        background
+                      />
+                    </div>
                   </div>
-                </template>
-              </el-table>
+                </el-tab-pane>
+              </el-tabs>
             </div>
           </div>
         </div>
@@ -206,12 +225,14 @@ import Header from "../partials/Header.vue";
 import ProjectModifyModal from "./ProjectModifyModal.vue";
 import ProjectMemberModal from "./ProjectMemberModal.vue";
 import Swal from "sweetalert2";
+import { nextTick } from "vue";
 
 const route = useRoute();
 const taskStore = usetaskKJHStore();
 const authStore = useAuthStore();
 const projectStore = useProjectKJHStore();
 const router = useRouter();
+const currentPage = ref(1);
 
 const sidebarOpen = ref(false);
 
@@ -370,6 +391,33 @@ const handleDelete = async (val) => {
 
   await projectStore.removeMem(val);
   memberList.value = projectStore.remainMem;
+};
+
+// 스크롤 위치를 고정하는 함수
+const handleBeforeLeave = () => {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+  // 다음 틱에서 스크롤 위치를 다시 복구
+  nextTick(() => {
+    window.scrollTo(0, scrollTop);
+  });
+
+  return true; // true를 반환해야 탭이 바뀝니다.
+};
+
+const handleClick = (pane) => {
+  // 1. 현재 스크롤 위치 저장
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+  // 2. 페이지 초기화 (변수가 선언되어 있어야 함)
+  if (typeof currentPage !== "undefined") {
+    currentPage.value = 1;
+  }
+
+  // 3. 탭 전환 후 스크롤 복구
+  nextTick(() => {
+    window.scrollTo(0, scrollTop);
+  });
 };
 
 watch(
@@ -704,7 +752,7 @@ watch(
   height: 18px;
   padding: 0 5px;
   border-radius: 10px;
-  background: rgba(29, 78, 216, 0.10);
+  background: rgba(29, 78, 216, 0.1);
   color: inherit;
   font-size: 11px;
   font-weight: 800;
@@ -851,5 +899,28 @@ watch(
     padding: 0 14px;
     font-size: 12px;
   }
+}
+:deep(.el-tabs__item) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+:deep(.el-tabs__content) {
+  min-height: 50px; /* 테이블 5줄+페이지네이션이 들어갈 정도의 높이 */
+  overflow: auto; /* 내부 요소가 잘리지 않도록 설정 */
+}
+
+/* 테이블이 로딩되거나 데이터가 바뀔 때 높이가 튀는 것 방지 */
+:deep(.el-table) {
+  min-height: 50px;
+}
+:deep(
+  .el-tabs--top > .el-tabs__header .el-tabs__item:nth-child(2),
+  .el-tabs--bottom > .el-tabs__header .el-tabs__item:nth-child(2)
+) {
+  padding-left: 20px;
+}
+
+:deep(.el-tabs__header) {
+  margin: 0px;
 }
 </style>

@@ -113,7 +113,8 @@
             ai_summary = #{aiSummary},
             stt_text = #{sttText},
             attachment_group_id = #{attachmentGroupId},
-            updated_at = SYSDATE
+            updated_at = SYSDATE,
+            created_by = #{createdBy}
         WHERE meeting_log_id = #{meetingLogId}
     </update>
 

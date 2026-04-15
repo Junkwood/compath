@@ -7,7 +7,7 @@ export const useNoticeStore = defineStore("notice", {
     noticeInfo: {},
     filterList: [],
     pagingList: [],
-    projectRoles: [],
+    taskType: [],
   }),
   getters: {},
   actions: {
@@ -78,11 +78,11 @@ export const useNoticeStore = defineStore("notice", {
     },
 
     // 공지사항 수정/생성시 프로젝트 구서원에 있는 역할
-    async getProjectRoles(id) {
+    async getProjectType() {
       await api //
-        .get("/notice/roleList/" + id) //
+        .get("/tasks/typeList") //
         .then((res) => {
-          this.projectRoles = res.data;
+          this.taskType = res.data;
         });
     },
   },

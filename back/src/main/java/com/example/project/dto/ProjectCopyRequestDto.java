@@ -7,7 +7,6 @@ public class ProjectCopyRequestDto {
     private Integer sourceProjectId;
 
     private String projectName;
-    private String identifier;
     private String description;
     private String startDate;
     private String endDate;

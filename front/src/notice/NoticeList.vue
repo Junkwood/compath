@@ -3,7 +3,7 @@
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <div
-      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
     >
       <Header
         :sidebarOpen="sidebarOpen"
@@ -11,38 +11,38 @@
       />
 
       <main class="grow">
-        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <!-- 제목 -->
-          <div class="mb-6 proj-title-row flex justify-between">
-            <div class="proj-title-left">
-              <h2
-                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
-              >
-                프로젝트 공지사항
-              </h2>
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span class="bc-home">홈</span>
+            <span class="bc-sep">›</span>
+            <span>{{ name }}</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur">공지사항 목록</span>
+          </div>
+        </div>
 
-              <div class="proj-name-row">
-                <span class="proj-name">【 {{ name }} 】</span>
+        <div class="page-container">
+          <div class="pg-row">
+            <div class="pg-left">
+              <div class="proj-meta">
+                <span class="proj-name">{{ name }}</span>
                 <span class="proj-period">
                   {{ projectStartDate }} ~ {{ projectendDate }}
                 </span>
               </div>
             </div>
-
             <div class="self-end">
-              <el-button class="new-project-btn" @click="goResister()">
-                + &nbsp; 공지 생성
+              <el-button class="btn-create-task" @click="goResister()">
+                + 공지사항 생성
               </el-button>
             </div>
           </div>
-
-          <!-- 검색 필터 -->
-          <div class="filter-card mt-4 mb-0">
-            <div class="filter-row">
-              <div class="filter-item">
-                <label class="filter-label">작성자</label>
-                <div class="select-wrap">
-                  <select v-model="filteredList.userId">
+          <div class="panel-body search-body">
+            <div class="search-layout">
+              <div class="search-row primary-row">
+                <div class="form-item">
+                  <label>작성자</label>
+                  <select class="input w-full" v-model="filteredList.userId">
                     <option value="">전체</option>
                     <option
                       :value="user.userId"
@@ -52,90 +52,77 @@
                       {{ user.userName }}
                     </option>
                   </select>
-                  <span class="select-arrow">▾</span>
                 </div>
-              </div>
 
-              <div class="filter-item">
-                <label class="filter-label">카테고리</label>
-                <div class="select-wrap">
-                  <select v-model="filteredList.category">
+                <div class="form-item">
+                  <label>카테고리</label>
+                  <select class="input w-full" v-model="filteredList.category">
                     <option value="">전체</option>
                     <option
-                      :value="category.roleId"
+                      :value="category.taskTypeId"
                       v-for="category in filterList.categoryList"
-                      :key="category.roleId"
+                      :key="category.taskTypeId"
                     >
-                      {{ category.roleName }}
+                      {{ category.typeName }}
                     </option>
                   </select>
-                  <span class="select-arrow">▾</span>
                 </div>
-              </div>
 
-              <div class="filter-item">
-                <label class="filter-label">시작일</label>
-                <input
-                  v-model="filteredList.startDate"
-                  type="date"
-                  class="filter-input"
-                />
-              </div>
-
-              <div class="filter-item">
-                <label class="filter-label">종료일</label>
-                <input
-                  v-model="filteredList.endDate"
-                  type="date"
-                  class="filter-input"
-                />
-              </div>
-            </div>
-
-            <div class="filter-item filter-item--wide mt-3">
-              <label class="filter-label">검색어</label>
-              <div class="search-wrap">
-                <svg class="search-icon" viewBox="0 0 20 20" fill="none">
-                  <circle
-                    cx="9"
-                    cy="9"
-                    r="6"
-                    stroke="#9ca3af"
-                    stroke-width="1.8"
+                <div class="form-item">
+                  <label>시작일</label>
+                  <input
+                    v-model="filteredList.startDate"
+                    type="date"
+                    class="input w-full"
                   />
-                  <path
-                    d="M14 14l3 3"
-                    stroke="#9ca3af"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                  />
-                </svg>
-                <input
-                  v-model="filteredList.search"
-                  type="text"
-                  placeholder="제목을 입력해주세요."
-                  class="search-input"
-                  @keyup.enter="searchInfo()"
-                />
-              </div>
+                </div>
 
-              <div class="filter-actions flex flex-row-reverse">
-                <button type="button" @click="searchInfo()" class="btn-search">
-                  검색
-                </button>
-                <button type="button" @click="resetForm()" class="btn-reset">
-                  초기화
-                </button>
+                <div class="form-item">
+                  <label>종료일</label>
+                  <input
+                    v-model="filteredList.endDate"
+                    type="date"
+                    class="input w-full"
+                  />
+                </div>
+
+                <div class="form-item">
+                  <label>검색어</label>
+                  <input
+                    v-model="filteredList.search"
+                    type="text"
+                    placeholder="검색어 입력"
+                    class="input w-full"
+                    @keyup.enter="searchInfo()"
+                  />
+                </div>
+
+                <div class="form-item search-btn-group">
+                  <div class="search-actions">
+                    <button
+                      type="button"
+                      @click="resetForm()"
+                      class="btn-reset"
+                    >
+                      초기화
+                    </button>
+                    <button
+                      type="button"
+                      @click="searchInfo()"
+                      class="btn-search"
+                    >
+                      검색
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
           <!-- 목록 -->
-          <div
-            class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mt-4 notice-board-wrap"
-          >
-            <div class="flex flex-row-reverse items-center px-5 pt-3 pb-2">
-              <span class="count-badge flex flex">총 {{ listLength }}건</span>
+          <div class="panel">
+            <div class="panel-head list-head">
+              <span class="panel-title">공지사항 목록</span>
+              <span class="count-badge">총 {{ listLength }}건</span>
             </div>
 
             <table class="notice-table w-full dark:text-gray-300">
@@ -174,10 +161,7 @@
                   >
                     <td class="col-num">
                       <div class="num-cell">
-                        <span
-                          v-if="notice.isPinned === 'B1'"
-                          class="pin-badge"
-                        >
+                        <span v-if="notice.isPinned === 'B1'" class="pin-badge">
                           알림
                         </span>
                         <span v-else>{{ notice.num }}</span>
@@ -187,10 +171,7 @@
                     <td class="col-title">
                       <div class="title-cell">
                         <div class="title-line">
-                          <span
-                            v-if="notice.roleName"
-                            class="category-badge"
-                          >
+                          <span v-if="notice.roleName" class="category-badge">
                             {{ notice.roleName }}
                           </span>
 
@@ -246,6 +227,8 @@
             </div>
           </div>
         </div>
+
+        <!-- 검색 필터 -->
       </main>
     </div>
   </div>
@@ -318,6 +301,7 @@ const searchInfo = async () => {
 
     if (!result.isConfirmed) return;
   }
+  searchInfo;
 };
 
 const handleCurrentChange = async (val) => {
@@ -430,6 +414,78 @@ const resetForm = () => {
 </script>
 
 <style scoped>
+.sub-header {
+  background: #fff;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bc-home {
+  color: #9ca3af;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
+
+.page-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pg-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pg-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proj-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proj-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1b5c9c;
+}
+
+.proj-period {
+  font-size: 13px;
+  color: #6b7280;
+}
+
 .proj-title-row {
   display: flex;
   align-items: flex-start;
@@ -451,19 +507,6 @@ const resetForm = () => {
   flex-wrap: wrap;
 }
 
-.proj-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.02em;
-}
-
-.proj-period {
-  font-size: 13px;
-  color: #64748b;
-  font-weight: 500;
-}
-
 .new-project-btn {
   background: #c7d9f5;
   border: none;
@@ -476,6 +519,12 @@ const resetForm = () => {
 
 .new-project-btn:hover {
   background: #a8c4ef;
+}
+.page-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .filter-card {
@@ -610,7 +659,6 @@ const resetForm = () => {
   align-items: flex-end;
   padding-bottom: 1px;
 }
-
 .btn-reset {
   padding: 8px 16px;
   background: #f3f4f6;
@@ -623,12 +671,10 @@ const resetForm = () => {
   transition: all 0.15s;
   white-space: nowrap;
 }
-
 .btn-reset:hover {
   background: #e5e7eb;
   color: #374151;
 }
-
 .btn-search {
   padding: 8px 20px;
   background: #334155;
@@ -641,7 +687,6 @@ const resetForm = () => {
   transition: background 0.15s;
   white-space: nowrap;
 }
-
 .btn-search:hover {
   background: #1e293b;
 }
@@ -805,5 +850,142 @@ const resetForm = () => {
   display: flex;
   justify-content: center;
   padding: 16px 0 18px;
+}
+.panel-body {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.btn-create-task {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 18px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(27, 92, 156, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-create-task:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.search-panel-head {
+  align-items: center;
+}
+
+.search-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-body {
+  padding: 16px 18px;
+}
+
+.search-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.search-row {
+  display: grid;
+  gap: 12px;
+  align-items: end;
+}
+
+.primary-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.form-item label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b5563;
+  line-height: 1.2;
+}
+
+:deep(.input) {
+  height: 36px;
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+  font-size: 12px;
+  padding: 0 10px;
+  color: #111827;
+}
+
+:deep(.input:focus) {
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+  background: #fff !important;
+  outline: none;
+}
+
+:deep(select.input) {
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  padding-right: 24px !important;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.panel-head {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.list-head {
+  align-items: center;
+}
+
+/* 버튼들을 감싸는 영역 */
+.search-btn-group {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
 }
 </style>

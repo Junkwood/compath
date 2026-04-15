@@ -13,7 +13,6 @@
       label-width="120px"
       label-position="left"
     >
-      <!-- 원본 프로젝트 -->
       <el-form-item label="원본 프로젝트" prop="sourceProjectId">
         <el-select
           v-model="form.sourceProjectId"
@@ -30,39 +29,44 @@
         </el-select>
       </el-form-item>
 
-      <!-- 새 프로젝트 명 -->
       <el-form-item label="새 프로젝트 명" prop="projectName">
         <el-input v-model="form.projectName" />
       </el-form-item>
 
-      <!-- 프로젝트 식별자 + 총괄PL -->
-      <el-form-item label="프로젝트 식별자" prop="projectCode">
-        <div class="row-fields">
-          <el-input v-model="form.projectCode" style="flex: 1" />
-          <div class="pl-field">
-            <span class="pl-label">총괄PL</span>
-            <el-select
-              v-model="form.plUserId"
-              placeholder="선택"
-              style="width: 140px"
-            >
-              <el-option
-                v-for="user in plOptions"
-                :key="user.userId"
-                :label="user.userName"
-                :value="user.userId"
-              />
-            </el-select>
-          </div>
-        </div>
+      <el-form-item label="총괄PL" prop="plUserId">
+        <el-select
+          v-model="form.plUserId"
+          placeholder="선택"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="user in plOptions"
+            :key="user.userId"
+            :label="user.userName"
+            :value="user.userId"
+          />
+        </el-select>
       </el-form-item>
 
-      <!-- 프로젝트 설명 -->
       <el-form-item label="프로젝트 설명">
         <el-input v-model="form.description" type="textarea" :rows="3" />
       </el-form-item>
 
-      <!-- 원본 설정 안내 -->
+      <el-form-item label="식별자 안내">
+        <div class="inherit-box">
+          <div class="inherit-row">
+            <span class="inherit-label">최상위 프로젝트 식별자</span>
+            <span class="inherit-value"> 자동 생성됩니다. </span>
+          </div>
+          <div class="inherit-row">
+            <span class="inherit-label">하위프로젝트 식별자</span>
+            <span class="inherit-value">
+              새 최상위 식별자 기준으로 자동 생성됩니다.
+            </span>
+          </div>
+        </div>
+      </el-form-item>
+
       <el-form-item label="복사 기준">
         <div class="inherit-box">
           <div class="inherit-row">
@@ -80,7 +84,6 @@
         </div>
       </el-form-item>
 
-      <!-- 복사 옵션 -->
       <el-form-item label="복사 옵션">
         <div class="copy-option-box">
           <el-checkbox v-model="form.copyMembers">구성원 복사</el-checkbox>
@@ -125,6 +128,7 @@
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useAuthStore } from "../stores/auth";
 import api from "../utils/api";
+import Swal from "sweetalert2";
 
 const authStore = useAuthStore();
 
@@ -148,7 +152,6 @@ const projectOptions = ref([]);
 const defaultForm = () => ({
   sourceProjectId: null,
   projectName: "",
-  projectCode: "",
   plUserId: null,
   description: "",
   copyMembers: false,
@@ -169,13 +172,6 @@ const rules = {
   projectName: [
     { required: true, message: "프로젝트 명을 입력하세요", trigger: "blur" },
   ],
-  projectCode: [
-    {
-      required: true,
-      message: "프로젝트 식별자를 입력하세요",
-      trigger: "blur",
-    },
-  ],
   plUserId: [
     { required: true, message: "총괄PL을 선택하세요", trigger: "change" },
   ],
@@ -187,6 +183,7 @@ const fetchPlList = async () => {
     plOptions.value = res.data || [];
   } catch (err) {
     console.error("PL 목록 조회 실패:", err);
+    plOptions.value = [];
   }
 };
 
@@ -196,6 +193,7 @@ const fetchProjectList = async () => {
     projectOptions.value = res.data || [];
   } catch (err) {
     console.error("프로젝트 목록 조회 실패:", err);
+    projectOptions.value = [];
   }
 };
 
@@ -236,7 +234,6 @@ const handleSubmit = async () => {
     const payload = {
       sourceProjectId: form.sourceProjectId,
       projectName: form.projectName,
-      identifier: form.projectCode,
       description: form.description,
       startDate: selectedProject?.startDate ?? null,
       endDate: selectedProject?.endDate ?? null,
@@ -245,7 +242,7 @@ const handleSubmit = async () => {
         selectedProject?.useMilestone ?? selectedProject?.use_milestone ?? null,
       pmUserId: selectedProject?.pmUserId ?? null,
       plUserId: form.plUserId,
-      createdBy: authStore.user.userId,
+      createdBy: authStore.user?.userId,
       copyMembers: form.copyMembers ? "Y" : "N",
       copyMilestones: form.copyMilestones ? "Y" : "N",
       copyTasks: form.copyTasks ? "Y" : "N",
@@ -253,11 +250,24 @@ const handleSubmit = async () => {
 
     await api.post("/ProjectCopy", payload);
 
+    await Swal.fire({
+      title: "복사되었습니다.",
+      icon: "success",
+      confirmButtonText: "확인",
+    });
+
     visible.value = false;
     handleReset();
     emit("submitted");
   } catch (err) {
     console.error("프로젝트 복사 실패:", err);
+
+    await Swal.fire({
+      title: "복사 실패",
+      text: "처리 중 오류가 발생했습니다.",
+      icon: "error",
+      confirmButtonText: "확인",
+    });
   } finally {
     submitting.value = false;
   }
@@ -265,26 +275,6 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-.row-fields {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.pl-field {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.pl-label {
-  font-size: 13px;
-  color: #374151;
-  white-space: nowrap;
-}
-
 .copy-option-box {
   display: flex;
   flex-direction: column;

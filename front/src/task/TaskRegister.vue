@@ -19,8 +19,19 @@
               isSubTask ? "하위업무 생성" : "업무 생성"
             }}</span>
           </div>
+          <button class="btn-back" @click="goBack">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 12H5M11 6l-6 6 6 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            목록으로
+          </button>
         </div>
-
         <div class="page-wrap">
           <div class="form-card">
             <!-- 섹션 1: 프로젝트 / 하위프로젝트 -->
@@ -40,19 +51,16 @@
 
                 <!-- 상위 프로젝트에서 바로 업무 생성 시 -->
                 <div v-if="!form.subProjectId" class="input-group">
-                  <select v-model="form.subProjectName" class="input">
+                  <select v-model="form.subProjectId" class="input">
                     <option value="">하위프로젝트를 선택하세요</option>
                     <option
                       v-for="item in subProjectList"
                       :key="item.projectId"
-                      :value="item.projectName"
+                      :value="item.projectId"
                     >
                       {{ item.displaySubProjectName }}
                     </option>
                   </select>
-                  <button class="btn btn-select" @click="confirmSubProject">
-                    확인
-                  </button>
                 </div>
 
                 <!-- 하위 프로젝트 있을 때 -->
@@ -214,7 +222,6 @@
 
             <!-- 하단 버튼 -->
             <div class="form-footer">
-              <button @click="goBack" class="btn btn-back">← 목록으로</button>
               <div class="form-footer-right">
                 <button @click="resetForm" class="btn btn-reset">초기화</button>
                 <button @click="handleSubmit" class="btn btn-submit">
@@ -230,7 +237,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import Sidebar from "../partials/Sidebar.vue";
@@ -239,6 +246,7 @@ import { useAuthStore } from "../stores/auth";
 import ProjectSelectModal from "../components/SelectModal.vue";
 import { useTaskStore } from "../stores/useTaskStore";
 import TaskDatePicker from "../components/TaskDatePicker.vue";
+import Swal from "sweetalert2";
 
 const router = useRouter();
 const route = useRoute();
@@ -249,6 +257,7 @@ const parentTaskId = route.query.parentTaskId;
 const authStore = useAuthStore();
 
 const isSubTask = computed(() => !!route.query.parentTaskId);
+const from = route.query.from;
 
 const {
   form,
@@ -278,28 +287,48 @@ onMounted(async () => {
   );
 });
 
-const confirmSubProject = () => {
-  const selected = subProjectList.value.find(
-    (p) => p.projectName === form.value.subProjectName,
-  );
-  if (selected) {
-    form.value.subProjectId = selected.projectId;
-  }
-};
+watch(
+  () => form.value.subProjectId,
+  (id) => {
+    const found = subProjectList.value.find((p) => p.projectId === id);
+    if (found) {
+      form.value.subProjectName = found.projectName;
+    }
+  },
+);
 
 const handleSubmit = async () => {
   try {
     await store.createTask(authStore.user?.userId);
-    alert("등록 완료!");
-    router.push({
-      name: "taskList",
-      params: { projectId: id },
+    await Swal.fire({
+      icon: "success",
+      title: "등록 완료!",
+      confirmButtonText: "확인",
     });
+
+    if (from === "dashboard") {
+      router.push({
+        name: "subProjectDashboard",
+        params: {
+          projectId: form.value.projectId,
+          subProjectId: form.value.subProjectId,
+        },
+      });
+    } else {
+      router.push({
+        name: "taskList",
+        params: { projectId: id },
+      });
+    }
   } catch (e) {
-    alert(e.message || "등록에 실패했습니다. 입력값을 확인해 주세요.");
+    Swal.fire({
+      icon: "error",
+      title: "등록 실패",
+      text: e.message || "등록에 실패했습니다. 입력값을 확인해 주세요.",
+      confirmButtonText: "확인",
+    });
   }
 };
-
 const goBack = () => router.back();
 </script>
 
@@ -318,11 +347,20 @@ main {
 ───────────────────────────────── */
 .sub-header {
   background: #ffffff;
-  padding: 14px 32px;
+  padding: 12px 32px;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
   z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sub-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .breadcrumb {
@@ -499,12 +537,27 @@ main {
 
 /* 목록 */
 .btn-back {
-  background: #1e3a5f;
-  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
 }
 
 .btn-back:hover {
-  background: #172e4d;
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 /* 초기화 */
@@ -533,7 +586,7 @@ main {
 ───────────────────────────────── */
 .form-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-top: 28px;
   padding-top: 24px;

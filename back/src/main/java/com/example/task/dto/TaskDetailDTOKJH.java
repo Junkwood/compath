@@ -23,6 +23,7 @@ public class TaskDetailDTOKJH { // 업무 상세
     private String priorityName;
     private Integer progressRate;
     private Integer taskStatusId;
+    private Integer taskTypeId;
     private Integer parentProjectId;
     private Integer totalTimeEntries;
 

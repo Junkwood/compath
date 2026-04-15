@@ -14,7 +14,6 @@
       label-width="120px"
       label-position="left"
     >
-      <!-- 프로젝트 명 -->
       <el-form-item label="상위프로젝트">
         <el-input :model-value="parentProjectName" readonly disabled />
       </el-form-item>
@@ -35,32 +34,29 @@
       </el-form-item>
 
       <el-form-item label="하위프로젝트 명" prop="projectName">
-        <el-input v-model="form.projectName" placeholder="" />
+        <el-input v-model="form.projectName" />
       </el-form-item>
 
-      <!-- 프로젝트 식별자 + PL -->
-      <el-form-item label="하위프로젝트 식별자" prop="identifier">
-        <div class="row-fields">
-          <el-input v-model="form.identifier" placeholder="" style="flex: 1" />
-          <div class="pl-field">
-            <span class="pl-label">하위PL</span>
-            <el-select
-              v-model="form.subPlUserId"
-              placeholder="선택"
-              style="width: 140px"
-            >
-              <el-option
-                v-for="user in plOptions"
-                :key="user.userId"
-                :label="user.userName"
-                :value="user.userId"
-              />
-            </el-select>
-          </div>
-        </div>
+      <!-- 수정 모드일 때만 식별자 표시 -->
+      <el-form-item v-if="isEditMode" label="하위프로젝트 식별자">
+        <el-input v-model="form.identifier" readonly disabled />
       </el-form-item>
 
-      <!-- 프로젝트 기간 -->
+      <el-form-item label="하위PL" prop="subPlUserId">
+        <el-select
+          v-model="form.subPlUserId"
+          placeholder="선택"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="user in plOptions"
+            :key="user.userId"
+            :label="user.userName"
+            :value="user.userId"
+          />
+        </el-select>
+      </el-form-item>
+
       <el-form-item label="하위프로젝트 기간" prop="startDate">
         <div class="date-row">
           <el-date-picker
@@ -83,14 +79,8 @@
         </div>
       </el-form-item>
 
-      <!-- 프로젝트 설명 -->
       <el-form-item label="하위프로젝트 설명">
-        <el-input
-          v-model="form.description"
-          type="textarea"
-          :rows="3"
-          placeholder=""
-        />
+        <el-input v-model="form.description" type="textarea" :rows="3" />
       </el-form-item>
 
       <el-form-item label="공개 여부">
@@ -98,15 +88,14 @@
           <el-switch v-model="form.isPublic" />
           <span class="switch-desc">
             모든 사용자에게 공개<br />
-            <span class="switch-sub"
-              >공개된 프로젝트는 누구나 조회할 수 있습니다.</span
-            >
+            <span class="switch-sub">
+              공개된 프로젝트는 누구나 조회할 수 있습니다.
+            </span>
           </span>
         </div>
       </el-form-item>
     </el-form>
 
-    <!-- 푸터 버튼 -->
     <template #footer>
       <div class="modal-footer">
         <el-button class="btn-list" @click="handleClose">← 목록으로</el-button>
@@ -140,7 +129,6 @@ const props = defineProps({
   parentStartDate: { type: String, default: "" },
   parentEndDate: { type: String, default: "" },
 
-  //에딧모드일떄
   isEditMode: { type: Boolean, default: false },
   editData: {
     type: Object,
@@ -155,8 +143,10 @@ const visible = computed({
   set: (v) => emit("update:modelValue", v),
 });
 
-//마일스톤 목록용 select 데이터 (api 재사용)
 const milestoneOptions = ref([]);
+const plOptions = ref([]);
+const formRef = ref(null);
+const submitting = ref(false);
 
 const fetchMilestoneList = async () => {
   try {
@@ -168,26 +158,17 @@ const fetchMilestoneList = async () => {
   }
 };
 
-// ── PL 옵션 (프젝 구성원중 role이 pl인 사람만 가져오기)
-const plOptions = ref([]);
-
 const fetchPlList = async () => {
   try {
-    console.log("props.projectId:", props.projectId);
     const res = await api.get(`/ProjectRolePlList/${props.projectId}`);
     plOptions.value = res.data;
   } catch (err) {
-    console.error("PL 목록 조회 실패 : ", err);
-    console.error("응답 데이터 : ", err.response?.data);
+    console.error("PL 목록 조회 실패:", err);
+    console.error("응답 데이터:", err.response?.data);
     plOptions.value = [];
   }
 };
 
-const formRef = ref(null);
-const submitting = ref(false);
-
-//폼의 초기값
-//수정값 까지 같이 넣음
 const defaultForm = () => ({
   projectId: null,
   parentProjectId: props.projectId,
@@ -210,18 +191,17 @@ const rules = {
   projectName: [
     { required: true, message: "프로젝트 명을 입력하세요", trigger: "blur" },
   ],
-  identifier: [
-    {
-      required: true,
-      message: "프로젝트 식별자를 입력하세요",
-      trigger: "blur",
-    },
-  ],
   subPlUserId: [
-    { required: true, message: "하위PL을 선택하세요", trigger: "blur" },
+    { required: true, message: "하위PL을 선택하세요", trigger: "change" },
   ],
   milestoneId: [
     { required: true, message: "마일스톤을 선택하세요", trigger: "change" },
+  ],
+  startDate: [
+    { required: true, message: "시작일을 선택하세요", trigger: "change" },
+  ],
+  endDate: [
+    { required: true, message: "종료일을 선택하세요", trigger: "change" },
   ],
 };
 
@@ -231,6 +211,11 @@ const handleClose = () => {
 
 const handleReset = () => {
   Object.assign(form, defaultForm());
+
+  if (props.isEditMode && props.editData) {
+    fillForm();
+  }
+
   formRef.value?.clearValidate();
 };
 
@@ -244,7 +229,6 @@ const handleSubmit = async () => {
     milestoneId: form.milestoneId,
     milestoneMappingId: form.milestoneMappingId,
     projectName: form.projectName,
-    identifier: form.identifier,
     subPlUserId: form.subPlUserId,
     startDate: form.startDate,
     endDate: form.endDate,
@@ -355,75 +339,60 @@ watch(
   z-index: 100000 !important;
 }
 
-/* 인라인 필드 묶음 */
-.row-fields {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-.pl-field {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.pl-label {
-  font-size: 13px;
-  color: #374151;
-  white-space: nowrap;
-}
-
-/* 날짜 행 */
 .date-row {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
 }
+
 .date-sep {
   color: #9ca3af;
   flex-shrink: 0;
 }
 
-/* 스위치 행 */
 .switch-row {
   display: flex;
   align-items: flex-start;
   gap: 12px;
 }
+
 .switch-desc {
   font-size: 13px;
   color: #374151;
   line-height: 1.6;
 }
+
 .switch-sub {
   font-size: 12px;
   color: #9ca3af;
 }
 
-/* 푸터 */
 .modal-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .footer-right {
   display: flex;
   gap: 8px;
 }
+
 .btn-list {
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   color: #374151;
   font-size: 13px;
 }
+
 .btn-reset {
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   color: #374151;
   font-size: 13px;
 }
+
 .btn-submit {
   background: #1d4ed8;
   border: none;
@@ -431,16 +400,17 @@ watch(
   font-size: 13px;
   font-weight: 600;
 }
+
 .btn-submit:hover {
   background: #1e40af;
 }
 
-/* el-dialog 오버라이드 */
 :deep(.el-dialog__title) {
   font-weight: 700;
   font-size: 15px;
   color: #1a1a2e;
 }
+
 :deep(.el-form-item__label) {
   font-size: 13px;
   color: #374151;

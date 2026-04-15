@@ -60,4 +60,21 @@ public class TaskControllerKJH {
     }
 
 
+    // 공지사항, 문서 작성시 업무 유형
+    @GetMapping("/api/tasks/typeList")
+    public List<TaskDetailDTOKJH> getAllTaskType() {
+        return service.getAllTaskType();
+    }
+
+    // 업무 비활성화
+    @PutMapping("/api/tasks/modifyStatus/{id}")
+    public int modifyTaskStatus(@PathVariable Integer id) {
+        return service.modifyTaskStatus(id);
+    }
+
+    // 업무 비활성화
+    @PutMapping("/api/tasks/modifyUser")
+    public int modifyTaskUser(@RequestBody TaskListDTOKJH dto) {
+        return service.modifyTaskUser(dto);
+    }
 }

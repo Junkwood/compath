@@ -25,6 +25,8 @@ public class TaskListDTOKJH {
     private Integer assigneeUserId;
     private String priorityCode;
     private Integer progressRate;
+    private Integer userId;
+    private String roleName;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul" )

@@ -415,9 +415,8 @@ const graphData = computed(() => {
 const handleCreateTask = () => {
   router.push({
     name: "taskRegister",
-    params: {
-      projectId: subProjectId,
-    },
+    params: { projectId: subProjectId },
+    query: { from: "dashboard" },
   });
 };
 

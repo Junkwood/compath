@@ -18,8 +18,8 @@ public class TokenProvider {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
-    public String create(UserEntity userEntity) {
-        Date expiryDate = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
+    public String createAccessToken(UserEntity userEntity) {
+        Date expiryDate = Date.from(Instant.now().plus(30, ChronoUnit.MINUTES));
         /*
         {//header
             "alg":"HS512"
@@ -43,6 +43,19 @@ public class TokenProvider {
                 .claim("userId", userEntity.getUserId())
                 .claim("userType", userEntity.getUserType())
                 .claim("userName", userEntity.getUserName())
+                .setIssuer("demo app")
+                .setIssuedAt(new Date())
+                .setExpiration(expiryDate)
+                .compact();
+    }
+    public String createRefreshToken(UserEntity userEntity) {
+        // 만료 시간: 현재 시간으로부터 14일 뒤
+        Date expiryDate = Date.from(Instant.now().plus(14, ChronoUnit.DAYS));
+
+        return Jwts.builder()
+                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                // 💡 핵심: Refresh Token은 털려도 위험하지 않게 최소한의 식별자(Subject)만 넣습니다.
+                .setSubject(String.valueOf(userEntity.getUserId()))
                 .setIssuer("demo app")
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)

@@ -13,6 +13,15 @@
         <!-- 서브헤더 -->
         <div class="sub-header">
           <div class="sub-header-left">
+            <div class="breadcrumb">
+              <span>홈</span><span class="bc-sep">›</span> <span>프로젝트</span
+              ><span class="bc-sep">›</span> <span>타임 리포트</span
+              ><span class="bc-sep">›</span>
+              <span class="bc-cur">타임 엔트리</span>
+            </div>
+          </div>
+
+          <div class="sub-header-right">
             <button class="btn-back" @click="goBack">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path
@@ -25,12 +34,6 @@
               </svg>
               목록으로
             </button>
-            <div class="breadcrumb">
-              <span>홈</span><span class="bc-sep">›</span> <span>프로젝트</span
-              ><span class="bc-sep">›</span> <span>타임 리포트</span
-              ><span class="bc-sep">›</span>
-              <span class="bc-cur">타임 엔트리</span>
-            </div>
           </div>
         </div>
         <div class="page-inner">
@@ -341,7 +344,13 @@ export default defineComponent({
         const { data } = await api.get("/task-total-info", {
           params: { taskId },
         });
-        taskInfo.value = data.taskDetail?.[0] ?? null;
+        taskInfo.value = data.taskDetail?.[0]
+          ? {
+              ...data.taskDetail[0],
+              startDate: data.taskDetail[0].estStartDate,
+              dueDate: data.taskDetail[0].estEndDate,
+            }
+          : null;
         projectList.value = data.projectList ?? [];
 
         const { data: reportData } = await api.get("/report/time-entry", {
@@ -679,6 +688,8 @@ export default defineComponent({
     /* ─── lifecycle ─── */
     onMounted(async () => {
       await fetchData();
+      console.log("taskInfo", taskInfo.value);
+
       rebuildAllCharts();
     });
 
@@ -719,7 +730,8 @@ export default defineComponent({
 .sub-header {
   display: flex;
   align-items: center;
-  background: #ffffff;
+  justify-content: space-between;
+  background: #fff;
   padding: 12px 32px;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
@@ -737,21 +749,20 @@ export default defineComponent({
   gap: 5px;
   height: 30px;
   padding: 0 12px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  background: #ffffff;
-  color: #475569;
+  background: #fff;
+  color: #334155;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
-  flex-shrink: 0;
 }
 .btn-back:hover {
   background: #f1f5f9;
   border-color: #94a3b8;
-  color: #1e293b;
+  color: #0f172a;
 }
 
 *,
@@ -764,7 +775,7 @@ export default defineComponent({
 
 .page {
   padding: 0;
-  color: #1e293b;
+  color: #0f172a;
   font-family: "Pretendard", "Noto Sans KR", sans-serif;
 }
 
@@ -781,18 +792,18 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: #64748b;
+  font-size: 14px;
+  color: #475569;
 }
 .bc-sep {
   color: #cbd5e1;
 }
 .bc-cur {
   color: #0f172a;
-  font-weight: 600;
+  font-weight: 700;
 }
 .bc-link {
-  color: #64748b;
+  color: #475569;
   cursor: pointer;
   transition: color 0.15s;
 }
@@ -806,13 +817,13 @@ export default defineComponent({
   margin-top: 4px;
 }
 .meta-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: #1e293b;
+  color: #0f172a;
 }
 .meta-sub {
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: 13px;
+  color: #64748b;
 }
 
 /* ── 페이지 내부 ── */
@@ -838,9 +849,9 @@ export default defineComponent({
   gap: 14px;
 }
 .proj-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
   white-space: nowrap;
 }
 .select-wrap {
@@ -849,9 +860,9 @@ export default defineComponent({
 .select-wrap select {
   appearance: none;
   padding: 6px 28px 6px 10px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  color: #334155;
+  color: #1e293b;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 4px;
@@ -869,7 +880,7 @@ export default defineComponent({
   right: 9px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: #64748b;
   font-size: 10px;
   pointer-events: none;
 }
@@ -879,9 +890,9 @@ export default defineComponent({
   gap: 6px;
 }
 .period-text {
-  font-size: 13px;
-  color: #475569;
-  font-weight: 500;
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
 }
 
 .dashboard-grid {
@@ -913,13 +924,13 @@ export default defineComponent({
   margin-bottom: 10px;
 }
 .chart-card-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
 }
 .chart-unit {
-  font-size: 10px;
-  color: #94a3b8;
+  font-size: 12px;
+  color: #64748b;
 }
 .chart-canvas-wrap {
   position: relative;
@@ -938,8 +949,8 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
-  color: #64748b;
+  font-size: 12px;
+  color: #475569;
 }
 .legend-sq {
   width: 8px;
@@ -956,8 +967,8 @@ export default defineComponent({
   border-top: 1px solid #f1f5f9;
 }
 .hbar-count {
-  font-size: 10px;
-  color: #94a3b8;
+  font-size: 12px;
+  color: #64748b;
 }
 .mini-pager {
   display: flex;
@@ -969,11 +980,11 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   border: 1px solid #e2e8f0;
   border-radius: 3px;
   background: #fff;
-  color: #64748b;
+  color: #475569;
   cursor: pointer;
 }
 .mpg:hover {
@@ -1009,13 +1020,13 @@ export default defineComponent({
   pointer-events: none;
 }
 .donut-total {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   color: #0f172a;
 }
 .donut-total-lbl {
-  font-size: 10px;
-  color: #94a3b8;
+  font-size: 12px;
+  color: #64748b;
 }
 .donut-legend {
   display: flex;
@@ -1028,8 +1039,8 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
-  color: #64748b;
+  font-size: 12px;
+  color: #475569;
 }
 .stat-grid {
   display: grid;
@@ -1044,14 +1055,14 @@ export default defineComponent({
   text-align: center;
 }
 .stat-val {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.3px;
 }
 .stat-lbl {
-  font-size: 10px;
-  color: #94a3b8;
+  font-size: 12px;
+  color: #475569;
   margin-top: 2px;
 }
 </style>

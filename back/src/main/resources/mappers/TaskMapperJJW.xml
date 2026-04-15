@@ -90,7 +90,8 @@
         estimated_hours,
         progress_rate,
         created_by,
-        created_at
+        created_at,
+        is_deleted
         ) VALUES (
         #{taskId},
         #{projectId},
@@ -109,7 +110,8 @@
         #{estimatedHours},
         #{progressRate},
         #{createdBy},
-        SYSDATE
+        SYSDATE,
+        'Q1'
         )
     </insert>
 

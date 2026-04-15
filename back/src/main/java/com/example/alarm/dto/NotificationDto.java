@@ -21,12 +21,14 @@ public class NotificationDto { //알림
     private String title;
     private String message;
     private Integer createdBy;
+    private Integer projectId;
     private LocalDateTime createdAt;
     //notification_targets 테이블
     private Integer notificationTargetNo;
     private Integer  receiverId;
     private String isRead;
     private LocalDateTime readAt;
+
 
     //알림 받을 사람들
     private List<Integer> receiverList;

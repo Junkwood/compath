@@ -12,231 +12,223 @@
       />
 
       <main class="grow">
-        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <!-- projectDashboard.vue와 동일한 제목 영역 -->
-          <div class="mb-6 proj-title-row flex justify-between">
-            <div class="proj-title-left">
-              <h2
-                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
-              >
-                프로젝트 문서
-              </h2>
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span class="bc-home">홈</span>
+            <span class="bc-sep">›</span>
+            <span>{{ name }}</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur">문서 목록</span>
+          </div>
+        </div>
 
-              <div class="proj-name-row">
-                <span class="proj-name">【 {{ name }} 】</span>
+        <div class="page-container">
+          <div class="pg-row">
+            <div class="pg-left">
+              <div class="proj-meta">
+                <span class="proj-name">{{ name }}</span>
                 <span class="proj-period">
                   {{ projectStartDate }} ~ {{ projectendDate }}
                 </span>
               </div>
             </div>
             <div class="self-end">
-              <el-button class="new-project-btn" @click="goResister()">
-                + &nbsp; 문서 생성
+              <el-button class="btn-create-task" @click="goResister()">
+                + 문서 생성
               </el-button>
             </div>
           </div>
 
-          <!-- 검색 필터 영역 -->
-          <div class="filter-card mt-4 mb-0">
-            <div class="filter-row">
-              <!-- 작성자 -->
-              <div class="filter-item">
-                <label class="filter-label">작성자</label>
-                <div class="select-wrap">
-                  <select v-model="filteredList.userId">
+          <div class="panel-body search-body">
+            <div class="search-layout">
+              <div class="search-row primary-row">
+                <div class="form-item">
+                  <label>작성자</label>
+                  <select class="input w-full" v-model="filteredList.createdBy">
                     <option value="">전체</option>
                     <option
-                      :value="user.userId"
+                      :value="user.createdBy"
                       v-for="user in filterList.userList"
                       :key="user.userId"
                     >
                       {{ user.userName }}
                     </option>
                   </select>
-                  <span class="select-arrow">▾</span>
                 </div>
-              </div>
 
-              <!-- 카테고리 -->
-              <div class="filter-item">
-                <label class="filter-label">카테고리</label>
-                <div class="select-wrap">
-                  <select v-model="filteredList.category">
+                <div class="form-item">
+                  <label>카테고리</label>
+                  <select
+                    class="input w-full"
+                    v-model="filteredList.categoryList"
+                  >
                     <option value="">전체</option>
                     <option
-                      :value="category.roleId"
-                      v-for="category in filterList.categoryList"
-                      :key="category.roleId"
+                      :value="category.meetingTypeCode"
+                      v-for="category in filterList.typeList"
+                      :key="category.meetingTypeCode"
                     >
                       {{ category.roleName }}
                     </option>
                   </select>
-                  <span class="select-arrow">▾</span>
                 </div>
-              </div>
 
-              <!-- 시작일 -->
-              <div class="filter-item">
-                <label class="filter-label">시작일</label>
-                <input
-                  v-model="filteredList.startDate"
-                  type="date"
-                  class="filter-input"
-                />
-              </div>
+                <div class="form-item">
+                  <label>시작일</label>
+                  <input
+                    v-model="filteredList.startDate"
+                    type="date"
+                    class="input w-full"
+                  />
+                </div>
 
-              <!-- 종료일 -->
-              <div class="filter-item">
-                <label class="filter-label">종료일</label>
-                <input
-                  v-model="filteredList.endDate"
-                  type="date"
-                  class="filter-input"
-                />
-              </div>
-            </div>
-            <!-- 검색어 -->
-            <div class="filter-item filter-item--wide mt-3">
-              <label class="filter-label">검색어</label>
-              <div class="search-wrap">
-                <svg class="search-icon" viewBox="0 0 20 20" fill="none">
-                  <circle
-                    cx="9"
-                    cy="9"
-                    r="6"
-                    stroke="#9ca3af"
-                    stroke-width="1.8"
+                <div class="form-item">
+                  <label>종료일</label>
+                  <input
+                    v-model="filteredList.endDate"
+                    type="date"
+                    class="input w-full"
                   />
-                  <path
-                    d="M14 14l3 3"
-                    stroke="#9ca3af"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
+                </div>
+
+                <div class="form-item">
+                  <label>검색어</label>
+                  <input
+                    v-model="filteredList.search"
+                    type="text"
+                    placeholder="검색어 입력"
+                    class="input w-full"
+                    @keyup.enter="handleCurrentChange()"
                   />
-                </svg>
-                <input
-                  v-model="filteredList.search"
-                  type="text"
-                  placeholder="프로젝트명을 입력해주세요."
-                  class="search-input"
-                  @keyup.enter="handleCurrentChange()"
-                />
-              </div>
-              <!-- 버튼 -->
-              <div class="filter-actions flex flex-row-reverse">
-                <button
-                  type="button"
-                  @click="handleCurrentChange()"
-                  class="btn-search"
-                >
-                  검색
-                </button>
-                <button type="button" @click="resetForm()" class="btn-reset">
-                  초기화
-                </button>
+                </div>
+
+                <div class="form-item search-btn-group">
+                  <div class="search-actions">
+                    <button
+                      type="button"
+                      @click="resetForm()"
+                      class="btn-reset"
+                    >
+                      초기화
+                    </button>
+                    <button
+                      type="button"
+                      @click="handleCurrentChange()"
+                      class="btn-search"
+                    >
+                      검색
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           <!-- 목록 영역 -->
-          <div
-            class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mt-4"
-          >
-            <!-- 내보내기 버튼 + 총 건수 -->
-            <div class="flex flex-row-reverse items-center px-5 pt-2 pb-2">
-              <span class="count-badge flex flex">총 {{ listLength }}건</span>
+          <div class="panel">
+            <div class="panel-head list-head">
+              <span class="panel-title">문서 목록</span>
+              <span class="count-badge">총 {{ listLength }}건</span>
             </div>
-            <!-- 테이블 -->
-            <table class="table-auto w-full dark:text-gray-300">
-              <thead
-                class="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs"
-              >
-                <tr>
-                  <th class="p-2" v-for="th in thList" :key="th">
-                    <div class="text-center">{{ th }}</div>
-                  </th>
-                </tr>
-              </thead>
 
-              <tbody
-                class="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60"
-              >
-                <!-- 로딩 -->
-                <tr v-if="listLoading">
-                  <td :colspan="thList.length + 1" class="text-center py-10">
-                    <h5 class="text-gray-500">⌛ 로딩중입니다.</h5>
-                  </td>
-                </tr>
+            <div class="panel-body list-body">
+              <div class="table-wrap">
+                <table class="task-table">
+                  <thead>
+                    <tr>
+                      <th class="p-2" v-for="th in thList" :key="th">
+                        <div class="text-center">{{ th }}</div>
+                      </th>
+                    </tr>
+                  </thead>
 
-                <!-- 데이터 있을 때 -->
-                <template v-else-if="!listLoading && listLength > 0">
-                  <tr
-                    @click="goDetail(document)"
-                    v-for="document in pagingList"
-                    :key="document.num"
-                    class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
-                    :class="
-                      document.isDeleted == 'O1'
-                        ? 'grayscale-[100%] blur-[4px] opacity-60'
-                        : ''
-                    "
-                  >
-                    <td class="p-2 w-30">
-                      <div class="text-center">{{ document.num }}</div>
-                    </td>
-                    <td class="p-2">
-                      <div class="text-center">
-                        [{{ document.roleName }}]{{ document.title
-                        }}<span
-                          class="text-base"
-                          v-if="document.isPinned == 'O1' ? true : false"
-                          >📌</span
-                        ><span
-                          class="text-base"
-                          v-if="document.isComment == 'O2' ? true : false"
-                          >🔒</span
-                        >
-                      </div>
-                    </td>
-                    <td class="p-2 w-70">
-                      <div class="text-center cursor-pointer">
-                        {{ document.userName }}
-                      </div>
-                    </td>
-                    <td class="p-2 w-70">
-                      <div class="text-center cursor-pointer">
-                        {{ document.count }}
-                      </div>
-                    </td>
+                  <tbody>
+                    <!-- 로딩 -->
+                    <tr v-if="listLoading">
+                      <td
+                        :colspan="thList.length + 1"
+                        class="text-center py-10"
+                      >
+                        <h5 class="text-gray-500">⌛ 로딩중입니다.</h5>
+                      </td>
+                    </tr>
 
-                    <td class="p-2 w-70">
-                      <div class="text-center">
-                        {{ document.createdAt }}
-                      </div>
-                    </td>
-                  </tr>
-                </template>
+                    <!-- 데이터 있을 때 -->
+                    <template v-else-if="!listLoading && listLength > 0">
+                      <tr
+                        @click="goDetail(document)"
+                        v-for="document in pagingList"
+                        :key="document.num"
+                        class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                        :class="
+                          document.isDeleted == 'O1'
+                            ? 'grayscale-[100%] blur-[4px] opacity-60'
+                            : ''
+                        "
+                      >
+                        <td class="p-2 w-30">
+                          <div class="text-center">{{ document.num }}</div>
+                        </td>
+                        <td class="p-2">
+                          <div class="text-center">
+                            [{{ document.roleName }}]{{ document.title
+                            }}<span
+                              class="text-base"
+                              v-if="document.isPinned == 'O1' ? true : false"
+                              >📌</span
+                            ><span
+                              class="text-base"
+                              v-if="document.isComment == 'O2' ? true : false"
+                              >🔒</span
+                            >
+                          </div>
+                        </td>
+                        <td class="p-2 w-70">
+                          <div class="text-center cursor-pointer">
+                            {{ document.userName }}
+                          </div>
+                        </td>
+                        <td class="p-2 w-70">
+                          <div class="text-center cursor-pointer">
+                            {{ document.count }}
+                          </div>
+                        </td>
 
-                <!-- 데이터 없을 때 -->
-                <tr v-else>
-                  <td :colspan="thList.length + 1" class="text-center py-10">
-                    <h5 class="text-gray-500">업무가 존재하지 않습니다.</h5>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                        <td class="p-2 w-70">
+                          <div class="text-center">
+                            {{ document.createdAt }}
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
 
-            <div class="pagination-wrap">
-              <el-pagination
-                :current-page="nowPage"
-                :page-size="listNum"
-                :total="listLength"
-                :hide-on-single-page="real"
-                @current-change="handleCurrentChange"
-                layout="prev, pager, next"
-                background
-              />
+                    <!-- 데이터 없을 때 -->
+                    <tr v-else>
+                      <td
+                        :colspan="thList.length + 1"
+                        class="text-center py-10"
+                      >
+                        <h5 class="text-gray-500">업무가 존재하지 않습니다.</h5>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="pagination-wrap">
+                  <el-pagination
+                    :current-page="nowPage"
+                    :page-size="listNum"
+                    :total="listLength"
+                    :hide-on-single-page="real"
+                    @current-change="handleCurrentChange"
+                    layout="prev, pager, next"
+                    background
+                  />
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- 테이블 -->
         </div>
       </main>
     </div>
@@ -432,17 +424,47 @@ const resetForm = () => {
   flex-wrap: wrap;
 }
 
+.page-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pg-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pg-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proj-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .proj-name {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.02em;
+  color: #1b5c9c;
 }
 
 .proj-period {
   font-size: 13px;
-  color: #64748b;
-  font-weight: 500;
+  color: #6b7280;
 }
 /* 공지 생성 버튼 */
 .new-project-btn {
@@ -650,6 +672,17 @@ const resetForm = () => {
 .btn-export--pdf:hover {
   background: #fee2e2;
 }
+.btn-create-task {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 18px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(27, 92, 156, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
 
 /* ── 총 건수 배지 ── */
 .count-badge {
@@ -695,5 +728,165 @@ tbody td {
   display: flex;
   justify-content: center;
   padding: 10px 0;
+}
+
+.sub-header {
+  background: #fff;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bc-home {
+  color: #9ca3af;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
+
+.panel-body {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.search-body {
+  padding: 16px 18px;
+}
+
+.search-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.search-row {
+  display: grid;
+  gap: 12px;
+  align-items: end;
+}
+
+.primary-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.form-item label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b5563;
+  line-height: 1.2;
+}
+
+.list-head {
+  align-items: center;
+}
+
+.list-body {
+  padding: 0;
+}
+
+:deep(.input) {
+  height: 36px;
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+  font-size: 12px;
+  padding: 0 10px;
+  color: #111827;
+}
+
+:deep(.input:focus) {
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+  background: #fff !important;
+  outline: none;
+}
+
+:deep(select.input) {
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  padding-right: 24px !important;
+}
+
+/* 버튼들을 감싸는 영역 */
+.search-btn-group {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.panel-head {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.panel-body {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 </style>

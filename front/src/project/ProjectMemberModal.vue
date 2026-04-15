@@ -388,16 +388,30 @@ watch(
 );
 
 // 우측 컴포넌트로 이동 함수
-const moveUsersToRight = () => {
+const moveUsersToRight = async () => {
   let id = 0;
   if (selectedLeftUsers.value.length === 0) {
-    alert("그룹 구성원을 최소 1명 이상 선택해주세요.");
+    const result = await Swal.fire({
+      title: "추가할 구성원을 1명 이상 선택해주세요.",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
     return;
   }
 
   if (form.value.groupType == "C1") {
     if (selectedRole.value == null || selectedRole.value == "") {
-      alert("역할을 선택해주세요");
+      const result = await Swal.fire({
+        title: "선택한 구성원의 역할을 선택해주세요.",
+        text: "",
+        icon: "warning",
+        confirmButtonText: "확인",
+        reverseButtons: true,
+      });
+
       return;
     }
   }

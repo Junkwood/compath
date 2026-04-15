@@ -36,6 +36,8 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
         params.put("projectId", id);
         mapper.getAllFilterList(params);
 
+        List<TaskListDTOKJH> member = mapper.getProjectDeveloper(id);
+
         Map<String, Object> result = new HashMap<>();
         result.put("taskTitleList", params.get("taskTitleList"));
         result.put("userNameList", params.get("userNameList"));
@@ -43,6 +45,7 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
         result.put("taskStatusList", params.get("taskStatusList"));
         result.put("taskPriorityList", params.get("taskPriorityList"));
         result.put("smallProjectList", params.get("smallProjectList"));
+        result.put("developerList", member);
 
         return result;
     }
@@ -93,6 +96,21 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
     @Override
     public List<TaskDetailDTOKJH> getTimeLog(Integer id) {
         return mapper.getTimeLog(id);
+    }
+
+    @Override
+    public List<TaskDetailDTOKJH> getAllTaskType() {
+        return mapper.getAllTaskType();
+    }
+
+    @Override
+    public int modifyTaskStatus(Integer id) {
+        return mapper.modifyTaskStatus(id);
+    }
+
+    @Override
+    public int modifyTaskUser(TaskListDTOKJH dto) {
+        return mapper.modifyTaskUser(dto);
     }
 
 }

@@ -280,7 +280,7 @@ export const useTaskStore = defineStore("task", () => {
 
   // ───────────── 추정시간 ─────────────
   const calcEstTime = (force = false) => {
-    if (form.value.taskId && !force) return;
+    // if (form.value.taskId && !force) return;
 
     const start = form.value.taskId
       ? form.value.startDate
@@ -352,14 +352,14 @@ export const useTaskStore = defineStore("task", () => {
       subProjectId: form.value.subProjectId,
       projectName: form.value.projectName,
       subProjectName: form.value.subProjectName,
+      milestoneId: form.value.milestoneId,
+      milestone: form.value.milestone,
       ...(form.value.parentTaskId
         ? {
             parentTaskId: form.value.parentTaskId,
             taskTypeId: form.value.taskTypeId,
             assigneeUserId: form.value.assigneeUserId,
             assigneeName: form.value.assigneeName,
-            milestoneId: form.value.milestoneId,
-            milestone: form.value.milestone,
           }
         : {}),
     };
@@ -437,7 +437,7 @@ export const useTaskStore = defineStore("task", () => {
         createdBy: createdBy,
       });
     } else {
-      await api //
+      await api
         .post("/tasks/insert", {
           ...obj,
           createdBy: createdBy,

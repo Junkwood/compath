@@ -14,4 +14,6 @@ import java.util.Map;
 public interface EmpMapperKJH {
     EmpVOKJH getById(Integer id);
 
+    List<EmpVOKJH> getAdminList();
+
 }

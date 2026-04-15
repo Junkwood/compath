@@ -8,6 +8,8 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     taskDetail: {},
     timeEntriesList: [],
     activityList: [],
+    plPmList: [],
+    modifyResult: 0,
   }),
   getters: {},
   actions: {
@@ -60,6 +62,32 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     async getActivityLogs(id) {
       let result = await api.get("/tasks/activityLog/" + id);
       this.activityList = result.data;
+    },
+
+    // 프로젝트 내 pm, pl 인원 조회
+    async getProjectRole(obj) {
+      let result = await api.get("/role/roleList", {
+        params: obj,
+      });
+      this.plPmList = result.data;
+    },
+
+    // 업무 비활성화
+    async modifyTaskStatus(id) {
+      await api //
+        .put("/tasks/modifyStatus/" + id)
+        .then((res) => {
+          this.modifyResult = res.data;
+        });
+    },
+
+    // 업무 담당자만 지정
+    async modifyTaskUser(obj) {
+      await api //
+        .put("/tasks/modifyUser", obj)
+        .then((res) => {
+          this.modifyTaskInfo = res.data;
+        });
     },
   },
 });

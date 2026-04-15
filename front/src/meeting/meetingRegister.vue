@@ -656,7 +656,7 @@ const getContentByGemmini = async (val) => {
     todoList.value = JSON.parse(jsonStr);
   }
 
-  form.aiSummary = form.aiSummary.replace(
+  form.content = form.aiSummary.replace(
     todoRegex,
     "(추천 업무는 우측 목록에서 확인 가능합니다)",
   );

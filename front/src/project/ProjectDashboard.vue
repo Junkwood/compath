@@ -2,14 +2,15 @@
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50">
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
+    >
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
 
       <main class="grow">
-        <!-- 서브 헤더 -->
         <div class="sub-header">
           <div class="breadcrumb">
             <span>홈</span>
@@ -21,7 +22,6 @@
         </div>
 
         <div class="page-container">
-          <!-- 페이지 타이틀 -->
           <div class="pg-row">
             <div class="pg-left">
               <h1 class="pg-title">프로젝트 대시보드</h1>
@@ -48,11 +48,8 @@
             </el-button>
           </div>
 
-          <!-- 상단 2컬럼 -->
           <div class="top-grid">
-            <!-- 좌측 -->
             <div class="left-col">
-              <!-- 업무 현황 -->
               <div class="panel">
                 <div class="panel-head">
                   <span class="panel-title">업무 현황</span>
@@ -101,7 +98,6 @@
                 </el-table>
               </div>
 
-              <!-- 공지사항 -->
               <div class="panel">
                 <div class="panel-head">
                   <span class="panel-title">공지사항</span>
@@ -134,7 +130,6 @@
                 </div>
               </div>
 
-              <!-- 하위 프로젝트 -->
               <div class="panel">
                 <div class="panel-head">
                   <span class="panel-title">하위 프로젝트 목록</span>
@@ -156,10 +151,22 @@
                       :cell-style="cellStyle"
                       @row-click="handleSubProjectRowClick"
                     >
-                      <el-table-column prop="projectName" min-width="220" />
-                      <el-table-column label="PL" width="140" align="right">
+                      <el-table-column min-width="260">
                         <template #default="{ row }">
-                          <span class="sub-pl">PL {{ row.userName }}</span>
+                          <div class="sub-project-cell">
+                            <span class="sub-project-name">
+                              {{ row.projectName }}
+                            </span>
+                            <span v-if="row.identifier" class="sub-project-id">
+                              {{ row.identifier }}
+                            </span>
+                          </div>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="PL" width="110" align="center">
+                        <template #default="{ row }">
+                          <span class="sub-pl">{{ row.userName }}</span>
                         </template>
                       </el-table-column>
                     </el-table>
@@ -180,9 +187,7 @@
               </div>
             </div>
 
-            <!-- 우측 -->
             <div class="right-col">
-              <!-- 프로젝트 구성원 -->
               <div class="panel">
                 <div class="panel-head">
                   <span class="panel-title">프로젝트 구성원</span>
@@ -225,7 +230,6 @@
                 </div>
               </div>
 
-              <!-- 나의 메모 -->
               <div class="panel">
                 <div class="panel-head">
                   <span class="panel-title">나의 메모</span>
@@ -305,7 +309,6 @@ const handleAddSubProject = () => {
   createSubProjectModalOpen.value = true;
 };
 
-// ── 업무 현황
 const taskSummaryData = ref([]);
 const fetchTaskSummary = async () => {
   try {
@@ -317,7 +320,6 @@ const fetchTaskSummary = async () => {
   }
 };
 
-// ── 공지사항
 const noticeList = ref([]);
 
 const formatDate = (value) => {
@@ -366,7 +368,6 @@ const fetchNoticeList = async () => {
   }
 };
 
-// ── 구성원
 const projectMembers = ref([]);
 const fetchPmemList = async () => {
   try {
@@ -377,7 +378,6 @@ const fetchPmemList = async () => {
   }
 };
 
-// ── 메모
 const memoList = ref([]);
 const memoModalVisible = ref(false);
 const isMemoEditMode = ref(false);
@@ -470,7 +470,6 @@ const handleAddMemo = () => {
   memoModalVisible.value = true;
 };
 
-// ── 프로젝트 정보
 const projectInfo = ref({
   projectId: null,
   projectName: "",
@@ -496,7 +495,6 @@ const fetchProjectDetail = async () => {
   }
 };
 
-// ── 하위 프로젝트
 const subProjects = ref([]);
 const milestonePage = ref(1);
 
@@ -526,6 +524,7 @@ const pagedMilestones = computed(() => {
     map.get(item.milestoneId).projects.push({
       projectId: item.projectId,
       projectName: item.projectName,
+      identifier: item.identifier,
       userName: item.userName,
     });
   });
@@ -540,7 +539,6 @@ const currentMilestone = computed(() => {
   ];
 });
 
-// ── 이벤트
 const handleProjectSetting = () =>
   router.push({
     name: "projectSetting",
@@ -568,7 +566,6 @@ const handleSubProjectRowClick = (row) =>
     },
   });
 
-// ── 스타일 함수
 const headerStyle = () => ({
   background: "var(--el-fill-color-light)",
   color: "var(--el-text-color-secondary)",
@@ -653,7 +650,6 @@ onMounted(() => {
   gap: 24px;
 }
 
-/* 프로젝트 헤더 카드 */
 .pg-row {
   display: flex;
   justify-content: space-between;
@@ -717,7 +713,6 @@ onMounted(() => {
   word-break: break-word;
 }
 
-/* 메인 대시보드 버튼 톤 맞춤 */
 .btn-setting {
   background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
   color: white !important;
@@ -752,7 +747,6 @@ onMounted(() => {
   border-color: #bcd2ea !important;
 }
 
-/* 메인 대시보드 grid 체계 맞춤 */
 .top-grid {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -767,7 +761,6 @@ onMounted(() => {
   gap: 24px;
 }
 
-/* 패널 공통 */
 .panel {
   background: #fff;
   border-radius: 12px;
@@ -791,7 +784,6 @@ onMounted(() => {
   color: #111827;
 }
 
-/* 공지사항 */
 .notice-body {
   padding: 4px 0;
 }
@@ -860,7 +852,6 @@ onMounted(() => {
   font-weight: 700;
 }
 
-/* 하위 프로젝트 */
 .sub-body {
   padding: 0;
 }
@@ -873,13 +864,44 @@ onMounted(() => {
   border-bottom: 1px solid #f3f4f6;
 }
 
+.sub-project-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sub-project-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-project-id {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .sub-pl {
   font-size: 12px;
   color: #6b7280;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-/* 구성원 */
 .member-body {
   padding: 20px;
   display: flex;
@@ -962,7 +984,6 @@ onMounted(() => {
   color: #4338ca;
 }
 
-/* 메모 */
 .memo-body {
   padding: 20px;
   display: flex;
@@ -1056,7 +1077,6 @@ onMounted(() => {
   color: #dc2626 !important;
 }
 
-/* 빈 상태 */
 .empty-text {
   padding: 24px 20px;
   text-align: center;
@@ -1064,7 +1084,6 @@ onMounted(() => {
   color: #9ca3af;
 }
 
-/* 페이지네이션 */
 .pag-wrap {
   padding: 16px;
   display: flex;
@@ -1073,7 +1092,6 @@ onMounted(() => {
   background: #f9fafb;
 }
 
-/* 테이블 */
 :deep(.el-table) {
   --el-table-header-bg-color: #f9fafb;
   --el-table-row-hover-bg-color: #f9fbff;
@@ -1091,7 +1109,7 @@ onMounted(() => {
 :deep(.el-table td.el-table__cell) {
   color: #1f2937;
   font-size: 13px;
-  padding: 10px 0;
+  padding: 10px 16px;
   border-bottom: 1px solid #f3f4f6 !important;
 }
 
@@ -1099,7 +1117,6 @@ onMounted(() => {
   cursor: pointer;
 }
 
-/* 기존 script의 headerStyle / cellStyle 과도 맞춤 */
 :deep(.el-pagination.is-background .btn-next),
 :deep(.el-pagination.is-background .btn-prev),
 :deep(.el-pagination.is-background .el-pager li) {
