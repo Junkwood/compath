@@ -84,21 +84,33 @@ admin.interceptors.response.use(
 
             // 총대 멨던 원래 요청(예: 알림 목록)도 마저 실행
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            return api(originalRequest);
+            return admin(originalRequest);
           } catch (refreshError) {
-            // 리프레시 토큰 만료 등 찐 실패 시
             isTokenRefreshing = false;
             refreshSubscribers = []; // 대기열 폭파
 
-            Swal.fire({
-              icon: "warning",
-              title: "세션 만료",
-              text: "로그인 시간이 만료되었습니다. 다시 로그인해주세요.",
-            }).then(() => {
-              authStore.logout();
-              router.push("/login");
-            });
-            return Promise.reject(refreshError);
+            // 💡 콘솔에 진짜 에러가 뭔지 찍어봅니다! (여기서 JS 오타를 잡을 수 있습니다)
+            console.error("🚨 리프레시 중 에러 발생:", refreshError);
+
+            // 💡 프론트엔드 JS 에러가 아니라, 진짜 백엔드에서 에러(401, 400 등)를 뱉었을 때만 로그아웃!
+            if (
+              refreshError.response &&
+              (refreshError.response.status === 401 ||
+                refreshError.response.status === 400)
+            ) {
+              Swal.fire({
+                icon: "warning",
+                title: "세션 만료",
+                text: "로그인 시간이 만료되었습니다. 다시 로그인해주세요.",
+                allowOutsideClick: false,
+              }).then(() => {
+                authStore.logout();
+                router.push("/login");
+              });
+            } else {
+              // 네트워크가 끊겼거나 프론트엔드 코드(오타 등) 에러인 경우 조용히 에러만 넘김
+              return Promise.reject(refreshError);
+            }
           }
         }
         // 💡 누군가 이미 리프레시 중이라면? -> 대기방(Queue)으로 들어가서 기다리기!
@@ -106,7 +118,7 @@ admin.interceptors.response.use(
           return new Promise((resolve) => {
             addRefreshSubscriber((token) => {
               originalRequest.headers.Authorization = `Bearer ${token}`;
-              resolve(api(originalRequest));
+              resolve(admin(originalRequest));
             });
           });
         }

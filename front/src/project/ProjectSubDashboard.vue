@@ -2,15 +2,11 @@
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-    <div
-      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
-    >
-      <Header
-        :sidebarOpen="sidebarOpen"
-        @toggle-sidebar="sidebarOpen = !sidebarOpen"
-      />
+    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50">
+      <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" />
 
       <main class="grow">
+        <!-- 서브헤더 breadcrumb -->
         <div class="sub-header">
           <div class="breadcrumb">
             <span class="bc-home">홈</span>
@@ -22,263 +18,166 @@
         </div>
 
         <div class="page-container">
-          <!-- 상단 프로젝트 헤더 -->
+
+          <!-- ── 페이지 헤더 카드 ── -->
           <div class="page-title-card">
-            <div class="title-left">
-              <h1 class="page-title">하위 프로젝트 대시보드</h1>
-
-              <div class="title-meta-group">
-                <div class="title-meta-row">
-                  <span class="meta-chip">최상위 프로젝트</span>
-                  <span class="meta-project">
-                    {{ projectInfo.projectName }}
-                  </span>
-                  <span class="meta-period">
-                    {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
-                  </span>
-
-                  <span
-                    v-if="projectInfo.useMilestone === 'O1'"
-                    class="milestone-badge on"
-                  >
-                    마일스톤 사용
-                  </span>
-                  <span
-                    v-else-if="projectInfo.useMilestone === 'O2'"
-                    class="milestone-badge off"
-                  >
-                    마일스톤 미사용
-                  </span>
-                </div>
-
-                <div class="title-meta-row">
-                  <span class="meta-chip sub">하위 프로젝트</span>
-                  <span class="meta-project strong">
-                    {{ subProjectInfo.projectName }}
-                  </span>
-                  <span class="meta-period">
-                    {{ subProjectInfo.startDate }} -
-                    {{ subProjectInfo.endDate }}
-                  </span>
-                </div>
+            <div class="title-section">
+              <div class="title-tags">
+                <span class="meta-chip">최상위</span>
+                <span class="meta-project-name">{{ projectInfo.projectName }}</span>
+                <span class="bc-sep" style="color:#d1d5db">/</span>
+                <span class="meta-chip sub">하위</span>
+                <span class="meta-project-name sub">{{ subProjectInfo.projectName }}</span>
+                <span
+                  v-if="projectInfo.useMilestone === 'O1'"
+                  class="milestone-badge on"
+                >마일스톤 사용</span>
+                <span
+                  v-else-if="projectInfo.useMilestone === 'O2'"
+                  class="milestone-badge off"
+                >마일스톤 미사용</span>
               </div>
+              <h1 class="page-title">하위 프로젝트 대시보드</h1>
+              <p class="page-subtitle">
+                {{ subProjectInfo.startDate }} – {{ subProjectInfo.endDate }}
+              </p>
             </div>
 
-            <div class="title-actions">
+            <!-- 버튼 그룹 -->
+            <div class="action-group">
               <el-button class="action-btn btn-neutral" @click="handleGoBack">
                 돌아가기
               </el-button>
-              <el-button
-                class="action-btn btn-primary"
-                @click="handleCreateTask"
-              >
-                업무 생성
+              <div class="action-divider"></div>
+              <el-button class="action-btn btn-primary" @click="handleCreateTask">
+                + 업무 생성
               </el-button>
-              <el-button
-                class="action-btn btn-secondary"
-                @click="handleSubProjectSetting"
-              >
+              <el-button class="action-btn btn-secondary" @click="handleSubProjectSetting">
                 하위프로젝트 수정
               </el-button>
               <el-button class="action-btn btn-danger" @click="handleDelete">
-                프로젝트 삭제
+                삭제
               </el-button>
             </div>
           </div>
 
-          <!-- 본문 -->
-          <div class="content-grid">
-            <!-- 좌측 메인 -->
-            <div class="left-col">
-              <!-- 업무 현황 -->
-              <div class="panel">
-                <div class="panel-head">
-                  <div>
-                    <h2 class="panel-title">업무 현황</h2>
-                    <div class="panel-subtext">
-                      {{ subProjectInfo.projectName }} 하위 프로젝트의 전체 현황
-                    </div>
-                  </div>
-                </div>
-
-                <div class="panel-body">
-                  <div class="table-card">
-                    <el-table
-                      :data="taskSummaryData"
-                      style="width: 100%"
-                      :header-cell-style="tableHeaderStyle"
-                      :cell-style="tableCellStyle"
-                    >
-                      <el-table-column
-                        prop="type"
-                        label="유형"
-                        min-width="90"
-                      />
-                      <el-table-column
-                        prop="total"
-                        label="전체"
-                        min-width="72"
-                        align="center"
-                      />
-                      <el-table-column
-                        prop="inProgress"
-                        label="진행중"
-                        min-width="80"
-                        align="center"
-                      >
-                        <template #default="{ row }">
-                          <span class="num-hi">{{ row.inProgress }}</span>
-                        </template>
-                      </el-table-column>
-                      <el-table-column
-                        prop="done"
-                        label="완료"
-                        min-width="72"
-                        align="center"
-                      />
-                      <el-table-column
-                        prop="rejected"
-                        label="반려"
-                        min-width="72"
-                        align="center"
-                      >
-                        <template #default="{ row }">
-                          <span
-                            :class="{
-                              'text-red-500 font-bold': row.rejected > 0,
-                            }"
-                          >
-                            {{ row.rejected }}
-                          </span>
-                        </template>
-                      </el-table-column>
-                      <el-table-column
-                        prop="totalSum"
-                        label="합계"
-                        min-width="72"
-                        align="center"
-                      />
-                    </el-table>
-                  </div>
-                </div>
+          <!-- ── 요약 stat 카드 행 ── -->
+          <div class="stat-row">
+            <div class="stat-card">
+              <div class="stat-icon manager-icon">
+                {{ subProjectInfo.managerName?.charAt(0) }}
               </div>
+              <div class="stat-info">
+                <div class="stat-label">담당 관리자</div>
+                <div class="stat-value">{{ subProjectInfo.managerName || '-' }}</div>
+              </div>
+            </div>
 
-              <!-- 업무 목록 -->
-              <div class="panel">
-                <div class="panel-head">
-                  <div class="flex items-center gap-2">
-                    <h2 class="panel-title">업무 목록</h2>
-                    <span class="count-tag">{{ taskList.length }}</span>
-                  </div>
-                  <div class="panel-sub-mini">
-                    [{{ subProjectInfo.projectName }}]
-                  </div>
-                </div>
-
-                <div class="panel-body task-list-panel-body">
-                  <div class="table-card task-table-card">
-                    <el-table
-                      :data="taskList"
-                      style="width: 100%"
-                      :cell-style="taskListCellStyle"
-                      :header-cell-style="taskListHeaderStyle"
-                      row-class-name="clickable-row"
-                      @row-click="handleTaskRowClick"
-                    >
-                      <el-table-column
-                        prop="title"
-                        label="업무명"
-                        min-width="260"
-                      />
-                      <el-table-column
-                        prop="userName"
-                        label="담당자 이름"
-                        width="180"
-                        align="center"
-                        header-align="center"
-                      >
-                        <template #default="{ row }">
-                          <span class="task-pl">{{ row.userName || "-" }}</span>
-                        </template>
-                      </el-table-column>
-                    </el-table>
-                  </div>
+            <div class="stat-card">
+              <div class="stat-icon period-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">프로젝트 기간</div>
+                <div class="stat-value">
+                  {{ subProjectInfo.startDate }} – {{ subProjectInfo.endDate }}
                 </div>
               </div>
             </div>
 
-            <!-- 우측 요약 -->
-            <div class="right-col">
-              <div class="panel summary-panel">
-                <div class="panel-head">
-                  <h2 class="panel-title">프로젝트 요약</h2>
-                </div>
-
-                <div class="summary-body">
-                  <div class="summary-card manager-summary">
-                    <div class="summary-label">하위프로젝트 관리자</div>
-
-                    <div class="manager-wrap">
-                      <div class="manager-avatar">
-                        {{ subProjectInfo.managerName?.charAt(0) }}
-                      </div>
-
-                      <div class="manager-info">
-                        <div class="manager-name">
-                          {{ subProjectInfo.managerName || "-" }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="summary-card period-summary">
-                    <div class="summary-label">프로젝트 기간</div>
-                    <div class="period-text">
-                      {{ subProjectInfo.startDate }} -
-                      {{ subProjectInfo.endDate }}
-                    </div>
-                  </div>
-
-                  <div class="summary-card period-summary">
-                    <div class="summary-label">마일스톤 사용 여부</div>
-                    <div class="period-text">
-                      {{ milestoneStatusText }}
-                    </div>
-                  </div>
-
-                  <div class="summary-card graph-summary">
-                    <div class="summary-label">업무 상태 그래프</div>
-
-                    <div class="graph-placeholder" v-if="graphData.length > 0">
-                      <div class="graph-bars">
-                        <div
-                          v-for="item in graphData"
-                          :key="item.label"
-                          class="graph-item"
-                        >
-                          <div class="graph-bar-wrap">
-                            <div
-                              class="graph-bar"
-                              :style="{
-                                height:
-                                  item.value > 0 ? `${item.value}%` : '0%',
-                              }"
-                            ></div>
-                          </div>
-                          <div class="graph-label">{{ item.label }}</div>
-                          <div class="graph-value">{{ item.raw }}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div v-else class="graph-empty">
-                      표시할 업무 데이터가 없습니다.
-                    </div>
-                  </div>
-                </div>
+            <div class="stat-card">
+              <div class="stat-icon milestone-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">마일스톤</div>
+                <div class="stat-value">{{ milestoneStatusText }}</div>
               </div>
             </div>
-            <!-- 우측 끝 -->
+
+            <div class="stat-card stat-card-total">
+              <div class="stat-icon total-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">전체 업무</div>
+                <div class="stat-value accent">{{ taskList.length }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── 본문: 업무 현황 + 업무 목록 ── -->
+          <div class="content-col">
+
+            <!-- 업무 현황 테이블 -->
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="panel-title">업무 현황</h2>
+                  <p class="panel-subtext">{{ subProjectInfo.projectName }} 하위 프로젝트의 전체 현황</p>
+                </div>
+              </div>
+              <div class="panel-body">
+                <el-table
+                  :data="taskSummaryData"
+                  style="width: 100%"
+                  :header-cell-style="tableHeaderStyle"
+                  :cell-style="tableCellStyle"
+                >
+                  <el-table-column prop="type"       label="유형"   min-width="110" />
+                  <el-table-column prop="total"      label="전체"   min-width="80"  align="center" />
+                  <el-table-column prop="inProgress" label="진행중" min-width="90"  align="center">
+                    <template #default="{ row }">
+                      <span class="num-hi">{{ row.inProgress }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="done"       label="완료"   min-width="80"  align="center">
+                    <template #default="{ row }">
+                      <span class="num-done">{{ row.done }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="rejected"   label="반려"   min-width="80"  align="center">
+                    <template #default="{ row }">
+                      <span :class="{ 'num-reject': row.rejected > 0 }">{{ row.rejected }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="totalSum"   label="합계"   min-width="80"  align="center">
+                    <template #default="{ row }">
+                      <span class="num-total">{{ row.totalSum }}</span>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </div>
+
+            <!-- 업무 목록 -->
+            <div class="panel">
+              <div class="panel-head">
+                <div class="flex items-center gap-2">
+                  <h2 class="panel-title">업무 목록</h2>
+                  <span class="count-tag">{{ taskList.length }}</span>
+                </div>
+                <span class="panel-sub-mini">[{{ subProjectInfo.projectName }}]</span>
+              </div>
+              <div class="panel-body">
+                <el-table
+                  :data="taskList"
+                  style="width: 100%"
+                  :cell-style="taskListCellStyle"
+                  :header-cell-style="taskListHeaderStyle"
+                  row-class-name="clickable-row"
+                  @row-click="handleTaskRowClick"
+                >
+                  <el-table-column prop="title"    label="업무명"      min-width="260" />
+                  <el-table-column prop="userName" label="담당자 이름" width="180" align="center" header-align="center">
+                    <template #default="{ row }">
+                      <span class="task-pl">{{ row.userName || '-' }}</span>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </div>
+
           </div>
         </div>
       </main>
@@ -317,17 +216,14 @@ const authStore = useAuthStore();
 const subProjectId = Number(route.params.subProjectId);
 const rootProjectId = Number(route.params.projectId);
 
-// 하위프로젝트 수정 모달
 const subProjectModalOpen = ref(false);
 const editData = ref(null);
 
-// 하위프로젝트 수정 후 갱신
 const handleSubProjectUpdated = async () => {
   await fetchSubInfo();
   subProjectModalOpen.value = false;
 };
 
-// 상단 제목용
 const projectInfo = ref({
   projectId: null,
   projectName: "",
@@ -351,7 +247,6 @@ const fetchProjectDetail = async () => {
   }
 };
 
-// 하위프로젝트 정보
 const subProjectInfo = ref({
   projectId: null,
   projectName: "",
@@ -370,12 +265,11 @@ const fetchSubInfo = async () => {
 };
 
 const milestoneStatusText = computed(() => {
-  if (projectInfo.value.useMilestone === "O1") return "사용";
-  if (projectInfo.value.useMilestone === "O2") return "사용 안 함";
+  if (projectInfo.value.useMilestone === "O1") return "사용안함";
+  if (projectInfo.value.useMilestone === "O2") return "사용";
   return "-";
 });
 
-// 뒤로가기
 const handleGoBack = () => {
   if (window.history.length > 1) {
     router.back();
@@ -384,7 +278,6 @@ const handleGoBack = () => {
   }
 };
 
-// 업무 현황
 const taskSummaryData = ref([]);
 
 const fetchTaskSummary = async () => {
@@ -397,7 +290,6 @@ const fetchTaskSummary = async () => {
   }
 };
 
-// 업무목록
 const taskList = ref([]);
 
 const fetchTaskList = async () => {
@@ -410,7 +302,6 @@ const fetchTaskList = async () => {
   }
 };
 
-// 업무 클릭 시 상세 이동
 const handleTaskRowClick = (row) => {
   router.push({
     name: "taskDetail",
@@ -422,31 +313,6 @@ const handleTaskRowClick = (row) => {
   });
 };
 
-// 그래프 데이터
-const graphData = computed(() => {
-  const rows = Array.isArray(taskSummaryData.value)
-    ? taskSummaryData.value
-    : [];
-
-  if (rows.length === 0) return [];
-
-  const normalized = rows.map((item) => {
-    const raw = Number(item.totalSum ?? 0);
-    return {
-      label: item.type || "-",
-      raw,
-    };
-  });
-
-  const maxValue = Math.max(...normalized.map((item) => item.raw), 0);
-
-  return normalized.map((item) => ({
-    ...item,
-    value: maxValue > 0 ? Math.round((item.raw / maxValue) * 100) : 0,
-  }));
-});
-
-// 업무생성
 const handleCreateTask = () => {
   router.push({
     name: "taskRegister",
@@ -455,7 +321,6 @@ const handleCreateTask = () => {
   });
 };
 
-// 하위프로젝트 수정
 const handleSubProjectSetting = async () => {
   try {
     const res = await api.get(`/ProjectSubDetail/${subProjectId}`);
@@ -466,7 +331,6 @@ const handleSubProjectSetting = async () => {
   }
 };
 
-// 하위프로젝트 삭제
 const handleDelete = async () => {
   try {
     const result = await Swal.fire({
@@ -493,7 +357,6 @@ const handleDelete = async () => {
     router.push(`/project/dashboard/${rootProjectId}`);
   } catch (err) {
     console.error("하위프로젝트 삭제 실패:", err);
-
     Swal.fire({
       icon: "error",
       title: "삭제 실패",
@@ -503,59 +366,43 @@ const handleDelete = async () => {
   }
 };
 
+/* ─── 테이블 스타일 ─── */
 const tableHeaderStyle = () => ({
   background: "#f9fafb",
-  color: "#4b5563",
+  color: "#6b7280",
   fontSize: "12px",
   fontWeight: "600",
-  height: "44px",
+  letterSpacing: "0.02em",
+  height: "42px",
+  borderBottom: "1px solid #e5e7eb",
 });
 
 const tableCellStyle = () => ({
-  color: "#1f2937",
-  fontSize: "13px",
-  padding: "10px 0",
+  color: "#374151",
+  fontSize: "13.5px",
+  padding: "12px 0",
+  borderBottom: "1px solid #f3f4f6",
 });
 
-const taskListCellStyle = ({ columnIndex }) => {
-  if (columnIndex === 1) {
-    return {
-      color: "#1f2937",
-      fontSize: "13px",
-      padding: "12px 10px",
-      textAlign: "center",
-    };
-  }
+const taskListCellStyle = ({ columnIndex }) => ({
+  color: "#374151",
+  fontSize: "13.5px",
+  padding: "13px 16px",
+  borderBottom: "1px solid #f3f4f6",
+  textAlign: columnIndex === 1 ? "center" : "left",
+});
 
-  return {
-    color: "#1f2937",
-    fontSize: "13px",
-    padding: "12px 16px",
-  };
-};
-
-const taskListHeaderStyle = ({ columnIndex }) => {
-  if (columnIndex === 0) {
-    return {
-      background: "#f9fafb",
-      color: "#4b5563",
-      fontSize: "12px",
-      fontWeight: "600",
-      height: "44px",
-      textAlign: "left",
-      paddingLeft: "24px",
-    };
-  }
-
-  return {
-    background: "#f9fafb",
-    color: "#4b5563",
-    fontSize: "12px",
-    fontWeight: "600",
-    height: "44px",
-    textAlign: "center",
-  };
-};
+const taskListHeaderStyle = ({ columnIndex }) => ({
+  background: "#f9fafb",
+  color: "#6b7280",
+  fontSize: "12px",
+  fontWeight: "600",
+  letterSpacing: "0.02em",
+  height: "42px",
+  textAlign: columnIndex === 1 ? "center" : "left",
+  paddingLeft: columnIndex === 0 ? "24px" : "12px",
+  borderBottom: "1px solid #e5e7eb",
+});
 
 onMounted(() => {
   fetchProjectDetail();
@@ -571,9 +418,10 @@ onMounted(() => {
   background-color: #f3f4f6;
 }
 
+/* ── 서브헤더 ── */
 .sub-header {
   background: #fff;
-  padding: 12px 24px;
+  padding: 11px 28px;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
@@ -583,219 +431,238 @@ onMounted(() => {
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 7px;
+  font-size: 12.5px;
 }
 
-.bc-home {
-  color: #9ca3af;
-}
+.bc-home { color: #9ca3af; }
+.bc-sep  { color: #d1d5db; }
+.bc-cur  { color: #111827; font-weight: 600; }
 
-.bc-sep {
-  color: #d1d5db;
-}
-
-.bc-cur {
-  color: #111827;
-  font-weight: 600;
-}
-
+/* ── 페이지 컨테이너 ── */
 .page-container {
-  padding: 24px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
 }
 
+/* ── 헤더 카드 ── */
 .page-title-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  padding: 22px 28px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 20px;
 }
 
-.title-left {
+.title-section {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
   min-width: 0;
 }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: #111827;
-  line-height: 1.2;
-}
-
-.title-meta-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.title-meta-row {
+.title-tags {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .meta-chip {
   display: inline-flex;
   align-items: center;
-  height: 28px;
-  padding: 0 10px;
+  height: 22px;
+  padding: 0 9px;
   border-radius: 999px;
   background: #eff6ff;
   color: #1d4ed8;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .meta-chip.sub {
   background: #f3f4f6;
+  color: #4b5563;
+}
+
+.meta-project-name {
+  font-size: 14px;
+  font-weight: 700;
   color: #374151;
 }
 
-.meta-project {
-  font-size: 18px;
-  font-weight: 700;
+.meta-project-name.sub {
   color: #111827;
 }
 
-.meta-project.strong {
+.page-title {
+  font-size: 26px;
+  font-weight: 800;
   color: #0f172a;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.meta-period {
+.page-subtitle {
   font-size: 13px;
-  color: #6b7280;
+  color: #9ca3af;
+  font-weight: 500;
 }
 
 .milestone-badge {
   display: inline-flex;
   align-items: center;
-  height: 26px;
-  padding: 0 10px;
+  height: 22px;
+  padding: 0 9px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
-.milestone-badge.on {
-  background: #ecfdf5;
-  color: #059669;
-}
+.milestone-badge.on  { background: #ecfdf5; color: #059669; }
+.milestone-badge.off { background: #f3f4f6; color: #9ca3af; }
 
-.milestone-badge.off {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
-.title-actions {
+/* ── 버튼 그룹 ── */
+.action-group {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.action-divider {
+  width: 1px;
+  height: 28px;
+  background: #e5e7eb;
+  margin: 0 2px;
 }
 
 .action-btn {
-  height: 40px !important;
+  height: 38px !important;
   padding: 0 16px !important;
-  border-radius: 10px !important;
+  border-radius: 9px !important;
   font-size: 13px !important;
-  font-weight: 700 !important;
-  transition: all 0.2s ease !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease !important;
+  letter-spacing: -0.01em !important;
 }
 
-.action-btn:hover {
-  transform: translateY(-1px);
-}
+.action-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.1) !important; }
 
-.btn-primary {
-  background: #1b5c9c !important;
-  border: 1px solid #1b5c9c !important;
-  color: #fff !important;
-}
+.btn-primary   { background: #1b5c9c !important; border: 1px solid #1b5c9c !important; color: #fff !important; }
+.btn-primary:hover { background: #174d83 !important; border-color: #174d83 !important; }
 
-.btn-primary:hover {
-  background: #174d83 !important;
-  border-color: #174d83 !important;
-}
+.btn-secondary { background: #f8fafc !important; border: 1px solid #dbe3ec !important; color: #334155 !important; }
+.btn-secondary:hover { background: #f1f5f9 !important; }
 
-.btn-secondary {
-  background: #f8fafc !important;
-  border: 1px solid #dbe3ec !important;
-  color: #334155 !important;
-}
+.btn-neutral   { background: #fff !important; border: 1px solid #d1d5db !important; color: #374151 !important; }
+.btn-neutral:hover { background: #f9fafb !important; }
 
-.btn-secondary:hover,
-.btn-neutral:hover {
-  background: #f1f5f9 !important;
-}
+.btn-danger    { background: #fff5f5 !important; border: 1px solid #fecaca !important; color: #dc2626 !important; }
+.btn-danger:hover { background: #fef2f2 !important; }
 
-.btn-neutral {
-  background: #fff !important;
-  border: 1px solid #d1d5db !important;
-  color: #374151 !important;
-}
-
-.btn-danger {
-  background: #fff5f5 !important;
-  border: 1px solid #fecaca !important;
-  color: #dc2626 !important;
-}
-
-.btn-danger:hover {
-  background: #fef2f2 !important;
-}
-
-.content-grid {
+/* ── stat 카드 행 ── */
+.stat-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
-.left-col,
-.right-col {
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: box-shadow 0.15s;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.manager-icon  { background: #dbeafe; color: #1d4ed8; }
+.period-icon   { background: #f0fdf4; color: #16a34a; }
+.milestone-icon{ background: #fef9c3; color: #a16207; }
+.total-icon    { background: #eff6ff; color: #1b5c9c; }
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   min-width: 0;
 }
 
-.left-col {
+.stat-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-value.accent {
+  font-size: 22px;
+  color: #1b5c9c;
+}
+
+/* ── 콘텐츠 컬럼 ── */
+.content-col {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
-.right-col {
-  position: sticky;
-  top: 24px;
-  align-self: start;
-}
-
+/* ── 패널 ── */
 .panel {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   border: 1px solid #e5e7eb;
   overflow: hidden;
 }
 
 .panel-head {
-  padding: 16px 20px;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #f3f4f6;
   gap: 12px;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .panel-title {
@@ -805,206 +672,52 @@ onMounted(() => {
 }
 
 .panel-subtext {
-  margin-top: 4px;
-  font-size: 13px;
-  color: #6b7280;
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: #9ca3af;
 }
 
 .panel-sub-mini {
   font-size: 12px;
-  color: #6b7280;
+  color: #9ca3af;
   font-weight: 600;
 }
 
 .panel-body {
-  padding: 20px;
-  background: #fff;
+  padding: 0;
 }
 
-.task-list-panel-body {
-  padding-top: 16px;
-}
-
+/* count tag */
 .count-tag {
-  min-width: 24px;
-  height: 22px;
-  padding: 0 8px;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
   border-radius: 999px;
   background: #eff6ff;
   color: #1d4ed8;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.table-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #fff;
-}
-
-.task-table-card {
-  min-height: 260px;
-}
-
-.summary-panel .panel-head {
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.summary-body {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.summary-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #fff;
-  padding: 16px;
-}
-
-.summary-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: #374151;
-  margin-bottom: 12px;
-}
-
-.manager-wrap {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.manager-avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #dbeafe;
-  color: #1d4ed8;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.manager-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.manager-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #111827;
-}
-
-.period-text {
-  font-size: 14px;
-  color: #111827;
-  font-weight: 700;
-  line-height: 1.5;
-}
-
-.graph-placeholder {
-  min-height: 300px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 100%;
-  padding: 20px 12px 12px;
-  border: 1px dashed #dbe2ea;
-  border-radius: 12px;
-  background: linear-gradient(to bottom, #fbfdff, #f8fbff);
-}
-
-.graph-empty {
-  min-height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed #dbe2ea;
-  border-radius: 12px;
-  background: linear-gradient(to bottom, #fbfdff, #f8fbff);
-  color: #94a3b8;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.graph-bars {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
-  align-items: end;
-  gap: 12px;
-  width: 100%;
-  height: 100%;
-}
-
-.graph-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  height: 100%;
-}
-
-.graph-bar-wrap {
-  display: flex;
-  align-items: flex-end;
-  width: 100%;
-  max-width: 38px;
-  height: 190px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  overflow: hidden;
-}
-
-.graph-bar {
-  width: 100%;
-  min-height: 0;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #93c5fd 0%, #60a5fa 55%, #3b82f6 100%);
-  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.18);
-  transition: height 0.25s ease;
-}
-
-.graph-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #475569;
-  text-align: center;
-  word-break: keep-all;
-}
-
-.graph-value {
-  font-size: 11px;
-  font-weight: 600;
-  color: #94a3b8;
-}
+/* ── 숫자 강조 ── */
+.num-hi     { color: #1b5c9c; font-weight: 700; }
+.num-done   { color: #059669; font-weight: 600; }
+.num-reject { color: #dc2626; font-weight: 700; }
+.num-total  { color: #374151; font-weight: 700; }
 
 .task-pl {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #64748b;
 }
 
-.num-hi {
-  color: #1b5c9c;
-  font-weight: 700;
-}
-
+/* ── 테이블 공통 ── */
 :deep(.el-table) {
   --el-table-header-bg-color: #f9fafb;
+  border-radius: 0 !important;
 }
 
 :deep(.el-table__inner-wrapper::before),
@@ -1014,12 +727,12 @@ onMounted(() => {
 
 :deep(.el-table td.el-table__cell),
 :deep(.el-table th.el-table__cell) {
-  border-bottom: 1px solid #eef2f7 !important;
+  border-bottom: 1px solid #f3f4f6 !important;
 }
 
 :deep(.el-table .cell) {
-  padding-left: 12px !important;
-  padding-right: 12px !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
 }
 
 :deep(.el-table__row:hover > td) {
@@ -1030,13 +743,10 @@ onMounted(() => {
   cursor: pointer;
 }
 
-@media (max-width: 1200px) {
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .right-col {
-    position: static;
+/* ── 반응형 ── */
+@media (max-width: 1100px) {
+  .stat-row {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -1050,38 +760,32 @@ onMounted(() => {
     align-items: stretch;
   }
 
-  .title-actions {
+  .action-group {
+    flex-wrap: wrap;
     width: 100%;
-    justify-content: flex-start;
   }
 
   .action-btn {
     flex: 1;
+    min-width: 80px;
+  }
+
+  .action-divider {
+    display: none;
   }
 
   .page-title {
-    font-size: 24px;
+    font-size: 22px;
   }
 
-  .meta-project {
-    font-size: 16px;
+  .stat-row {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 480px) {
-  .title-meta-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .graph-bars {
-    gap: 10px;
-  }
-
-  .graph-bar-wrap {
-    max-width: 32px;
-    height: 160px;
+  .stat-row {
+    grid-template-columns: 1fr;
   }
 }
 </style>

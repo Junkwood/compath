@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import admin from "../utils/admin";
+import api from "../utils/api";
 
 export const useGroupStore = defineStore("group", {
   state: () => ({
@@ -10,12 +10,12 @@ export const useGroupStore = defineStore("group", {
   getters: {},
   actions: {
     async getActiveGroupList() {
-      await admin.get("/group/active").then((response) => {
+      await api.get("/group/active").then((response) => {
         this.activeGroupList = response.data;
       });
     },
     async getGroupList() {
-      const response = await admin.get("/group");
+      const response = await api.get("/group");
       this.groupList = response.data;
       return this.groupList;
     },
@@ -32,7 +32,7 @@ export const useGroupStore = defineStore("group", {
         isActive: value,
         editorUserId: editorUserId,
       };
-      const response = await admin.put(`/group/${id}`, group);
+      const response = await api.put(`/group/${id}`, group);
       const result = response.data;
       if (result.isActive == null) {
         return false;
@@ -42,7 +42,7 @@ export const useGroupStore = defineStore("group", {
       }
     },
     async getGroupInfo(id) {
-      const response = await admin.get("/group/" + id);
+      const response = await api.get("/group/" + id);
       const result = response.data;
       this.group = result;
       return this.group;

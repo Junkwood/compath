@@ -257,7 +257,7 @@ onMounted(async () => {
 });
 
 const handleCreateGroup = () => {
-  router.push({ name: "groupRegister" });
+  router.push("../group/register");
 };
 
 const toGroupInfo = (id) => {
@@ -265,7 +265,7 @@ const toGroupInfo = (id) => {
 };
 
 const handleUpdateGroup = (groupId) => {
-  router.push(`/admin/group/modify/${groupId}`);
+  router.push(`../group/modify/${groupId}`);
 };
 
 // 💡 SweetAlert가 적용된 통일된 토글 로직

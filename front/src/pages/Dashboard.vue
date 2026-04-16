@@ -76,16 +76,16 @@
                     align="center"
                   />
                   <el-table-column
-                    prop="rejected"
-                    label="반려"
+                    prop="delayed"
+                    label="기한 초과"
                     width="60"
                     align="center"
                   >
                     <template #default="{ row }">
                       <span
-                        :class="{ 'text-red-500 font-bold': row.rejected > 0 }"
+                        :class="{ 'text-red-500 font-bold': row.delayed > 0 }"
                       >
-                        {{ row.rejected }}
+                        {{ row.delayed }}
                       </span>
                     </template>
                   </el-table-column>
@@ -219,8 +219,8 @@
                 align="center"
               />
               <el-table-column
-                prop="pmUserId"
-                label="관리자"
+                prop="pmName"
+                label="PM"
                 width="120"
                 align="center"
               />
@@ -268,8 +268,12 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectCreateModal from "../project/ProjectCreateModal.vue";
 import ProjectCopyModal from "../project/ProjectCopyModal.vue";
-
+import { userMypageStore } from "../stores/myPageSJW";
+import { useAuthStore } from "../stores/auth";
 const router = useRouter();
+const myStore = userMypageStore();
+const authStore = useAuthStore();
+const userId = authStore.user.userId;
 
 const sidebarOpen = ref(false);
 const createProjectModalOpen = ref(false);
@@ -290,22 +294,21 @@ const loadingProjects = ref(false);
 const taskProjects = ref([]);
 const projectList = ref([]);
 
-const myTasks = ref({
-  inProgress: 5,
-  done: 10,
-  rejected: 3,
-  deadline: 1,
-});
+const myTasks = myStore.taskSummary;
 
 const taskStatusList = computed(() => [
-  { label: "진행중", count: myTasks.value.inProgress, color: "#1B5C9C" },
-  { label: "완료", count: myTasks.value.done, color: "#10b981" },
-  { label: "반려", count: myTasks.value.rejected, color: "#ef4444" },
-  { label: "기한 임박", count: myTasks.value.deadline, color: "#f59e0b" },
+  { label: "진행중", count: myStore.taskSummary.inProgress, color: "#1B5C9C" },
+  { label: "완료", count: myStore.taskSummary.done, color: "#10b981" },
+  { label: "기한 초과", count: myStore.taskSummary.delayed, color: "#ef4444" },
+  {
+    label: "기한 임박",
+    count: myStore.taskSummary.pendingPR,
+    color: "#f59e0b",
+  },
 ]);
 
 const totalTaskCount = computed(() =>
-  Object.values(myTasks.value).reduce((sum, value) => sum + value, 0),
+  Object.values(myStore.taskSummary).reduce((sum, value) => sum + value, 0),
 );
 
 const newsList = [
@@ -341,6 +344,7 @@ const fetchProjectList = async () => {
 onMounted(() => {
   fetchProjectList();
   fetchTaskList();
+  myStore.getTaskSummary(userId);
 });
 
 const pagedTaskData = computed(() => {
@@ -634,55 +638,63 @@ const goProjectDashboard = (row) => {
 }
 
 .panel-action-row {
-  min-height: 150px;
-  padding: 28px 36px 30px;
+  min-height: auto;
+  padding: 20px 24px 24px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  align-items: end;
+  gap: 14px;
+  align-items: center;
   background: #fff;
 }
 
 .action-btn {
   width: 100%;
-  height: 78px !important;
-  border: none !important;
-  border-radius: 14px !important;
-  font-size: 18px !important;
-  font-weight: 800 !important;
+  height: 46px !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
   display: flex !important;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transition: all 0.25s ease !important;
+  gap: 8px;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease !important;
+  box-shadow: none !important;
 }
 
 .action-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .btn-create-project {
-  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
+  background: #1f4f82 !important;
+  border: 1px solid #1f4f82 !important;
   color: #ffffff !important;
-  box-shadow: 0 6px 18px rgba(27, 92, 156, 0.22) !important;
 }
 
 .btn-create-project:hover {
-  filter: brightness(1.05);
+  background: #183e66 !important;
+  border-color: #183e66 !important;
 }
 
 .btn-copy-project {
-  background: linear-gradient(135deg, #ffa32a 0%, #ff9a17 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 6px 18px rgba(71, 85, 105, 0.2) !important;
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
 }
 
 .btn-copy-project:hover {
-  filter: brightness(1.05);
+  background: #eef2f7 !important;
+  border-color: #94a3b8 !important;
+  color: #1e293b !important;
 }
 
 .action-btn :deep(.el-icon) {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 @media (max-width: 1200px) {
