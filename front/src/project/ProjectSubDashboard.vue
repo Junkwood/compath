@@ -265,8 +265,8 @@ const fetchSubInfo = async () => {
 };
 
 const milestoneStatusText = computed(() => {
-  if (projectInfo.value.useMilestone === "O1") return "사용안함";
-  if (projectInfo.value.useMilestone === "O2") return "사용";
+  if (projectInfo.value.useMilestone === "O1") return "사용";
+  if (projectInfo.value.useMilestone === "O2") return "사용안함";
   return "-";
 });
 

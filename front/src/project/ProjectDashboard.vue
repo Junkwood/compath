@@ -583,7 +583,7 @@ const projectInfo = ref({
 });
 
 const normalizeMilestoneValue = (value) => String(value ?? "").trim().toUpperCase();
-const isMilestoneUsed = computed(() => normalizeMilestoneValue(projectInfo.value.useMilestone) === "O2");
+const isMilestoneUsed = computed(() => normalizeMilestoneValue(projectInfo.value.useMilestone) === "O1");
 const milestoneLabel = computed(() => isMilestoneUsed.value ? "마일스톤 사용" : "마일스톤 미사용");
 
 const fetchProjectDetail = async () => {

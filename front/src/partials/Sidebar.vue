@@ -836,7 +836,7 @@ export default {
     };
 
     const isMilestoneEnabled = computed(() => {
-      return currentProjectInfo.value?.useMilestone === "O2";
+      return currentProjectInfo.value?.useMilestone === "O1";
     });
 
     const goTaskList = () => {
