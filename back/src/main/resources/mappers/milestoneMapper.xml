@@ -64,7 +64,7 @@
         M.DESCRIPTION
         FROM MILESTONES M
         WHERE M.PROJECT_ID = #{projectId}
-        AND M.STATUS = 'E1'
+        AND M.STATUS IN ('E1', 'E2')
         ORDER BY M.MILESTONE_ID
     </select>
 
