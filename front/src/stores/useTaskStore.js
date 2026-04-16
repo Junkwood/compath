@@ -74,7 +74,6 @@ export const useTaskStore = defineStore("task", () => {
   };
 
   const form = ref({ ...initialForm });
-
   // ───────────── 초기화 (등록용) ─────────────
   const initCreate = async (projectId, parentTaskId = null) => {
     resetForm();
@@ -152,6 +151,7 @@ export const useTaskStore = defineStore("task", () => {
   };
 
   // ───────────── 초기화 (수정용) ─────────────
+  const attachmentList = ref([]);
   const initEdit = async (taskId) => {
     resetForm();
 
@@ -163,8 +163,9 @@ export const useTaskStore = defineStore("task", () => {
       taskTypeList: rawTypeList,
       milestoneList: rawMilestoneList,
       statusList: rawStatusList,
+      attachmentList: rawAttachmentList,
     } = res.data;
-
+    attachmentList.value = rawAttachmentList ?? [];
     const d = taskDetail[0];
     const pd = projectList;
 
@@ -428,29 +429,31 @@ export const useTaskStore = defineStore("task", () => {
   };
 
   // ───────────── 등록 ─────────────
-  const createTask = async (createdBy) => {
+  const createTask = async (createdBy, files = []) => {
     validateForm();
     let obj = buildPayload();
-    console.log(obj);
-    if (obj.assigneeUserId != "") {
-      await api.post("/tasks", {
-        ...obj,
-        createdBy: createdBy,
+
+    const formData = new FormData();
+    formData.append(
+      "dto",
+      new Blob([JSON.stringify({ ...obj, createdBy })], {
+        type: "application/json",
+      }),
+    );
+
+    if (files && files.length > 0) {
+      files.forEach((file) => {
+        formData.append("files", file.raw);
       });
-    } else {
-      await api
-        .post("/tasks/insert", {
-          ...obj,
-          createdBy: createdBy,
-        })
-        .then((res) => {
-          recommandTask.value = res.data;
-        });
     }
+
+    await api.post("/tasks", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
   };
 
   // ───────────── 수정 ─────────────
-  const updateTask = async (taskId, editorUserId) => {
+  const updateTask = async (taskId, editorUserId, files = []) => {
     const status = Number(form.value.taskStatusId);
 
     // 반려 처리
@@ -483,11 +486,25 @@ export const useTaskStore = defineStore("task", () => {
 
     try {
       validateForm();
-      await api.put(`/task/${taskId}`, {
+
+      const payload = {
         ...buildPayload(),
         taskId: Number(taskId),
         rejectionReason: rejectReason.value,
         editorUserId: editorUserId,
+      };
+
+      const formData = new FormData();
+      formData.append(
+        "dto",
+        new Blob([JSON.stringify(payload)], { type: "application/json" }),
+      );
+      if (files && files.length > 0) {
+        files.forEach((file) => formData.append("files", file.raw));
+      }
+
+      await api.put(`/task/${taskId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       await Swal.fire(
@@ -511,6 +528,13 @@ export const useTaskStore = defineStore("task", () => {
     });
   };
 
+  // ───────────── 첨부파일 삭제 ─────────────
+  const removeExistingFile = (attachmentId) => {
+    attachmentList.value = attachmentList.value.filter(
+      (f) => f.attachmentId !== attachmentId,
+    );
+  };
+
   return {
     form,
     actualHours,
@@ -529,6 +553,8 @@ export const useTaskStore = defineStore("task", () => {
     isOriginallyTerminated,
     rejectReason,
     subProjectList,
+    attachmentList,
+    removeExistingFile,
     initCreate,
     initEdit,
     openUserModal,

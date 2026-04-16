@@ -212,7 +212,8 @@ CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
     taskTypeList   OUT SYS_REFCURSOR,
     milestoneList  OUT SYS_REFCURSOR,
     statusList     OUT SYS_REFCURSOR,
-    timeEntryList  OUT SYS_REFCURSOR 
+    timeEntryList  OUT SYS_REFCURSOR ,
+    attachmentList OUT SYS_REFCURSOR
 ) AS
     v_target_project_id NUMBER;
     v_root_project_id   NUMBER;
@@ -321,9 +322,25 @@ WHERE t.task_id = p_task_id;
     FROM task_statuses
     WHERE is_active = 'O1'
     	ORDER BY task_status_id;
+    
+      -- 첨부파일 목록 추가
+OPEN attachmentList FOR
+SELECT
+    a.attachment_id,
+    a.file_name AS filename,   -- filename → file_name
+    a.file_path,
+    a.file_ext,
+    a.attachment_group_id
+FROM attachments a
+JOIN tasks t ON a.attachment_group_id = t.attachment_group_id
+WHERE t.task_id = p_task_id;
 
 END;
 
+SELECT column_name
+FROM user_tab_columns
+WHERE table_name = 'ATTACHMENTS'
+ORDER BY column_id;
 ------------------------------------------------------------------------
 
 --알림 전용 프로시저

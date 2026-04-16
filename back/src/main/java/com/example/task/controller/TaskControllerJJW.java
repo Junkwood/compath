@@ -7,7 +7,9 @@ import com.example.task.service.TaskServiceJJW;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +22,9 @@ public class TaskControllerJJW {
 
     //상위 업무 등록
     @PostMapping("/tasks")
-    public TaskReqDtoJJW registerTasks(@Valid @RequestBody TaskReqDtoJJW dto){
-     taskServiceJJW.insert(dto);
+    public TaskReqDtoJJW registerTasks(@Valid @RequestPart("dto") TaskReqDtoJJW dto,
+                                       @RequestPart(value = "files", required = false) List<MultipartFile> files) throws IOException {
+        taskServiceJJW.insert(dto, files);
      return dto;
     }
 
@@ -34,10 +37,13 @@ public class TaskControllerJJW {
 
     //상위 업무 수정
     @PutMapping("/task/{taskId}")
-    public TaskReqDtoJJW updateTasks(@PathVariable("taskId") Integer taskId,
-                                     @RequestBody TaskReqDtoJJW dto) {
+    public TaskReqDtoJJW updateTasks(
+            @PathVariable("taskId") Integer taskId,
+            @RequestPart("dto") TaskReqDtoJJW dto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
+    ) throws IOException {
         dto.setTaskId(taskId);
-        taskServiceJJW.updateTask(dto);
+        taskServiceJJW.updateTask(dto, files);
         return dto;
     }
 
