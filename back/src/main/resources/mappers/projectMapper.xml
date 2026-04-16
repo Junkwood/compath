@@ -50,40 +50,40 @@
         </selectKey>
 
         INSERT INTO PROJECTS (
-        PROJECT_ID,
-        IDENTIFIER,
-        PARENT_PROJECT_ID,
-        PROJECT_NAME,
-        DESCRIPTION,
-        START_DATE,
-        END_DATE,
-        STATUS,
-        IS_PUBLIC,
-        CREATED_AT,
-        UPDATED_AT,
-        CREATED_BY,
-        PM_USER_ID,
-        PL_USER_ID,
-        EDITOR_USER_ID,
-        USE_MILESTONE
+            PROJECT_ID,
+            IDENTIFIER,
+            PARENT_PROJECT_ID,
+            PROJECT_NAME,
+            DESCRIPTION,
+            START_DATE,
+            END_DATE,
+            STATUS,
+            IS_PUBLIC,
+            CREATED_AT,
+            UPDATED_AT,
+            CREATED_BY,
+            PM_USER_ID,
+            PL_USER_ID,
+            EDITOR_USER_ID,
+            USE_MILESTONE
         ) VALUES (
-        #{projectId},
-        FN_GEN_PROJECT_IDENTIFIER(),
-        NULL,
-        #{projectName},
-        #{description},
-        #{startDate},
-        #{endDate},
-        'F1',
-        #{isPublic},
-        SYSDATE,
-        NULL,
-        #{createdBy},
-        #{pmUserId},
-        #{plUserId},
-        NULL,
-        #{useMilestone}
-        )
+            #{projectId},
+            FN_GEN_PROJECT_IDENTIFIER(),
+            NULL,
+            #{projectName},
+            #{description},
+            #{startDate},
+            #{endDate},
+            'F1',
+            #{isPublic},
+            SYSDATE,
+            NULL,
+            #{createdBy},
+            #{pmUserId},
+            #{plUserId},
+            NULL,
+            #{useMilestone}
+            )
     </insert>
 
     <!--프로젝트 생성시 총괄PL 리스트 불러오기 -->

@@ -242,7 +242,7 @@ const fillForm = () => {
       description: props.editData.description ?? "",
       useMilestone: props.parentUseMilestone,
       isPublic:
-        props.editData.isPublic === "P1" || props.editData.isPublic === "O1",
+        props.editData.isPublic === "P1" || props.editData.isPublic === "P2",
       userId: authStore.user?.userId ?? null,
     });
   } else {
