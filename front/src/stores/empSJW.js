@@ -16,7 +16,7 @@ export const useEmpStore = defineStore("emp", {
       });
     },
     async getEmpList4Group() {
-      await admin.get("/emp/group").then((response) => {
+      await api.get("/emp/group").then((response) => {
         this.empList4Group = response.data;
       });
     },

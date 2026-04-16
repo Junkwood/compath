@@ -11,4 +11,5 @@ public interface PermissionMapper {
     // 해당 프로젝트의 공개/비공개,비공개인경우 프로젝트 멤버 여부 확인.
     boolean checkProjectAccess(Integer projectId, String userId);
 
+    boolean checkGroupAccess(Integer groupId, String targetUrl, String method);
 }
