@@ -125,7 +125,8 @@
         P.DESCRIPTION                        AS description,
         TO_CHAR(P.START_DATE, 'YYYY-MM-DD') AS startDate,
         TO_CHAR(P.END_DATE, 'YYYY-MM-DD')   AS endDate,
-        U.USER_NAME                          AS managerName
+        P.USE_MILESTONE                     AS useMilestone,
+        U.USER_NAME                         AS managerName
         FROM PROJECTS P
         LEFT JOIN USERS U
         ON U.USER_ID = P.SUB_PL_USER_ID

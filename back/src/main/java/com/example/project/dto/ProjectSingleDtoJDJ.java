@@ -17,4 +17,5 @@ public class ProjectSingleDtoJDJ {
     private String managerName;
     private String identifier;
     private String description;
+    private String useMilestone;
 }

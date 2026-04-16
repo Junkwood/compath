@@ -33,6 +33,13 @@
                   {{ projectInfo.identifier }}
                 </span>
 
+                <span
+                  class="milestone-badge"
+                  :class="isMilestoneUsed ? 'on' : 'off'"
+                >
+                  {{ milestoneLabel }}
+                </span>
+
                 <span class="proj-period">
                   {{ projectInfo.startDate }} ~ {{ projectInfo.endDate }}
                 </span>
@@ -139,50 +146,99 @@
                 </div>
 
                 <div class="sub-body">
-                  <template v-if="currentMilestone">
-                    <div class="sub-milestone-title">
-                      마일스톤 {{ currentMilestone?.milestoneName }}
-                    </div>
+                  <template v-if="isMilestoneEnabled">
+                    <template v-if="currentMilestone">
+                      <div class="sub-milestone-title">
+                        마일스톤 {{ currentMilestone.milestoneName }}
+                      </div>
 
-                    <el-table
-                      :data="currentMilestone.projects || []"
-                      style="width: 100%"
-                      :show-header="false"
-                      :cell-style="cellStyle"
-                      @row-click="handleSubProjectRowClick"
-                    >
-                      <el-table-column min-width="260">
-                        <template #default="{ row }">
-                          <div class="sub-project-cell">
-                            <span class="sub-project-name">
-                              {{ row.projectName }}
-                            </span>
-                            <span v-if="row.identifier" class="sub-project-id">
-                              {{ row.identifier }}
-                            </span>
-                          </div>
-                        </template>
-                      </el-table-column>
+                      <el-table
+                        :data="currentMilestone.projects || []"
+                        style="width: 100%"
+                        :show-header="false"
+                        :cell-style="cellStyle"
+                        @row-click="handleSubProjectRowClick"
+                      >
+                        <el-table-column min-width="260">
+                          <template #default="{ row }">
+                            <div class="sub-project-cell">
+                              <span class="sub-project-name">
+                                {{ row.projectName }}
+                              </span>
+                              <span
+                                v-if="row.identifier"
+                                class="sub-project-id"
+                              >
+                                {{ row.identifier }}
+                              </span>
+                            </div>
+                          </template>
+                        </el-table-column>
 
-                      <el-table-column label="PL" width="110" align="center">
-                        <template #default="{ row }">
-                          <span class="sub-pl">{{ row.userName }}</span>
-                        </template>
-                      </el-table-column>
-                    </el-table>
+                        <el-table-column label="PL" width="110" align="center">
+                          <template #default="{ row }">
+                            <span class="sub-pl">{{
+                              row.userName || "-"
+                            }}</span>
+                          </template>
+                        </el-table-column>
+                      </el-table>
 
-                    <div class="pag-wrap" v-if="pagedMilestones.length > 1">
-                      <el-pagination
-                        v-model:current-page="milestonePage"
-                        :page-size="1"
-                        :total="pagedMilestones.length"
-                        layout="prev, pager, next"
-                        background
-                      />
+                      <div class="pag-wrap" v-if="pagedMilestones.length > 1">
+                        <el-pagination
+                          v-model:current-page="milestonePage"
+                          :page-size="1"
+                          :total="pagedMilestones.length"
+                          layout="prev, pager, next"
+                          background
+                        />
+                      </div>
+                    </template>
+
+                    <div v-else class="empty-text">
+                      하위 프로젝트가 없습니다.
                     </div>
                   </template>
 
-                  <div v-else class="empty-text">하위 프로젝트가 없습니다.</div>
+                  <template v-else>
+                    <template v-if="subProjects.length > 0">
+                      <el-table
+                        :data="subProjects"
+                        style="width: 100%"
+                        :show-header="false"
+                        :cell-style="cellStyle"
+                        @row-click="handleSubProjectRowClick"
+                      >
+                        <el-table-column min-width="260">
+                          <template #default="{ row }">
+                            <div class="sub-project-cell">
+                              <span class="sub-project-name">
+                                {{ row.projectName }}
+                              </span>
+                              <span
+                                v-if="row.identifier"
+                                class="sub-project-id"
+                              >
+                                {{ row.identifier }}
+                              </span>
+                            </div>
+                          </template>
+                        </el-table-column>
+
+                        <el-table-column label="PL" width="110" align="center">
+                          <template #default="{ row }">
+                            <span class="sub-pl">{{
+                              row.userName || "-"
+                            }}</span>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </template>
+
+                    <div v-else class="empty-text">
+                      하위 프로젝트가 없습니다.
+                    </div>
+                  </template>
                 </div>
               </div>
             </div>
@@ -198,28 +254,74 @@
 
                 <div class="member-body">
                   <template v-if="projectMembers.length > 0">
-                    <div
-                      v-for="member in projectMembers"
-                      :key="member.userId"
-                      class="member-item"
-                    >
+                    <div class="member-scroll">
                       <div
-                        class="member-avatar"
-                        :style="{
-                          backgroundColor: getAvatarColor(member.roleName),
-                        }"
+                        v-for="group in groupedMembers"
+                        :key="group.key"
+                        class="member-group"
                       >
-                        {{ member.userName?.charAt(0) }}
-                      </div>
-
-                      <div class="member-info">
-                        <span class="member-name">{{ member.userName }}</span>
-                        <span
-                          class="member-role"
-                          :class="getRoleClass(member.roleName)"
+                        <button
+                          class="member-group-head"
+                          type="button"
+                          @click="toggleMemberGroup(group.key)"
                         >
-                          {{ member.roleName }}
-                        </span>
+                          <div class="member-group-left">
+                            <span
+                              class="member-group-dot"
+                              :style="{
+                                backgroundColor: getAvatarColor(group.label),
+                              }"
+                            ></span>
+                            <span class="member-group-name">
+                              {{ group.label }}
+                            </span>
+                          </div>
+
+                          <div class="member-group-right">
+                            <span class="member-group-count">
+                              {{ group.members.length }}명
+                            </span>
+                            <span class="member-group-arrow">
+                              {{ openedMemberGroups[group.key] ? "−" : "+" }}
+                            </span>
+                          </div>
+                        </button>
+
+                        <transition name="accordion">
+                          <div
+                            v-show="openedMemberGroups[group.key]"
+                            class="member-group-list"
+                          >
+                            <div
+                              v-for="member in group.members"
+                              :key="member.userId"
+                              class="member-item"
+                            >
+                              <div
+                                class="member-avatar"
+                                :style="{
+                                  backgroundColor: getAvatarColor(
+                                    member.roleName,
+                                  ),
+                                }"
+                              >
+                                {{ member.userName?.charAt(0) }}
+                              </div>
+
+                              <div class="member-info">
+                                <span class="member-name">
+                                  {{ member.userName }}
+                                </span>
+                                <span
+                                  class="member-role"
+                                  :class="getRoleClass(member.roleName)"
+                                >
+                                  {{ member.roleName || "구성원" }}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </transition>
                       </div>
                     </div>
                   </template>
@@ -285,6 +387,8 @@
     :parent-project-name="projectInfo.projectName"
     :parent-start-date="projectInfo.startDate"
     :parent-end-date="projectInfo.endDate"
+    :parent-use-milestone="projectInfo.useMilestone"
+    @submitted="handleSubProjectSubmitted"
   />
 </template>
 
@@ -309,11 +413,16 @@ const handleAddSubProject = () => {
   createSubProjectModalOpen.value = true;
 };
 
+const handleSubProjectSubmitted = async () => {
+  createSubProjectModalOpen.value = false;
+  await fetchSubProject();
+};
+
 const taskSummaryData = ref([]);
 const fetchTaskSummary = async () => {
   try {
     const res = await api.get(`/TaskSummary/${route.params.projectId}`);
-    taskSummaryData.value = res.data;
+    taskSummaryData.value = res.data || [];
   } catch (err) {
     console.error("업무 현황 조회 실패:", err);
     taskSummaryData.value = [];
@@ -326,7 +435,10 @@ const formatDate = (value) => {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}-${String(date.getDate()).padStart(2, "0")}`;
 };
 
 const isWithin7Days = (value) => {
@@ -369,12 +481,90 @@ const fetchNoticeList = async () => {
 };
 
 const projectMembers = ref([]);
+const openedMemberGroups = ref({});
+
+const normalizeRoleName = (roleName) => {
+  if (!roleName || !String(roleName).trim()) return "구성원";
+  const value = String(roleName).trim();
+
+  if (value.includes("PM")) return "PM";
+  if (value.includes("PL")) return "PL";
+  if (value.includes("QA")) return "QA";
+  if (value.includes("관리")) return "관리자";
+  if (value.includes("개발")) return "개발";
+  return value;
+};
+
+const roleOrderMap = {
+  PM: 1,
+  PL: 2,
+  관리자: 3,
+  개발: 4,
+  QA: 5,
+  구성원: 99,
+};
+
+const groupedMembers = computed(() => {
+  const map = new Map();
+
+  projectMembers.value.forEach((member) => {
+    const groupName = normalizeRoleName(member.roleName);
+
+    if (!map.has(groupName)) {
+      map.set(groupName, {
+        key: groupName,
+        label: groupName,
+        members: [],
+      });
+    }
+
+    map.get(groupName).members.push(member);
+  });
+
+  return Array.from(map.values())
+    .map((group) => ({
+      ...group,
+      members: [...group.members].sort((a, b) =>
+        String(a.userName || "").localeCompare(String(b.userName || ""), "ko"),
+      ),
+    }))
+    .sort((a, b) => {
+      const orderA = roleOrderMap[a.label] ?? 50;
+      const orderB = roleOrderMap[b.label] ?? 50;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.label.localeCompare(b.label, "ko");
+    });
+});
+
+const setDefaultOpenedGroups = () => {
+  const next = {};
+  groupedMembers.value.forEach((group, index) => {
+    next[group.key] = index === 0;
+  });
+  openedMemberGroups.value = next;
+};
+
+const toggleMemberGroup = (groupKey) => {
+  const isCurrentlyOpen = openedMemberGroups.value[groupKey];
+
+  const next = {};
+  groupedMembers.value.forEach((group) => {
+    next[group.key] = false;
+  });
+
+  next[groupKey] = !isCurrentlyOpen;
+  openedMemberGroups.value = next;
+};
+
 const fetchPmemList = async () => {
   try {
     const res = await api.get(`/GroupMemList/${route.params.projectId}`);
-    projectMembers.value = res.data;
+    projectMembers.value = res.data || [];
+    setDefaultOpenedGroups();
   } catch (err) {
     console.error("구성원 목록 조회 실패:", err);
+    projectMembers.value = [];
+    openedMemberGroups.value = {};
   }
 };
 
@@ -396,9 +586,10 @@ const fetchMemoList = async () => {
     const res = await api.get(`/MemoList/${route.params.projectId}`, {
       params: { userId: authStore.user?.userId },
     });
-    memoList.value = res.data;
+    memoList.value = res.data || [];
   } catch (err) {
     console.error("메모 목록 조회 실패:", err);
+    memoList.value = [];
   }
 };
 
@@ -477,6 +668,21 @@ const projectInfo = ref({
   description: "",
   startDate: "",
   endDate: "",
+  useMilestone: "",
+});
+
+const normalizeMilestoneValue = (value) => {
+  return String(value ?? "")
+    .trim()
+    .toUpperCase();
+};
+
+const isMilestoneUsed = computed(() => {
+  return normalizeMilestoneValue(projectInfo.value.useMilestone) === "O2";
+});
+
+const milestoneLabel = computed(() => {
+  return isMilestoneUsed.value ? "마일스톤 사용" : "마일스톤 미사용";
 });
 
 const fetchProjectDetail = async () => {
@@ -489,7 +695,17 @@ const fetchProjectDetail = async () => {
       description: res.data?.description ?? "",
       startDate: res.data?.startDate ?? "",
       endDate: res.data?.endDate ?? "",
+      useMilestone: res.data?.useMilestone ?? "",
     };
+    console.log("route projectId:", route.params.projectId);
+    console.log("detail response:", res.data);
+    console.log("detail useMilestone:", res.data?.useMilestone);
+
+    console.log("useMilestone 원본값:", res.data?.useMilestone);
+    console.log(
+      "useMilestone 정리값:",
+      normalizeMilestoneValue(res.data?.useMilestone),
+    );
   } catch (err) {
     console.error("프로젝트 상세 조회 실패:", err);
   }
@@ -501,7 +717,7 @@ const milestonePage = ref(1);
 const fetchSubProject = async () => {
   try {
     const res = await api.get(`/ProjectSubList/${route.params.projectId}`);
-    subProjects.value = res.data;
+    subProjects.value = res.data || [];
     milestonePage.value = 1;
   } catch (err) {
     console.error("하위프로젝트 조회 실패:", err);
@@ -509,19 +725,28 @@ const fetchSubProject = async () => {
   }
 };
 
+const isMilestoneEnabled = computed(() => {
+  return (
+    isMilestoneUsed.value ||
+    subProjects.value.some((item) => item.milestoneId != null)
+  );
+});
+
 const pagedMilestones = computed(() => {
   const map = new Map();
 
   subProjects.value.forEach((item) => {
-    if (!map.has(item.milestoneId)) {
-      map.set(item.milestoneId, {
+    const key = item.milestoneId ?? "unassigned";
+
+    if (!map.has(key)) {
+      map.set(key, {
         milestoneId: item.milestoneId,
-        milestoneName: item.milestoneName,
+        milestoneName: item.milestoneName || "미분류",
         projects: [],
       });
     }
 
-    map.get(item.milestoneId).projects.push({
+    map.get(key).projects.push({
       projectId: item.projectId,
       projectName: item.projectName,
       identifier: item.identifier,
@@ -529,7 +754,11 @@ const pagedMilestones = computed(() => {
     });
   });
 
-  return Array.from(map.values());
+  return Array.from(map.values()).sort((a, b) => {
+    if (a.milestoneId == null) return 1;
+    if (b.milestoneId == null) return -1;
+    return Number(a.milestoneId) - Number(b.milestoneId);
+  });
 });
 
 const currentMilestone = computed(() => {
@@ -561,8 +790,8 @@ const handleSubProjectRowClick = (row) =>
   router.push({
     name: "subProjectDashboard",
     params: {
+      projectId: route.params.projectId,
       subProjectId: row.projectId,
-      rootProjectId: route.params.projectId,
     },
   });
 
@@ -628,10 +857,6 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-}
-
-.bc-home {
-  color: #9ca3af;
 }
 
 .bc-sep {
@@ -711,6 +936,25 @@ onMounted(() => {
   line-height: 1.6;
   white-space: pre-line;
   word-break: break-word;
+}
+
+.milestone-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.milestone-badge.on {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.milestone-badge.off {
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .btn-setting {
@@ -903,28 +1147,115 @@ onMounted(() => {
 }
 
 .member-body {
-  padding: 20px;
+  padding: 16px;
+  height: 100%;
+}
+
+.member-scroll {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  overflow: visible;
+  max-height: none;
+  padding-right: 0;
+}
+
+.member-group {
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.member-group-head {
+  width: 100%;
+  border: none;
+  background: #f9fafb;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.member-group-head:hover {
+  background: #f3f4f6;
+}
+
+.member-group-left,
+.member-group-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.member-group-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.member-group-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.member-group-count {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.member-group-arrow {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.member-group-list {
+  padding: 4px 12px 6px;
+  background: #fff;
+  max-height: 260px;
+  overflow-y: auto;
 }
 
 .member-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  padding: 8px 6px;
+  min-height: 58px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.member-item:last-child {
+  border-bottom: none;
 }
 
 .member-avatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
@@ -934,12 +1265,15 @@ onMounted(() => {
   justify-content: space-between;
   flex: 1;
   gap: 8px;
+  min-width: 0;
 }
 
 .member-name {
   font-size: 13px;
   font-weight: 600;
   color: #111827;
+  min-width: 0;
+  word-break: break-word;
 }
 
 .member-count-badge {
@@ -957,6 +1291,7 @@ onMounted(() => {
   padding: 4px 10px;
   border-radius: 999px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .role-pm {
@@ -1092,6 +1427,21 @@ onMounted(() => {
   background: #f9fafb;
 }
 
+.accordion-enter-active,
+.accordion-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.accordion-enter-from,
+.accordion-leave-to {
+  opacity: 0;
+}
+
+.accordion-enter-to,
+.accordion-leave-from {
+  opacity: 1;
+}
+
 :deep(.el-table) {
   --el-table-header-bg-color: #f9fafb;
   --el-table-row-hover-bg-color: #f9fbff;
@@ -1121,6 +1471,20 @@ onMounted(() => {
 :deep(.el-pagination.is-background .btn-prev),
 :deep(.el-pagination.is-background .el-pager li) {
   border-radius: 8px;
+}
+
+:deep(.member-group-list::-webkit-scrollbar) {
+  width: 8px;
+}
+
+:deep(.member-group-list::-webkit-scrollbar-thumb) {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+:deep(.member-group-list::-webkit-scrollbar-track) {
+  background: #f3f4f6;
+  border-radius: 999px;
 }
 
 @media (max-width: 1200px) {
@@ -1167,6 +1531,21 @@ onMounted(() => {
 
   .notice-item {
     padding: 12px 16px;
+  }
+
+  .member-group-list {
+    max-height: 230px;
+  }
+
+  .member-item {
+    min-height: 54px;
+    padding: 7px 4px;
+  }
+
+  .member-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
   }
 }
 </style>

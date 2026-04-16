@@ -1,4 +1,3 @@
-<!-- projectSubDashboard -->
 <template>
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
@@ -36,6 +35,19 @@
                   </span>
                   <span class="meta-period">
                     {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
+                  </span>
+
+                  <span
+                    v-if="projectInfo.useMilestone === 'O1'"
+                    class="milestone-badge on"
+                  >
+                    마일스톤 사용
+                  </span>
+                  <span
+                    v-else-if="projectInfo.useMilestone === 'O2'"
+                    class="milestone-badge off"
+                  >
+                    마일스톤 미사용
                   </span>
                 </div>
 
@@ -227,6 +239,13 @@
                     </div>
                   </div>
 
+                  <div class="summary-card period-summary">
+                    <div class="summary-label">마일스톤 사용 여부</div>
+                    <div class="period-text">
+                      {{ milestoneStatusText }}
+                    </div>
+                  </div>
+
                   <div class="summary-card graph-summary">
                     <div class="summary-label">업무 상태 그래프</div>
 
@@ -270,6 +289,9 @@
     v-model="subProjectModalOpen"
     :projectId="rootProjectId"
     :parentProjectName="projectInfo.projectName"
+    :parentStartDate="projectInfo.startDate"
+    :parentEndDate="projectInfo.endDate"
+    :parentUseMilestone="projectInfo.useMilestone"
     :isEditMode="true"
     :editData="editData"
     @submitted="handleSubProjectUpdated"
@@ -311,12 +333,19 @@ const projectInfo = ref({
   projectName: "",
   startDate: "",
   endDate: "",
+  useMilestone: "",
 });
 
 const fetchProjectDetail = async () => {
   try {
     const res = await api.get(`/ProjectDetail/${rootProjectId}`);
-    projectInfo.value = res.data;
+    projectInfo.value = {
+      projectId: res.data?.projectId ?? null,
+      projectName: res.data?.projectName ?? "",
+      startDate: res.data?.startDate ?? "",
+      endDate: res.data?.endDate ?? "",
+      useMilestone: res.data?.useMilestone ?? "",
+    };
   } catch (err) {
     console.error("프로젝트 상세 조회 실패:", err);
   }
@@ -339,6 +368,12 @@ const fetchSubInfo = async () => {
     console.error("하위프로젝트 상세 조회 실패:", err);
   }
 };
+
+const milestoneStatusText = computed(() => {
+  if (projectInfo.value.useMilestone === "O1") return "사용";
+  if (projectInfo.value.useMilestone === "O2") return "사용 안 함";
+  return "-";
+});
 
 // 뒤로가기
 const handleGoBack = () => {
@@ -640,6 +675,26 @@ onMounted(() => {
 
 .meta-period {
   font-size: 13px;
+  color: #6b7280;
+}
+
+.milestone-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.milestone-badge.on {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.milestone-badge.off {
+  background: #f3f4f6;
   color: #6b7280;
 }
 

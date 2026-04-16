@@ -495,7 +495,7 @@
                   </router-link>
 
                   <router-link
-                    v-if="currentProjectId"
+                    v-if="currentProjectId && isMilestoneEnabled"
                     :to="{
                       name: 'milestoneDashboard',
                       params: { projectId: currentProjectId },
@@ -797,6 +797,7 @@ import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import SidebarLinkGroup from "./SidebarLinkGroup.vue";
 import { useAuthStore } from "../stores/auth";
+import api from "../utils/api";
 
 export default {
   name: "Sidebar",
@@ -817,6 +818,7 @@ export default {
 
     const currentRoute = route;
     const taskExpanded = ref(currentRoute.fullPath.includes("/admin/task/"));
+
     const currentProjectId = computed(() => {
       return (
         route.params.projectId ||
@@ -832,11 +834,35 @@ export default {
         subProjectId: route.params.subProjectId || null,
       };
     });
+
     const isMainPage = computed(() => route.path === "/");
 
+    const hideProjectMenu = computed(() => {
+      return route.path === "/" || route.name === "projectListAll";
+    });
+
+    const currentProjectInfo = ref(null);
+
+    const fetchCurrentProjectInfo = async () => {
+      if (!currentProjectId.value) {
+        currentProjectInfo.value = null;
+        return;
+      }
+
+      try {
+        const res = await api.get(`/ProjectDetail/${currentProjectId.value}`);
+        currentProjectInfo.value = res.data || null;
+      } catch (err) {
+        console.error("현재 프로젝트 정보 조회 실패:", err);
+        currentProjectInfo.value = null;
+      }
+    };
+
+    const isMilestoneEnabled = computed(() => {
+      return currentProjectInfo.value?.useMilestone === "O1";
+    });
+
     const goTaskList = () => {
-      sub.value = route.params;
-      console.log(sub.value);
       router.push({
         name: "taskList",
         params: { projectId: currentProjectId.value },
@@ -860,10 +886,6 @@ export default {
       emit("close-sidebar");
     };
 
-    const hideProjectMenu = computed(() => {
-      return route.path === "/" || route.name === "projectListAll";
-    });
-
     onMounted(() => {
       document.addEventListener("click", clickHandler);
       document.addEventListener("keydown", keyHandler);
@@ -873,6 +895,8 @@ export default {
       } else {
         document.querySelector("body")?.classList.remove("sidebar-expanded");
       }
+
+      fetchCurrentProjectInfo();
     });
 
     onUnmounted(() => {
@@ -889,6 +913,13 @@ export default {
       }
     });
 
+    watch(
+      () => route.fullPath,
+      () => {
+        fetchCurrentProjectInfo();
+      },
+    );
+
     return {
       trigger,
       sidebar,
@@ -901,10 +932,12 @@ export default {
       isMainPage,
       sub,
       hideProjectMenu,
+      isMilestoneEnabled,
     };
   },
 };
 </script>
+
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap");
 
