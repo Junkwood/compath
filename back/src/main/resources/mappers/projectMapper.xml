@@ -136,28 +136,28 @@
     <!-- 하위프로젝트 목록 조회 -->
     <select id="getSubpList" resultType="ProjectSubListDtoJDJ">
         SELECT
-        RT.PROJECT_NAME AS ROOT_PROJECT_NAME,
-        P.PROJECT_ID,
-        P.PROJECT_NAME,
-        P.IDENTIFIER,
-        P.SUB_PL_USER_ID,
-        M.MILESTONE_ID,
-        M.MILESTONE_NAME,
-        U.USER_NAME
-        FROM PROJECTS P
-        JOIN PROJECTS RT
-        ON RT.PROJECT_ID = P.PARENT_PROJECT_ID
+            M.MILESTONE_ID,
+            M.MILESTONE_NAME,
+            P.PROJECT_ID,
+            P.PROJECT_NAME,
+            P.IDENTIFIER,
+            P.SUB_PL_USER_ID,
+            U.USER_NAME,
+            P.START_DATE,
+            P.END_DATE
+        FROM MILESTONES M
         LEFT JOIN MILESTONE_MAPPING MM
-        ON P.PROJECT_ID = MM.PROJECT_ID
-        LEFT JOIN MILESTONES M
-        ON MM.MILESTONE_ID = M.MILESTONE_ID
-        LEFT JOIN USERS U
-        ON U.USER_ID = P.SUB_PL_USER_ID
-        WHERE P.PARENT_PROJECT_ID = #{parentProjectId}
+            ON M.MILESTONE_ID = MM.MILESTONE_ID
+        LEFT JOIN PROJECTS P
+            ON MM.PROJECT_ID = P.PROJECT_ID
         AND P.STATUS IN ('F1', 'F2')
+        LEFT JOIN USERS U
+            ON U.USER_ID = P.SUB_PL_USER_ID
+        WHERE M.PROJECT_ID = #{parentProjectId}
+            AND M.STATUS IN ('E1', 'E2')
         ORDER BY
-        M.MILESTONE_ID NULLS LAST,
-        P.PROJECT_ID
+            M.MILESTONE_ID,
+            P.PROJECT_ID
     </select>
 
     <!-- 하위프로젝트 생성 -->

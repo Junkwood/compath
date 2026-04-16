@@ -19,7 +19,6 @@
     >
       <!-- Sidebar header -->
       <div class="flex items-center justify-between mb-10 pr-3 sm:px-2">
-        <!-- Close button (mobile) -->
         <button
           ref="trigger"
           class="lg:hidden text-slate-300 hover:text-white"
@@ -39,16 +38,11 @@
           </svg>
         </button>
 
-        <!-- Logo -->
         <router-link class="flex items-center gap-3 w-full" to="/">
           <img src="/src/images/compath (5).png" class="w70px h80px -ml-4" />
-          <!-- <span
-            class="text-3xl text-white lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200 compath-logo"
-          >
-            ComPath
-          </span> -->
         </router-link>
       </div>
+
       <!-- Links -->
       <div class="space-y-8">
         <div>
@@ -265,10 +259,7 @@
 
                   <router-link
                     v-if="currentProjectId"
-                    :to="{
-                      name: 'taskList',
-                      params: sub,
-                    }"
+                    :to="{ name: 'taskList', params: sub }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -381,10 +372,7 @@
 
                   <router-link
                     v-if="currentProjectId"
-                    :to="{
-                      name: 'meetingList',
-                      params: sub,
-                    }"
+                    :to="{ name: 'meetingList', params: sub }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -411,7 +399,7 @@
                   <router-link
                     v-if="currentProjectId"
                     :to="{
-                      name: 'TimeReport', // 라우터 설정의 name과 일치 필수!
+                      name: 'TimeReport',
                       params: { projectId: currentProjectId },
                     }"
                     custom
@@ -439,10 +427,7 @@
 
                   <router-link
                     v-if="currentProjectId"
-                    :to="{
-                      name: 'noticeList',
-                      params: sub,
-                    }"
+                    :to="{ name: 'noticeList', params: sub }"
                     v-slot="{ href, navigate, isExactActive }"
                   >
                     <li>
@@ -467,10 +452,7 @@
 
                   <router-link
                     v-if="currentProjectId"
-                    :to="{
-                      name: 'documentList',
-                      params: sub,
-                    }"
+                    :to="{ name: 'documentList', params: sub }"
                     custom
                     v-slot="{ href, navigate, isExactActive }"
                   >
@@ -766,7 +748,6 @@
         </div>
       </div>
 
-      <!-- Expand / collapse button -->
       <div class="pt-3 hidden lg:inline-flex 2xl:hidden justify-end mt-auto">
         <div class="w-12 pl-4 pr-3 py-2">
           <button
@@ -819,13 +800,9 @@ export default {
     const currentRoute = route;
     const taskExpanded = ref(currentRoute.fullPath.includes("/admin/task/"));
 
+    // 핵심 수정: subProjectId는 currentProjectId로 쓰지 않음
     const currentProjectId = computed(() => {
-      return (
-        route.params.projectId ||
-        route.params.rootProjectId ||
-        route.params.subProjectId ||
-        null
-      );
+      return route.params.projectId || route.params.rootProjectId || null;
     });
 
     const sub = computed(() => {
@@ -859,7 +836,7 @@ export default {
     };
 
     const isMilestoneEnabled = computed(() => {
-      return currentProjectInfo.value?.useMilestone === "O1";
+      return currentProjectInfo.value?.useMilestone === "O2";
     });
 
     const goTaskList = () => {

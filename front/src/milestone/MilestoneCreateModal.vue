@@ -76,12 +76,14 @@
 
 <script setup>
 import { reactive, watch, nextTick } from "vue";
+import { useRouter } from "vue-router";
 import api from "../utils/api";
 import { ElMessage } from "element-plus";
 import { useAuthStore } from "../stores/auth";
 import Swal from "sweetalert2";
 
 const authStore = useAuthStore();
+const router = useRouter();
 
 const props = defineProps({
   modelValue: {
@@ -104,6 +106,10 @@ const props = defineProps({
     type: Object,
     default: () => null,
   },
+  redirectAfterSave: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "saved"]);
@@ -114,7 +120,7 @@ const form = reactive({
   startDate: "",
   dueDate: "",
   description: "",
-  editorUserId:"",
+  editorUserId: "",
 });
 
 watch(
@@ -122,7 +128,7 @@ watch(
   (newVal) => {
     if (!newVal) return;
 
-    const userId = authStore.user?.userId??"";
+    const userId = authStore.user?.userId ?? "";
 
     if (props.isEditMode && props.milestoneData) {
       form.milestoneId = props.milestoneData.milestoneId ?? "";
@@ -130,7 +136,7 @@ watch(
       form.startDate = props.milestoneData.startDate ?? "";
       form.dueDate = props.milestoneData.dueDate ?? "";
       form.description = props.milestoneData.description ?? "";
-      form.editorUserId = userId ?? "";
+      form.editorUserId = userId;
     } else {
       resetForm();
     }
@@ -143,6 +149,7 @@ const resetForm = () => {
   form.startDate = "";
   form.dueDate = "";
   form.description = "";
+  form.editorUserId = "";
 };
 
 const handleClose = () => {
@@ -191,7 +198,7 @@ const handleSave = async () => {
 
       await api.put(
         `/MilestoneUpdate/${props.projectId}/${form.milestoneId}`,
-        payload
+        payload,
       );
 
       emit("update:modelValue", false);
@@ -224,6 +231,13 @@ const handleSave = async () => {
         title: "마일스톤이 생성되었습니다.",
         confirmButtonText: "확인",
       });
+
+      if (props.redirectAfterSave) {
+        router.replace({
+          name: "projectDash",
+          params: { projectId: props.projectId },
+        });
+      }
     }
   } catch (err) {
     console.error("마일스톤 저장 실패:", err);
