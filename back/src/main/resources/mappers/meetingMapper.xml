@@ -60,11 +60,14 @@
                p.project_name,
                p.start_date,
                p.end_date,
-               m.attachment_group_id
+               m.attachment_group_id,
+               (SELECT COUNT(*)
+               FROM meeting_participants
+               WHERE meeting_log_id = m.meeting_log_id) AS member_count
         FROM meeting_logs m
         LEFT JOIN projects p ON m.project_id = p.project_id
         LEFT JOIN users u ON m.created_by = u.user_id
-        WHERE meeting_log_id = #{id}
+        WHERE m.meeting_log_id = #{id}
     </select>
 
     <!--    알림 테이블 등록-->
@@ -109,11 +112,8 @@
             meeting_type_code = #{meetingTypeCode},
             editor_user_id = #{editorUserId},
             place = #{place},
-            ai_summary = #{aiSummary},
-            stt_text = #{sttText},
-            attachment_group_id = #{attachmentGroupId},
             updated_at = SYSDATE,
-            created_by = #{createdBy}
+            meeting_date = #{meetingDate}
         WHERE meeting_log_id = #{meetingLogId}
     </update>
 

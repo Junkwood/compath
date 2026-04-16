@@ -170,8 +170,14 @@
                     <td class="col-title">
                       <div class="title-cell">
                         <div class="title-line">
-                          <span v-if="notice.roleName" class="category-badge">
-                            {{ notice.roleName }}
+                          <span v-if="notice.typeName" class="category-badge">
+                            {{ notice.typeName }}
+                          </span>
+                          <span
+                            v-if="notice.isDeleted == 'Q1'"
+                            class="private-badge"
+                          >
+                            비공개
                           </span>
 
                           <span class="notice-title-text">
@@ -183,13 +189,6 @@
                             class="fixed-badge"
                           >
                             중요
-                          </span>
-
-                          <span
-                            class="lock-icon"
-                            v-if="notice.isDeleted == 'B1'"
-                          >
-                            <el-icon><Lock /></el-icon>
                           </span>
                         </div>
                       </div>
@@ -453,7 +452,7 @@ const resetForm = () => {
 }
 
 .page-container {
-  padding: 24px;
+  padding: 24px 30px 24px 30px !important;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -818,6 +817,26 @@ const resetForm = () => {
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
+}
+.private-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px; /* 기존과 동일 */
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+
+  /* 비공개 느낌을 주는 차분한 회색 계열 */
+  background: #64748b;
+  color: #ffffff;
+
+  font-size: 11px; /* 텍스트가 길어질 수 있으므로 살짝 조절 */
+  font-weight: 600;
+  line-height: 1;
+
+  /* 기존 배지들과 구분되도록 약간의 간격 추가 */
+  margin-right: 4px;
 }
 
 .pin-badge {

@@ -4,14 +4,12 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.document.mapper.DocumentMapper">
 
-<!--    문서 게시글 번호-->
-    <select id="getLastNum">
-        SELECT NVL(MAX(document_id), 0) + 1
-        FROM documents
-    </select>
-
 <!--    문서 등록-->
     <insert id="registerDocument">
+        <selectKey order="BEFORE" resultType="int" keyProperty="documentId">
+            SELECT NVL(MAX(document_id), 0) + 1
+            FROM documents
+        </selectKey>
         INSERT INTO documents(document_id,
                             category,
                             title,
@@ -21,7 +19,8 @@
                             project_id,
                             is_pinned,
                             is_deleted,
-                            is_comment)
+                            is_comment,
+                            attachment_group_id)
         VALUES(#{documentId},
                #{category},
                #{title},
@@ -31,7 +30,8 @@
                #{projectId},
                #{isPinned},
                'Q2',
-               #{isComment})
+               #{isComment},
+               #{attachmentGroupId})
     </insert>
 
 <!--    문서 단건 조회-->
@@ -46,6 +46,7 @@
                d.is_pinned,
                d.is_deleted,
                d.is_comment,
+               d.attachment_group_id,
                p.project_name,
                p.start_date,
                p.end_date,

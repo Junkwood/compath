@@ -24,6 +24,7 @@ public class NoticeDTO { // 공지사항
     private String isPinned;
     private String isDeleted;
     private Integer isEditorUserId;
+    private Integer attachmentGroupId;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")

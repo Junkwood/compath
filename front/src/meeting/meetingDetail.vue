@@ -48,13 +48,13 @@
           />
 
           <!-- ① 상단 헤더 카드: 제목 + 메타정보 -->
-          <div class="detail-header-card mb-5">
+          <div class="detail-header-card">
             <h2 class="detail-main-title">{{ meetingInfo.title }}</h2>
             <div class="detail-meta-row grid grid-cols-4 gap-6">
               <div class="detail-meta-item">
                 <span class="detail-meta-label">회의 일시</span>
                 <span class="detail-meta-value">{{
-                  meetingInfo.createdAt
+                  meetingInfo.meetingDate
                 }}</span>
               </div>
               <div class="detail-meta-item">
@@ -65,9 +65,10 @@
               </div>
               <div class="detail-meta-item">
                 <span class="detail-meta-label">참석자</span>
-                <span class="detail-meta-value">{{
-                  meetingInfo.userName
-                }}</span>
+                <span class="detail-meta-value"
+                  >{{ meetingInfo.userName }} 외
+                  {{ meetingInfo.memberCount }}명</span
+                >
               </div>
               <div class="detail-meta-item">
                 <span class="detail-meta-label">작성자</span>
@@ -353,7 +354,7 @@ onBeforeMount(async () => {
 }
 
 .page-container {
-  padding: 24px;
+  padding: 24px 30px 24px 30px;
   display: flex;
   flex-direction: column;
   gap: 24px;
