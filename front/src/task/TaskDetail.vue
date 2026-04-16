@@ -274,7 +274,9 @@
                 <div class="panel-body side-panel-body">
                   <el-progress
                     type="circle"
-                    :percentage="taskInfo.progressRate"
+                    :percentage="
+                      taskInfo.progressRate == null ? 0 : taskInfo.progressRate
+                    "
                     color="#1b5c9c"
                   />
                 </div>
