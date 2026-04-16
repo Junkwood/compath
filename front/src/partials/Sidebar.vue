@@ -419,7 +419,7 @@
                         <span
                           class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
                         >
-                          소요시간
+                          소요시간 보고서
                         </span>
                       </a>
                     </li>

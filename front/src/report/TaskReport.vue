@@ -11,14 +11,18 @@
       />
 
       <!-- 페이지 타이틀 -->
-      <div class="col-span-full xl:col-span-8 mx-8 mt-3 mb-0">
-        <header class="pt-4 border-b border-gray-100 dark:border-gray-700/60">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            업무 보고서
-          </h1>
-        </header>
+      <!-- 서브헤더 -->
+      <div class="sub-header">
+        <div class="breadcrumb">
+          <span>홈</span>
+          <span class="bc-sep">›</span>
+          <span>프로젝트</span>
+          <span class="bc-sep">›</span>
+          <span>{{ projectName }}</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">업무 보고서</span>
+        </div>
       </div>
-
       <!-- 검색 필터 영역 -->
       <div class="filter-card mx-8 mt-4 mb-0">
         <div class="filter-row">
@@ -447,6 +451,10 @@ const exportData = computed(() => {
   );
 });
 
+//프로젝트명
+const projectName = computed(() => {
+  return taskReportStore.projectName || "프로젝트";
+});
 ///통계
 const goStats = () => {
   router.push({ name: "TaskReportStats", params: { projectId } });
@@ -521,6 +529,49 @@ const exportPdf = () => {
 </script>
 
 <style scoped>
+.sub-header {
+  background: #ffffff;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.bc-sep {
+  color: #cbd5e1;
+}
+
+.bc-cur {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+}
 /* ── 필터 카드 ── */
 .filter-card {
   background: #ffffff;

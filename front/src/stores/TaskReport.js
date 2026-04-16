@@ -3,7 +3,9 @@ import api from "../utils/api";
 
 export const useTaskReport = defineStore("TaskReport", {
   state: () => ({
-    initTitleList: [], 
+    projectId: null,
+    projectName: "",
+    initTitleList: [],
     allData: [],
     filterList: [],
     listLength: 0,
@@ -20,7 +22,7 @@ export const useTaskReport = defineStore("TaskReport", {
       this.filterList = this.allData.slice(start, end);
     },
 
-    async fetchReportList(params, page = 1, listNum = 10,isInit = false) {
+    async fetchReportList(params, page = 1, listNum = 10, isInit = false) {
       try {
         const response = await api.get("/taskReport", { params });
         const data = response.data;
@@ -30,26 +32,34 @@ export const useTaskReport = defineStore("TaskReport", {
         this.workPageSize = data.length;
         this.slicePage(page, listNum);
 
-         if (isInit) {
-        this.titleList = [...new Set(data.map((t) => t.title).filter(Boolean))];
+        if (isInit && data.length > 0) {
+          const row = data[0];
+          this.projectId = row.parentProjectId ?? row.projectId;
+          this.projectName = row.parentProjectName ?? row.projectName;
+        }
 
-        this.assigneeList = [
-          ...new Map(
-            data.map((t) => [
-              t.assigneeUserId,
-              { assigneeUserId: t.assigneeUserId, userName: t.userName },
-            ])
-          ).values(),
-        ];
-      
-        this.taskTypeList = [
-          ...new Map(
-            data
-              .filter((t) => t.typeName != null)
-              .map((t) => [t.typeName, { typeName: t.typeName }])
-          ).values(),
-        ];
-      }
+        if (isInit) {
+          this.titleList = [
+            ...new Set(data.map((t) => t.title).filter(Boolean)),
+          ];
+
+          this.assigneeList = [
+            ...new Map(
+              data.map((t) => [
+                t.assigneeUserId,
+                { assigneeUserId: t.assigneeUserId, userName: t.userName },
+              ]),
+            ).values(),
+          ];
+
+          this.taskTypeList = [
+            ...new Map(
+              data
+                .filter((t) => t.typeName != null)
+                .map((t) => [t.typeName, { typeName: t.typeName }]),
+            ).values(),
+          ];
+        }
         return data;
       } catch (error) {
         console.error("보고서 로딩 실패:", error);
