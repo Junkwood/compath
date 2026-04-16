@@ -1,43 +1,52 @@
 <template>
   <el-dialog
     v-model="visible"
-    title="새 프로젝트 생성"
+    title="소요시간 등록"
     width="560px"
     :close-on-click-modal="false"
     @close="handleClose"
   >
     <el-form
-      ref="formRef"
+      ref="ruleFormRef"
       :model="form"
       :rules="rules"
       label-width="120px"
       label-position="left"
     >
       <!-- 프로젝트 명 -->
-      <el-form-item label="업무명" prop="taskTitle">
-        <el-input v-model="form.taskTitle" placeholder="" disabled />
+      <el-form-item label="업무명">
+        <el-input
+          v-model="form.taskTitle"
+          placeholder=""
+          disabled
+          class="w-full rounded-lg text-sm text-gray-700 bg-white border rounded-[10px] outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_3px_rgba(148,163,184,0.15)] disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
+        />
       </el-form-item>
       <!-- 작업일자 작업자 -->
       <div class="date-row">
         <el-form-item label="작업일" class="date-item">
-          <el-date-picker
-            v-model="form.workDate"
-            type="date"
+          <TaskDatePicker
             placeholder="시작일 선택"
-            value-format="YYYY-MM-DD"
-            format="YYYY-MM-DD"
-            style="width: 100%"
+            v-model="form.workDate"
+            @change="calcEstTime(true)"
           />
         </el-form-item>
 
         <el-form-item label="작업시간" class="date-item" prop="hours">
-          <el-input v-model="form.hours" placeholder="" type="number" min="1" />
+          <el-input
+            class="w-full rounded-lg text-sm text-gray-700 bg-white rounded-[10px] outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_3px_rgba(148,163,184,0.15)] disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
+            v-model="form.hours"
+            placeholder=""
+            type="number"
+            min="1"
+          />
         </el-form-item>
       </div>
 
-      <!-- 프로젝트 설명 -->
+      <!-- 소요시간 작업 내역 설명 -->
       <el-form-item label="작업 내용" prop="description">
         <el-input
+          class="w-full rounded-lg text-sm text-gray-700 bg-white rounded-[10px] outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_3px_rgba(148,163,184,0.15)] disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
           v-model="form.description"
           type="textarea"
           :rows="3"
@@ -51,7 +60,9 @@
       <div class="modal-footer">
         <div></div>
         <div class="footer-right">
-          <el-button class="btn-submit" @click="handleSubmit"> 등록 </el-button>
+          <el-button class="btn-submit" @click="submitForm(ruleFormRef)">
+            등록
+          </el-button>
           <el-button class="btn-reset" @click="handleClose">취소</el-button>
         </div>
       </div>
@@ -62,6 +73,7 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import { changeDate } from "../utils/commonFunc";
+import TaskDatePicker from "../components/TaskDatePicker.vue";
 
 const props = defineProps({
   timeRegisterUser: { type: Object, default: false },
@@ -90,29 +102,25 @@ const handleClose = () => {
 };
 
 // 등록버튼
-const handleSubmit = () => {
-  let formHour = form.value.hours;
-  let formDescription = form.value.description;
-  let vaild = true;
-  if (
-    formHour == null ||
-    formHour == "" ||
-    formDescription == null ||
-    formDescription == ""
-  ) {
-    vaild = false;
-  }
+const submitForm = async (formEl) => {
+  await formEl.validate((valid, fields) => {
+    if (valid) {
+      let obj = {
+        hours: form.value.hours,
+        taskDesc: form.value.description,
+        workDate: form.value.workDate,
+      };
 
-  if (vaild) {
-    let obj = {
-      hours: form.value.hours,
-      taskDesc: form.value.description,
-      workDate: form.value.workDate,
-    };
-
-    emit("submitted", obj);
-  }
+      emit("submitted", obj);
+    } else {
+      // 안내 메세지 나옴
+      console.log("error submit!", fields);
+    }
+  });
 };
+
+// 유효성 체크
+const ruleFormRef = ref();
 
 // props 변경내역 확인
 watch(
@@ -216,5 +224,16 @@ watch(
 :deep(.el-form-item__label) {
   font-size: 13px;
   color: #374151;
+}
+:deep(.el-input__wrapper) {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 10px;
+}
+:deep(.el-input.is-disabled .el-input__wrapper) {
+  box-shadow: 0 0 0 0px var(--el-disabled-border-color);
+}
+:deep(.el-textarea__inner) {
+  border-radius: 10px;
 }
 </style>

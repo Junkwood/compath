@@ -11,10 +11,32 @@
       />
 
       <main class="grow">
-        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            회의록 상세
-          </h1>
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span class="bc-home">홈</span>
+            <span class="bc-sep">›</span>
+            <span v-for="info in taskPjList" :key="info">{{ info }} › </span>
+            <span class="bc-cur">회의록 상세</span>
+          </div>
+        </div>
+        <div class="page-container">
+          <div class="pg-row">
+            <div class="pg-left">
+              <div class="proj-meta">
+                <span class="proj-name">{{ name }}</span>
+                <span class="proj-period">
+                  {{ projectStartDate }} ~ {{ projectendDate }}
+                </span>
+              </div>
+            </div>
+            <div class="flex gap-2 self-end">
+              <button @click="modifyDocument" class="btn-modify">수정</button>
+              <!-- <button class="btn-lock" @click="lockTask">삭제</button> -->
+              <button @click="goBack" type="button" class="btn-back">
+                ← 돌아가기
+              </button>
+            </div>
+          </div>
           <el-alert
             v-if="meetingInfo.isDeleted === 'O1'"
             title="비활성화된 게시글입니다."
@@ -170,14 +192,6 @@
               </div>
             </div>
           </div>
-
-          <!-- 하단 버튼 -->
-          <div class="detail-footer-row mt-4">
-            <button @click="goBack" type="button" class="btn-navy">
-              ← 목록으로
-            </button>
-            <button @click="modifyDocument" class="btn-green">수정</button>
-          </div>
         </div>
       </main>
     </div>
@@ -194,6 +208,7 @@
 import { onBeforeMount, ref } from "vue";
 import { useMeetingStore } from "../stores/meeting";
 import { useAttachmentStore } from "../stores/attachment";
+import { usetaskKJHStore } from "../stores/taksKJH";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -203,8 +218,10 @@ const route = useRoute();
 const router = useRouter();
 const meetingStore = useMeetingStore();
 const attachmentStore = useAttachmentStore();
+const taskStore = usetaskKJHStore();
 const sidebarOpen = ref(false);
 
+let taskPjList = ref([]);
 const meetingInfo = ref({});
 const attachmentList = ref([]);
 const meetingId = route.params.meetingId;
@@ -217,6 +234,10 @@ const projectInfo = ref({
   projectId: subId != "" ? subId : projectId,
   meetingLogId: meetingId,
 });
+
+let name = ref(); // 프로젝트명
+let projectStartDate = ref(); // 프로젝트 날짜
+let projectendDate = ref(); // 프로젝트 날짜
 
 // 업무생성 페이지 이동
 const goRegister = () => {
@@ -289,10 +310,90 @@ onBeforeMount(async () => {
       ? meetingStore.meetingDetail.attachmentList
       : [];
   connectList.value = meetingStore.meetingDetail.meetingList.connectDetail;
+
+  let id = subId ? subId : projectId;
+  await taskStore.getProjectName(id);
+  let projectInfo = taskStore.projectName;
+  if (projectInfo.parentProjectName != null) {
+    taskPjList.value = [projectInfo.parentProjectName, projectInfo.projectName];
+  } else {
+    taskPjList.value = [projectInfo.projectName];
+  }
+
+  name.value = projectInfo.projectName;
+  projectStartDate.value = projectInfo.startDate;
+  projectendDate.value = projectInfo.endDate;
 });
 </script>
 <style scoped>
 /* ── 상단 헤더 카드 ── */
+.sub-header {
+  background: #fff;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.bc-home {
+  color: #9ca3af;
+}
+.bc-sep {
+  color: #d1d5db;
+}
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
+
+.page-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pg-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pg-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proj-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proj-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1b5c9c;
+}
+
+.proj-period {
+  font-size: 13px;
+  color: #6b7280;
+}
 .detail-header-card {
   background: #fff;
   border: 1px solid #e8edf2;
@@ -579,5 +680,62 @@ onBeforeMount(async () => {
   .detail-task-card {
     padding: 18px;
   }
+}
+
+:deep(.btn-modify) {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
+  color: white !important;
+  height: 40px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-modify:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+/* 돌아가기 버튼 */
+.btn-back {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.btn-back:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #111827;
+}
+
+.btn-lock {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.btn-lock:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
 }
 </style>

@@ -9,11 +9,31 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
       <main class="grow">
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span>홈</span><span class="bc-sep">›</span> ><span
+              v-for="info in taskPjList"
+              :key="info"
+              >{{ info }} ›
+            </span>
+            <span class="bc-cur">{{
+              !isModified ? "공지사항 생성" : "공지사항 수정"
+            }}</span>
+          </div>
+          <button class="btn-back" @click="goBack">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 12H5M11 6l-6 6 6 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            목록으로
+          </button>
+        </div>
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            회의록{{ isModified == false ? " 생성" : " 수정" }}
-          </h1>
-
           <div class="grid grid-cols-10 gap-6">
             <div class="col-span-10 lg:col-span-7">
               <el-form
@@ -57,10 +77,10 @@
 
                   <div class="grid grid-cols-2 gap-6 mb-6">
                     <el-form-item label="회의 일시" prop="date">
-                      <el-input
-                        type="date"
-                        v-model="form.date"
-                        class="w-full"
+                      <TaskDatePicker
+                        placeholder="시작일 선택"
+                        v-model="form.data"
+                        @change="calcEstTime(true)"
                       />
                     </el-form-item>
                     <el-form-item label="회의 장소" prop="meetingRoom">
@@ -388,6 +408,8 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth";
 import { useTaskStore } from "../stores/useTaskStore";
+import { usetaskKJHStore } from "../stores/taksKJH";
+import TaskDatePicker from "../components/TaskDatePicker.vue";
 
 import { useProjectKJHStore } from "../stores/projectKJH";
 import { useMeetingStore } from "../stores/meeting";
@@ -400,6 +422,7 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const meetingStore = useMeetingStore();
+const taskStore = usetaskKJHStore();
 const store = useTaskStore();
 
 const projectStore = useProjectKJHStore();
@@ -410,6 +433,7 @@ const subId = route.params.subProjectId;
 const meetingId = route.params.meetingId;
 const userInfo = ref(); // 글 작성자 정보
 const meetingType = ref([]);
+let taskPjList = ref([]);
 const form = reactive({
   meetingType: "",
   author: "",
@@ -686,6 +710,19 @@ const getVoiceByGemmini = async () => {
 onBeforeMount(async () => {
   userInfo.value = authStore.user; // 작성자 정보 받아오기
 
+  if (subId) {
+    await taskStore.getProjectName(subId);
+  } else {
+    await taskStore.getProjectName(id);
+  }
+  const projectInfo = taskStore.projectName;
+
+  if (projectInfo.parentProjectName != null) {
+    taskPjList.value = [projectInfo.parentProjectName, projectInfo.projectName];
+  } else {
+    taskPjList.value = [projectInfo.projectName];
+  }
+
   // 수정 및 생성 구분
   if (meetingId !== "" && meetingId !== undefined && meetingId !== null) {
     isModified.value = true;
@@ -852,6 +889,65 @@ const voiceChange = (uploadFile, uploadFiles) => {
 </script>
 
 <style scoped>
+.sub-header {
+  background: #ffffff;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sub-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.bc-sep {
+  color: #cbd5e1;
+}
+
+.bc-cur {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* 목록 */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-back:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
 /* 1. Element Plus 입력창/텍스트영역 기본 스타일 (요청하신 deep 유지) */
 :deep(.el-input__inner) {
   height: 42px;
@@ -1012,5 +1108,17 @@ const voiceChange = (uploadFile, uploadFiles) => {
 }
 :deep(.el-upload-dragger:hover) {
   border-color: #4f46e5;
+}
+:deep(.el-form-item__content) {
+  display: flex;
+  flex-direction: column; /* 자식 요소들을 세로로 정렬 (너비 100% 확보) */
+  align-items: stretch; /* 자식들이 부모 너비에 꽉 차게 늘림 */
+  width: 100% !important;
+  flex: 1; /* 그리드 내에서 할당받은 공간을 다 씀 */
+}
+
+/* 추가로 TaskDatePicker 컴포넌트 자체가 100%인지 확인 */
+:deep(.el-form-item__content > *) {
+  width: 100% !important;
 }
 </style>

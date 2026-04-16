@@ -15,9 +15,8 @@
         <div class="sub-header">
           <div class="breadcrumb">
             <span class="bc-home">홈</span>
-            <span class="bc-sep">›</span>
-            <span>{{ name }}</span>
-            <span class="bc-sep">›</span>
+            <span class="bc-sep">›</span
+            ><span v-for="info in taskPjList" :key="info">{{ info }} › </span>
             <span class="bc-cur">회의록 목록</span>
           </div>
         </div>
@@ -165,7 +164,7 @@
                         "
                       >
                         <td class="text-center">{{ meeting.num }}</td>
-                        <td class="text-center">
+                        <td class="text-left">
                           <div
                             style="
                               display: inline-flex;
@@ -238,6 +237,7 @@ const meetingStore = useMeetingStore();
 
 const projectId = route.params.projectId;
 const subId = route.params.subProjectId || "";
+let taskPjList = ref([]);
 
 const sidebarOpen = ref(false);
 const listLoading = ref(false);
@@ -345,7 +345,12 @@ onBeforeMount(async () => {
   console.log(id);
   await taskStore.getProjectName(id);
   const projectInfo = taskStore.projectName;
-  name.value = projectInfo.projectName; // 프로젝트 이름
+  if (projectInfo.parentProjectName != null) {
+    taskPjList.value = [projectInfo.parentProjectName, projectInfo.projectName];
+  } else {
+    taskPjList.value = [projectInfo.projectName];
+  }
+  name.value = projectInfo.projectName;
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
 

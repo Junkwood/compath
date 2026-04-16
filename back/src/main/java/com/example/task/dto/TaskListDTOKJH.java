@@ -36,6 +36,11 @@ public class TaskListDTOKJH {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul" )
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private LocalDate createdAt;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul" )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDate endDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -46,6 +51,7 @@ public class TaskListDTOKJH {
     private String projectName;
     private Integer projectId;
     private Integer parentProjectId;
+    private String parentProjectName;
     private String typeName;
     private String statusName;
     private String codeName;
@@ -55,6 +61,8 @@ public class TaskListDTOKJH {
     private Integer taskCounts;
     private Integer startNum = 1;
     private Integer endNum = 10;
+    private Integer num ;
+    private String sort;
 
 //  계층형을 위해
     private Integer level;

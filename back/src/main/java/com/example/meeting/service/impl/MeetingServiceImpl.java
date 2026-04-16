@@ -48,7 +48,6 @@ public class MeetingServiceImpl implements MeetingService {
         MeetingAlarmDTO dto = list.get(0);
 
 
-
         // 알림테이블 등록
         mapper.registerMeetingAlarm(dto);
 

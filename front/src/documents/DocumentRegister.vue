@@ -31,15 +31,15 @@
                     class="block text-sm font-medium mb-1"
                   >
                     <el-select
-                      v-model="form.roleId"
+                      v-model="form.typeId"
                       class="input flex-1"
                       placeholder="유형을 선택하세요"
                     >
                       <el-option value="전체" label="전체">전체</el-option>
                       <el-option
-                        v-for="role in roles"
-                        :label="role.roleName"
-                        :value="role.roleId"
+                        v-for="role in type"
+                        :label="role.typeName"
+                        :value="role.taskTypeId"
                       />
                     </el-select>
                   </el-form-item>
@@ -217,9 +217,9 @@ const id = route.params.projectId;
 const subId = route.params.subProjectId;
 const documentId = route.params.documentId;
 const userInfo = ref(); // 글 작성자 정보
-const roles = ref([]);
+const type = ref([]);
 const form = reactive({
-  roleId: "전체",
+  typeId: "전체",
   author: "",
   date: "",
   title: "",
@@ -257,7 +257,7 @@ const submitForm = async (formEl) => {
           content: form.content,
           isPinned: form.isPinned == true ? "O1" : "O2",
           isComment: form.isComment == true ? "O2" : "O1",
-          category: form.roleId == "전체" ? null : form.roleId,
+          category: form.typeId == "전체" ? null : form.typeId,
           createdBy: userInfo.value.userId,
         };
         await documentStore.registerDocument(obj);
@@ -388,8 +388,8 @@ onBeforeMount(async () => {
 
   form.date = changeDate(new Date()); // 작성 당일 날짜 생성
 
-  await noticeStore.getProjectRoles(id);
-  roles.value = noticeStore.projectRoles; // 전체 역할정보
+  await noticeStore.getProjectType(id);
+  type.value = noticeStore.taskType; // 전체 역할정보
 
   await projectStore.getAllMembers(id); // 프로젝트 구성원 정보
   memberList.value = projectStore.memberList;

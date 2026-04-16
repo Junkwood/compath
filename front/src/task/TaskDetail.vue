@@ -1,7 +1,6 @@
 <template>
-  <div class="dashboard-page flex h-screen overflow-hidden">
+  <div class="flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
-
     <div
       class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
     >
@@ -16,8 +15,6 @@
             <span class="bc-home">홈</span>
             <span class="bc-sep">›</span>
             <span v-for="info in taskPjList" :key="info">{{ info }} › </span>
-            <span>{{ taskInfo.projectName }}</span>
-            <span class="bc-sep">›</span>
             <span class="bc-cur">업무 상세</span>
           </div>
         </div>
@@ -33,6 +30,13 @@
               </div>
             </div>
             <div class="flex gap-2 self-end">
+              <button
+                v-if="taskInfo.taskStatusId == 4"
+                @click="goCreateSubTask"
+                class="btn-action btn-sub"
+              >
+                + 하위업무 생성
+              </button>
               <button @click="goModify" class="btn-modify">수정</button>
               <button
                 class="btn-lock"
@@ -283,7 +287,6 @@
                     v-if="taskInfo.taskStatusId != 5"
                     @click="registerActualTime"
                     class="btn-mini-add"
-                    title="소요시간 등록"
                   >
                     +
                   </button>
@@ -293,14 +296,6 @@
                     {{ taskInfo.actualHours > 0 ? taskInfo.actualHours : 0 }}
                     시간
                   </span>
-                </div>
-              </div>
-
-              <div class="panel" v-if="canCreateSubTask">
-                <div class="panel-body action-body">
-                  <button @click="goCreateSubTask" class="btn-action btn-sub">
-                    + 하위업무 생성
-                  </button>
                 </div>
               </div>
             </div>
@@ -376,6 +371,8 @@ onBeforeMount(async () => {
       taskInfo.value.parentProjectName,
       taskInfo.value.projectName,
     ];
+
+    changeDateType(taskInfo.value);
   } else {
     taskPjList.value = [taskInfo.value.projectName];
   }
@@ -521,6 +518,25 @@ const pagedTimeData = computed(() => {
     no: s + index + 1,
   }));
 });
+
+// 날짜 없는 경우 형식 변경
+const changeDateType = (val) => {
+  if (val.startDate == null) {
+    val.startDate = "-";
+  }
+
+  if (val.dueDate == null) {
+    val.dueDate = "-";
+  }
+
+  if (val.estStartDate == null) {
+    val.estStartDate = "-";
+  }
+
+  if (val.estEndDate == null) {
+    val.estEndDate = "-";
+  }
+};
 </script>
 
 <style scoped>
@@ -537,7 +553,7 @@ const pagedTimeData = computed(() => {
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 30;
 }
 .breadcrumb {
   display: flex;
@@ -767,32 +783,13 @@ const pagedTimeData = computed(() => {
   flex-direction: column;
   gap: 10px;
 }
-.btn-action {
-  width: 100%;
-  height: 40px;
-  padding: 0 18px;
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.3s ease;
-}
+
 .btn-time {
   background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%);
   color: #fff;
   box-shadow: 0 4px 14px rgba(27, 92, 156, 0.3);
 }
 .btn-time:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-}
-.btn-sub {
-  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
-}
-.btn-sub:hover {
   transform: translateY(-2px);
   filter: brightness(1.08);
 }
@@ -920,11 +917,6 @@ const pagedTimeData = computed(() => {
 :deep(.task-table th:nth-child(1), .task-table td:nth-child(1)) {
   width: 10%;
 }
-/* 상단 액션 버튼 그룹 */
-.flex.gap-2 {
-  display: flex;
-  gap: 8px;
-}
 
 .btn-top-action {
   height: 40px;
@@ -946,6 +938,7 @@ const pagedTimeData = computed(() => {
   font-size: 18px !important;
   font-weight: 700 !important;
   border-radius: 50% !important;
+  cursor: pointer;
   padding: 0 !important;
   box-shadow: 0 4px 10px rgba(27, 92, 156, 0.22) !important;
 }
@@ -1006,6 +999,24 @@ const pagedTimeData = computed(() => {
 }
 
 .btn-lock:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.btn-sub {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+}
+.btn-sub:hover {
   transform: translateY(-2px);
   filter: brightness(1.08);
 }

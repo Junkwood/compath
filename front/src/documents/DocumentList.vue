@@ -44,10 +44,10 @@
               <div class="search-row primary-row">
                 <div class="form-item">
                   <label>작성자</label>
-                  <select class="input w-full" v-model="filteredList.createdBy">
+                  <select class="input w-full" v-model="filteredList.userId">
                     <option value="">전체</option>
                     <option
-                      :value="user.createdBy"
+                      :value="user.userId"
                       v-for="user in filterList.userList"
                       :key="user.userId"
                     >
@@ -58,17 +58,14 @@
 
                 <div class="form-item">
                   <label>카테고리</label>
-                  <select
-                    class="input w-full"
-                    v-model="filteredList.categoryList"
-                  >
+                  <select class="input w-full" v-model="filteredList.category">
                     <option value="">전체</option>
                     <option
-                      :value="category.meetingTypeCode"
-                      v-for="category in filterList.typeList"
-                      :key="category.meetingTypeCode"
+                      :value="category.taskTypeId"
+                      v-for="category in filterList.categoryList"
+                      :key="category.taskTypeId"
                     >
-                      {{ category.roleName }}
+                      {{ category.typeName }}
                     </option>
                   </select>
                 </div>
@@ -170,7 +167,7 @@
                         </td>
                         <td class="p-2">
                           <div class="text-center">
-                            [{{ document.roleName }}]{{ document.title
+                            [{{ document.typeName }}]{{ document.title
                             }}<span
                               class="text-base"
                               v-if="document.isPinned == 'O1' ? true : false"
@@ -312,7 +309,7 @@ const handleCurrentChange = async (val) => {
 
     pagingList.value = documentStore.pagingList;
     pagingList.value.forEach((li) => {
-      li.roleName = li.roleName == null ? "전체" : li.roleName;
+      li.typeName = li.typeName == null ? "전체" : li.typeName;
     });
 
     listLength.value =
@@ -379,7 +376,7 @@ onBeforeMount(async () => {
   pagingList.value = documentStore.filterList.documentList;
 
   pagingList.value.forEach((li) => {
-    li.roleName = li.roleName == null ? "전체" : li.roleName;
+    li.typeName = li.typeName == null ? "전체" : li.typeName;
   });
   listLength.value =
     filterList.value.documentList.length > 0

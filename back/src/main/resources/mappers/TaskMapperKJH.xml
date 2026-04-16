@@ -121,11 +121,13 @@
 
 <!--    프로젝트 이름-->
     <select id="getProjectName">
-        SELECT project_name,
-               start_date,
-               end_date
-        FROM projects
-        WHERE project_id = #{id}
+        SELECT p.project_name,
+               p.start_date,
+               p.end_date,
+               p2.project_name AS parent_project_name
+        FROM projects p
+        LEFT JOIN projects p2 ON p.parent_project_id = p2.project_id
+        WHERE p.project_id = #{id}
     </select>
     
 <!--    업무 상세-->

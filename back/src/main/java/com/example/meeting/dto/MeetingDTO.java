@@ -27,7 +27,7 @@ public class MeetingDTO { // 회의록
     private String place;
     private Integer projectId;
     private Integer attachmentGroupId;
-    private String AiSummary;
+    private String aiSummary;
     private String sttText;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")

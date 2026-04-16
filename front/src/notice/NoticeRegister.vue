@@ -9,10 +9,31 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
       <main class="grow">
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span>홈</span><span class="bc-sep">›</span> ><span
+              v-for="info in taskPjList"
+              :key="info"
+              >{{ info }} › </span
+            ><span class="bc-sep">›</span>
+            <span class="bc-cur">{{
+              !isModified ? "공지사항 생성" : "공지사항 수정"
+            }}</span>
+          </div>
+          <button class="btn-back" @click="goBack">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 12H5M11 6l-6 6 6 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            목록으로
+          </button>
+        </div>
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            {{ isModified == false ? "공지사항 생성" : "공지사항 수정" }}
-          </h1>
           <el-form
             ref="ruleFormRef"
             style="max-width: 100%"
@@ -153,6 +174,7 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth";
 import { useNoticeStore } from "../stores/notice";
+import { usetaskKJHStore } from "../stores/taksKJH";
 import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
 
@@ -160,12 +182,15 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const noticeStore = useNoticeStore();
+const taskStore = usetaskKJHStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
 const subId = route.params.subProjectId;
 const noticeId = route.params.noticeId;
 const userInfo = ref(); // 글 작성자 정보
+let taskPjList = ref([]);
+const projectInfo = ref([]);
 
 const types = ref([
   // 전체 역할 정보
@@ -284,7 +309,22 @@ onBeforeMount(async () => {
 
   form.date = changeDate(new Date()); // 작성 당일 날짜 생성
 
-  let projectId = subId ? subId : id;
+  if (subId) {
+    await taskStore.getProjectName(subId);
+  } else {
+    await taskStore.getProjectName(id);
+  }
+  projectInfo.value = taskStore.projectName;
+
+  if (projectInfo.value.parentProjectName != null) {
+    taskPjList.value = [
+      projectInfo.value.parentProjectName,
+      projectInfo.value.projectName,
+    ];
+  } else {
+    taskPjList.value = [projectInfo.value.projectName];
+  }
+
   await noticeStore.getProjectType();
   types.value = noticeStore.taskType; // 전체 역할정보
 });
@@ -335,6 +375,66 @@ const handleChange = (uploadFile, uploadFiles) => {
 </script>
 
 <style scoped>
+.sub-header {
+  background: #ffffff;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sub-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.bc-sep {
+  color: #cbd5e1;
+}
+
+.bc-cur {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* 목록 */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-back:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
 :deep(.el-input__inner) {
   height: 42px;
 }
