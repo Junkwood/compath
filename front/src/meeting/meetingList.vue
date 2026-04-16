@@ -415,7 +415,7 @@ const resetForm = () => {
 }
 
 .page-container {
-  padding: 24px;
+  padding: 24px 30px 24px 30px;
   display: flex;
   flex-direction: column;
   gap: 24px;

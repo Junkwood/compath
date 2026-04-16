@@ -9,10 +9,32 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
       <main class="grow">
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span>홈</span><span class="bc-sep">›</span> ><span
+              v-for="info in taskPjList"
+              :key="info"
+              >{{ info }} › </span
+            ><span class="bc-sep">›</span>
+            <span class="bc-cur">{{
+              !isModified ? "문서 생성" : "문서 수정"
+            }}</span>
+          </div>
+          <button class="btn-back" @click="goBack">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 12H5M11 6l-6 6 6 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            목록으로
+          </button>
+        </div>
+
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">
-            {{ isModified == false ? "문서 생성" : "문서 수정" }}
-          </h1>
           <el-form
             ref="ruleFormRef"
             style="max-width: 100%"
@@ -115,20 +137,62 @@
                   />
                 </el-form-item>
               </div>
-              <div class="mb-6">
-                <el-upload
-                  v-model:file-list="fileList"
-                  class="upload-demo"
-                  action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                  :on-change="handleChange"
-                >
-                  <el-button type="primary">파일선택</el-button>
-                  <template #tip>
-                    <div class="el-upload__tip">
-                      jpg/png 파일은 최대 500kb까지 가능합니다.
+              <div class="mb-8">
+                <div class="flex items-center gap-3 mb-3">
+                  <span class="text-sm font-semibold text-gray-700"
+                    >첨부 파일</span
+                  >
+                  <el-upload
+                    v-model:file-list="fileList"
+                    action="#"
+                    :auto-upload="false"
+                    :show-file-list="false"
+                    multiple
+                    :on-change="handleChange"
+                  >
+                    <template #trigger>
+                      <button type="button" class="btn-select-custom text-xs">
+                        파일 추가
+                      </button>
+                    </template>
+                  </el-upload>
+                </div>
+                <div class="border rounded-lg overflow-hidden border-gray-200">
+                  <div
+                    v-for="(file, index) in fileList"
+                    :key="index"
+                    class="flex items-center justify-between p-3 bg-white border-b last:border-b-0 hover:bg-gray-50 transition-colors"
+                  >
+                    <div class="flex items-center gap-3 overflow-hidden">
+                      <span class="text-red-500 font-bold text-xs uppercase">{{
+                        file.name.split(".").pop()
+                      }}</span>
+                      <span class="text-sm text-gray-700 truncate">{{
+                        file.name
+                      }}</span>
                     </div>
-                  </template>
-                </el-upload>
+                    <div class="flex items-center gap-4 text-xs text-gray-400">
+                      <span>{{
+                        file.size
+                          ? (file.size / 1024).toFixed(1) + " KB"
+                          : "Existing"
+                      }}</span>
+                      <button
+                        type="button"
+                        @click="fileList.splice(index, 1)"
+                        class="text-gray-400 hover:text-red-500"
+                      >
+                        <i class="el-icon-delete"></i> 삭제
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    v-if="fileList.length === 0"
+                    class="p-4 text-center text-xs text-gray-400"
+                  >
+                    첨부된 파일이 없습니다.
+                  </div>
+                </div>
               </div>
               <div v-if="!isModified" class="notification-area">
                 <el-button
@@ -159,9 +223,7 @@
                 </div>
               </div>
               <div class="flex justify-between">
-                <button @click="goBack" type="button" class="btn-navy">
-                  ← 목록으로
-                </button>
+                <div></div>
                 <div class="flex gap-2">
                   <button @click="resetForm" type="button" class="btn-red">
                     초기화
@@ -196,6 +258,7 @@ import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth";
+import { usetaskKJHStore } from "../stores/taksKJH";
 import { useNoticeStore } from "../stores/notice";
 
 import { useProjectKJHStore } from "../stores/projectKJH";
@@ -209,10 +272,12 @@ const route = useRoute();
 const authStore = useAuthStore();
 const noticeStore = useNoticeStore();
 const documentStore = useDocumentStore();
+const taskStore = usetaskKJHStore();
 
 const projectStore = useProjectKJHStore();
 const sidebarOpen = ref(false);
 
+let taskPjList = ref([]);
 const id = route.params.projectId;
 const subId = route.params.subProjectId;
 const documentId = route.params.documentId;
@@ -260,7 +325,24 @@ const submitForm = async (formEl) => {
           category: form.typeId == "전체" ? null : form.typeId,
           createdBy: userInfo.value.userId,
         };
-        await documentStore.registerDocument(obj);
+
+        // formData에 게시글 정보 담기
+        const formData = new FormData();
+        formData.append(
+          "obj",
+          new Blob([JSON.stringify(obj)], {
+            type: "application/json",
+          }),
+        );
+
+        // 첨부파일 있을 경우 담기
+        if (fileList.value && fileList.value.length > 0) {
+          fileList.value.forEach((file) => {
+            formData.append("files", file.raw);
+          });
+        }
+
+        await documentStore.registerDocument(formData);
 
         if (documentStore.registeredDocument.documentId > 0) {
           let alarmArr = [
@@ -367,8 +449,7 @@ onBeforeMount(async () => {
     });
 
     await documentStore.getDocumentById(documentId);
-    let documentInfo = documentStore.documentDetail.documentInfo;
-
+    let documentInfo = documentStore.documentDetail.documentInfo.documentInfo;
     // 폼에 대입
     form.roleId =
       documentInfo.category == null ? "전체" : documentInfo.category;
@@ -393,6 +474,19 @@ onBeforeMount(async () => {
 
   await projectStore.getAllMembers(id); // 프로젝트 구성원 정보
   memberList.value = projectStore.memberList;
+
+  if (subId) {
+    await taskStore.getProjectName(subId);
+  } else {
+    await taskStore.getProjectName(id);
+  }
+  const projectInfo = taskStore.projectName;
+
+  if (projectInfo.parentProjectName != null) {
+    taskPjList.value = [projectInfo.parentProjectName, projectInfo.projectName];
+  } else {
+    taskPjList.value = [projectInfo.projectName];
+  }
 });
 
 // 알림대상 선택
@@ -434,20 +528,74 @@ const resetForm = (formEl) => {
   formEl.resetFields();
 };
 
-// 첨부파일api
-const fileList = ref([
-  {
-    name: "food.jpeg",
-    url: "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100",
-  },
-]);
+// 첨부파일api(좌측)
+const fileList = ref([]);
 
 const handleChange = (uploadFile, uploadFiles) => {
-  fileList.value = fileList.value.slice(-3);
+  console.log(uploadFile, uploadFiles);
 };
 </script>
 
 <style scoped>
+.sub-header {
+  background: #ffffff;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sub-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* 목록 */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-back:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.bc-sep {
+  color: #cbd5e1;
+}
+
+.bc-cur {
+  color: #0f172a;
+  font-weight: 600;
+}
 :deep(.el-input__inner) {
   height: 42px;
 }
@@ -594,23 +742,6 @@ const handleChange = (uploadFile, uploadFiles) => {
   transform: translateY(-1px);
 }
 
-.btn-select-custom {
-  height: 40px !important;
-  padding: 0 16px !important;
-  font-size: 13px !important;
-  font-weight: 700 !important; /* 글씨 더 두껍게 */
-  border-radius: 8px !important;
-  background-color: #ffffff !important;
-  /* 이미지의 '등록/수정' 버튼 컬러 계열로 테두리 지정 */
-  border: 1.5px solid #374151 !important;
-  color: #374151 !important;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-select-custom:hover {
-  transform: translateY(-1px);
-}
 /* 1. 알림 영역 전체 박스 (더 깔끔한 느낌) */
 .notification-area {
   margin-bottom: 24px;
@@ -621,25 +752,6 @@ const handleChange = (uploadFile, uploadFiles) => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-/* 2. 알림대상 선택 버튼 (기존 어두운 버튼과 조화) */
-.btn-select-custom {
-  height: 36px !important;
-  padding: 0 14px !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  border-radius: 8px !important;
-  background-color: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #475569 !important;
-  transition: all 0.2s;
-}
-
-.btn-select-custom:hover {
-  background-color: #f1f5f9 !important;
-  border-color: #94a3b8 !important;
-  color: #1e293b !important;
 }
 
 .notification-area {
@@ -682,16 +794,20 @@ const handleChange = (uploadFile, uploadFiles) => {
   transform: scale(1.3); /* 1.3배 확대 */
 }
 
-/* (참고) 알림대상 선택 버튼도 진한 테두리로 통일 */
 .btn-select-custom {
-  height: 36px !important;
-  padding: 0 14px !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
-  border-radius: 8px !important;
-  background-color: #ffffff !important;
-  border: 1.5px solid #374151 !important;
-  color: #374151 !important;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  background: #fff;
+  border: 1.5px solid #475569;
+  color: #475569;
   cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-select-custom:hover {
+  background: #f8fafc;
+  color: #1e293b;
+  border-color: #1e293b;
 }
 </style>

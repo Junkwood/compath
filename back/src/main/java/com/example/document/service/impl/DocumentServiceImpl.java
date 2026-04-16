@@ -24,12 +24,10 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public DocumentDTO registerDocument(DocumentDTO dto) {
 
-        // 등록된 글 최대 번호 조회
-        int id = mapper.getLastNum();
-        dto.setDocumentId(id);
-
         // 문서 등록
         mapper.registerDocument(dto);
+
+        int id = dto.getDocumentId();
 
         return mapper.getDocumentById(id);
     }

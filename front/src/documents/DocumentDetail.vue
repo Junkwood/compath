@@ -12,35 +12,33 @@
       />
 
       <main class="grow">
-        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-          <el-alert
-            v-if="documentInfo.isDeleted === 'O1'"
-            title="비활성화된 게시글입니다."
-            type="warning"
-            description="관리자만 열람 가능하며 일반 사용자에게는 노출되지 않습니다."
-            show-icon
-            :closable="false"
-            class="mb-4"
-          />
-          <!-- projectDashboard.vue와 동일한 제목 영역 -->
-          <div class="mb-6 proj-title-row flex justify-between">
-            <div class="proj-title-left">
-              <h2
-                class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"
-              >
-                문서 상세
-              </h2>
-
-              <div class="proj-name-row">
-                <span class="proj-name"
-                  >【 {{ documentInfo.projectName }} 】</span
-                >
+        <div class="sub-header">
+          <div class="breadcrumb">
+            <span class="bc-home">홈</span>
+            <span class="bc-sep">›</span>
+            <span v-for="info in taskPjList" :key="info">{{ info }} › </span>
+            <span class="bc-cur"> 문서 상세</span>
+          </div>
+        </div>
+        <div class="page-container">
+          <div class="pg-row">
+            <div class="pg-left">
+              <div class="proj-meta">
+                <span class="proj-name">{{ name }}</span>
                 <span class="proj-period">
-                  {{ documentInfo.startDate }} ~ {{ documentInfo.endDate }}
+                  {{ projectStartDate }} ~ {{ projectendDate }}
                 </span>
               </div>
             </div>
+            <div class="flex gap-2 self-end">
+              <button @click="modifyDocument" class="btn-modify">수정</button>
+              <button class="btn-lock" @click="delDocument">삭제</button>
+              <button @click="goBack" type="button" class="btn-back">
+                ← 돌아가기
+              </button>
+            </div>
           </div>
+          <!-- projectDashboard.vue와 동일한 제목 영역 -->
 
           <div
             class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mb-0 p-6"
@@ -80,29 +78,60 @@
                 disabled
               />
             </div>
-
-            <div class="flex flex-row justify-between">
-              <div class="flex flex-row gap-10">
-                <button @click="goBack" type="button" class="btn-navy">
-                  ← 목록으로
-                </button>
-              </div>
-              <div class="flex flex-row gap-2">
-                <button @click="modifyDocument" class="btn-green">수정</button>
-                <button
-                  @click="delDocument"
-                  class="btn-red"
-                  v-if="commentList.length == 0"
+            <!-- 첨부파일 -->
+            <div class="mt-6">
+              <label class="block text-sm font-semibold mb-2 text-gray-600"
+                >첨부파일</label
+              >
+              <div
+                class="border-t border-b border-gray-200 divide-y divide-gray-100"
+              >
+                <div
+                  v-for="(file, index) in attachmentList"
+                  :key="index"
+                  class="py-2 flex items-center justify-between group"
+                  v-if="attachmentList && attachmentList.length > 0"
                 >
-                  삭제
-                </button>
+                  <div
+                    class="flex items-center gap-2 flex-1 cursor-pointer"
+                    @click="attachmentDownload(file)"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span
+                      class="text-[13px] text-gray-700 group-hover:text-blue-600 transition-colors"
+                    >
+                      {{ file.fileName }}
+                    </span>
+                  </div>
+                  <button
+                    @click="attachmentDownload(file)"
+                    class="text-[12px] text-gray-500 hover:text-blue-600 flex items-center gap-1"
+                  >
+                    다운로드 <span class="text-[10px] text-gray-300">〉</span>
+                  </button>
+                </div>
+                <div
+                  class="py-11 flex justify-center"
+                  v-if="attachmentList !== null"
+                >
+                  <span>첨부파일이 존재하지 않습니다.</span>
+                </div>
               </div>
             </div>
           </div>
-          <div
-            v-if="documentInfo.isComment == 'O1'"
-            class="filter-card mt-4 mb-0"
-          >
+          <div v-if="documentInfo.isComment == 'O1'" class="filter-card mb-0">
             <!-- 검색어 -->
             <div class="filter-item filter-item--wide mt-3">
               <div class="search-wrap">
@@ -207,9 +236,10 @@
 </template>
 
 <script setup>
-import { onBeforeMount, ref, watch } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useDocumentStore } from "../stores/document";
 import { useAuthStore } from "../stores/auth";
+import { usetaskKJHStore } from "../stores/taksKJH";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -219,16 +249,23 @@ const route = useRoute();
 const router = useRouter();
 const documentStore = useDocumentStore();
 const authStore = useAuthStore();
+const taskStore = usetaskKJHStore();
 const sidebarOpen = ref(false);
 
 const documentInfo = ref({});
 const documentId = route.params.documentId;
 const projectId = route.params.projectId;
 const subId = route.params.subProjectId;
+let taskPjList = ref([]);
+const attachmentList = ref([]);
 
 const commentList = ref([]); // 댓글목록
 const comment = ref(); // 댓글
 const modifyOpen = ref(false);
+
+let name = ref(); // 프로젝트명
+let projectStartDate = ref(); // 프로젝트 날짜
+let projectendDate = ref(); // 프로젝트 날짜
 
 // 목록으로
 const goBack = () => {
@@ -282,7 +319,7 @@ const delDocument = async () => {
 
   router.push({
     name: "documentList",
-    params: { projectId: projectId },
+    params: { projectId: projectId, subProjectId: subId },
   });
 };
 
@@ -390,15 +427,58 @@ const removeComment = async (comment) => {
 onBeforeMount(async () => {
   // 문서 및 프로젝트 정보
   await documentStore.getDocumentById(documentId);
-  documentInfo.value = documentStore.documentDetail.documentInfo;
-  commentList.value = documentStore.documentDetail.commentInfo;
+  documentInfo.value = documentStore.documentDetail.documentInfo.documentInfo;
+  commentList.value = documentStore.documentDetail.documentInfo.commentInfo;
+  attachmentList.value = documentStore.documentDetail.attachmentList;
 
   commentList.value.forEach((comment) => {
     comment.modifyOpen = false;
   });
+
+  let id = subId ? subId : projectId;
+  await taskStore.getProjectName(id);
+  let projectInfo = taskStore.projectName;
+  if (projectInfo.parentProjectName != null) {
+    taskPjList.value = [projectInfo.parentProjectName, projectInfo.projectName];
+  } else {
+    taskPjList.value = [projectInfo.projectName];
+  }
+
+  name.value = projectInfo.projectName;
+  projectStartDate.value = projectInfo.startDate;
+  projectendDate.value = projectInfo.endDate;
 });
 </script>
 <style scoped>
+.sub-header {
+  background: #fff;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bc-home {
+  color: #9ca3af;
+}
+
+.bc-sep {
+  color: #d1d5db;
+}
+
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
+
 /* 상단 */
 .proj-title-row {
   display: flex;
@@ -414,24 +494,53 @@ onBeforeMount(async () => {
   gap: 8px;
 }
 
-.proj-name-row {
+.page-container {
+  padding: 24px 30px 24px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+:deep(.pg-row) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center !important;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pg-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proj-meta {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.proj-name {
-  font-size: 18px;
+.pg-title {
+  margin: 0;
+  font-size: 22px;
   font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.02em;
+  color: #111827;
+}
+.proj-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1b5c9c;
 }
 
 .proj-period {
   font-size: 13px;
-  color: #64748b;
-  font-weight: 500;
+  color: #6b7280;
 }
 /* 인풋 전체 라운드 */
 :deep(.input) {
@@ -634,5 +743,62 @@ onBeforeMount(async () => {
 
 :deep(.el-button + .el-button) {
   margin-left: 0px;
+}
+
+:deep(.btn-modify) {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
+  color: white !important;
+  height: 40px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-modify:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+/* 돌아가기 버튼 */
+.btn-back {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.btn-back:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #111827;
+}
+
+.btn-lock {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.btn-lock:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
 }
 </style>

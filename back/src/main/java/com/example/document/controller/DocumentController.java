@@ -1,12 +1,19 @@
 package com.example.document.controller;
 
+import com.example.attachment.dto.AttachmentDTO;
+import com.example.attachment.service.AttachmentService;
 import com.example.document.dto.DocumentAlarmDTO;
 import com.example.document.dto.DocumentCommentDTO;
 import com.example.document.dto.DocumentDTO;
 import com.example.document.service.DocumentService;
+import com.example.meeting.dto.MeetingDTO;
+import com.example.notice.dto.NoticeDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,17 +23,41 @@ import java.util.Map;
 public class DocumentController {
 
     private final DocumentService service;
+    private final AttachmentService attachmentService;
 
     // 문서 등록
     @PostMapping("/documents/register")
-    public DocumentDTO registerDocument(@RequestBody DocumentDTO dto){
+    public DocumentDTO registerDocument(@RequestPart(value = "files", required = false) List<MultipartFile> files,
+                                        @RequestPart("obj") DocumentDTO dto) throws IOException {
+
+        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+            int groupId = 0;
+            int id = attachmentService.registerAttachments(files, groupId);
+            dto.setAttachmentGroupId(id);
+        }
+
         return service.registerDocument(dto);
     }
 
     // 문서 조회
     @GetMapping("/documents/Detail/{id}")
     public Map<String, Object> getDocumentById(@PathVariable Integer id) {
-        return service.getDocumentById(id);
+        // 결과 담을 그릇
+        Map<String, Object> result = new HashMap<>();
+
+        Map<String, Object> info = service.getDocumentById(id);
+        result.put("documentInfo", info);
+
+        DocumentDTO detail = (DocumentDTO) info.get("documentInfo");
+        Integer groupId = detail.getAttachmentGroupId();
+
+        System.out.println("skdhkfkfkfk: " + groupId);
+
+        if(groupId != null) {
+            List<AttachmentDTO> list = attachmentService.getFileList(groupId);
+            result.put("attachmentList", list);
+        }
+        return result;
     }
 
     // 문서 수정

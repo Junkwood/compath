@@ -56,6 +56,7 @@ public class MeetingDTO { // 회의록
     private LocalDate endDate;
 
     private String userName;
+    private Integer memberCount;
 
 //    회의록 수정
     private Integer editorUserId;

@@ -9,8 +9,6 @@ import java.util.List;
 
 @Mapper
 public interface DocumentMapper {
-//  문서 테이블 최고 번호
-  public int getLastNum();
 
 // 문서 등록
   public int registerDocument(DocumentDTO dto);

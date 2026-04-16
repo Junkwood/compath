@@ -12,14 +12,16 @@ export const useNoticeStore = defineStore("notice", {
   getters: {},
   actions: {
     // 공지사항 등록
-    async registerNotice(obj) {
-      console.log("등록전 데이터: ", obj);
+    async registerNotice(formData) {
+      console.log("등록전 데이터: ", formData);
 
       await api //
-        .post("/notice/register", obj) //
+        .post("/notice/register", formData, {
+          headers: {},
+        }) //
         .then((res) => {
           this.registeredNotice = res.data;
-          console.log("등록완료", this.registeredNotice);
+          console.log("공지사항 등록완료", this.registeredNotice);
         });
     },
 
