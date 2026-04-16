@@ -2,8 +2,13 @@
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50">
-      <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" />
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
+    >
+      <Header
+        :sidebarOpen="sidebarOpen"
+        @toggle-sidebar="sidebarOpen = !sidebarOpen"
+      />
 
       <main class="grow">
         <!-- 서브헤더 breadcrumb -->
@@ -18,24 +23,29 @@
         </div>
 
         <div class="page-container">
-
           <!-- ── 페이지 헤더 카드 ── -->
           <div class="page-title-card">
             <div class="title-section">
               <div class="title-tags">
                 <span class="meta-chip">최상위</span>
-                <span class="meta-project-name">{{ projectInfo.projectName }}</span>
-                <span class="bc-sep" style="color:#d1d5db">/</span>
+                <span class="meta-project-name">{{
+                  projectInfo.projectName
+                }}</span>
+                <span class="bc-sep" style="color: #d1d5db">/</span>
                 <span class="meta-chip sub">하위</span>
-                <span class="meta-project-name sub">{{ subProjectInfo.projectName }}</span>
+                <span class="meta-project-name sub">{{
+                  subProjectInfo.projectName
+                }}</span>
                 <span
                   v-if="projectInfo.useMilestone === 'O1'"
                   class="milestone-badge on"
-                >마일스톤 사용</span>
+                  >마일스톤 사용</span
+                >
                 <span
                   v-else-if="projectInfo.useMilestone === 'O2'"
                   class="milestone-badge off"
-                >마일스톤 미사용</span>
+                  >마일스톤 미사용</span
+                >
               </div>
               <h1 class="page-title">하위 프로젝트 대시보드</h1>
               <p class="page-subtitle">
@@ -49,10 +59,16 @@
                 돌아가기
               </el-button>
               <div class="action-divider"></div>
-              <el-button class="action-btn btn-primary" @click="handleCreateTask">
+              <el-button
+                class="action-btn btn-primary"
+                @click="handleCreateTask"
+              >
                 + 업무 생성
               </el-button>
-              <el-button class="action-btn btn-secondary" @click="handleSubProjectSetting">
+              <el-button
+                class="action-btn btn-secondary"
+                @click="handleSubProjectSetting"
+              >
                 하위프로젝트 수정
               </el-button>
               <el-button class="action-btn btn-danger" @click="handleDelete">
@@ -69,13 +85,27 @@
               </div>
               <div class="stat-info">
                 <div class="stat-label">담당 관리자</div>
-                <div class="stat-value">{{ subProjectInfo.managerName || '-' }}</div>
+                <div class="stat-value">
+                  {{ subProjectInfo.managerName || "-" }}
+                </div>
               </div>
             </div>
 
             <div class="stat-card">
               <div class="stat-icon period-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
               </div>
               <div class="stat-info">
                 <div class="stat-label">프로젝트 기간</div>
@@ -87,7 +117,17 @@
 
             <div class="stat-card">
               <div class="stat-icon milestone-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M3 12h18M12 3v18" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
               </div>
               <div class="stat-info">
                 <div class="stat-label">마일스톤</div>
@@ -97,7 +137,19 @@
 
             <div class="stat-card stat-card-total">
               <div class="stat-icon total-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 11l3 3L22 4" />
+                  <path
+                    d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
+                  />
+                </svg>
               </div>
               <div class="stat-info">
                 <div class="stat-label">전체 업무</div>
@@ -108,13 +160,14 @@
 
           <!-- ── 본문: 업무 현황 + 업무 목록 ── -->
           <div class="content-col">
-
             <!-- 업무 현황 테이블 -->
             <div class="panel">
               <div class="panel-head">
                 <div>
                   <h2 class="panel-title">업무 현황</h2>
-                  <p class="panel-subtext">{{ subProjectInfo.projectName }} 하위 프로젝트의 전체 현황</p>
+                  <p class="panel-subtext">
+                    {{ subProjectInfo.projectName }} 하위 프로젝트의 전체 현황
+                  </p>
                 </div>
               </div>
               <div class="panel-body">
@@ -124,24 +177,51 @@
                   :header-cell-style="tableHeaderStyle"
                   :cell-style="tableCellStyle"
                 >
-                  <el-table-column prop="type"       label="유형"   min-width="110" />
-                  <el-table-column prop="total"      label="전체"   min-width="80"  align="center" />
-                  <el-table-column prop="inProgress" label="진행중" min-width="90"  align="center">
+                  <el-table-column prop="type" label="유형" min-width="110" />
+                  <el-table-column
+                    prop="total"
+                    label="전체"
+                    min-width="80"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="inProgress"
+                    label="진행중"
+                    min-width="90"
+                    align="center"
+                  >
                     <template #default="{ row }">
                       <span class="num-hi">{{ row.inProgress }}</span>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="done"       label="완료"   min-width="80"  align="center">
+                  <el-table-column
+                    prop="done"
+                    label="완료"
+                    min-width="80"
+                    align="center"
+                  >
                     <template #default="{ row }">
                       <span class="num-done">{{ row.done }}</span>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="rejected"   label="반려"   min-width="80"  align="center">
+                  <el-table-column
+                    prop="rejected"
+                    label="반려"
+                    min-width="80"
+                    align="center"
+                  >
                     <template #default="{ row }">
-                      <span :class="{ 'num-reject': row.rejected > 0 }">{{ row.rejected }}</span>
+                      <span :class="{ 'num-reject': row.rejected > 0 }">{{
+                        row.rejected
+                      }}</span>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="totalSum"   label="합계"   min-width="80"  align="center">
+                  <el-table-column
+                    prop="totalSum"
+                    label="합계"
+                    min-width="80"
+                    align="center"
+                  >
                     <template #default="{ row }">
                       <span class="num-total">{{ row.totalSum }}</span>
                     </template>
@@ -157,7 +237,9 @@
                   <h2 class="panel-title">업무 목록</h2>
                   <span class="count-tag">{{ taskList.length }}</span>
                 </div>
-                <span class="panel-sub-mini">[{{ subProjectInfo.projectName }}]</span>
+                <span class="panel-sub-mini"
+                  >[{{ subProjectInfo.projectName }}]</span
+                >
               </div>
               <div class="panel-body">
                 <el-table
@@ -168,16 +250,25 @@
                   row-class-name="clickable-row"
                   @row-click="handleTaskRowClick"
                 >
-                  <el-table-column prop="title"    label="업무명"      min-width="260" />
-                  <el-table-column prop="userName" label="담당자 이름" width="180" align="center" header-align="center">
+                  <el-table-column
+                    prop="title"
+                    label="업무명"
+                    min-width="260"
+                  />
+                  <el-table-column
+                    prop="userName"
+                    label="담당자 이름"
+                    width="180"
+                    align="center"
+                    header-align="center"
+                  >
                     <template #default="{ row }">
-                      <span class="task-pl">{{ row.userName || '-' }}</span>
+                      <span class="task-pl">{{ row.userName || "-" }}</span>
                     </template>
                   </el-table-column>
                 </el-table>
               </div>
             </div>
-
           </div>
         </div>
       </main>
@@ -316,8 +407,11 @@ const handleTaskRowClick = (row) => {
 const handleCreateTask = () => {
   router.push({
     name: "taskRegister",
-    params: { projectId: subProjectId },
-    query: { from: "dashboard" },
+    params: { projectId: rootProjectId },
+    query: {
+      from: "dashboard",
+      subProjectId: subProjectId,
+    },
   });
 };
 
@@ -435,9 +529,16 @@ onMounted(() => {
   font-size: 12.5px;
 }
 
-.bc-home { color: #9ca3af; }
-.bc-sep  { color: #d1d5db; }
-.bc-cur  { color: #111827; font-weight: 600; }
+.bc-home {
+  color: #9ca3af;
+}
+.bc-sep {
+  color: #d1d5db;
+}
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
 
 /* ── 페이지 컨테이너 ── */
 .page-container {
@@ -455,7 +556,7 @@ onMounted(() => {
   background: #fff;
   border-radius: 14px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   padding: 22px 28px;
   display: flex;
   justify-content: space-between;
@@ -529,8 +630,14 @@ onMounted(() => {
   font-weight: 700;
 }
 
-.milestone-badge.on  { background: #ecfdf5; color: #059669; }
-.milestone-badge.off { background: #f3f4f6; color: #9ca3af; }
+.milestone-badge.on {
+  background: #ecfdf5;
+  color: #059669;
+}
+.milestone-badge.off {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
 
 /* ── 버튼 그룹 ── */
 .action-group {
@@ -557,19 +664,47 @@ onMounted(() => {
   letter-spacing: -0.01em !important;
 }
 
-.action-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.1) !important; }
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
+}
 
-.btn-primary   { background: #1b5c9c !important; border: 1px solid #1b5c9c !important; color: #fff !important; }
-.btn-primary:hover { background: #174d83 !important; border-color: #174d83 !important; }
+.btn-primary {
+  background: #1b5c9c !important;
+  border: 1px solid #1b5c9c !important;
+  color: #fff !important;
+}
+.btn-primary:hover {
+  background: #174d83 !important;
+  border-color: #174d83 !important;
+}
 
-.btn-secondary { background: #f8fafc !important; border: 1px solid #dbe3ec !important; color: #334155 !important; }
-.btn-secondary:hover { background: #f1f5f9 !important; }
+.btn-secondary {
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ec !important;
+  color: #334155 !important;
+}
+.btn-secondary:hover {
+  background: #f1f5f9 !important;
+}
 
-.btn-neutral   { background: #fff !important; border: 1px solid #d1d5db !important; color: #374151 !important; }
-.btn-neutral:hover { background: #f9fafb !important; }
+.btn-neutral {
+  background: #fff !important;
+  border: 1px solid #d1d5db !important;
+  color: #374151 !important;
+}
+.btn-neutral:hover {
+  background: #f9fafb !important;
+}
 
-.btn-danger    { background: #fff5f5 !important; border: 1px solid #fecaca !important; color: #dc2626 !important; }
-.btn-danger:hover { background: #fef2f2 !important; }
+.btn-danger {
+  background: #fff5f5 !important;
+  border: 1px solid #fecaca !important;
+  color: #dc2626 !important;
+}
+.btn-danger:hover {
+  background: #fef2f2 !important;
+}
 
 /* ── stat 카드 행 ── */
 .stat-row {
@@ -582,7 +717,7 @@ onMounted(() => {
   background: #fff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   padding: 18px 20px;
   display: flex;
   align-items: center;
@@ -591,7 +726,7 @@ onMounted(() => {
 }
 
 .stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
 }
 
 .stat-icon {
@@ -606,10 +741,22 @@ onMounted(() => {
   font-weight: 800;
 }
 
-.manager-icon  { background: #dbeafe; color: #1d4ed8; }
-.period-icon   { background: #f0fdf4; color: #16a34a; }
-.milestone-icon{ background: #fef9c3; color: #a16207; }
-.total-icon    { background: #eff6ff; color: #1b5c9c; }
+.manager-icon {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.period-icon {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+.milestone-icon {
+  background: #fef9c3;
+  color: #a16207;
+}
+.total-icon {
+  background: #eff6ff;
+  color: #1b5c9c;
+}
 
 .stat-info {
   display: flex;
@@ -651,7 +798,7 @@ onMounted(() => {
 .panel {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border: 1px solid #e5e7eb;
   overflow: hidden;
 }
@@ -703,10 +850,22 @@ onMounted(() => {
 }
 
 /* ── 숫자 강조 ── */
-.num-hi     { color: #1b5c9c; font-weight: 700; }
-.num-done   { color: #059669; font-weight: 600; }
-.num-reject { color: #dc2626; font-weight: 700; }
-.num-total  { color: #374151; font-weight: 700; }
+.num-hi {
+  color: #1b5c9c;
+  font-weight: 700;
+}
+.num-done {
+  color: #059669;
+  font-weight: 600;
+}
+.num-reject {
+  color: #dc2626;
+  font-weight: 700;
+}
+.num-total {
+  color: #374151;
+  font-weight: 700;
+}
 
 .task-pl {
   font-size: 12.5px;

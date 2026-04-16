@@ -24,4 +24,5 @@ public class ProjectListDto {
     private String useMilestone;
 
     private Integer progressRate;
+    private String createdAt;
 }
