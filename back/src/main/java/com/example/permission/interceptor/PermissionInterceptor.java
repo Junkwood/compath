@@ -111,6 +111,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
         else if (packageName.contains(".project")) return "/api/project";
         else if (packageName.contains(".document")) return "/api/documents";
         else if (packageName.contains(".meeting") || packageName.contains(".gemini")) return "/api/meetings";
+        else if (packageName.contains(".group")) return "/api/groups";
         return null;
     }
 }

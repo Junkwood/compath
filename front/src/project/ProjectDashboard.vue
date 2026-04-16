@@ -678,7 +678,7 @@ const normalizeMilestoneValue = (value) => {
 };
 
 const isMilestoneUsed = computed(() => {
-  return normalizeMilestoneValue(projectInfo.value.useMilestone) === "O2";
+  return normalizeMilestoneValue(projectInfo.value.useMilestone) === "O1";
 });
 
 const milestoneLabel = computed(() => {

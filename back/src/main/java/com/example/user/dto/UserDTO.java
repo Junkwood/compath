@@ -14,4 +14,6 @@ public class UserDTO {
     private String token;
     private Integer userId;
     private String password;
+    private String primaryGroupName;
+    private Integer primaryGroupId;
 }

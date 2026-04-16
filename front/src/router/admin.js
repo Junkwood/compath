@@ -73,5 +73,30 @@ const adminRoutes = [
     component: () => import("../group/GroupModify.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    //그룹목록페이지
+    path: "/group",
+    name: "groupPM",
+    component: () => import("../group/GroupList.vue"),
+  },
+  {
+    //그룹 등록페이지
+    path: "/group/register",
+    name: "groupRegisterPM",
+    component: () => import("../group/GroupCreate.vue"),
+  },
+  {
+    //그룹 단건조회 페이지
+    path: "/group/Info/:id",
+    name: "groupInfoPM",
+    component: () => import("../group/GroupInfo.vue"),
+    props: true,
+  },
+  {
+    //그룹 수정 페이지
+    path: "/group/modify/:groupId",
+    component: () => import("../group/GroupModify.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 export default adminRoutes;

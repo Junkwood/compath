@@ -473,7 +473,7 @@ const handleToggle = async () => {
 };
 
 const handleEdit = () => {
-  router.push(`/admin/group/modify/${group.value.groupId}`);
+  router.push(`../group/modify/${group.value.groupId}`);
 };
 
 const goBack = () => router.back();
