@@ -186,6 +186,7 @@ import { storeToRefs } from "pinia";
 import { useAuthStore } from "../stores/auth";
 import ProjectSelectModal from "../components/SelectModal.vue";
 import { useTaskStore } from "../stores/useTaskStore";
+import { useMeetingStore } from "../stores/meeting";
 import TaskDatePicker from "../components/TaskDatePicker.vue";
 
 const props = defineProps({
@@ -196,6 +197,7 @@ const emit = defineEmits(["closeCreateModal", "registerTask"]);
 
 const route = useRoute();
 const store = useTaskStore();
+const meetingStore = useMeetingStore();
 const parentTaskId = route.query.parentTaskId;
 const authStore = useAuthStore();
 
@@ -219,8 +221,10 @@ onMounted(async () => {
 });
 
 const handleSubmit = async () => {
+  let obj = { ...form.value, createdBy: Number(authStore.user?.userId) };
+  console.log(obj);
   try {
-    await store.createTask(authStore.user?.userId);
+    await meetingStore.registerRecommandTask(obj);
     emit("registerTask");
   } catch (e) {
     alert(e.message || "등록에 실패했습니다. 입력값을 확인해 주세요.");

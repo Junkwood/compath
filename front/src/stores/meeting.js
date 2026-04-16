@@ -11,6 +11,7 @@ export const useMeetingStore = defineStore("meeting", {
     geminiContent: [],
     connectTaskList: [],
     detailConnectList: [],
+    recommandTask: [],
   }),
   getters: {},
   actions: {
@@ -128,6 +129,15 @@ export const useMeetingStore = defineStore("meeting", {
         })
         .then((res) => {
           this.connectTaskList = res.data;
+        });
+    },
+
+    // 추천 업무 등록
+    async registerRecommandTask(obj) {
+      await api //
+        .post("/tasks/insert", obj)
+        .then((res) => {
+          this.recommandTask = res.data;
         });
     },
   },

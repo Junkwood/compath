@@ -384,12 +384,12 @@
     :alarmList="alarmList"
     @member-insert="memberInsert"
   />
-  <!-- <meetingCreateTaskModal
+  <meetingCreateTaskModal
     v-model="createModalOpen"
     :taskInfo="taskInfo"
     @close-create-modal="closeCreateModal"
     @register-task="registerTask"
-  /> -->
+  />
   <meetingConnectTaskModal
     v-model="openConnectModal"
     :projectInfo="projectInfo"
@@ -794,6 +794,7 @@ const closeCreateModal = () => {
 
 // 추천 업무 생성 모달 생성 버튼
 const registerTask = async () => {
+  connectTaskList.value = meetingStore.recommandTask;
   closeCreateModal();
 
   await Swal.fire({
