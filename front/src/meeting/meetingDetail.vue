@@ -30,22 +30,21 @@
               </div>
             </div>
             <div class="flex gap-2 self-end">
-              <button @click="modifyDocument" class="btn-modify">수정</button>
-              <!-- <button class="btn-lock" @click="lockTask">삭제</button> -->
+              <button
+                v-if="isAssignee"
+                @click="modifyDocument"
+                class="btn-modify"
+              >
+                수정
+              </button>
+              <button v-if="isAssignee" class="btn-lock" @click="lockMeeting">
+                삭제
+              </button>
               <button @click="goBack" type="button" class="btn-back">
                 ← 돌아가기
               </button>
             </div>
           </div>
-          <el-alert
-            v-if="meetingInfo.isDeleted === 'O1'"
-            title="비활성화된 게시글입니다."
-            type="warning"
-            description="관리자만 열람 가능하며 일반 사용자에게는 노출되지 않습니다."
-            show-icon
-            :closable="false"
-            class="mb-4"
-          />
 
           <!-- ① 상단 헤더 카드: 제목 + 메타정보 -->
           <div class="detail-header-card">
@@ -147,24 +146,26 @@
               </div>
             </div>
 
-            <!-- 우측: 연결된 일감 -->
+            <!-- 우측: 연결된 업무 -->
             <div class="detail-task-card">
               <div class="detail-task-header">
-                <h3 class="detail-section-title">연결된 일감</h3>
+                <h3 class="detail-section-task-title">연결된 업무</h3>
                 <div class="detail-task-actions">
                   <button
+                    v-if="isAssignee"
                     type="button"
                     @click="openModal()"
                     class="task-btn-secondary"
                   >
-                    연결일감 추가
+                    연결업무 추가
                   </button>
                   <button
+                    v-if="isAssignee"
                     class="task-btn-primary"
                     type="button"
                     @click="goRegister()"
                   >
-                    일감 생성
+                    업무 생성
                   </button>
                 </div>
               </div>
@@ -179,6 +180,7 @@
                   <span class="task-name">{{ item.title }}</span>
                   <span class="task-status">{{ item.statusName }}</span>
                   <button
+                    v-if="isAssignee"
                     class="task-arrow"
                     @click.stop="delDtailConnect(item)"
                   >
@@ -188,7 +190,7 @@
 
                 <!-- 예시 더미 (데이터 없을 때 빈 상태 표시) -->
                 <div v-if="!connectList" class="task-empty">
-                  연결된 일감이 없습니다.
+                  연결된 업무가 없습니다.
                 </div>
               </div>
             </div>
@@ -206,18 +208,21 @@
 </template>
 
 <script setup>
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, computed } from "vue";
 import { useMeetingStore } from "../stores/meeting";
 import { useAttachmentStore } from "../stores/attachment";
 import { usetaskKJHStore } from "../stores/taksKJH";
+import { useAuthStore } from "../stores/auth";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import meetingConnectTaskModal from "./meetingConnectTaskModal.vue";
+import Swal from "sweetalert2";
 
 const route = useRoute();
 const router = useRouter();
 const meetingStore = useMeetingStore();
+const authStore = useAuthStore();
 const attachmentStore = useAttachmentStore();
 const taskStore = usetaskKJHStore();
 const sidebarOpen = ref(false);
@@ -273,8 +278,40 @@ const goBack = () => {
 const modifyDocument = () => {
   router.push({
     name: "meetingRegister",
-    params: { projectId: projectId, meetingId: meetingId },
+    params: { projectId: projectId, subProjectId: subId, meetingId: meetingId },
   });
+};
+
+// 삭제 버튼
+const lockMeeting = async () => {
+  const result = await Swal.fire({
+    title: "정말 삭제하시겠습니까?",
+    text: "삭제된 회의록은 목록에서 확인 불가능합니다.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "삭제",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  await meetingStore.removeMeeting(meetingId);
+
+  if (meetingStore.removeResult > 0) {
+    const result = await Swal.fire({
+      title: "삭제가 완료되었습니다.",
+      text: "회의록 목록으로 이동합니다.",
+      icon: "success",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    router.push({
+      name: "meetingList",
+      params: { projectId: projectId, subProjectId: subId },
+    });
+  }
 };
 
 // 연결 업무 상세페이지 이동
@@ -321,9 +358,26 @@ onBeforeMount(async () => {
     taskPjList.value = [projectInfo.projectName];
   }
 
+  let roleObj = { projectId: id, subProjectId: subId };
+  await taskStore.getProjectRole(roleObj);
+
   name.value = projectInfo.projectName;
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
+});
+
+// 권한 파악
+const isAssignee = computed(() => {
+  const currentUserId = authStore.user?.userId || authStore.user?.id;
+  if (!currentUserId) return false;
+
+  const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  const isManager = (taskStore.plPmList?.empList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  return isPmPl || isManager;
 });
 </script>
 <style scoped>
@@ -465,6 +519,12 @@ onBeforeMount(async () => {
   font-weight: 700;
   color: #0f172a;
   margin: 0 0 16px 0;
+}
+
+.detail-section-task-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .detail-textarea {

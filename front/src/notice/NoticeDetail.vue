@@ -34,14 +34,14 @@
 
             <div class="notice-action-wrap">
               <button
-                v-if="noticeInfo.isDeleted === 'Q2'"
+                v-if="noticeInfo.isDeleted === 'Q2' && isAssignee"
                 @click="modifyNotice"
                 class="btn-edit"
               >
                 수정
               </button>
 
-              <button @click="lockNotice" class="btn-lock">
+              <button v-if="isAssignee" @click="lockNotice" class="btn-lock">
                 <el-icon><Lock /></el-icon>
                 <span>{{
                   noticeInfo.isDeleted === "Q1" ? "비활성 해제" : "비활성"
@@ -53,7 +53,7 @@
             </div>
           </div>
           <el-alert
-            v-if="noticeInfo.isDeleted === 'Q1'"
+            v-if="noticeInfo.isDeleted === 'Q1' && isAssignee"
             title="비활성화된 게시글입니다."
             type="warning"
             description="관리자만 열람 가능하며 일반 사용자에게는 노출되지 않습니다."
@@ -241,11 +241,12 @@
 </template>
 
 <script setup>
-import { onBeforeMount, ref, watch } from "vue";
+import { onBeforeMount, ref, watch, computed } from "vue";
 import { useProjectKJHStore } from "../stores/projectKJH";
 import { useNoticeStore } from "../stores/notice";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { useAttachmentStore } from "../stores/attachment";
+import { useAuthStore } from "../stores/auth";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -257,6 +258,7 @@ const router = useRouter();
 const noticeStore = useNoticeStore();
 const projectStore = useProjectKJHStore();
 const taskStore = usetaskKJHStore();
+const authStore = useAuthStore();
 const attachmentStore = useAttachmentStore();
 
 const noticeInfo = ref({});
@@ -340,11 +342,29 @@ onBeforeMount(async () => {
       : projectId;
   await taskStore.getProjectName(id);
   let projectInfo = taskStore.projectName;
+
+  let roleObj = { projectId: projectId, subProjectId: subProjectId.value };
+  await taskStore.getProjectRole(roleObj);
+
   if (projectInfo.parentProjectName != null) {
     taskPjList.value = [projectInfo.parentProjectName, projectInfo.projectName];
   } else {
     taskPjList.value = [projectInfo.projectName];
   }
+});
+
+// 권한 파악
+const isAssignee = computed(() => {
+  const currentUserId = authStore.user?.userId || authStore.user?.id;
+  if (!currentUserId) return false;
+
+  const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  const isManager = (taskStore.plPmList?.empList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  return isPmPl || isManager;
 });
 
 watch(

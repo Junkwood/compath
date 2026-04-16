@@ -29,7 +29,8 @@
                                   created_at,
                                   ai_summary,
                                   stt_text,
-                                  attachment_group_id )
+                                  attachment_group_id,
+                                  is_deleted )
         VALUES( #{meetingLogId},
                 #{projectId},
                 #{title},
@@ -41,7 +42,8 @@
                 SYSDATE,
                 #{aiSummary},
                 #{sttText},
-                #{attachmentGroupId} )
+                #{attachmentGroupId},
+                'Q2')
     </insert>
 
 <!--    회의록 단건 조회-->
@@ -130,7 +132,8 @@
             created_by = #{createdBy},
             created_at = SYSDATE,
             project_id = #{projectId},
-            meeting_date = #{meetingDate}
+            meeting_date = #{meetingDate},
+            is_deleted = 'Q2'
         WHERE meeting_log_id = #{meetingLogId}
     </update>
 
@@ -170,6 +173,7 @@
               LEFT JOIN users u ON m.created_by = u.user_id
               LEFT JOIN common_code c ON m.meeting_type_code = c.code_value
               WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
+              AND is_deleted != 'Q1'
               <if test=" createdBy!= null and createdBy != ''">
                   AND m.created_by = #{createdBy}
               </if>
@@ -250,5 +254,12 @@
                  #{meetingLogId},
                  #{userId} )
     </insert>
+
+<!--    회의록 삭제-->
+    <delete id="removeMeeting">
+        UPDATE meeting_logs
+        SET is_deleted = 'Q1'
+        WHERE meeting_log_id = #{id}
+    </delete>
 
 </mapper>

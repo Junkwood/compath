@@ -12,6 +12,7 @@ export const useMeetingStore = defineStore("meeting", {
     connectTaskList: [],
     detailConnectList: [],
     recommandTask: [],
+    removeResult: 0,
   }),
   getters: {},
   actions: {
@@ -138,6 +139,15 @@ export const useMeetingStore = defineStore("meeting", {
         .post("/tasks/insert", obj)
         .then((res) => {
           this.recommandTask = res.data;
+        });
+    },
+
+    // 회의록 삭제
+    async removeMeeting(id) {
+      await api //
+        .put("/meeting/remove/" + id)
+        .then((res) => {
+          this.removeResult = res.data;
         });
     },
   },

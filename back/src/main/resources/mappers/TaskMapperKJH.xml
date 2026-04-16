@@ -146,6 +146,7 @@
                t.est_start_date,
                t.est_end_date,
                t.created_at,
+               t.attachment_group_id,
                p.project_name,
                p.parent_project_id,
                p2.project_name AS parent_project_name,

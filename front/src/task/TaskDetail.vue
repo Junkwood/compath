@@ -31,17 +31,19 @@
             </div>
             <div class="flex gap-2 self-end">
               <button
-                v-if="taskInfo.taskStatusId == 4"
+                v-if="taskInfo.taskStatusId == 4 && isAssignee"
                 @click="goCreateSubTask"
                 class="btn-action btn-sub"
               >
                 + 하위업무 생성
               </button>
-              <button @click="goModify" class="btn-modify">수정</button>
+              <button v-if="isAssignee" @click="goModify" class="btn-modify">
+                수정
+              </button>
               <button
                 class="btn-lock"
                 @click="lockTask"
-                v-if="taskInfo.taskStatusId == 1"
+                v-if="taskInfo.taskStatusId == 1 && isAssignee"
               >
                 삭제
               </button>
@@ -150,6 +152,49 @@
                   />
                 </div>
               </div>
+
+              <!-- 📎 첨부파일 (추가된 영역) -->
+              <!-- <div class="bg-white rounded-2xl shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <h2 class="text-lg font-semibold">첨부파일</h2>
+                  <button
+                    class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    + 업로드
+                  </button>
+                </div>
+
+                <div v-if="files.length > 0" class="space-y-3">
+                  <div
+                    v-for="file in files"
+                    :key="file.id"
+                    class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      📎
+                      <div>
+                        <div class="text-sm font-medium text-gray-800">
+                          {{ file.name }}
+                        </div>
+                        <div class="text-xs text-gray-400">
+                          {{ file.uploadedAt }} · {{ file.user }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button class="text-sm text-blue-600 hover:underline">
+                      다운로드
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  v-else
+                  class="text-center text-gray-400 py-10 border rounded-lg"
+                >
+                  첨부파일이 없습니다.
+                </div>
+              </div> -->
 
               <div class="panel">
                 <div class="panel-body tab-body">
@@ -286,7 +331,7 @@
                 <div class="panel-head">
                   <span class="panel-title">소요시간</span>
                   <button
-                    v-if="taskInfo.taskStatusId != 5"
+                    v-if="taskInfo.taskStatusId != 5 && isAssignee"
                     @click="registerActualTime"
                     class="btn-mini-add"
                   >
@@ -298,6 +343,52 @@
                     {{ taskInfo.actualHours > 0 ? taskInfo.actualHours : 0 }}
                     시간
                   </span>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-head">
+                  <span class="panel-title">첨부파일</span>
+                </div>
+
+                <div class="panel-body" style="padding: 12px 16px">
+                  <div v-if="files.length > 0" class="flex flex-col gap-2">
+                    <div
+                      v-for="(file, index) in attachmentList"
+                      :key="index"
+                      class="flex items-center justify-between text-sm"
+                    >
+                      <div class="truncate text-gray-700">
+                        <el-tooltip
+                          class="box-item"
+                          effect="dark"
+                          :content="file.fileName"
+                          placement="top-start"
+                          :disabled="file.fileName.length < 20"
+                        >
+                          📎 {{ changefileNameLength(file.fileName) }}
+                        </el-tooltip>
+                      </div>
+                      <button
+                        type="button"
+                        class="text-xs text-blue-600 hover:underline"
+                        @click="attachmentDownload(file)"
+                      >
+                        다운
+                      </button>
+                    </div>
+
+                    <!-- 더보기 -->
+                    <div
+                      v-if="files.length > 3"
+                      class="text-xs text-gray-400 text-center mt-1"
+                    >
+                      +{{ files.length - 3 }}개 더
+                    </div>
+                  </div>
+
+                  <div v-else class="text-xs text-gray-400 text-center py-4">
+                    파일 없음
+                  </div>
                 </div>
               </div>
             </div>
@@ -321,12 +412,14 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { useAuthStore } from "../stores/auth";
+import { useAttachmentStore } from "../stores/attachment";
 import TaskActualTimeModal from "./TaskActualTimeModal.vue";
 import { changeDate } from "../utils/commonFunc";
 import Swal from "sweetalert2";
 
 const taskStore = usetaskKJHStore();
 const authStore = useAuthStore();
+const attachmentStore = useAttachmentStore();
 const sidebarOpen = ref(false);
 
 const route = useRoute();
@@ -354,14 +447,31 @@ let taskInfo = ref({
   typeName: "",
 });
 
+const files = ref([
+  {
+    id: 1,
+    name: "기획서_v1.pdf",
+    uploadedAt: "2026-04-17",
+    user: "admin",
+  },
+  {
+    id: 2,
+    name: "API명세서.xlsx",
+    uploadedAt: "2026-04-17",
+    user: "developer01",
+  },
+]);
+
 let taskPjList = ref([]);
 let activityList = ref([]);
+let attachmentList = ref([]);
 let activeName = ref("first");
 const loadingProjects = ref(false);
 
 onBeforeMount(async () => {
   await taskStore.getTaskById(taskId.value);
-  taskInfo.value = { ...taskStore.taskDetail };
+  taskInfo.value = { ...taskStore.taskDetail.taskInfo };
+  attachmentList.value = { ...taskStore.taskDetail.attachmentList };
   taskInfo.value.createdAt = changeDate(taskInfo.value.createdAt);
   taskInfo.value.actualHours =
     taskInfo.value.totalTimeEntries > 0
@@ -373,12 +483,11 @@ onBeforeMount(async () => {
       taskInfo.value.parentProjectName,
       taskInfo.value.projectName,
     ];
-
-    changeDateType(taskInfo.value);
   } else {
     taskPjList.value = [taskInfo.value.projectName];
   }
 
+  changeInfoType(taskInfo.value);
   chageTaskDesc();
 
   await taskStore.getTimeEntries(taskId.value);
@@ -436,6 +545,20 @@ const goModify = () => {
     params: { projectId: taskInfo.value.projectId, taskId: taskId.value },
     query: { subProjectId: subId.value },
   });
+};
+
+// 파일 다운로드
+const attachmentDownload = async (file) => {
+  console.log(file);
+  await attachmentStore.downloadFile(file);
+};
+
+const changefileNameLength = (fileName) => {
+  console.log(fileName);
+  if (fileName.length > 20) {
+    fileName = fileName.slice(0, 19) + ".....";
+  }
+  return fileName;
 };
 
 const lockTask = async () => {
@@ -522,7 +645,10 @@ const pagedTimeData = computed(() => {
 });
 
 // 날짜 없는 경우 형식 변경
-const changeDateType = (val) => {
+const changeInfoType = (val) => {
+  if (val.assigneeUserId == null) {
+    val.assigneeUserName = "미지정";
+  }
   if (val.startDate == null) {
     val.startDate = "-";
   }
@@ -618,7 +744,7 @@ const changeDateType = (val) => {
 /* ── 메인 레이아웃 ── */
 .detail-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-columns: minmax(0, 1fr) 330px;
   gap: 24px;
   align-items: start;
 }

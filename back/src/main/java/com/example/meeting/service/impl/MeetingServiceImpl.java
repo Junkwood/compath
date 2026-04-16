@@ -213,4 +213,9 @@ public class MeetingServiceImpl implements MeetingService {
         return mapper.getRecommandTask(meetingId);
     }
 
+    @Override
+    public int removeMeeting(Integer id) {
+        return mapper.removeMeeting(id);
+    }
+
 }

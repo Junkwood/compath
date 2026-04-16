@@ -53,6 +53,7 @@ public class TaskDetailDTOKJH { // 업무 상세
     private String parentProjectName;
     private String typeName;
     private String statusName;
+    private Integer attachmentGroupId;
 
     // 소요시간 등록
     private Integer userId;
