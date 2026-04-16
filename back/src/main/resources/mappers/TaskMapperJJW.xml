@@ -67,6 +67,15 @@
         <result property="createdAt"   column="CREATED_AT"/>
     </resultMap>
 
+    <resultMap id="attachmentMap" type="map">
+        <result property="attachmentId"       column="ATTACHMENT_ID"/>
+        <result property="filename"           column="FILENAME"/>
+        <result property="filePath"           column="FILE_PATH"/>
+        <result property="fileExt"            column="FILE_EXT"/>
+        <result property="attachmentGroupId"  column="ATTACHMENT_GROUP_ID"/>
+    </resultMap>
+
+
     <!-- ───────────── 업무 등록 ───────────── -->
     <insert id="insert" parameterType="TaskReqDtoJJW">
         <selectKey keyProperty="taskId" resultType="int" order="BEFORE">
@@ -91,7 +100,8 @@
         progress_rate,
         created_by,
         created_at,
-        is_deleted
+        is_deleted,
+        attachment_group_id
         ) VALUES (
         #{taskId},
         #{projectId},
@@ -111,7 +121,8 @@
         #{progressRate},
         #{createdBy},
         SYSDATE,
-        'Q1'
+        'Q2',
+        #{attachmentGroupId}
         )
     </insert>
 
@@ -128,7 +139,8 @@
         start_date     = #{startDate},
         due_date       = #{dueDate},
         updated_at     = SYSDATE,
-        editor_user_id = #{editorUserId}
+        editor_user_id = #{editorUserId},
+        attachment_group_id = #{attachmentGroupId}
         WHERE task_id = #{taskId}
     </update>
 
@@ -159,7 +171,8 @@
         #{taskTypeList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=typeMap},
         #{milestoneList,mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=milestoneMap},
         #{statusList,   mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=statusMap},
-        #{timeEntryList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=timeEntryMap}
+        #{timeEntryList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=timeEntryMap},
+        #{attachmentList,   mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=attachmentMap}
         )}
     </select>
 

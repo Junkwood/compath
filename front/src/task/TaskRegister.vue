@@ -131,7 +131,36 @@
             <div class="form-section">
               <label class="field-label">프로젝트 설명</label>
               <textarea v-model="form.content" rows="4" class="input w-full" />
-              <button class="btn btn-select mt-2">파일 선택</button>
+              <input
+                type="file"
+                ref="fileInputRef"
+                multiple
+                style="display: none"
+                @change="handleFileChange"
+              />
+              <button
+                type="button"
+                class="btn btn-select mt-2"
+                @click="fileInputRef.click()"
+              >
+                파일 선택
+              </button>
+
+              <!-- 선택된 파일 목록 -->
+              <div
+                v-for="(file, idx) in fileList"
+                :key="idx"
+                class="flex justify-between mt-2 text-sm text-gray-600"
+              >
+                <span>{{ file.name }}</span>
+                <button
+                  type="button"
+                  @click="fileList.splice(idx, 1)"
+                  class="text-red-400 hover:text-red-600"
+                >
+                  삭제
+                </button>
+              </div>
             </div>
 
             <!-- 섹션 5: 상태 / 우선순위 / 마일스톤 -->
@@ -255,6 +284,8 @@ const store = useTaskStore();
 const id = route.params.projectId;
 const parentTaskId = route.query.parentTaskId;
 const authStore = useAuthStore();
+const fileList = ref([]); //첨부파일
+const fileInputRef = ref(null); //첨부
 
 const isSubTask = computed(() => !!route.query.parentTaskId);
 const from = route.query.from;
@@ -296,10 +327,14 @@ watch(
     }
   },
 );
-
+const handleFileChange = (e) => {
+  Array.from(e.target.files).forEach((file) => {
+    fileList.value.push({ raw: file, name: file.name });
+  });
+};
 const handleSubmit = async () => {
   try {
-    await store.createTask(authStore.user?.userId);
+    await store.createTask(authStore.user?.userId, fileList.value);
     await Swal.fire({
       icon: "success",
       title: "등록 완료!",

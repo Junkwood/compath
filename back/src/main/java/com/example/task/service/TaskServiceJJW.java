@@ -4,16 +4,18 @@ import com.example.milestone.dto.MilestoneDtoJJW;
 import com.example.project.dto.ProjectDtoJJW;
 import com.example.task.dto.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 
 public interface TaskServiceJJW {
     //상위 업무 생성(등록)
-    void insert(TaskReqDtoJJW dto);
+    void insert(TaskReqDtoJJW dto,List<MultipartFile> files)throws IOException;
     //상위 업무 수정
-    int updateTask(TaskReqDtoJJW dto);
+    int updateTask(TaskReqDtoJJW dto,List<MultipartFile> files) throws IOException;
     //업무 전체 조회
     List<TaskReqDtoJJW> getTaskAll();
     //사유등록

@@ -3,6 +3,7 @@ package com.example.task.service.impl;
 import com.example.alarm.dto.NotificationDto;
 import com.example.alarm.mapper.NotificationMapper;
 import com.example.alarm.service.NotificationService;
+import com.example.attachment.service.AttachmentService;
 import com.example.project.dto.ProjectDtoJJW;
 import com.example.task.dto.*;
 import com.example.task.mapper.TaskMapperJJW;
@@ -10,7 +11,9 @@ import com.example.task.service.TaskServiceJJW;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +26,19 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
 
     private final TaskMapperJJW taskMapperJJW;
     private final NotificationService notificationService;
+    private final AttachmentService attachmentService;
 
     //업무등록
-    public void insert(TaskReqDtoJJW re) {
+    public void insert(TaskReqDtoJJW re,List<MultipartFile> files) throws IOException {
+        // 파일이 있으면 먼저 등록 후 groupId 받아옴
+        if (files != null && !files.isEmpty()) {
+            int groupId = attachmentService.registerAttachments(files, 0);
+            re.setAttachmentGroupId(groupId);
+        }
+
         taskMapperJJW.insert(re);
 
-        // 🔹 상위 업무일 때만 알림
+        // 상위 업무일 때만 알림
         if (re.getParentTaskId() == null) {
             notificationService.sendToProjectMembers(
                     re.getProjectId(),
@@ -41,7 +51,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
             );
         }
 
-        // 🔹 하위 업무 알림 (선택)
+        // 하위 업무 알림 (선택)
         else {
             notificationService.sendToOne(
                     re.getAssigneeUserId(),
@@ -55,10 +65,22 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     }
     //업무 수정
     @Override
-    public int updateTask(TaskReqDtoJJW dto) {
+    public int updateTask(TaskReqDtoJJW dto,List<MultipartFile> files) throws IOException {
         if (dto.getTaskStatusId() != null && dto.getTaskStatusId() == 2) {
             if (dto.getStartDate() == null) dto.setStartDate(new Date());
         }
+        // 첨부파일 처리
+        if (files != null && !files.isEmpty()) {
+            if (dto.getAttachmentGroupId() != null && dto.getAttachmentGroupId() > 0) {
+                // 기존 groupId에 추가
+                attachmentService.registerAttachments(files, dto.getAttachmentGroupId());
+            } else {
+                // 새 group 생성
+                int groupId = attachmentService.registerAttachments(files, 0);
+                dto.setAttachmentGroupId(groupId);
+            }
+        }
+
 
         int result = taskMapperJJW.updateTask(dto);
 
@@ -134,7 +156,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
         result.put("milestoneList", params.get("milestoneList"));
         result.put("statusList", params.get("statusList"));
         result.put("timeEntryList", params.get("timeEntryList"));
-
+        result.put("attachmentList", params.get("attachmentList"));
         return result;
 
 
