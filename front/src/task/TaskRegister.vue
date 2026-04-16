@@ -223,14 +223,18 @@
             <!-- 섹션 6: 날짜 / 추정시간 -->
             <div class="form-section grid-3 no-border">
               <div>
-                <label class="field-label">예정 시작일</label>
+                <label class="field-label"
+                  >예정 시작일<span class="required">*</span></label
+                >
                 <TaskDatePicker
                   v-model="form.estStartDate"
                   @change="calcEstTime(true)"
                 />
               </div>
               <div>
-                <label class="field-label">예정 종료일</label>
+                <label class="field-label"
+                  >예정 종료일<span class="required">*</span></label
+                >
                 <TaskDatePicker
                   v-model="form.estEndDate"
                   @change="calcEstTime(true)"
