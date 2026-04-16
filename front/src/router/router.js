@@ -88,7 +88,7 @@ router.beforeEach((to, from, next) => {
 
   // 2. 관리자 전용 페이지 접근 제어 (/admin으로 시작하는 경로)
   if (to.path.startsWith("/admin") && !authStore.isAdmin) {
-    return next("/"); // 관리자가 아니면 메인으로 쫓아냄
+    // return next("/"); // 관리자가 아니면 메인으로 쫓아냄
   }
 
   // 3. 로그인이 필요한데 유저 정보가 없는 경우 (새로고침 시 세션이 날아갔거나, 원래 비로그인 상태)

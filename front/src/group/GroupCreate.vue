@@ -559,7 +559,7 @@ const submitGroup = async () => {
   }
 };
 
-const goBack = () => router.push({ name: "group" });
+const goBack = () => router.back();
 
 const expandedGroups = ref([]);
 

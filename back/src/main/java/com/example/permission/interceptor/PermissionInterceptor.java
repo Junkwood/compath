@@ -47,19 +47,47 @@ public class PermissionInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        String userId = auth.getName();
+        String method = request.getMethod();
+
         // 헤더에서 프로젝트 ID 추출
         String projectIdStr = request.getHeader("X-Project-Id");
+        String groupIdStr = request.getHeader("X-Primary-Group-Id");
+        String targetUrl = getTargetUrl(handler, urlPattern, method);
+
+        if (targetUrl == null) {
+            log.debug("매핑 안됨 -> 통과");
+            return true;
+        }
+        // =====================================================================
+        //  그룹 기반 권한 검사
+        // =====================================================================
+        if (groupIdStr != null) {
+            Integer groupId = Integer.parseInt(groupIdStr);
+
+            // 예: Mapper에 메서드를 하나 만들어서 이 그룹이 이 메뉴(targetUrl)에 접근 가능한지 체크
+            // (DB 설계에 따라 메서드 파라미터는 달라질 수 있습니다)
+            boolean hasGroupAccess = permissionMapper.checkGroupAccess(groupId, targetUrl, method);
+
+            if (!hasGroupAccess) {
+                log.warn("🚨 [그룹 차단] 그룹 권한 부족 : userId={}, groupId={}, targetUrl={}", userId, groupId, targetUrl);
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("해당 그룹은 이 기능에 접근할 수 없습니다.");
+                return false;
+            }else{
+                log.debug("그룹 권한 검사를 통과했습니다. groupIdStr : {}",groupIdStr);
+            }
+        }else{
+            log.debug("groupIdStr이 없어서 그룹 권한검사는 생략합니다");
+        }
         if (projectIdStr == null) {
             log.debug("⚠️ X-Project-Id 헤더가 없어서 권한 검사를 생략하고 통과시킵니다. (URL: {})", request.getRequestURI());
             return true;
         }
-
         Integer projectId = Integer.parseInt(projectIdStr);
-        String userId = auth.getName();
-        String method = request.getMethod();
-
         // =====================================================================
-        // 💡 [1차 검증] 프로젝트 자체 접근 권한 (P1 공개 여부 or P2 멤버 여부)
+        // 프로젝트 자체 접근 권한 (P1 공개 여부 or P2 멤버 여부)
         // =====================================================================
         boolean hasProjectAccess = permissionMapper.checkProjectAccess(projectId, userId);
         if (!hasProjectAccess) {
@@ -71,9 +99,8 @@ public class PermissionInterceptor implements HandlerInterceptor {
         }
 
         // =====================================================================
-        // 💡 [2차 검증] 세부 URL/Method 기반 Role 권한 검사 (기존 로직)
+        // 세부 URL/Method 기반 Role 권한 검사
         // =====================================================================
-        String targetUrl;
         boolean isSpecialPermissionExist = permissionMapper.isUrlRegisteredInDb(urlPattern, method);
 
         if (isSpecialPermissionExist) {
@@ -112,6 +139,20 @@ public class PermissionInterceptor implements HandlerInterceptor {
         else if (packageName.contains(".document")) return "/api/documents";
         else if (packageName.contains(".meeting") || packageName.contains(".gemini")) return "/api/meetings";
         else if (packageName.contains(".group")) return "/api/groups";
+        return null;
+    }
+    private String getTargetUrl(Object handler, String urlPattern, String method) {
+        if (urlPattern == null) return null;
+
+        boolean isSpecialPermissionExist = permissionMapper.isUrlRegisteredInDb(urlPattern, method);
+        if (isSpecialPermissionExist) {
+            return urlPattern;
+        } else {
+            if (handler instanceof HandlerMethod) {
+                String packageName = ((HandlerMethod) handler).getBeanType().getPackage().getName();
+                return mapPackageToDbUrl(packageName);
+            }
+        }
         return null;
     }
 }

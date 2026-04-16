@@ -28,7 +28,7 @@ public class EmpControllerSJW {
     public Integer register(@RequestBody EmpVOSJW emp) {
     return empService.registerEmp(emp);
     }
-    @GetMapping("/admin/emp/group")
+    @GetMapping("/api/emp/group")
     public List<EmpVOSJW> getAllForGroup() {
         return empService.getAllForGroup();
     }

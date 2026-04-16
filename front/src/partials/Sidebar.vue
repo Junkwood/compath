@@ -525,7 +525,55 @@
                 </ul>
               </div>
             </SidebarLinkGroup>
-
+            <!-- 그룹 목록 -->
+            <router-link
+              :to="{ name: 'groupPM' }"
+              custom
+              v-slot="{ href, navigate, isExactActive }"
+              v-if="auth.user && auth.user.primaryGroupName === 'PM'"
+            >
+              <li
+                class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r transition"
+                :class="
+                  isExactActive
+                    ? 'from-violet-500/30 to-violet-400/10'
+                    : 'hover:bg-white/5'
+                "
+              >
+                <a
+                  class="block text-white truncate transition"
+                  :class="isExactActive ? '' : 'hover:text-slate-200'"
+                  :href="href"
+                  @click="navigate"
+                >
+                  <div class="flex items-center">
+                    <span
+                      class="w-5 h-5 flex items-center justify-center shrink-0"
+                    >
+                      <svg
+                        class="fill-current"
+                        :class="
+                          isExactActive ? 'text-violet-300' : 'text-slate-400'
+                        "
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                    >
+                      그룹 설정
+                    </span>
+                  </div>
+                </a>
+              </li>
+            </router-link>
             <!-- 설정(관리자) -->
             <SidebarLinkGroup
               v-if="auth.isAdmin"

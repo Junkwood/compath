@@ -59,8 +59,9 @@
         u.user_name,
         g.group_name
         FROM users u
-        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y' AND u.is_active='O1' AND u.user_type='M2'
+        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y'
         LEFT JOIN groups g ON gm.group_id = g.group_id AND g.is_active='O1'
+        WHERE u.is_active='O1' AND u.user_type='M2'
         ORDER BY u.user_id
     </select>
     <select id="getById">
