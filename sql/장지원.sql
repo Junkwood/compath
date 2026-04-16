@@ -410,7 +410,7 @@ LEFT JOIN (
       AND (p_date_to   IS NULL OR work_date <= p_date_to)
     GROUP BY task_id
 ) te_sum ON t.task_id = te_sum.task_id
-WHERE (t.is_deleted IS NULL OR t.is_deleted = 'O2')
+WHERE (t.is_deleted IS NULL OR t.is_deleted = 'Q2')
   AND t.project_id IN (
       SELECT project_id FROM projects
       START WITH project_id = p_project_id
@@ -524,6 +524,19 @@ BEGIN
     DELETE FROM time_entries WHERE time_entry_id = p_time_entry_id;
     COMMIT;
 END;
+
+SELECT t.task_id, t.title, t.actual_hours, te.task_id AS te_task_id, te.hours
+FROM tasks t
+LEFT JOIN time_entries te ON t.task_id = te.task_id
+WHERE t.project_id IN (
+  SELECT project_id FROM projects
+  START WITH project_id = 1  -- 실제 projectId
+  CONNECT BY parent_project_id = PRIOR project_id
+)
+AND ROWNUM <= 10;
+
+SELECT DISTINCT is_deleted FROM tasks;
+
 ------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE SP_REJECT_TASK_COMPLETE (
     p_task_id          IN NUMBER,   

@@ -103,6 +103,7 @@ class CustomTaskModel extends TaskModel {
     { name: "priorityCode" },
     { name: "assignee" },
     { name: "statusCode" },
+    { name: "projectId" },
   ];
 }
 
@@ -287,7 +288,24 @@ const initGantt = async () => {
       }
       return "";
     },
+    listeners: {
+      cellClick({ record }) {
+        const id = String(record.id);
 
+        if (id.startsWith("root_") || id.startsWith("p_")) return;
+
+        const taskProjectId = record.projectId;
+        const rootId = route.params.projectId;
+
+        const isSub = String(taskProjectId) !== String(rootId);
+
+        const path = isSub
+          ? `/project/${rootId}/${taskProjectId}/tasklist/${record.id}`
+          : `/project/${rootId}/tasklist/${record.id}`;
+
+        router.push(path);
+      },
+    },
     project: {
       tasksData,
       taskModelClass: CustomTaskModel,

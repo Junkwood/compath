@@ -421,6 +421,7 @@ export const useTaskStore = defineStore("task", () => {
     if (hasMilestone.value && !form.value.milestoneId)
       throw new Error("마일스톤을 선택해 주세요.");
     if (!form.value.taskTypeId) throw new Error("업무 유형을 선택해 주세요.");
+    if (!form.value.assigneeUserId) throw new Error("담당자를 선택해 주세요.");
     if (!form.value.title?.trim()) throw new Error("업무명을 입력해 주세요.");
     if (!form.value.taskStatusId) throw new Error("업무 상태를 선택해 주세요.");
     if (!form.value.priorityCode) throw new Error("우선순위를 선택해 주세요.");
