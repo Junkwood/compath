@@ -210,7 +210,7 @@ const handleSubmit = async () => {
       description: form.description,
       startDate: form.startDate,
       endDate: form.endDate,
-      isPublic: form.isPublic ? "O1" : "O2",
+      isPublic: form.isPublic ? "P1" : "P2",
       createdBy: authStore.user.userId,
       plUserId: form.plUserId,
       useMilestone: form.useMilestone ? "O2" : "O1",
