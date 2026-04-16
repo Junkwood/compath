@@ -151,7 +151,7 @@ const visible = computed({
   set: (v) => emit("update:modelValue", v),
 });
 
-const isMilestoneEnabled = computed(() => props.parentUseMilestone === "O2");
+const isMilestoneEnabled = computed(() => props.parentUseMilestone === "O1");
 
 const milestoneOptions = ref([]);
 const plOptions = ref([]);

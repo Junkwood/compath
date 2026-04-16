@@ -3,9 +3,9 @@
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-    <div
-      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
-    >
+<div
+  class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-[#f5f6f8]"
+>
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
@@ -417,7 +417,7 @@ const goProjectDashboard = (row) => {
 <style scoped>
 .dashboard-page {
   font-family: "Pretendard", sans-serif;
-  background-color: #f3f4f6;
+  background-color: #f7faff;
 }
 
 .sub-header {

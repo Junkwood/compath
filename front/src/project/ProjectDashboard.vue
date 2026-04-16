@@ -2,13 +2,9 @@
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-    <div
-      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
-    >
-      <Header
-        :sidebarOpen="sidebarOpen"
-        @toggle-sidebar="sidebarOpen = !sidebarOpen"
-      />
+<div
+  class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-[#f5f6f8]"
+>      <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" />
 
       <main class="grow">
         <!-- 브레드크럼 -->
@@ -721,16 +717,9 @@ const projectInfo = ref({
   useMilestone: "",
 });
 
-const normalizeMilestoneValue = (value) =>
-  String(value ?? "")
-    .trim()
-    .toUpperCase();
-const isMilestoneUsed = computed(
-  () => normalizeMilestoneValue(projectInfo.value.useMilestone) === "O2",
-);
-const milestoneLabel = computed(() =>
-  isMilestoneUsed.value ? "마일스톤 사용" : "마일스톤 미사용",
-);
+const normalizeMilestoneValue = (value) => String(value ?? "").trim().toUpperCase();
+const isMilestoneUsed = computed(() => normalizeMilestoneValue(projectInfo.value.useMilestone) === "O1");
+const milestoneLabel = computed(() => isMilestoneUsed.value ? "마일스톤 사용" : "마일스톤 미사용");
 
 const fetchProjectDetail = async () => {
   try {
