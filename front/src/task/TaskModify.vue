@@ -168,9 +168,58 @@
                 rows="4"
                 class="input w-full"
               />
-              <button class="btn btn-select mt-2" :disabled="isTerminated">
+
+              <input
+                type="file"
+                ref="fileInputRef"
+                multiple
+                style="display: none"
+                @change="handleFileChange"
+              />
+              <button
+                type="button"
+                class="btn btn-select mt-2"
+                :disabled="isTerminated"
+                @click="fileInputRef.click()"
+              >
                 파일 선택
               </button>
+              <div v-if="fileList.length > 0" class="mt-3">
+                <p class="field-label">새로 추가할 파일</p>
+                <div
+                  v-for="(file, idx) in fileList"
+                  :key="idx"
+                  class="flex justify-between mt-2 text-sm text-gray-600"
+                >
+                  <span>{{ file.name }}</span>
+                  <button
+                    type="button"
+                    @click="fileList.splice(idx, 1)"
+                    class="text-red-400 hover:text-red-600"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+
+              <!-- 기존 첨부파일 목록 -->
+              <div v-if="attachmentList.length > 0" class="mt-3">
+                <p class="field-label">기존 첨부파일</p>
+                <div
+                  v-for="(file, idx) in attachmentList"
+                  :key="file.attachmentId"
+                  class="flex justify-between mt-2 text-sm text-gray-600"
+                >
+                  <span>{{ file.filename }}</span>
+                  <button
+                    type="button"
+                    @click="removeExistingFile(file.attachmentId)"
+                    class="text-red-400 hover:text-red-600"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- 섹션 6: 상태 / 우선순위 / 마일스톤 -->
@@ -302,6 +351,8 @@ const route = useRoute();
 const sidebarOpen = ref(false);
 const store = useTaskStore();
 const authStore = useAuthStore();
+const fileList = ref([]);
+const fileInputRef = ref(null);
 
 const {
   form,
@@ -314,6 +365,7 @@ const {
   milestoneModal,
   actualHours,
   finishedIds,
+  attachmentList,
 } = storeToRefs(store);
 const {
   openUserModal,
@@ -322,6 +374,7 @@ const {
   onPriorityChange,
   calcEstTime,
   resetForm,
+  removeExistingFile,
 } = store;
 
 onMounted(async () => {
@@ -351,12 +404,22 @@ const goCreateSubTask = () => {
   });
 };
 
+const handleFileChange = (e) => {
+  Array.from(e.target.files).forEach((file) => {
+    fileList.value.push({ raw: file, name: file.name });
+  });
+};
+
 const handleSubmit = async () => {
   const taskId = route.params.taskId;
   const editorUserId = authStore.user?.userId || authStore.user?.id;
   const projectId = form.value.projectId;
   try {
-    const isSuccess = await store.updateTask(taskId, editorUserId);
+    const isSuccess = await store.updateTask(
+      taskId,
+      editorUserId,
+      fileList.value,
+    );
     if (isSuccess) {
       router.push({
         name: "taskDetail",

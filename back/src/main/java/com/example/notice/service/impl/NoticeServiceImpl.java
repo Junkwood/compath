@@ -26,13 +26,10 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public NoticeDTO registerNotice(NoticeDTO dto) {
 
-        // 등록된 글 최대 번호 조회
-        int id = mapper.getLastNum();
-        dto.setNoticeId(id);
-
         // 공지사항 등록
         mapper.registerNotice(dto);
 
+        Integer id =dto.getNoticeId();
 
         // 알림 전송
         notificationService.sendToAllProjectMembers(

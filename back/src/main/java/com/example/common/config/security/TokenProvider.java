@@ -19,7 +19,7 @@ public class TokenProvider {
     private String SECRET_KEY;
 
     public String createAccessToken(UserEntity userEntity) {
-        Date expiryDate = Date.from(Instant.now().plus(30, ChronoUnit.MINUTES));
+        Date expiryDate = Date.from(Instant.now().plus(30    , ChronoUnit.MINUTES));
         /*
         {//header
             "alg":"HS512"
@@ -43,6 +43,8 @@ public class TokenProvider {
                 .claim("userId", userEntity.getUserId())
                 .claim("userType", userEntity.getUserType())
                 .claim("userName", userEntity.getUserName())
+                .claim("primaryGroupName", userEntity.getPrimaryGroupName())
+                .claim("primaryGroupId", userEntity.getPrimaryGroupId())
                 .setIssuer("demo app")
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)

@@ -399,7 +399,7 @@ import { useEmpStore } from "../stores/empSJW";
 import { useRoleStore } from "../stores/roleSJW";
 import { useGroupStore } from "../stores/groupSJW";
 import { useAuthStore } from "../stores/auth";
-import admin from "../utils/admin";
+import api from "../utils/api";
 
 export default {
   name: "GroupEdit",
@@ -578,7 +578,7 @@ export default {
         isNameChecked.value = true;
         return;
       }
-      const res = await admin.get(`/group/dup/${form.value.groupName}`);
+      const res = await api.get(`/group/dup/${form.value.groupName}`);
       isNameValid.value = res.data === "Y";
       isNameChecked.value = true;
     };
@@ -644,7 +644,7 @@ export default {
       };
 
       try {
-        await admin.put(`/group/${form.value.groupId}`, payload);
+        await api.put(`/group/${form.value.groupId}`, payload);
 
         Swal.fire({
           toast: true,

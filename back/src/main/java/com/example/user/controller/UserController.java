@@ -60,14 +60,17 @@ public class UserController {
                 userDTO.getUserId(),
                 userDTO.getPassword()
         );
+        log.error(user.toString());
         if(user != null) {
             String accessToken = tokenProvider.createAccessToken(user);
             String refreshToken = tokenProvider.createRefreshToken(user);
 
-            final UserDTO responseUserDTO = userDTO.builder()
+            final UserDTO responseUserDTO = UserDTO.builder()
                     .userId(user.getUserId())
                     .token(accessToken)
                     .refreshToken(refreshToken)
+                    .primaryGroupName(userDTO.getPrimaryGroupName())
+                    .primaryGroupId(userDTO.getPrimaryGroupId())
                     .build();
             return ResponseEntity.ok().body(responseUserDTO);
         }else{

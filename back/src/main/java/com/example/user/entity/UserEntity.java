@@ -1,14 +1,12 @@
 package com.example.user.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnTransformer;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
 
 import java.time.LocalDateTime;
 
@@ -47,4 +45,16 @@ public class UserEntity {
     // 5. Null 허용 컬럼
     @Column(name = "editor_user_id")
     private Integer editorUserId;
+
+    @Formula("(SELECT g.group_name " +
+            "FROM group_members gm " +
+            "JOIN groups g ON gm.group_id = g.group_id " +
+            "WHERE gm.user_id = user_id " + // 여기서 뒤의 user_id는 현재 users 테이블의 PK입니다.
+            "AND gm.is_primary = 'Y')")
+    private String primaryGroupName;
+    @Formula("(SELECT gm.group_id " +
+            "FROM group_members gm " +
+            "WHERE gm.user_id = user_id " + // 여기서 뒤의 user_id는 현재 users 테이블의 PK입니다.
+            "AND gm.is_primary = 'Y')")
+    private Integer primaryGroupId;
 }

@@ -11,10 +11,12 @@ export const useDocumentStore = defineStore("document", {
   getters: {},
   actions: {
     // 문서 등록
-    async registerDocument(obj) {
-      console.log("등록전 데이터: ", obj);
+    async registerDocument(formData) {
+      console.log("등록전 데이터: ", formData);
       await api //
-        .post("/documents/register", obj)
+        .post("/documents/register", formData, {
+          headers: {},
+        })
         .then((res) => {
           this.registeredDocument = res.data;
           console.log("문서 등록완료: ", this.registeredDocument);

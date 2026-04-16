@@ -19,7 +19,6 @@
         </div>
 
         <div class="page-container">
-
           <!-- ── 헤더 카드 ── -->
           <div class="page-title-card">
             <div class="title-section">
@@ -27,7 +26,10 @@
                 <span v-if="projectInfo.identifier" class="proj-id-badge">
                   {{ projectInfo.identifier }}
                 </span>
-                <span class="milestone-badge" :class="isMilestoneUsed ? 'on' : 'off'">
+                <span
+                  class="milestone-badge"
+                  :class="isMilestoneUsed ? 'on' : 'off'"
+                >
                   {{ milestoneLabel }}
                 </span>
               </div>
@@ -41,7 +43,10 @@
             </div>
 
             <div class="action-group">
-              <el-button class="action-btn btn-primary" @click="handleProjectSetting">
+              <el-button
+                class="action-btn btn-primary"
+                @click="handleProjectSetting"
+              >
                 ⚙ 프로젝트 설정
               </el-button>
             </div>
@@ -49,10 +54,8 @@
 
           <!-- ── 본문 그리드 ── -->
           <div class="top-grid">
-
             <!-- 좌측 -->
             <div class="left-col">
-
               <!-- 업무 현황 -->
               <div class="panel">
                 <div class="panel-head">
@@ -69,24 +72,51 @@
                   :header-cell-style="headerStyle"
                   :cell-style="cellStyle"
                 >
-                  <el-table-column prop="type"       label="유형"   min-width="110" />
-                  <el-table-column prop="total"      label="전체"   min-width="80"  align="center" />
-                  <el-table-column prop="inProgress" label="진행중" min-width="90"  align="center">
+                  <el-table-column prop="type" label="유형" min-width="110" />
+                  <el-table-column
+                    prop="total"
+                    label="전체"
+                    min-width="80"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="inProgress"
+                    label="진행중"
+                    min-width="90"
+                    align="center"
+                  >
                     <template #default="{ row }">
                       <span class="num-hi">{{ row.inProgress }}</span>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="done"       label="완료"   min-width="80"  align="center">
+                  <el-table-column
+                    prop="done"
+                    label="완료"
+                    min-width="80"
+                    align="center"
+                  >
                     <template #default="{ row }">
                       <span class="num-done">{{ row.done }}</span>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="rejected"   label="반려"   min-width="80"  align="center">
+                  <el-table-column
+                    prop="rejected"
+                    label="반려"
+                    min-width="80"
+                    align="center"
+                  >
                     <template #default="{ row }">
-                      <span :class="{ 'num-reject': row.rejected > 0 }">{{ row.rejected }}</span>
+                      <span :class="{ 'num-reject': row.rejected > 0 }">{{
+                        row.rejected
+                      }}</span>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="totalSum"   label="합계"   min-width="80"  align="center">
+                  <el-table-column
+                    prop="totalSum"
+                    label="합계"
+                    min-width="80"
+                    align="center"
+                  >
                     <template #default="{ row }">
                       <span class="num-total">{{ row.totalSum }}</span>
                     </template>
@@ -109,13 +139,19 @@
                     >
                       <div class="notice-left">
                         <span class="notice-title">{{ item.title }}</span>
-                        <span v-if="item.pinStatusCode === 'B1'" class="badge-pin">고정</span>
+                        <span
+                          v-if="item.pinStatusCode === 'B1'"
+                          class="badge-pin"
+                          >고정</span
+                        >
                         <span v-if="item.isNew" class="badge-new">NEW</span>
                       </div>
                       <span class="notice-date">{{ item.createdAt }}</span>
                     </li>
                   </ul>
-                  <div v-else class="empty-text">등록된 공지사항이 없습니다.</div>
+                  <div v-else class="empty-text">
+                    등록된 공지사항이 없습니다.
+                  </div>
                 </div>
               </div>
 
@@ -159,23 +195,36 @@
                         <el-table-column min-width="260">
                           <template #default="{ row }">
                             <div class="sub-project-cell">
-                              <span class="sub-project-name">{{ row.projectName }}</span>
-                              <span v-if="row.identifier" class="sub-project-id">{{ row.identifier }}</span>
+                              <span class="sub-project-name">{{
+                                row.projectName
+                              }}</span>
+                              <span
+                                v-if="row.identifier"
+                                class="sub-project-id"
+                                >{{ row.identifier }}</span
+                              >
                             </div>
                           </template>
                         </el-table-column>
                         <el-table-column min-width="180" align="center">
                           <template #default="{ row }">
-                            <span class="sub-pl">{{ row.startDate || '-' }} ~ {{ row.endDate || '-' }}</span>
+                            <span class="sub-pl"
+                              >{{ row.startDate || "-" }} ~
+                              {{ row.endDate || "-" }}</span
+                            >
                           </template>
                         </el-table-column>
                         <el-table-column label="PL" width="110" align="center">
                           <template #default="{ row }">
-                            <span class="sub-pl">{{ row.userName || '-' }}</span>
+                            <span class="sub-pl">{{
+                              row.userName || "-"
+                            }}</span>
                           </template>
                         </el-table-column>
                         <template #empty>
-                          <div class="empty-text">하위 프로젝트가 없습니다.</div>
+                          <div class="empty-text">
+                            하위 프로젝트가 없습니다.
+                          </div>
                         </template>
                       </el-table>
 
@@ -189,7 +238,9 @@
                         />
                       </div>
                     </template>
-                    <div v-else class="empty-text">하위 프로젝트가 없습니다.</div>
+                    <div v-else class="empty-text">
+                      하위 프로젝트가 없습니다.
+                    </div>
                   </template>
 
                   <template v-else>
@@ -205,19 +256,29 @@
                         <el-table-column min-width="260">
                           <template #default="{ row }">
                             <div class="sub-project-cell">
-                              <span class="sub-project-name">{{ row.projectName }}</span>
-                              <span v-if="row.identifier" class="sub-project-id">{{ row.identifier }}</span>
+                              <span class="sub-project-name">{{
+                                row.projectName
+                              }}</span>
+                              <span
+                                v-if="row.identifier"
+                                class="sub-project-id"
+                                >{{ row.identifier }}</span
+                              >
                             </div>
                           </template>
                         </el-table-column>
                         <el-table-column label="PL" width="110" align="center">
                           <template #default="{ row }">
-                            <span class="sub-pl">{{ row.userName || '-' }}</span>
+                            <span class="sub-pl">{{
+                              row.userName || "-"
+                            }}</span>
                           </template>
                         </el-table-column>
                       </el-table>
                     </template>
-                    <div v-else class="empty-text">하위 프로젝트가 없습니다.</div>
+                    <div v-else class="empty-text">
+                      하위 프로젝트가 없습니다.
+                    </div>
                   </template>
                 </div>
               </div>
@@ -225,7 +286,6 @@
 
             <!-- 우측 -->
             <div class="right-col">
-
               <!-- 구성원 -->
               <div class="panel">
                 <div class="panel-head">
@@ -246,29 +306,55 @@
                           @click="toggleMemberGroup(group.key)"
                         >
                           <div class="member-group-left">
-                            <span class="member-group-dot" :style="{ backgroundColor: getAvatarColor(group.label) }"></span>
-                            <span class="member-group-name">{{ group.label }}</span>
+                            <span
+                              class="member-group-dot"
+                              :style="{
+                                backgroundColor: getAvatarColor(group.label),
+                              }"
+                            ></span>
+                            <span class="member-group-name">{{
+                              group.label
+                            }}</span>
                           </div>
                           <div class="member-group-right">
-                            <span class="member-group-count">{{ group.members.length }}명</span>
-                            <span class="member-group-arrow">{{ openedMemberGroups[group.key] ? '−' : '+' }}</span>
+                            <span class="member-group-count"
+                              >{{ group.members.length }}명</span
+                            >
+                            <span class="member-group-arrow">{{
+                              openedMemberGroups[group.key] ? "−" : "+"
+                            }}</span>
                           </div>
                         </button>
 
                         <transition name="accordion">
-                          <div v-show="openedMemberGroups[group.key]" class="member-group-list">
+                          <div
+                            v-show="openedMemberGroups[group.key]"
+                            class="member-group-list"
+                          >
                             <div
                               v-for="member in group.members"
                               :key="member.userId"
                               class="member-item"
                             >
-                              <div class="member-avatar" :style="{ backgroundColor: getAvatarColor(member.roleName) }">
+                              <div
+                                class="member-avatar"
+                                :style="{
+                                  backgroundColor: getAvatarColor(
+                                    member.roleName,
+                                  ),
+                                }"
+                              >
                                 {{ member.userName?.charAt(0) }}
                               </div>
                               <div class="member-info">
-                                <span class="member-name">{{ member.userName }}</span>
-                                <span class="member-role" :class="getRoleClass(member.roleName)">
-                                  {{ member.roleName || '구성원' }}
+                                <span class="member-name">{{
+                                  member.userName
+                                }}</span>
+                                <span
+                                  class="member-role"
+                                  :class="getRoleClass(member.roleName)"
+                                >
+                                  {{ member.roleName || "구성원" }}
                                 </span>
                               </div>
                             </div>
@@ -277,7 +363,9 @@
                       </div>
                     </div>
                   </template>
-                  <div v-else class="empty-text">구성원이 아직 지정되지 않았습니다.</div>
+                  <div v-else class="empty-text">
+                    구성원이 아직 지정되지 않았습니다.
+                  </div>
                 </div>
               </div>
 
@@ -285,7 +373,13 @@
               <div class="panel">
                 <div class="panel-head">
                   <h2 class="panel-title">나의 메모</h2>
-                  <button class="btn-memo-add" type="button" @click="handleAddMemo">+</button>
+                  <button
+                    class="btn-memo-add"
+                    type="button"
+                    @click="handleAddMemo"
+                  >
+                    +
+                  </button>
                 </div>
                 <div class="memo-body">
                   <template v-if="memoList.length > 0">
@@ -300,13 +394,18 @@
                         <div class="memo-date">{{ memo.createdAt }}</div>
                         <div class="memo-text">{{ memo.memoContent }}</div>
                       </div>
-                      <button class="memo-del" type="button" @click="handleDeleteMemo(memo.memoId)">✕</button>
+                      <button
+                        class="memo-del"
+                        type="button"
+                        @click="handleDeleteMemo(memo.memoId)"
+                      >
+                        ✕
+                      </button>
                     </div>
                   </template>
                   <div v-else class="empty-text">등록된 메모가 없습니다.</div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -414,13 +513,16 @@ const isWithin7Days = (value) => {
   if (!value) return false;
   const target = new Date(value);
   if (Number.isNaN(target.getTime())) return false;
-  const diff = (new Date().getTime() - target.getTime()) / (1000 * 60 * 60 * 24);
+  const diff =
+    (new Date().getTime() - target.getTime()) / (1000 * 60 * 60 * 24);
   return diff >= 0 && diff <= 7;
 };
 
 const fetchNoticeList = async () => {
   try {
-    const res = await api.get(`/notices/getNoticeLists/${Number(route.params.projectId)}`);
+    const res = await api.get(
+      `/notices/getNoticeLists/${Number(route.params.projectId)}`,
+    );
     const rawList = Array.isArray(res.data) ? res.data : [];
     noticeList.value = rawList
       .map((item) => ({
@@ -432,8 +534,12 @@ const fetchNoticeList = async () => {
         isNew: isWithin7Days(item.createdAt),
       }))
       .sort((a, b) => {
-        const diff = (b.pinStatusCode === "B1" ? 1 : 0) - (a.pinStatusCode === "B1" ? 1 : 0);
-        return diff !== 0 ? diff : new Date(b.rawCreatedAt) - new Date(a.rawCreatedAt);
+        const diff =
+          (b.pinStatusCode === "B1" ? 1 : 0) -
+          (a.pinStatusCode === "B1" ? 1 : 0);
+        return diff !== 0
+          ? diff
+          : new Date(b.rawCreatedAt) - new Date(a.rawCreatedAt);
       })
       .slice(0, 7);
   } catch (err) {
@@ -462,13 +568,16 @@ const groupedMembers = computed(() => {
   const map = new Map();
   projectMembers.value.forEach((member) => {
     const groupName = normalizeRoleName(member.roleName);
-    if (!map.has(groupName)) map.set(groupName, { key: groupName, label: groupName, members: [] });
+    if (!map.has(groupName))
+      map.set(groupName, { key: groupName, label: groupName, members: [] });
     map.get(groupName).members.push(member);
   });
   return Array.from(map.values())
     .map((group) => ({
       ...group,
-      members: [...group.members].sort((a, b) => String(a.userName || "").localeCompare(String(b.userName || ""), "ko")),
+      members: [...group.members].sort((a, b) =>
+        String(a.userName || "").localeCompare(String(b.userName || ""), "ko"),
+      ),
     }))
     .sort((a, b) => {
       const orderA = roleOrderMap[a.label] ?? 50;
@@ -480,14 +589,18 @@ const groupedMembers = computed(() => {
 
 const setDefaultOpenedGroups = () => {
   const next = {};
-  groupedMembers.value.forEach((group, index) => { next[group.key] = index === 0; });
+  groupedMembers.value.forEach((group, index) => {
+    next[group.key] = index === 0;
+  });
   openedMemberGroups.value = next;
 };
 
 const toggleMemberGroup = (groupKey) => {
   const isCurrentlyOpen = openedMemberGroups.value[groupKey];
   const next = {};
-  groupedMembers.value.forEach((group) => { next[group.key] = false; });
+  groupedMembers.value.forEach((group) => {
+    next[group.key] = false;
+  });
   next[groupKey] = !isCurrentlyOpen;
   openedMemberGroups.value = next;
 };
@@ -543,9 +656,16 @@ const handleDeleteMemo = async (memoId) => {
   });
   if (!result.isConfirmed) return;
   try {
-    await api.post("/MemoStatUpdate", { memoId, userId: authStore.user?.userId });
+    await api.post("/MemoStatUpdate", {
+      memoId,
+      userId: authStore.user?.userId,
+    });
     await fetchMemoList();
-    await Swal.fire({ title: "삭제되었습니다.", icon: "success", confirmButtonText: "확인" });
+    await Swal.fire({
+      title: "삭제되었습니다.",
+      icon: "success",
+      confirmButtonText: "확인",
+    });
   } catch (err) {
     console.error("메모 삭제 불가:", err);
   }
@@ -557,9 +677,18 @@ const handleMemoSubmitted = async (payload) => {
     const userId = authStore.user?.userId;
     if (!userId) return;
     if (isMemoEditMode.value) {
-      await api.post("/MemoContentUpdate", { memoId: editingMemoId.value, projectId, userId, memoContent: payload.text });
+      await api.post("/MemoContentUpdate", {
+        memoId: editingMemoId.value,
+        projectId,
+        userId,
+        memoContent: payload.text,
+      });
     } else {
-      await api.post("/MemoRegister", { projectId, userId, memoContent: payload.text });
+      await api.post("/MemoRegister", {
+        projectId,
+        userId,
+        memoContent: payload.text,
+      });
     }
     memoModalVisible.value = false;
     isMemoEditMode.value = false;
@@ -579,8 +708,13 @@ const handleAddMemo = () => {
 };
 
 const projectInfo = ref({
-  projectId: null, projectName: "", identifier: "",
-  description: "", startDate: "", endDate: "", useMilestone: "",
+  projectId: null,
+  projectName: "",
+  identifier: "",
+  description: "",
+  startDate: "",
+  endDate: "",
+  useMilestone: "",
 });
 
 const normalizeMilestoneValue = (value) => String(value ?? "").trim().toUpperCase();
@@ -619,20 +753,30 @@ const fetchSubProject = async () => {
   }
 };
 
-const isMilestoneEnabled = computed(() =>
-  isMilestoneUsed.value || subProjects.value.some((item) => item.milestoneId != null)
+const isMilestoneEnabled = computed(
+  () =>
+    isMilestoneUsed.value ||
+    subProjects.value.some((item) => item.milestoneId != null),
 );
 
 const milestoneTabs = computed(() => {
   const map = new Map();
   subProjects.value.forEach((item) => {
     const key = item.milestoneId ?? "unassigned";
-    if (!map.has(key)) map.set(key, { milestoneId: item.milestoneId, milestoneName: item.milestoneName || "미분류", projects: [] });
+    if (!map.has(key))
+      map.set(key, {
+        milestoneId: item.milestoneId,
+        milestoneName: item.milestoneName || "미분류",
+        projects: [],
+      });
     if (item.projectId) {
       map.get(key).projects.push({
-        projectId: item.projectId, projectName: item.projectName,
-        identifier: item.identifier, userName: item.userName,
-        startDate: item.startDate || "", endDate: item.endDate || "",
+        projectId: item.projectId,
+        projectName: item.projectName,
+        identifier: item.identifier,
+        userName: item.userName,
+        startDate: item.startDate || "",
+        endDate: item.endDate || "",
       });
     }
   });
@@ -646,27 +790,65 @@ const milestoneTabs = computed(() => {
 const getMilestoneTabKey = (tab) => String(tab.milestoneId ?? "unassigned");
 const currentMilestone = computed(() => {
   if (!milestoneTabs.value.length) return null;
-  return milestoneTabs.value.find((tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value) || milestoneTabs.value[0];
+  return (
+    milestoneTabs.value.find(
+      (tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value,
+    ) || milestoneTabs.value[0]
+  );
 });
 
 const pagedSubProjects = computed(() => {
   if (!currentMilestone.value) return [];
   const start = (subProjectPage.value - 1) * subProjectPageSize;
-  return currentMilestone.value.projects.slice(start, start + subProjectPageSize);
+  return currentMilestone.value.projects.slice(
+    start,
+    start + subProjectPageSize,
+  );
 });
 
-const handleMilestoneTabClick = () => { subProjectPage.value = 1; };
+const handleMilestoneTabClick = () => {
+  subProjectPage.value = 1;
+};
 
-watch(milestoneTabs, (tabs) => {
-  if (!tabs.length) { activeMilestoneKey.value = null; subProjectPage.value = 1; return; }
-  const exists = tabs.some((tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value);
-  if (!exists) { activeMilestoneKey.value = getMilestoneTabKey(tabs[0]); subProjectPage.value = 1; }
-}, { immediate: true });
+watch(
+  milestoneTabs,
+  (tabs) => {
+    if (!tabs.length) {
+      activeMilestoneKey.value = null;
+      subProjectPage.value = 1;
+      return;
+    }
+    const exists = tabs.some(
+      (tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value,
+    );
+    if (!exists) {
+      activeMilestoneKey.value = getMilestoneTabKey(tabs[0]);
+      subProjectPage.value = 1;
+    }
+  },
+  { immediate: true },
+);
 
-const handleProjectSetting = () => router.push({ name: "projectSetting", params: { id: route.params.projectId } });
-const handleViewTasks = () => router.push({ name: "taskList", params: { projectId: route.params.projectId } });
-const handleNoticeClick = (item) => router.push({ name: "noticeDetail", params: { projectId: route.params.projectId, noticeId: item.noticeId } });
-const handleSubProjectRowClick = (row) => router.push({ name: "subProjectDashboard", params: { projectId: route.params.projectId, subProjectId: row.projectId } });
+const handleProjectSetting = () =>
+  router.push({
+    name: "projectSetting",
+    params: { id: route.params.projectId },
+  });
+const handleViewTasks = () =>
+  router.push({
+    name: "taskList",
+    params: { projectId: route.params.projectId },
+  });
+const handleNoticeClick = (item) =>
+  router.push({
+    name: "noticeDetail",
+    params: { projectId: route.params.projectId, noticeId: item.noticeId },
+  });
+const handleSubProjectRowClick = (row) =>
+  router.push({
+    name: "subProjectDashboard",
+    params: { projectId: route.params.projectId, subProjectId: row.projectId },
+  });
 
 /* ── 테이블 스타일 ── */
 const headerStyle = () => ({
@@ -737,9 +919,16 @@ onMounted(() => {
   font-size: 12.5px;
 }
 
-.bc-home { color: #9ca3af; }
-.bc-sep  { color: #d1d5db; }
-.bc-cur  { color: #111827; font-weight: 600; }
+.bc-home {
+  color: #9ca3af;
+}
+.bc-sep {
+  color: #d1d5db;
+}
+.bc-cur {
+  color: #111827;
+  font-weight: 600;
+}
 
 /* ── 페이지 컨테이너 ── */
 .page-container {
@@ -757,7 +946,7 @@ onMounted(() => {
   background: #fff;
   border-radius: 14px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   padding: 22px 28px;
   display: flex;
   justify-content: space-between;
@@ -802,8 +991,14 @@ onMounted(() => {
   font-weight: 700;
 }
 
-.milestone-badge.on  { background: #ecfdf5; color: #059669; }
-.milestone-badge.off { background: #f3f4f6; color: #9ca3af; }
+.milestone-badge.on {
+  background: #ecfdf5;
+  color: #059669;
+}
+.milestone-badge.off {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
 
 .page-title {
   font-size: 26px;
@@ -845,16 +1040,20 @@ onMounted(() => {
   transition: all 0.15s ease !important;
 }
 
-.action-btn:hover { transform: translateY(-1px); }
+.action-btn:hover {
+  transform: translateY(-1px);
+}
 
 .btn-primary {
   background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
   border: none !important;
   color: #fff !important;
-  box-shadow: 0 4px 12px rgba(27,92,156,0.25) !important;
+  box-shadow: 0 4px 12px rgba(27, 92, 156, 0.25) !important;
 }
 
-.btn-primary:hover { filter: brightness(1.08); }
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
 
 .btn-sub {
   background: #fff !important;
@@ -868,7 +1067,10 @@ onMounted(() => {
   transition: all 0.15s ease !important;
 }
 
-.btn-sub:hover { background: #eff6ff !important; border-color: #bcd2ea !important; }
+.btn-sub:hover {
+  background: #eff6ff !important;
+  border-color: #bcd2ea !important;
+}
 
 /* ── 그리드 ── */
 .top-grid {
@@ -889,7 +1091,7 @@ onMounted(() => {
 .panel {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border: 1px solid #e5e7eb;
   overflow: hidden;
 }
@@ -925,15 +1127,33 @@ onMounted(() => {
 }
 
 /* ── 숫자 강조 ── */
-.num-hi     { color: #1b5c9c; font-weight: 700; }
-.num-done   { color: #059669; font-weight: 600; }
-.num-reject { color: #dc2626; font-weight: 700; }
-.num-total  { color: #374151; font-weight: 700; }
+.num-hi {
+  color: #1b5c9c;
+  font-weight: 700;
+}
+.num-done {
+  color: #059669;
+  font-weight: 600;
+}
+.num-reject {
+  color: #dc2626;
+  font-weight: 700;
+}
+.num-total {
+  color: #374151;
+  font-weight: 700;
+}
 
 /* ── 공지사항 ── */
-.notice-body { padding: 4px 0; }
+.notice-body {
+  padding: 4px 0;
+}
 
-.notice-list { list-style: none; margin: 0; padding: 0; }
+.notice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 
 .notice-item {
   display: flex;
@@ -946,8 +1166,12 @@ onMounted(() => {
   transition: background 0.15s;
 }
 
-.notice-item:last-child { border-bottom: none; }
-.notice-item:hover { background: #f9fafb; }
+.notice-item:last-child {
+  border-bottom: none;
+}
+.notice-item:hover {
+  background: #f9fafb;
+}
 
 .notice-left {
   display: flex;
@@ -964,13 +1188,33 @@ onMounted(() => {
   text-overflow: ellipsis;
 }
 
-.notice-date { font-size: 12px; color: #9ca3af; flex-shrink: 0; }
+.notice-date {
+  font-size: 12px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
 
-.badge-pin { background: #eff6ff; color: #1e40af; padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; }
-.badge-new { background: #fee2e2; color: #b91c1c; padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.badge-pin {
+  background: #eff6ff;
+  color: #1e40af;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-new {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
 
 /* ── 하위 프로젝트 ── */
-.sub-body { padding: 0; }
+.sub-body {
+  padding: 0;
+}
 
 :deep(.milestone-tabs > .el-tabs__header) {
   margin: 0;
@@ -992,17 +1236,28 @@ onMounted(() => {
   color: #374151;
 }
 
-:deep(.milestone-tabs > .el-tabs__header .el-tabs__item:hover) { color: #3b82f6; }
-:deep(.milestone-tabs > .el-tabs__header .el-tabs__item.is-active) { color: #3b82f6; }
+:deep(.milestone-tabs > .el-tabs__header .el-tabs__item:hover) {
+  color: #3b82f6;
+}
+:deep(.milestone-tabs > .el-tabs__header .el-tabs__item.is-active) {
+  color: #3b82f6;
+}
 
 :deep(.milestone-tabs > .el-tabs__header .el-tabs__active-bar) {
   background-color: #60a5fa;
   height: 2px;
 }
 
-:deep(.milestone-tabs > .el-tabs__content) { display: none; }
+:deep(.milestone-tabs > .el-tabs__content) {
+  display: none;
+}
 
-.sub-project-cell { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sub-project-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
 
 .sub-project-name {
   font-size: 13px;
@@ -1027,7 +1282,12 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.sub-pl { font-size: 12.5px; color: #6b7280; font-weight: 600; white-space: nowrap; }
+.sub-pl {
+  font-size: 12.5px;
+  color: #6b7280;
+  font-weight: 600;
+  white-space: nowrap;
+}
 
 /* ── 페이지네이션 ── */
 .pag-wrap {
@@ -1039,9 +1299,15 @@ onMounted(() => {
 }
 
 /* ── 구성원 ── */
-.member-body { padding: 14px; }
+.member-body {
+  padding: 14px;
+}
 
-.member-scroll { display: flex; flex-direction: column; gap: 8px; }
+.member-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 .member-group {
   border: 1px solid #eef2f7;
@@ -1063,16 +1329,35 @@ onMounted(() => {
   transition: background 0.15s;
 }
 
-.member-group-head:hover { background: #f3f4f6; }
+.member-group-head:hover {
+  background: #f3f4f6;
+}
 
 .member-group-left,
-.member-group-right { display: flex; align-items: center; gap: 9px; }
+.member-group-right {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
 
-.member-group-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.member-group-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
-.member-group-name { font-size: 13px; font-weight: 700; color: #111827; }
+.member-group-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
 
-.member-group-count { font-size: 11.5px; color: #6b7280; font-weight: 700; }
+.member-group-count {
+  font-size: 11.5px;
+  color: #6b7280;
+  font-weight: 700;
+}
 
 .member-group-arrow {
   width: 20px;
@@ -1103,7 +1388,9 @@ onMounted(() => {
   border-bottom: 1px solid #f3f4f6;
 }
 
-.member-item:last-child { border-bottom: none; }
+.member-item:last-child {
+  border-bottom: none;
+}
 
 .member-avatar {
   width: 30px;
@@ -1127,7 +1414,13 @@ onMounted(() => {
   min-width: 0;
 }
 
-.member-name { font-size: 13px; font-weight: 600; color: #111827; min-width: 0; word-break: break-word; }
+.member-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  min-width: 0;
+  word-break: break-word;
+}
 
 .member-role {
   font-size: 11px;
@@ -1138,11 +1431,26 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.role-pm  { background: #dbeafe; color: #1d4ed8; }
-.role-pl  { background: #ede9fe; color: #6d28d9; }
-.role-dev { background: #dcfce7; color: #166534; }
-.role-qa  { background: #fee2e2; color: #b91c1c; }
-.role-mgr { background: #e0e7ff; color: #4338ca; }
+.role-pm {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.role-pl {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+.role-dev {
+  background: #dcfce7;
+  color: #166534;
+}
+.role-qa {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.role-mgr {
+  background: #e0e7ff;
+  color: #4338ca;
+}
 
 /* ── 메모 ── */
 .memo-body {
@@ -1167,14 +1475,16 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 3px 8px rgba(27,92,156,0.22);
+  box-shadow: 0 3px 8px rgba(27, 92, 156, 0.22);
   transition: filter 0.15s;
   line-height: 1;
   padding: 0;
   flex-shrink: 0;
 }
 
-.btn-memo-add:hover { filter: brightness(1.1); }
+.btn-memo-add:hover {
+  filter: brightness(1.1);
+}
 
 .memo-card {
   border-radius: 10px;
@@ -1185,19 +1495,46 @@ onMounted(() => {
   gap: 10px;
   border: 1px solid #e5e7eb;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
 }
 
-.memo-card:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+.memo-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
 
-.memo-blue   { background: #eff6ff; }
-.memo-yellow { background: #fefce8; }
-.memo-pink   { background: #fdf2f8; }
-.memo-green  { background: #ecfdf5; }
+.memo-blue {
+  background: #eff6ff;
+}
+.memo-yellow {
+  background: #fefce8;
+}
+.memo-pink {
+  background: #fdf2f8;
+}
+.memo-green {
+  background: #ecfdf5;
+}
 
-.memo-content { flex: 1; min-width: 0; }
-.memo-date { font-size: 11px; font-weight: 600; color: #9ca3af; margin-bottom: 5px; }
-.memo-text { font-size: 12.5px; color: #1f2937; white-space: pre-line; line-height: 1.6; word-break: break-word; }
+.memo-content {
+  flex: 1;
+  min-width: 0;
+}
+.memo-date {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-bottom: 5px;
+}
+.memo-text {
+  font-size: 12.5px;
+  color: #1f2937;
+  white-space: pre-line;
+  line-height: 1.6;
+  word-break: break-word;
+}
 
 .memo-del {
   background: none;
@@ -1211,47 +1548,94 @@ onMounted(() => {
   transition: color 0.15s;
 }
 
-.memo-del:hover { color: #dc2626; }
+.memo-del:hover {
+  color: #dc2626;
+}
 
 /* ── empty ── */
-.empty-text { padding: 22px 20px; text-align: center; font-size: 13px; color: #9ca3af; }
+.empty-text {
+  padding: 22px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+}
 
 /* ── 테이블 공통 ── */
-:deep(.el-table) { --el-table-header-bg-color: #f9fafb; }
+:deep(.el-table) {
+  --el-table-header-bg-color: #f9fafb;
+}
 
 :deep(.el-table__inner-wrapper::before),
-:deep(.el-table::before) { display: none; }
+:deep(.el-table::before) {
+  display: none;
+}
 
 :deep(.el-table td.el-table__cell),
-:deep(.el-table th.el-table__cell) { border-bottom: 1px solid #f3f4f6 !important; }
+:deep(.el-table th.el-table__cell) {
+  border-bottom: 1px solid #f3f4f6 !important;
+}
 
-:deep(.el-table .cell) { padding-left: 14px !important; padding-right: 14px !important; }
+:deep(.el-table .cell) {
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
 
-:deep(.el-table__row:hover > td) { background: #f8fbff !important; }
+:deep(.el-table__row:hover > td) {
+  background: #f8fbff !important;
+}
 
-:deep(.clickable-row) { cursor: pointer; }
+:deep(.clickable-row) {
+  cursor: pointer;
+}
 
-:deep(.sub-body .el-table__inner-wrapper) { min-height: 200px; }
-:deep(.sub-body .el-table__body-wrapper) { min-height: 200px; }
-:deep(.sub-body .el-table__empty-block) { min-height: 200px !important; }
+:deep(.sub-body .el-table__inner-wrapper) {
+  min-height: 200px;
+}
+:deep(.sub-body .el-table__body-wrapper) {
+  min-height: 200px;
+}
+:deep(.sub-body .el-table__empty-block) {
+  min-height: 200px !important;
+}
 
 /* accordion */
 .accordion-enter-active,
-.accordion-leave-active { transition: opacity 0.2s ease; }
+.accordion-leave-active {
+  transition: opacity 0.2s ease;
+}
 .accordion-enter-from,
-.accordion-leave-to { opacity: 0; }
+.accordion-leave-to {
+  opacity: 0;
+}
 
 /* ── 반응형 ── */
 @media (max-width: 1200px) {
-  .top-grid { grid-template-columns: 1fr; }
-  .right-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .top-grid {
+    grid-template-columns: 1fr;
+  }
+  .right-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
 }
 
 @media (max-width: 768px) {
-  .page-container { padding: 16px; }
-  .sub-header { padding: 11px 16px; }
-  .page-title-card { flex-direction: column; align-items: stretch; }
-  .right-col { grid-template-columns: 1fr; }
-  .page-title { font-size: 22px; }
+  .page-container {
+    padding: 16px;
+  }
+  .sub-header {
+    padding: 11px 16px;
+  }
+  .page-title-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .right-col {
+    grid-template-columns: 1fr;
+  }
+  .page-title {
+    font-size: 22px;
+  }
 }
 </style>

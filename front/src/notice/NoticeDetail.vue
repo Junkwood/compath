@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-page flex min-h-screen overflow-hidden">
+  <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <div
@@ -15,23 +15,12 @@
           <div class="breadcrumb">
             <span class="bc-home">홈</span>
             <span class="bc-sep">›</span>
-            <span> {{ noticeInfo.projectName }}</span>
-            <span class="bc-sep">›</span>
+            <span v-for="info in taskPjList" :key="info">{{ info }} › </span>
             <span class="bc-cur"> 공지사항 상세</span>
           </div>
         </div>
 
         <div class="page-container">
-          <el-alert
-            v-if="noticeInfo.isDeleted === 'Q1'"
-            title="비활성화된 게시글입니다."
-            type="warning"
-            description="관리자만 열람 가능하며 일반 사용자에게는 노출되지 않습니다."
-            show-icon
-            :closable="false"
-            class="top-alert"
-          />
-
           <!-- 상단 프로젝트 정보 -->
           <div class="pg-row">
             <div class="pg-left">
@@ -43,10 +32,35 @@
               </div>
             </div>
 
-            <button @click="goBack" type="button" class="btn-back-top">
-              목록으로
-            </button>
+            <div class="notice-action-wrap">
+              <button
+                v-if="noticeInfo.isDeleted === 'Q2'"
+                @click="modifyNotice"
+                class="btn-edit"
+              >
+                수정
+              </button>
+
+              <button @click="lockNotice" class="btn-lock">
+                <el-icon><Lock /></el-icon>
+                <span>{{
+                  noticeInfo.isDeleted === "Q1" ? "비활성 해제" : "비활성"
+                }}</span>
+              </button>
+              <button @click="goBack" type="button" class="btn-back-top">
+                목록으로
+              </button>
+            </div>
           </div>
+          <el-alert
+            v-if="noticeInfo.isDeleted === 'Q1'"
+            title="비활성화된 게시글입니다."
+            type="warning"
+            description="관리자만 열람 가능하며 일반 사용자에게는 노출되지 않습니다."
+            show-icon
+            :closable="false"
+            class="top-alert"
+          />
 
           <!-- 공지 본문 -->
           <div class="panel notice-panel">
@@ -68,23 +82,6 @@
                   >
                     비활성
                   </span>
-                </div>
-
-                <div class="notice-action-wrap">
-                  <button
-                    v-if="noticeInfo.isDeleted === 'Q2'"
-                    @click="modifyNotice"
-                    class="btn-edit"
-                  >
-                    수정
-                  </button>
-
-                  <button @click="lockNotice" class="btn-lock">
-                    <el-icon><Lock /></el-icon>
-                    <span>{{
-                      noticeInfo.isDeleted === "Q1" ? "비활성 해제" : "비활성"
-                    }}</span>
-                  </button>
                 </div>
               </div>
 
@@ -113,6 +110,128 @@
                   {{ noticeInfo.content || "내용이 없습니다." }}
                 </div>
               </div>
+
+              <!-- 첨부파일 -->
+              <div
+                class="mt-8 p-6 bg-white rounded-2xl border border-gray-200 shadow-sm"
+              >
+                <!-- 헤더 -->
+                <div class="flex items-center gap-2 mb-5">
+                  <div
+                    class="w-6 h-6 flex items-center justify-center bg-blue-50 rounded-md"
+                  >
+                    <svg
+                      class="w-4 h-4 text-blue-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                      />
+                    </svg>
+                  </div>
+
+                  <label class="text-[15px] font-semibold text-gray-800">
+                    첨부파일
+                    <span class="text-blue-600 ml-1 font-bold">
+                      {{ attachmentList != null ? attachmentList.length : 0 }}
+                    </span>
+                  </label>
+                </div>
+
+                <!-- 파일 리스트 -->
+                <div class="space-y-3">
+                  <div
+                    v-for="(file, index) in attachmentList"
+                    :key="index"
+                    v-if="attachmentList && attachmentList.length > 0"
+                    class="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl border border-transparent hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-sm transition-all duration-200 group cursor-pointer"
+                    @click="attachmentDownload(file)"
+                  >
+                    <!-- 왼쪽 -->
+                    <div class="flex items-center gap-3 flex-1">
+                      <div
+                        class="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-gray-200 group-hover:border-blue-200 group-hover:bg-blue-100 transition"
+                      >
+                        <svg
+                          class="w-4 h-4 text-gray-400 group-hover:text-blue-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+
+                      <div class="flex flex-col">
+                        <span
+                          class="text-[14px] font-medium text-gray-800 group-hover:text-blue-600 transition"
+                        >
+                          {{ file.fileName }}
+                        </span>
+                        <span class="text-[11px] text-gray-400">1.2 MB</span>
+                      </div>
+                    </div>
+
+                    <!-- 다운로드 버튼 -->
+                    <button
+                      class="flex items-center gap-1 px-3 py-1.5 text-[12px] font-medium text-gray-500 bg-white border border-gray-200 rounded-md group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-200 cursor-pointer"
+                    >
+                      다운로드
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- empty -->
+                  <div
+                    v-if="attachmentList != null"
+                    class="py-10 flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-200"
+                  >
+                    <div
+                      class="w-12 h-12 flex items-center justify-center bg-white rounded-full mb-3 border border-gray-200"
+                    >
+                      <svg
+                        class="w-6 h-6 text-gray-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                    </div>
+
+                    <span class="text-gray-400 text-sm">
+                      첨부된 파일이 없습니다.
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -125,6 +244,8 @@
 import { onBeforeMount, ref, watch } from "vue";
 import { useProjectKJHStore } from "../stores/projectKJH";
 import { useNoticeStore } from "../stores/notice";
+import { usetaskKJHStore } from "../stores/taksKJH";
+import { useAttachmentStore } from "../stores/attachment";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
@@ -135,11 +256,15 @@ const route = useRoute();
 const router = useRouter();
 const noticeStore = useNoticeStore();
 const projectStore = useProjectKJHStore();
+const taskStore = usetaskKJHStore();
+const attachmentStore = useAttachmentStore();
 
 const noticeInfo = ref({});
 const noticeId = route.params.noticeId;
 const projectId = route.params.projectId;
-const subProjectId = route.params.subProjectId;
+const subProjectId = ref(route.params.subProjectId);
+let taskPjList = ref([]);
+const attachmentList = ref([]);
 
 const memberList = ref([]); // 구성원 테이블
 
@@ -147,7 +272,7 @@ const memberList = ref([]); // 구성원 테이블
 const goBack = () => {
   router.push({
     name: "noticeList",
-    params: { projectId: projectId, subProjectId: subProjectId },
+    params: { projectId: projectId, subProjectId: subProjectId.value },
   });
 };
 
@@ -193,10 +318,33 @@ const lockNotice = async () => {
   noticeInfo.value = noticeStore.registeredNotice;
 };
 
+// 파일 다운로드
+const attachmentDownload = async (file) => {
+  console.log(file);
+  await attachmentStore.downloadFile(file);
+};
+
 onBeforeMount(async () => {
+  console.log(noticeId);
   // 공지사항 및 프로젝트 정보
   await noticeStore.getNoticeById(noticeId);
-  noticeInfo.value = noticeStore.noticeInfo;
+  noticeInfo.value = noticeStore.noticeInfo.noticeInfo;
+  attachmentList.value = noticeStore.noticeInfo.attachmentList;
+
+  console.log(subProjectId.value);
+  let id =
+    subProjectId.value != null &&
+    subProjectId.value != undefined &&
+    subProjectId.value != ""
+      ? subProjectId.value
+      : projectId;
+  await taskStore.getProjectName(id);
+  let projectInfo = taskStore.projectName;
+  if (projectInfo.parentProjectName != null) {
+    taskPjList.value = [projectInfo.parentProjectName, projectInfo.projectName];
+  } else {
+    taskPjList.value = [projectInfo.projectName];
+  }
 });
 
 watch(
@@ -215,11 +363,11 @@ watch(
 
 .sub-header {
   background: #fff;
-  padding: 12px 24px;
+  padding: 15px 24px;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 30;
 }
 
 .breadcrumb {
@@ -243,7 +391,7 @@ watch(
 }
 
 .page-container {
-  padding: 24px;
+  padding: 24px 30px 24px 30px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -257,7 +405,7 @@ watch(
 .pg-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
   padding: 20px 24px;
   background: #fff;

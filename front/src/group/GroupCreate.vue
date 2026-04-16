@@ -378,7 +378,7 @@ import Header from "../partials/Header.vue";
 import { useEmpStore } from "../stores/empSJW";
 import { useRoleStore } from "../stores/roleSJW";
 import { useAuthStore } from "../stores/auth";
-import admin from "../utils/admin";
+import api from "../utils/api";
 
 const router = useRouter();
 const sidebarOpen = ref(false);
@@ -451,7 +451,7 @@ const checkDuplicate = async () => {
     return;
   }
   const name = form.value.groupName;
-  const response = await admin.get(`/group/dup/${name}`);
+  const response = await api.get(`/group/dup/${name}`);
   const result = response.data;
 
   if (result == "Y") {
@@ -534,7 +534,7 @@ const submitGroup = async () => {
   };
 
   try {
-    const response = await admin.post("/group", payload);
+    const response = await api.post("/group", payload);
     const result = response.data;
     if (result == "Y") {
       Swal.fire({

@@ -35,7 +35,7 @@
         </div>
         <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
           <div class="grid grid-cols-10 gap-6">
-            <div class="col-span-10 lg:col-span-7">
+            <div :class="isModified ? 'col-span-10 lg' : 'col-span-7'">
               <el-form
                 ref="ruleFormRef"
                 :model="form"
@@ -55,7 +55,7 @@
                     />
                   </el-form-item>
 
-                  <div class="grid grid-cols-2 gap-6 mb-6">
+                  <div class="grid grid-cols-2 gap-6">
                     <el-form-item label="회의 유형" prop="meetingType">
                       <el-select
                         v-model="form.meetingType"
@@ -75,11 +75,11 @@
                     </el-form-item>
                   </div>
 
-                  <div class="grid grid-cols-2 gap-6 mb-6">
+                  <div class="grid grid-cols-2 gap-6">
                     <el-form-item label="회의 일시" prop="date">
                       <TaskDatePicker
                         placeholder="시작일 선택"
-                        v-model="form.data"
+                        v-model="form.date"
                         @change="calcEstTime(true)"
                       />
                     </el-form-item>
@@ -104,7 +104,7 @@
                   </div>
 
                   <div v-if="!isModified" class="mb-8">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex flex-wrap gap-2 mb-2">
                       <span class="text-sm font-semibold text-gray-700"
                         >참석자 선택</span
                       >
@@ -203,9 +203,7 @@
                   </div>
 
                   <div class="flex justify-between pt-4 border-t">
-                    <button @click="goBack" type="button" class="btn-navy">
-                      ← 목록으로
-                    </button>
+                    <div></div>
                     <div class="flex gap-2">
                       <button
                         @click="resetForm(ruleFormRef)"
@@ -386,12 +384,12 @@
     :alarmList="alarmList"
     @member-insert="memberInsert"
   />
-  <meetingCreateTaskModal
+  <!-- <meetingCreateTaskModal
     v-model="createModalOpen"
     :taskInfo="taskInfo"
     @close-create-modal="closeCreateModal"
     @register-task="registerTask"
-  />
+  /> -->
   <meetingConnectTaskModal
     v-model="openConnectModal"
     :projectInfo="projectInfo"
@@ -489,8 +487,8 @@ const submitForm = async (formEl) => {
   console.log(formEl.validate);
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      // 공지사항 등록
       if (!isModified.value) {
+        // 회의록 등록
         let obj = {
           projectId: subId != "" ? subId : id,
           title: form.title,
@@ -560,6 +558,7 @@ const submitForm = async (formEl) => {
           });
         }
       } else {
+        // 회의록 수정
         const result = await Swal.fire({
           title: "정말 수정하시겠습니까?",
           text: "",
@@ -578,10 +577,12 @@ const submitForm = async (formEl) => {
           content: form.content,
           meetingTypeCode: form.meetingType,
           editorUserId: userInfo.value.userId,
-          meetingDate: form.meetingDate,
+          meetingDate: form.date,
           place: form.meetingRoom,
           attachmentGroupId: form.attachmentGroupId,
         };
+
+        console.log(obj);
 
         const formData = new FormData();
         formData.append(
@@ -738,20 +739,17 @@ onBeforeMount(async () => {
     });
 
     await meetingStore.getMeetingById(meetingId);
-    let meetingInfo = meetingStore.meetingDetail;
+    let meetingInfo = meetingStore.meetingDetail.meetingList.meetingDetail;
 
     // 폼에 대입
-    form.meetingType = meetingInfo.meetingList.meetingTypeCode;
-    form.author = meetingInfo.meetingList.userName;
-    form.date = meetingInfo.meetingList.meetingDate;
-    form.title = meetingInfo.meetingList.title;
-    form.content = meetingInfo.meetingList.content;
-    form.meetingRoom = meetingInfo.meetingList.place;
-    form.attachmentGroupId = meetingInfo.meetingList.attachmentGroupId;
-    form.aiSummary =
-      meetingInfo.meetingList.aiSummary == null
-        ? meetingInfo.meetingList.sttText
-        : meetingInfo.meetingList.aiSummary;
+    form.meetingType = meetingInfo.meetingTypeCode;
+    form.author = meetingInfo.userName;
+    form.date = meetingInfo.meetingDate;
+    form.title = meetingInfo.title;
+    form.content = meetingInfo.content;
+    form.meetingRoom = meetingInfo.place;
+    form.attachmentGroupId = meetingInfo.attachmentGroupId;
+
     if (meetingInfo.attachmentList) {
       meetingInfo.attachmentList.forEach((att) => {
         let obj = {

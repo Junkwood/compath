@@ -7,9 +7,6 @@ import java.util.List;
 
 @Mapper
 public interface NoticeMapper {
-//  공지사항 테이블 최고 번호
-  public int getLastNum();
-
 // 공지사항 등록
   public int registerNotice(NoticeDTO dto);
 

@@ -34,7 +34,11 @@
               </div>
             </div>
             <div class="self-end">
-              <el-button class="btn-create-task" @click="goResister()">
+              <el-button
+                v-if="isAssignee"
+                class="btn-create-task"
+                @click="goResister()"
+              >
                 + 업무 생성
               </el-button>
             </div>
@@ -312,17 +316,19 @@
 </template>
 
 <script setup>
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
+import { useAuthStore } from "../stores/auth";
 import { changeDate } from "../utils/commonFunc";
 import ProjectSelectModal from "../components/SelectModal.vue";
 
 const sidebarOpen = ref(false);
 const taskStore = usetaskKJHStore();
+const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -399,7 +405,24 @@ onBeforeMount(async () => {
     });
   });
 
+  let obj = { projectId: id, subProjectId: subId };
+  await taskStore.getProjectRole(obj);
+
   Swal.close();
+});
+
+// 권한 파악
+const isAssignee = computed(() => {
+  const currentUserId = authStore.user?.userId || authStore.user?.id;
+  if (!currentUserId) return false;
+
+  const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  const isManager = (taskStore.plPmList?.empList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  return isPmPl || isManager;
 });
 
 // 미지정일 경우 지정
@@ -568,7 +591,7 @@ const changeTitleLength = (title) => {
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 30;
 }
 .breadcrumb {
   display: flex;
@@ -589,7 +612,7 @@ const changeTitleLength = (title) => {
 
 /* 페이지 컨테이너 */
 .page-container {
-  padding: 24px;
+  padding: 24px 30px 24px 30px;
   display: flex;
   flex-direction: column;
   gap: 24px;
