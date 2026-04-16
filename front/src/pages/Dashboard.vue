@@ -3,9 +3,9 @@
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-<div
-  class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-[#f5f6f8]"
->
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
+    >
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
@@ -76,16 +76,16 @@
                     align="center"
                   />
                   <el-table-column
-                    prop="delayed"
-                    label="기한 초과"
+                    prop="rejected"
+                    label="반려"
                     width="60"
                     align="center"
                   >
                     <template #default="{ row }">
                       <span
-                        :class="{ 'text-red-500 font-bold': row.delayed > 0 }"
+                        :class="{ 'text-red-500 font-bold': row.rejected > 0 }"
                       >
-                        {{ row.delayed }}
+                        {{ row.rejected }}
                       </span>
                     </template>
                   </el-table-column>
@@ -268,12 +268,8 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectCreateModal from "../project/ProjectCreateModal.vue";
 import ProjectCopyModal from "../project/ProjectCopyModal.vue";
-import { userMypageStore } from "../stores/myPageSJW";
-import { useAuthStore } from "../stores/auth";
+
 const router = useRouter();
-const myStore = userMypageStore();
-const authStore = useAuthStore();
-const userId = authStore.user.userId;
 
 const sidebarOpen = ref(false);
 const createProjectModalOpen = ref(false);
@@ -294,21 +290,22 @@ const loadingProjects = ref(false);
 const taskProjects = ref([]);
 const projectList = ref([]);
 
-const myTasks = myStore.taskSummary;
+const myTasks = ref({
+  inProgress: 5,
+  done: 10,
+  rejected: 3,
+  deadline: 1,
+});
 
 const taskStatusList = computed(() => [
-  { label: "진행중", count: myStore.taskSummary.inProgress, color: "#1B5C9C" },
-  { label: "완료", count: myStore.taskSummary.done, color: "#10b981" },
-  { label: "기한 초과", count: myStore.taskSummary.delayed, color: "#ef4444" },
-  {
-    label: "기한 임박",
-    count: myStore.taskSummary.pendingPR,
-    color: "#f59e0b",
-  },
+  { label: "진행중", count: myTasks.value.inProgress, color: "#1B5C9C" },
+  { label: "완료", count: myTasks.value.done, color: "#10b981" },
+  { label: "반려", count: myTasks.value.rejected, color: "#ef4444" },
+  { label: "기한 임박", count: myTasks.value.deadline, color: "#f59e0b" },
 ]);
 
 const totalTaskCount = computed(() =>
-  Object.values(myStore.taskSummary).reduce((sum, value) => sum + value, 0),
+  Object.values(myTasks.value).reduce((sum, value) => sum + value, 0),
 );
 
 const newsList = [
@@ -344,7 +341,6 @@ const fetchProjectList = async () => {
 onMounted(() => {
   fetchProjectList();
   fetchTaskList();
-  myStore.getTaskSummary(userId);
 });
 
 const pagedTaskData = computed(() => {
@@ -417,7 +413,7 @@ const goProjectDashboard = (row) => {
 <style scoped>
 .dashboard-page {
   font-family: "Pretendard", sans-serif;
-  background-color: #f7faff;
+  background-color: #f3f4f6;
 }
 
 .sub-header {
