@@ -62,7 +62,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
         // =====================================================================
         //  그룹 기반 권한 검사
         // =====================================================================
-        if (groupIdStr != null) {
+        if (groupIdStr != null && projectIdStr == null) {
             Integer groupId = Integer.parseInt(groupIdStr);
 
             // 예: Mapper에 메서드를 하나 만들어서 이 그룹이 이 메뉴(targetUrl)에 접근 가능한지 체크
