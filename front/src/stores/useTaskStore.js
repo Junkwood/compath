@@ -222,6 +222,8 @@ export const useTaskStore = defineStore("task", () => {
       (rawStatusList ?? []).find(
         (s) => s.taskStatusId === Number(d.taskStatusId),
       )?.isFinal === "O1";
+
+    calcEstTime();
   };
 
   // ───────────── 담당자 ─────────────
@@ -297,10 +299,21 @@ export const useTaskStore = defineStore("task", () => {
 
   // ───────────── 추정시간 ─────────────
   const calcEstTime = () => {
-    const start = form.value.startDate;
-    const end = form.value.dueDate;
+    let start = null;
+    let end = null;
 
-    if (!start || !end) return;
+    // 예정일이 둘 다 있으면 예정일 기준
+    if (form.value.estStartDate && form.value.estEndDate) {
+      start = form.value.estStartDate;
+      end = form.value.estEndDate;
+    }
+    // 하나라도 없으면 실제 시작/마감일 기준
+    else if (form.value.startDate && form.value.dueDate) {
+      start = form.value.startDate;
+      end = form.value.dueDate;
+    } else {
+      return;
+    }
 
     const workdays = countWorkdays(new Date(start), new Date(end));
     const hours = Math.max(1, workdays) * 8;
