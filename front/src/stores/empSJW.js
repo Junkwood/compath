@@ -33,12 +33,12 @@ export const useEmpStore = defineStore("emp", {
       return response;
     },
     async updateEmp(data) {
-      console.log(data);
+      // console.log(data);
       const response = await admin.put(`/emp/${data.userId}`, data);
       if (response) {
-        console.log("업뎃 성공", data);
+        // console.log("업뎃 성공", data);
       } else {
-        console.error("업뎃 실패", data);
+        // console.error("업뎃 실패", data);
       }
     },
     async getUser(id) {

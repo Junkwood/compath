@@ -26,7 +26,6 @@ export const useGroupStore = defineStore("group", {
       } else {
         value = "O2";
       }
-      console.log(id, value, editorUserId);
       const group = {
         groupId: id,
         isActive: value,

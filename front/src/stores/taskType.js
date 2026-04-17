@@ -10,7 +10,6 @@ export const useTypeStore = defineStore("taskType", () => {
   async function getTypeList() {
     try {
       const res = await admin.get("/task/type");
-      console.log(res);
       typeList.value = res.data;
     } catch (err) {
       console.error("상태 목록 조회 실패:", err);

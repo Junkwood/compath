@@ -392,7 +392,6 @@ const handleSubmit = async () => {
       permissionIds: form.selectedPermissionIds,
     };
 
-    console.log(payload);
     if (isEditMode.value) {
       payload.roleId = form.roleId;
       await admin.put(`/role/${form.roleId}`, payload);

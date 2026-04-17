@@ -38,12 +38,12 @@ export const useAuthStore = defineStore("auth", {
       this.user.name = decoded.userName;
       this.user.primaryGroupId = decoded.primaryGroupId;
       this.user.primaryGroupName = decoded.primaryGroupName;
-      console.log("디코딩된 토큰 정보:", decoded);
+      // console.log("디코딩된 토큰 정보:", decoded);
       localStorage.setItem("user", JSON.stringify(this.user));
     },
     logout() {
       this.user = null;
-      console.log("authStore.logout");
+      // console.log("authStore.logout");
       localStorage.removeItem("user");
       localStorage.removeItem("keepLogin");
 
@@ -61,7 +61,7 @@ export const useAuthStore = defineStore("auth", {
       } else {
         sessionStorage.setItem("ACCESS_TOKEN", newToken);
       }
-      console.log("Token 갱신됨.");
+      // console.log("Token 갱신됨.");
     },
   },
 });

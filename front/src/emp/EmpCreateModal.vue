@@ -189,7 +189,6 @@ watch(
         rules.password[0].required = true;
         rules.passwordc[0].required = true;
       }
-      console.log(form);
       await nextTick();
       formRef.value?.clearValidate();
     }

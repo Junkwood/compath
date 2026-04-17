@@ -1,13 +1,11 @@
 <template>
   <div class="min-w-fit">
-    <!-- Sidebar backdrop (mobile only) -->
     <div
       class="fixed inset-0 bg-gray-900/30 z-40 lg:hidden lg:z-auto transition-opacity duration-200"
       :class="sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'"
       aria-hidden="true"
     ></div>
 
-    <!-- Sidebar -->
     <div
       id="sidebar"
       ref="sidebar"
@@ -17,7 +15,6 @@
         sidebarOpen ? 'translate-x-0' : '-translate-x-64',
       ]"
     >
-      <!-- Sidebar header -->
       <div class="flex items-center justify-between mb-10 pr-3 sm:px-2">
         <button
           ref="trigger"
@@ -43,7 +40,6 @@
         </router-link>
       </div>
 
-      <!-- Links -->
       <div class="space-y-8">
         <div>
           <h3 class="text-xs uppercase text-slate-300 font-semibold pl-3">
@@ -59,7 +55,6 @@
           </h3>
 
           <ul class="mt-3">
-            <!-- 메인 -->
             <router-link
               to="/"
               custom
@@ -108,7 +103,6 @@
               </li>
             </router-link>
 
-            <!-- 전체 프로젝트 목록 -->
             <router-link
               :to="{ name: 'projectListAll' }"
               custom
@@ -157,7 +151,6 @@
               </li>
             </router-link>
 
-            <!-- 프로젝트 -->
             <SidebarLinkGroup
               v-if="!hideProjectMenu && currentProjectId"
               v-slot="parentLink"
@@ -507,7 +500,6 @@
                 </ul>
               </div>
             </SidebarLinkGroup>
-            <!-- 그룹 목록 -->
             <router-link
               :to="{ name: 'groupPM' }"
               custom
@@ -556,7 +548,6 @@
                 </a>
               </li>
             </router-link>
-            <!-- 설정(관리자) -->
             <SidebarLinkGroup
               v-if="auth.isAdmin"
               v-slot="parentLink"
@@ -796,25 +787,35 @@
         </div>
       </div>
 
-      <div class="pt-3 hidden lg:inline-flex 2xl:hidden justify-end mt-auto">
-        <div class="w-12 pl-4 pr-3 py-2">
-          <button
-            class="text-slate-400 hover:text-white"
-            @click.prevent="sidebarExpanded = !sidebarExpanded"
+      <div class="mt-auto">
+        <div class="px-4 py-2">
+          <div
+            class="text-[11px] text-slate-500 whitespace-nowrap overflow-hidden transition-all duration-200 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100"
           >
-            <span class="sr-only">Expand / collapse sidebar</span>
-            <svg
-              class="shrink-0 fill-current text-slate-400 sidebar-expanded:rotate-180"
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
+            &copy; 2026 ComPath. All rights reserved.
+          </div>
+        </div>
+
+        <div class="pt-3 hidden lg:inline-flex 2xl:hidden justify-end w-full">
+          <div class="w-12 pl-4 pr-3 py-2">
+            <button
+              class="text-slate-400 hover:text-white"
+              @click.prevent="sidebarExpanded = !sidebarExpanded"
             >
-              <path
-                d="M15 16a1 1 0 0 1-1-1V1a1 1 0 1 1 2 0v14a1 1 0 0 1-1 1ZM8.586 7H1a1 1 0 1 0 0 2h7.586l-2.793 2.793a1 1 0 1 0 1.414 1.414l4.5-4.5A.997.997 0 0 0 12 8.01M11.924 7.617a.997.997 0 0 0-.217-.324l-4.5-4.5a1 1 0 0 0-1.414 1.414L8.586 7M12 7.99a.996.996 0 0 0-.076-.373Z"
-              />
-            </svg>
-          </button>
+              <span class="sr-only">Expand / collapse sidebar</span>
+              <svg
+                class="shrink-0 fill-current text-slate-400 sidebar-expanded:rotate-180"
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M15 16a1 1 0 0 1-1-1V1a1 1 0 1 1 2 0v14a1 1 0 0 1-1 1ZM8.586 7H1a1 1 0 1 0 0 2h7.586l-2.793 2.793a1 1 0 1 0 1.414 1.414l4.5-4.5A.997.997 0 0 0 12 8.01M11.924 7.617a.997.997 0 0 0-.217-.324l-4.5-4.5a1 1 0 0 0-1.414 1.414L8.586 7M12 7.99a.996.996 0 0 0-.076-.373Z"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
