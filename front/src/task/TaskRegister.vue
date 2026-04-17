@@ -9,7 +9,6 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
       <main class="grow">
-        <!-- 서브헤더 -->
         <div class="sub-header">
           <div class="breadcrumb">
             <span>홈</span><span class="bc-sep">›</span> <span>프로젝트</span
@@ -32,9 +31,9 @@
             목록으로
           </button>
         </div>
+
         <div class="page-wrap">
           <div class="form-card">
-            <!-- 섹션 1: 프로젝트 / 하위프로젝트 -->
             <div class="form-section grid-2">
               <div>
                 <label class="field-label"
@@ -46,10 +45,10 @@
                   class="input w-full"
                 />
               </div>
+
               <div>
                 <label class="field-label">하위 프로젝트 명</label>
 
-                <!-- 상위 프로젝트에서 바로 업무 생성 시 -->
                 <div v-if="!form.subProjectId" class="input-group">
                   <select v-model="form.subProjectId" class="input">
                     <option value="">하위프로젝트를 선택하세요</option>
@@ -58,12 +57,11 @@
                       :key="item.projectId"
                       :value="item.projectId"
                     >
-                      {{ item.displaySubProjectName }}
+                      {{ item.displaySubProjectName || item.projectName }}
                     </option>
                   </select>
                 </div>
 
-                <!-- 하위 프로젝트 있을 때 -->
                 <input
                   v-else
                   v-model="form.subProjectName"
@@ -73,7 +71,6 @@
               </div>
             </div>
 
-            <!-- 섹션 2: 업무유형 / 담당자 -->
             <div class="form-section grid-2">
               <div>
                 <label class="field-label"
@@ -92,6 +89,7 @@
                   </select>
                 </div>
               </div>
+
               <div>
                 <label class="field-label"
                   >담당자 지정 <span class="required">*</span></label
@@ -107,15 +105,15 @@
                   </button>
                 </div>
               </div>
+
               <ProjectSelectModal
                 v-model="userModal"
                 title="담당자 선택"
-                :items="userList"
+                :items="assigneeItems"
                 @select="selectUser"
               />
             </div>
 
-            <!-- 섹션 3: 업무명 -->
             <div class="form-section">
               <label class="field-label"
                 >업무 명 <span class="required">*</span></label
@@ -127,10 +125,10 @@
               />
             </div>
 
-            <!-- 섹션 4: 설명 -->
             <div class="form-section">
               <label class="field-label">프로젝트 설명</label>
               <textarea v-model="form.content" rows="4" class="input w-full" />
+
               <input
                 type="file"
                 ref="fileInputRef"
@@ -138,6 +136,7 @@
                 style="display: none"
                 @change="handleFileChange"
               />
+
               <button
                 type="button"
                 class="btn btn-select mt-2"
@@ -146,7 +145,6 @@
                 파일 선택
               </button>
 
-              <!-- 선택된 파일 목록 -->
               <div
                 v-for="(file, idx) in fileList"
                 :key="idx"
@@ -163,7 +161,6 @@
               </div>
             </div>
 
-            <!-- 섹션 5: 상태 / 우선순위 / 마일스톤 -->
             <div class="form-section grid-3">
               <div>
                 <label class="field-label"
@@ -180,6 +177,7 @@
                   </option>
                 </select>
               </div>
+
               <div>
                 <label class="field-label"
                   >우선순위 <span class="required">*</span></label
@@ -200,6 +198,7 @@
                 </select>
                 <p class="hint">우선순위 선택 시 마감기한이 자동 설정됩니다.</p>
               </div>
+
               <div v-if="hasMilestone">
                 <label class="field-label"
                   >마일스톤 <span class="required">*</span></label
@@ -211,6 +210,7 @@
                   placeholder="자동 선택됨"
                 />
               </div>
+
               <ProjectSelectModal
                 v-if="hasMilestone"
                 v-model="milestoneModal"
@@ -220,7 +220,6 @@
               />
             </div>
 
-            <!-- 섹션 6: 날짜 / 추정시간 -->
             <div class="form-section grid-3 no-border">
               <div>
                 <label class="field-label"
@@ -231,6 +230,7 @@
                   @change="calcEstTime(true)"
                 />
               </div>
+
               <div>
                 <label class="field-label"
                   >예정 종료일<span class="required">*</span></label
@@ -241,6 +241,7 @@
                 />
                 <p class="hint">우선순위 선택 시 마감기한이 자동 설정됩니다.</p>
               </div>
+
               <div>
                 <label class="field-label">추정 시간</label>
                 <input
@@ -253,7 +254,6 @@
               </div>
             </div>
 
-            <!-- 하단 버튼 -->
             <div class="form-footer">
               <div class="form-footer-right">
                 <button @click="resetForm" class="btn btn-reset">초기화</button>
@@ -285,14 +285,19 @@ const router = useRouter();
 const route = useRoute();
 const sidebarOpen = ref(false);
 const store = useTaskStore();
-const id = route.params.projectId;
-const parentTaskId = route.query.parentTaskId;
 const authStore = useAuthStore();
-const fileList = ref([]); //첨부파일
-const fileInputRef = ref(null); //첨부
+
+const rootProjectId = Number(route.params.projectId);
+const subProjectIdFromQuery = route.query.subProjectId
+  ? Number(route.query.subProjectId)
+  : null;
+const parentTaskId = route.query.parentTaskId;
+const from = route.query.from;
+
+const fileList = ref([]);
+const fileInputRef = ref(null);
 
 const isSubTask = computed(() => !!route.query.parentTaskId);
-const from = route.query.from;
 
 const {
   form,
@@ -306,6 +311,7 @@ const {
   hasMilestone,
   subProjectList,
 } = storeToRefs(store);
+
 const {
   openUserModal,
   selectUser,
@@ -315,48 +321,86 @@ const {
   resetForm,
 } = store;
 
+/*
+  SelectModal.vue는 item.id / item.name / item.userType 형태를 기대함.
+  그래서 userList가 어떤 형태로 들어와도 모달용으로 한 번 정규화해서 넘김.
+*/
+const assigneeItems = computed(() => {
+  const rawUsers =
+    Array.isArray(userList.value) && userList.value.length > 0
+      ? userList.value
+      : Array.isArray(store.filterInfo?.developerList)
+        ? store.filterInfo.developerList
+        : [];
+
+  return rawUsers
+    .map((user) => ({
+      id: user.id ?? user.userId ?? user.value ?? null,
+      name: user.name ?? user.userName ?? "",
+      userType: user.userType ?? user.roleName ?? "",
+    }))
+    .filter((user) => user.id !== null && user.name);
+});
+
 onMounted(async () => {
-  await store.initCreate(
-    route.params.projectId || route.query.projectId,
-    parentTaskId,
-  );
+  await store.initCreate(rootProjectId, parentTaskId);
+
+  if (subProjectIdFromQuery) {
+    form.value.subProjectId = subProjectIdFromQuery;
+
+    const found = subProjectList.value.find(
+      (p) => Number(p.projectId) === Number(subProjectIdFromQuery),
+    );
+
+    if (found) {
+      form.value.subProjectName =
+        found.displaySubProjectName || found.projectName || "";
+    }
+  }
 });
 
 watch(
   () => form.value.subProjectId,
-  (id) => {
-    const found = subProjectList.value.find((p) => p.projectId === id);
-    if (found) {
-      form.value.subProjectName = found.projectName;
-    }
+  (selectedId) => {
+    const found = subProjectList.value.find(
+      (p) => Number(p.projectId) === Number(selectedId),
+    );
+
+    form.value.subProjectName = found
+      ? found.displaySubProjectName || found.projectName || ""
+      : "";
   },
+  { immediate: true },
 );
+
 const handleFileChange = (e) => {
   Array.from(e.target.files).forEach((file) => {
     fileList.value.push({ raw: file, name: file.name });
   });
 };
+
 const handleSubmit = async () => {
   try {
     await store.createTask(authStore.user?.userId, fileList.value);
+
     await Swal.fire({
       icon: "success",
       title: "등록 완료!",
       confirmButtonText: "확인",
     });
 
-    if (from === "dashboard") {
+    if (from === "dashboard" && subProjectIdFromQuery) {
       router.push({
         name: "subProjectDashboard",
         params: {
-          projectId: form.value.projectId,
-          subProjectId: form.value.subProjectId,
+          projectId: rootProjectId,
+          subProjectId: subProjectIdFromQuery,
         },
       });
     } else {
       router.push({
         name: "taskList",
-        params: { projectId: id },
+        params: { projectId: rootProjectId },
       });
     }
   } catch (e) {
@@ -368,22 +412,17 @@ const handleSubmit = async () => {
     });
   }
 };
+
 const goBack = () => router.back();
 </script>
 
 <style scoped>
-/* ─────────────────────────────────
-   메인 영역
-───────────────────────────────── */
 main {
   background: #f1f5f9;
   border-left: 1px solid #e5e7eb;
   padding: 0;
 }
 
-/* ─────────────────────────────────
-   서브헤더
-───────────────────────────────── */
 .sub-header {
   background: #ffffff;
   padding: 12px 32px;
@@ -419,9 +458,6 @@ main {
   font-weight: 600;
 }
 
-/* ─────────────────────────────────
-   페이지 래퍼
-───────────────────────────────── */
 .page-wrap {
   width: 100%;
   max-width: 100%;
@@ -429,9 +465,6 @@ main {
   padding: 24px 32px;
 }
 
-/* ─────────────────────────────────
-   폼 카드
-───────────────────────────────── */
 .form-card {
   width: 100%;
   background: #ffffff;
@@ -441,9 +474,6 @@ main {
   box-shadow: none;
 }
 
-/* ─────────────────────────────────
-   섹션
-───────────────────────────────── */
 .form-section {
   padding-bottom: 24px;
   margin-bottom: 24px;
@@ -457,9 +487,6 @@ main {
   border-bottom: none;
 }
 
-/* ─────────────────────────────────
-   그리드
-───────────────────────────────── */
 .grid-2 {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -472,9 +499,6 @@ main {
   gap: 24px;
 }
 
-/* ─────────────────────────────────
-   라벨
-───────────────────────────────── */
 .field-label {
   display: block;
   font-size: 12px;
@@ -490,9 +514,6 @@ main {
   margin-left: 2px;
 }
 
-/* ─────────────────────────────────
-   인풋 공통
-───────────────────────────────── */
 :deep(.input) {
   height: 40px;
   border-radius: 8px;
@@ -532,9 +553,6 @@ main {
   resize: vertical;
 }
 
-/* ─────────────────────────────────
-   인풋 그룹
-───────────────────────────────── */
 .input-group {
   display: flex;
   align-items: center;
@@ -545,9 +563,6 @@ main {
   flex: 1;
 }
 
-/* ─────────────────────────────────
-   버튼
-───────────────────────────────── */
 .btn {
   height: 40px;
   padding: 0 18px;
@@ -562,7 +577,6 @@ main {
     border-color 0.15s;
 }
 
-/* 선택 / 확인 */
 .btn-select {
   background: #ffffff;
   border-color: #e2e8f0;
@@ -574,7 +588,6 @@ main {
   border-color: #94a3b8;
 }
 
-/* 목록 */
 .btn-back {
   display: inline-flex;
   align-items: center;
@@ -599,7 +612,6 @@ main {
   color: #0f172a;
 }
 
-/* 초기화 */
 .btn-reset {
   background: #ffffff;
   color: #b91c1c;
@@ -610,7 +622,6 @@ main {
   background: #fef2f2;
 }
 
-/* 제출 */
 .btn-submit {
   background: #1b5c9c;
   color: #ffffff;
@@ -620,9 +631,6 @@ main {
   background: #164d87;
 }
 
-/* ─────────────────────────────────
-   하단 버튼 영역
-───────────────────────────────── */
 .form-footer {
   display: flex;
   justify-content: flex-end;
@@ -637,9 +645,6 @@ main {
   gap: 10px;
 }
 
-/* ─────────────────────────────────
-   도움말
-───────────────────────────────── */
 .hint {
   font-size: 12px;
   color: #94a3b8;

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.project.mapper.MyTaskSummaryMapper">
+
+    <select id="getMyTaskSummary" resultType="com.example.project.dto.MyTaskSummaryDto">
+        <![CDATA[
+        SELECT
+            NVL(SUM(CASE WHEN T.TASK_STATUS_ID = 1 THEN 1 ELSE 0 END), 0) AS created,
+            NVL(SUM(CASE WHEN T.TASK_STATUS_ID = 2 THEN 1 ELSE 0 END), 0) AS inProgress,
+            NVL(SUM(CASE WHEN T.TASK_STATUS_ID = 5 THEN 1 ELSE 0 END), 0) AS done,
+            NVL(SUM(CASE WHEN T.TASK_STATUS_ID = 4 THEN 1 ELSE 0 END), 0) AS rejected,
+            NVL(SUM(
+                CASE
+                    WHEN T.DUE_DATE >= TRUNC(SYSDATE)
+                    AND T.DUE_DATE < TRUNC(SYSDATE) + 4
+                    AND T.TASK_STATUS_ID NOT IN (4, 5)
+                    THEN 1
+                    ELSE 0
+                END
+            ), 0) AS deadline
+        FROM TASKS T
+        WHERE T.ASSIGNEE_USER_ID = #{userId}
+        ]]>
+    </select>
+
+</mapper>

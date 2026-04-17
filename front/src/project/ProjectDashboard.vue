@@ -2,9 +2,13 @@
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
-<div
-  class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-[#f5f6f8]"
->      <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" />
+    <div
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-[#f5f6f8]"
+    >
+      <Header
+        :sidebarOpen="sidebarOpen"
+        @toggle-sidebar="sidebarOpen = !sidebarOpen"
+      />
 
       <main class="grow">
         <!-- 브레드크럼 -->
@@ -458,8 +462,69 @@ const createSubProjectModalOpen = ref(false);
 const milestoneModalVisible = ref(false);
 const milestoneRedirectAfterSave = ref(false);
 
+/* -------------------- 프로젝트 기본정보 -------------------- */
+const projectInfo = ref({
+  projectId: null,
+  projectName: "",
+  identifier: "",
+  description: "",
+  startDate: "",
+  endDate: "",
+  useMilestone: "",
+});
+
+const normalizeMilestoneValue = (value) =>
+  String(value ?? "")
+    .trim()
+    .toUpperCase();
+
+const isMilestoneUsed = computed(
+  () => normalizeMilestoneValue(projectInfo.value.useMilestone) === "O1",
+);
+
+const milestoneLabel = computed(() =>
+  isMilestoneUsed.value ? "마일스톤 사용" : "마일스톤 미사용",
+);
+
+const fetchProjectDetail = async () => {
+  try {
+    const res = await api.get(`/ProjectDetail/${route.params.projectId}`);
+    projectInfo.value = {
+      projectId: res.data?.projectId ?? null,
+      projectName: res.data?.projectName ?? "",
+      identifier: res.data?.identifier ?? "",
+      description: res.data?.description ?? "",
+      startDate: res.data?.startDate ?? "",
+      endDate: res.data?.endDate ?? "",
+      useMilestone: res.data?.useMilestone ?? "",
+    };
+  } catch (err) {
+    console.error("프로젝트 상세 조회 실패:", err);
+  }
+};
+
+/* -------------------- 실제 마일스톤 목록 -------------------- */
+/* 중요: 하위프로젝트 목록이 아니라 진짜 마일스톤 목록을 따로 관리 */
+const milestoneList = ref([]);
+
+const fetchMilestoneList = async () => {
+  if (!isMilestoneUsed.value) {
+    milestoneList.value = [];
+    return;
+  }
+
+  try {
+    const res = await api.get(`/MilestoneTab/${route.params.projectId}`);
+    milestoneList.value = Array.isArray(res.data) ? res.data : [];
+  } catch (err) {
+    console.error("마일스톤 목록 조회 실패:", err);
+    milestoneList.value = [];
+  }
+};
+
+/* -------------------- 하위프로젝트 생성 -------------------- */
 const handleAddSubProject = async () => {
-  if (isMilestoneUsed.value && milestoneTabs.value.length === 0) {
+  if (isMilestoneUsed.value && milestoneList.value.length === 0) {
     const result = await Swal.fire({
       icon: "warning",
       title: "마일스톤이 생성되지 않았습니다.",
@@ -469,11 +534,14 @@ const handleAddSubProject = async () => {
       showCancelButton: true,
       reverseButtons: true,
     });
+
     if (!result.isConfirmed) return;
+
     milestoneRedirectAfterSave.value = true;
     milestoneModalVisible.value = true;
     return;
   }
+
   createSubProjectModalOpen.value = true;
 };
 
@@ -484,12 +552,22 @@ const handleSubProjectSubmitted = async () => {
 
 const handleMilestoneSaved = async () => {
   milestoneModalVisible.value = false;
+
   await fetchProjectDetail();
+  await fetchMilestoneList();
   await fetchSubProject();
+
   milestoneRedirectAfterSave.value = false;
+
+  // 마일스톤 만들고 바로 하위프로젝트 생성으로 넘기고 싶으면 이 줄 추가
+  if (isMilestoneUsed.value && milestoneList.value.length > 0) {
+    createSubProjectModalOpen.value = true;
+  }
 };
 
+/* -------------------- 업무 현황 -------------------- */
 const taskSummaryData = ref([]);
+
 const fetchTaskSummary = async () => {
   try {
     const res = await api.get(`/TaskSummary/${route.params.projectId}`);
@@ -500,6 +578,7 @@ const fetchTaskSummary = async () => {
   }
 };
 
+/* -------------------- 공지사항 -------------------- */
 const noticeList = ref([]);
 
 const formatDate = (value) => {
@@ -548,6 +627,7 @@ const fetchNoticeList = async () => {
   }
 };
 
+/* -------------------- 구성원 -------------------- */
 const projectMembers = ref([]);
 const openedMemberGroups = ref({});
 
@@ -572,6 +652,7 @@ const groupedMembers = computed(() => {
       map.set(groupName, { key: groupName, label: groupName, members: [] });
     map.get(groupName).members.push(member);
   });
+
   return Array.from(map.values())
     .map((group) => ({
       ...group,
@@ -617,6 +698,7 @@ const fetchPmemList = async () => {
   }
 };
 
+/* -------------------- 메모 -------------------- */
 const memoList = ref([]);
 const memoModalVisible = ref(false);
 const isMemoEditMode = ref(false);
@@ -655,6 +737,7 @@ const handleDeleteMemo = async (memoId) => {
     reverseButtons: true,
   });
   if (!result.isConfirmed) return;
+
   try {
     await api.post("/MemoStatUpdate", {
       memoId,
@@ -676,6 +759,7 @@ const handleMemoSubmitted = async (payload) => {
     const projectId = route.params.projectId;
     const userId = authStore.user?.userId;
     if (!userId) return;
+
     if (isMemoEditMode.value) {
       await api.post("/MemoContentUpdate", {
         memoId: editingMemoId.value,
@@ -690,6 +774,7 @@ const handleMemoSubmitted = async (payload) => {
         memoContent: payload.text,
       });
     }
+
     memoModalVisible.value = false;
     isMemoEditMode.value = false;
     editingMemoId.value = null;
@@ -707,37 +792,7 @@ const handleAddMemo = () => {
   memoModalVisible.value = true;
 };
 
-const projectInfo = ref({
-  projectId: null,
-  projectName: "",
-  identifier: "",
-  description: "",
-  startDate: "",
-  endDate: "",
-  useMilestone: "",
-});
-
-const normalizeMilestoneValue = (value) => String(value ?? "").trim().toUpperCase();
-const isMilestoneUsed = computed(() => normalizeMilestoneValue(projectInfo.value.useMilestone) === "O1");
-const milestoneLabel = computed(() => isMilestoneUsed.value ? "마일스톤 사용" : "마일스톤 미사용");
-
-const fetchProjectDetail = async () => {
-  try {
-    const res = await api.get(`/ProjectDetail/${route.params.projectId}`);
-    projectInfo.value = {
-      projectId: res.data?.projectId ?? null,
-      projectName: res.data?.projectName ?? "",
-      identifier: res.data?.identifier ?? "",
-      description: res.data?.description ?? "",
-      startDate: res.data?.startDate ?? "",
-      endDate: res.data?.endDate ?? "",
-      useMilestone: res.data?.useMilestone ?? "",
-    };
-  } catch (err) {
-    console.error("프로젝트 상세 조회 실패:", err);
-  }
-};
-
+/* -------------------- 하위프로젝트 목록 -------------------- */
 const subProjects = ref([]);
 const activeMilestoneKey = ref(null);
 const subProjectPage = ref(1);
@@ -761,14 +816,18 @@ const isMilestoneEnabled = computed(
 
 const milestoneTabs = computed(() => {
   const map = new Map();
+
   subProjects.value.forEach((item) => {
     const key = item.milestoneId ?? "unassigned";
-    if (!map.has(key))
+
+    if (!map.has(key)) {
       map.set(key, {
         milestoneId: item.milestoneId,
         milestoneName: item.milestoneName || "미분류",
         projects: [],
       });
+    }
+
     if (item.projectId) {
       map.get(key).projects.push({
         projectId: item.projectId,
@@ -780,6 +839,7 @@ const milestoneTabs = computed(() => {
       });
     }
   });
+
   return Array.from(map.values()).sort((a, b) => {
     if (a.milestoneId == null) return 1;
     if (b.milestoneId == null) return -1;
@@ -788,8 +848,10 @@ const milestoneTabs = computed(() => {
 });
 
 const getMilestoneTabKey = (tab) => String(tab.milestoneId ?? "unassigned");
+
 const currentMilestone = computed(() => {
   if (!milestoneTabs.value.length) return null;
+
   return (
     milestoneTabs.value.find(
       (tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value,
@@ -818,9 +880,11 @@ watch(
       subProjectPage.value = 1;
       return;
     }
+
     const exists = tabs.some(
       (tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value,
     );
+
     if (!exists) {
       activeMilestoneKey.value = getMilestoneTabKey(tabs[0]);
       subProjectPage.value = 1;
@@ -829,28 +893,32 @@ watch(
   { immediate: true },
 );
 
+/* -------------------- 라우팅 -------------------- */
 const handleProjectSetting = () =>
   router.push({
     name: "projectSetting",
     params: { id: route.params.projectId },
   });
+
 const handleViewTasks = () =>
   router.push({
     name: "taskList",
     params: { projectId: route.params.projectId },
   });
+
 const handleNoticeClick = (item) =>
   router.push({
     name: "noticeDetail",
     params: { projectId: route.params.projectId, noticeId: item.noticeId },
   });
+
 const handleSubProjectRowClick = (row) =>
   router.push({
     name: "subProjectDashboard",
     params: { projectId: route.params.projectId, subProjectId: row.projectId },
   });
 
-/* ── 테이블 스타일 ── */
+/* -------------------- 테이블 스타일 -------------------- */
 const headerStyle = () => ({
   background: "#f9fafb",
   color: "#6b7280",
@@ -886,9 +954,10 @@ const getAvatarColor = (roleName) => {
   return "#10b981";
 };
 
-onMounted(() => {
-  fetchProjectDetail();
-  fetchSubProject();
+onMounted(async () => {
+  await fetchProjectDetail();
+  await fetchMilestoneList();
+  await fetchSubProject();
   fetchMemoList();
   fetchPmemList();
   fetchTaskSummary();
