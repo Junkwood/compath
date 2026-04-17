@@ -203,12 +203,16 @@
                 <label class="field-label"
                   >마일스톤 <span class="required">*</span></label
                 >
-                <input
-                  v-model="form.milestone"
-                  disabled
-                  class="input w-full"
-                  placeholder="자동 선택됨"
-                />
+                <select v-model="form.milestoneId" class="input w-full">
+                  <option value="">마일스톤 선택</option>
+                  <option
+                    v-for="item in visibleMilestoneList"
+                    :key="item.value"
+                    :value="item.value"
+                  >
+                    {{ item.name }}
+                  </option>
+                </select>
               </div>
 
               <ProjectSelectModal
@@ -321,17 +325,8 @@ const {
   resetForm,
 } = store;
 
-/*
-  SelectModal.vue는 item.id / item.name / item.userType 형태를 기대함.
-  그래서 userList가 어떤 형태로 들어와도 모달용으로 한 번 정규화해서 넘김.
-*/
 const assigneeItems = computed(() => {
-  const rawUsers =
-    Array.isArray(userList.value) && userList.value.length > 0
-      ? userList.value
-      : Array.isArray(store.filterInfo?.developerList)
-        ? store.filterInfo.developerList
-        : [];
+  const rawUsers = Array.isArray(userList.value) ? userList.value : [];
 
   return rawUsers
     .map((user) => ({
@@ -371,6 +366,10 @@ watch(
       : "";
   },
   { immediate: true },
+);
+
+const visibleMilestoneList = computed(() =>
+  milestoneList.value.filter((m) => m.statusCode !== "e3"),
 );
 
 const handleFileChange = (e) => {

@@ -168,11 +168,59 @@
                 rows="4"
                 class="input w-full"
               />
-              <button class="btn btn-select mt-2" :disabled="isTerminated">
+
+              <input
+                type="file"
+                ref="fileInputRef"
+                multiple
+                style="display: none"
+                @change="onFileChange"
+              />
+
+              <button
+                type="button"
+                class="btn btn-select mt-2"
+                :disabled="isTerminated"
+                @click="fileInputRef.click()"
+              >
                 파일 선택
               </button>
-            </div>
 
+              <!-- 기존 첨부파일 -->
+              <div class="file-list">
+                <div
+                  v-for="file in attachmentList"
+                  :key="file.attachmentId"
+                  class="file-item"
+                >
+                  <span class="file-name">📎 {{ file.fileName }}</span>
+                  <button
+                    v-if="!isTerminated"
+                    class="file-remove"
+                    @click="removeExistingFile(file.attachmentId)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- 새로 추가한 파일 -->
+              <div class="file-list new-files">
+                <div
+                  v-for="(file, idx) in selectedFiles"
+                  :key="idx"
+                  class="file-item"
+                >
+                  <span class="file-name">🆕 {{ file.raw.name }}</span>
+                  <button
+                    class="file-remove"
+                    @click="selectedFiles.splice(idx, 1)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </div>
             <!-- 섹션 6: 상태 / 우선순위 / 마일스톤 -->
             <div class="form-section grid-3">
               <div>
@@ -303,6 +351,9 @@ const sidebarOpen = ref(false);
 const store = useTaskStore();
 const authStore = useAuthStore();
 
+const fileInputRef = ref(null);
+const selectedFiles = ref([]);
+
 const {
   form,
   taskTypeList,
@@ -314,6 +365,7 @@ const {
   milestoneModal,
   actualHours,
   finishedIds,
+  attachmentList,
 } = storeToRefs(store);
 const {
   openUserModal,
@@ -322,6 +374,7 @@ const {
   onPriorityChange,
   calcEstTime,
   resetForm,
+  removeExistingFile,
 } = store;
 
 onMounted(async () => {
@@ -351,12 +404,22 @@ const goCreateSubTask = () => {
   });
 };
 
+const onFileChange = (e) => {
+  const newFiles = Array.from(e.target.files).map((f) => ({ raw: f }));
+  selectedFiles.value = [...selectedFiles.value, ...newFiles];
+  e.target.value = "";
+};
+
 const handleSubmit = async () => {
   const taskId = route.params.taskId;
   const editorUserId = authStore.user?.userId || authStore.user?.id;
   const projectId = form.value.projectId;
   try {
-    const isSuccess = await store.updateTask(taskId, editorUserId);
+    const isSuccess = await store.updateTask(
+      taskId,
+      editorUserId,
+      selectedFiles.value,
+    );
     if (isSuccess) {
       router.push({
         name: "taskDetail",
@@ -464,6 +527,50 @@ main {
 .required {
   color: #ef4444;
   margin-left: 2px;
+}
+.file-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.new-files {
+  margin-top: 4px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-remove {
+  flex-shrink: 0;
+  margin-left: 10px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.file-remove:hover {
+  color: #ef4444;
 }
 
 :deep(.input) {

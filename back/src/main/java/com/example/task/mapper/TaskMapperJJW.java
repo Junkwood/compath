@@ -27,6 +27,7 @@ public interface TaskMapperJJW {
     void getTaskTotalInfo(Map<String, Object> params);
     List<ProjectDtoJJW> getProjectList();
 
+    void deleteAttachments(TaskReqDtoJJW dto);
 
 
 //    //프로젝트 조회

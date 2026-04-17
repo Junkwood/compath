@@ -18,6 +18,7 @@ export const useTaskStore = defineStore("task", () => {
   const milestoneModal = ref(false);
   const projectList = ref([]);
   const recommandTask = ref([]);
+  const deletedAttachmentIds = ref([]);
 
   // ───────────── computed ─────────────
   // 마일스톤 존재 여부
@@ -97,18 +98,19 @@ export const useTaskStore = defineStore("task", () => {
     statusList.value = rawStatusList;
     projectList.value = pList; //하위 프로젝트 가져오기
 
-    milestoneList.value = mList.map((m) => ({
-      name: m.milestoneName,
-      value: m.milestoneId,
-    }));
-
+    milestoneList.value = mList
+      .filter((m) => m.isFinal !== "E3")
+      .map((m) => ({
+        name: m.milestoneName,
+        value: m.milestoneId,
+      }));
     if (milestoneList.value.length > 0) {
-      form.value.milestone = milestoneList.value[0].name;
-      form.value.milestoneId = milestoneList.value[0].value;
+      form.value.milestone = "";
+      form.value.milestoneId = "";
     } else {
       form.value.milestone = "등록된 마일스톤 없음";
+      form.value.milestoneId = "";
     }
-
     if (pList && pList.length > 0) {
       const currentProj = pList.find((proj) => proj.projectId == projectId);
       if (currentProj) {
@@ -153,6 +155,7 @@ export const useTaskStore = defineStore("task", () => {
   // ───────────── 초기화 (수정용) ─────────────
   const attachmentList = ref([]);
   const initEdit = async (taskId) => {
+    deletedAttachmentIds.value = [];
     resetForm();
 
     const res = await api.get("/task-total-info", { params: { taskId } });
@@ -165,7 +168,11 @@ export const useTaskStore = defineStore("task", () => {
       statusList: rawStatusList,
       attachmentList: rawAttachmentList,
     } = res.data;
-    attachmentList.value = rawAttachmentList ?? [];
+    attachmentList.value = (rawAttachmentList ?? []).map((f) => ({
+      ...f,
+      fileName: f.fileName || f.filename,
+      attachmentId: f.attachmentId || f.id,
+    }));
     const d = taskDetail[0];
     const pd = projectList;
 
@@ -184,6 +191,7 @@ export const useTaskStore = defineStore("task", () => {
     milestoneList.value = rawMilestoneList.map((m) => ({
       name: m.milestoneName,
       value: m.milestoneId,
+      statusCode: m.statusCode,
     }));
 
     const parentProject = pd.find((p) => !p.parentProjectId) ?? pd[0];
@@ -214,6 +222,8 @@ export const useTaskStore = defineStore("task", () => {
       (rawStatusList ?? []).find(
         (s) => s.taskStatusId === Number(d.taskStatusId),
       )?.isFinal === "O1";
+
+    calcEstTime();
   };
 
   // ───────────── 담당자 ─────────────
@@ -242,6 +252,14 @@ export const useTaskStore = defineStore("task", () => {
       name: m.milestoneName,
       value: m.milestoneId,
     }));
+    const exists = milestoneList.value.find(
+      (m) => m.value === form.value.milestoneId,
+    );
+
+    if (!exists) {
+      form.value.milestoneId = "";
+      form.value.milestone = "";
+    }
 
     if (milestoneList.value.length > 0) {
       const current = milestoneList.value.find(
@@ -280,18 +298,30 @@ export const useTaskStore = defineStore("task", () => {
   };
 
   // ───────────── 추정시간 ─────────────
-  const calcEstTime = (force = false) => {
-    // if (form.value.taskId && !force) return;
+  const calcEstTime = () => {
+    const estStart = form.value.estStartDate?.trim();
+    const estEnd = form.value.estEndDate?.trim();
+    const realStart = form.value.startDate?.trim();
+    const realEnd = form.value.dueDate?.trim();
 
-    const start = form.value.taskId
-      ? form.value.startDate
-      : form.value.estStartDate;
-    const end = form.value.taskId ? form.value.dueDate : form.value.estEndDate;
+    let start = null;
+    let end = null;
 
-    if (!start || !end) return;
+    if (estStart && estEnd) {
+      // 예정 시작일 + 예정 종료일 둘 다 있을 때만 예정일 기준
+      start = estStart;
+      end = estEnd;
+    } else if (realStart && realEnd) {
+      // 하나라도 비어 있으면 실제 시작/마감일로 fallback
+      start = realStart;
+      end = realEnd;
+    } else {
+      return;
+    }
 
     const workdays = countWorkdays(new Date(start), new Date(end));
-    form.value.estTime = `${Math.max(1, workdays) * 8}시간`;
+    const hours = Math.max(1, workdays) * 8;
+    form.value.estTime = `${hours}시간`;
   };
   // ───────────── 업무상태 변경 시 소요시간 자동계산 ─────────────
   const countWorkdays = (start, end) => {
@@ -333,14 +363,32 @@ export const useTaskStore = defineStore("task", () => {
   );
 
   watch(
-    () => [
-      form.value.estStartDate,
-      form.value.estEndDate,
-      form.value.startDate,
-      form.value.dueDate,
-    ],
+    () => ({
+      estStartDate: form.value.estStartDate,
+      estEndDate: form.value.estEndDate,
+      startDate: form.value.startDate,
+      dueDate: form.value.dueDate,
+    }),
     () => calcEstTime(),
+    { deep: true },
   );
+  // watch(
+  //   () => form.value.startDate,
+  //   (v) => {
+  //     if (!form.value.estStartDate) {
+  //       form.value.estStartDate = v;
+  //     }
+  //   },
+  // );
+
+  // watch(
+  //   () => form.value.dueDate,
+  //   (v) => {
+  //     if (!form.value.estEndDate) {
+  //       form.value.estEndDate = v;
+  //     }
+  //   },
+  // );
   // ───────────── 폼 초기화 ─────────────
   const resetForm = (mode = "create") => {
     if (mode === "edit" && originalForm.value) {
@@ -374,15 +422,23 @@ export const useTaskStore = defineStore("task", () => {
       String(form.value.taskStatusId).replace(/[^0-9]/g, ""),
     );
     const isFinished = finishedIds.value.includes(status) || status === 3;
+    const estStartDate =
+      form.value.estStartDate && form.value.estStartDate.trim() !== ""
+        ? form.value.estStartDate
+        : form.value.startDate;
 
+    const estEndDate =
+      form.value.estEndDate && form.value.estEndDate.trim() !== ""
+        ? form.value.estEndDate
+        : form.value.dueDate;
     const payload = {
       ...form.value,
       taskStatusId: status,
       projectId: form.value.subProjectId
         ? Number(form.value.subProjectId)
         : Number(form.value.projectId),
-      estStartDate: form.value.estStartDate,
-      estEndDate: form.value.estEndDate,
+      estStartDate,
+      estEndDate,
       startDate: form.value.taskId ? form.value.startDate || null : null,
       dueDate: form.value.taskId ? form.value.dueDate || null : null,
       estimatedHours:
@@ -413,7 +469,7 @@ export const useTaskStore = defineStore("task", () => {
       payload.actualHours = null;
       payload.progressRate = Number(form.value.progressRate) || 0;
     }
-
+    payload.deletedAttachmentIds = deletedAttachmentIds.value;
     return payload;
   };
 
@@ -454,6 +510,7 @@ export const useTaskStore = defineStore("task", () => {
 
   // ───────────── 수정 ─────────────
   const updateTask = async (taskId, editorUserId, files = []) => {
+    calcEstTime();
     const status = Number(form.value.taskStatusId);
 
     // 반려 처리
@@ -470,6 +527,8 @@ export const useTaskStore = defineStore("task", () => {
       if (!isConfirmed) return false;
       rejectReason.value = text;
       await rejectTask(taskId, editorUserId);
+      await Swal.fire("완료", "업무가 반려 처리되었습니다.", "success");
+      return true;
     }
 
     // 종료 확인
@@ -533,6 +592,7 @@ export const useTaskStore = defineStore("task", () => {
     attachmentList.value = attachmentList.value.filter(
       (f) => f.attachmentId !== attachmentId,
     );
+    deletedAttachmentIds.value.push(attachmentId);
   };
 
   return {
@@ -554,6 +614,7 @@ export const useTaskStore = defineStore("task", () => {
     rejectReason,
     subProjectList,
     attachmentList,
+    deletedAttachmentIds,
     removeExistingFile,
     initCreate,
     initEdit,

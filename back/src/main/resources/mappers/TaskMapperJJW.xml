@@ -129,16 +129,20 @@
     <!-- ───────────── 업무 수정 ───────────── -->
     <update id="updateTask" parameterType="TaskReqDtoJJW">
         UPDATE tasks
-        SET title          = #{title},
-        content        = #{content},
+        SET
+        title = #{title},
+        content = #{content},
         task_status_id = #{taskStatusId},
-        priority_code  = #{priorityCode},
+        priority_code = #{priorityCode},
         assignee_user_id = #{assigneeUserId},
-        progress_rate  = #{progressRate},
-        actual_hours   = #{actualHours},
-        start_date     = #{startDate},
-        due_date       = #{dueDate},
-        updated_at     = SYSDATE,
+        est_start_date = #{estStartDate},
+        est_end_date   = #{estEndDate},
+        estimated_hours = #{estimatedHours},
+        progress_rate = #{progressRate},
+        actual_hours  = #{actualHours},
+        start_date    = #{startDate},
+        due_date      = #{dueDate},
+        updated_at    = SYSDATE,
         editor_user_id = #{editorUserId},
         attachment_group_id = #{attachmentGroupId}
         WHERE task_id = #{taskId}
@@ -150,6 +154,14 @@
         WHERE task_id = #{taskId}
     </update>
 
+    <delete id="deleteAttachments" parameterType="com.example.task.dto.TaskReqDtoJJW">
+        DELETE FROM attachments
+        WHERE attachment_id IN
+        <foreach collection="deletedAttachmentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND attachment_group_id = #{attachmentGroupId}
+    </delete>
     <!-- ───────────── 반려 ───────────── -->
     <insert id="insert1" parameterType="TaskRejectDtoJJW">
         INSERT INTO task_rejections (
