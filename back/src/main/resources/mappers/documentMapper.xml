@@ -67,7 +67,8 @@
             content = #{content},
             updated_at = SYSDATE,
             editor_user_id = #{isEditorUserId},
-            is_pinned = #{isPinned}
+            is_pinned = #{isPinned},
+            attachment_group_id = #{attachmentGroupId}
         <if test="isComment != null and isComment != ''">
             ,is_Comment = #{isComment}
         </if>

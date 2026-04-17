@@ -5,6 +5,7 @@ import com.example.attachment.service.AttachmentService;
 import com.example.meeting.dto.MeetingDTO;
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
+import com.example.task.dto.TaskLogDto;
 import com.example.task.dto.TaskReqDtoJJW;
 import com.example.task.service.TaskServiceKJH;
 import jakarta.validation.Valid;
@@ -24,7 +25,7 @@ public class TaskControllerKJH {
 
     // 목록 조회
     @GetMapping("/api/tasks")
-    public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto){
+    public List<TaskListDTOKJH> getAllTasks(TaskListDTOKJH dto) {
         return service.getAllTasks(dto);
     }
 
@@ -36,13 +37,13 @@ public class TaskControllerKJH {
 
     // 프로젝트 이름 조회
     @GetMapping("/api/tasks/projectname/{id}")
-    public TaskListDTOKJH getProjectName(@PathVariable Integer id){
+    public TaskListDTOKJH getProjectName(@PathVariable Integer id) {
         return service.getProjectName(id);
     }
 
     // 업무 단건 조회
     @GetMapping("/api/tasks/detail/{id}")
-    public Map<String, Object> getTaskById(@PathVariable Integer id){
+    public Map<String, Object> getTaskById(@PathVariable Integer id) {
         // 결과 담을 그릇
         Map<String, Object> result = new HashMap<>();
 
@@ -51,7 +52,7 @@ public class TaskControllerKJH {
 
         Integer groupId = info.getAttachmentGroupId();
 
-        if(groupId != null) {
+        if (groupId != null) {
             List<AttachmentDTO> list = attachmentService.getFileList(groupId);
             result.put("attachmentList", list);
         }
@@ -94,5 +95,11 @@ public class TaskControllerKJH {
     @PutMapping("/api/tasks/modifyUser")
     public int modifyTaskUser(@RequestBody TaskListDTOKJH dto) {
         return service.modifyTaskUser(dto);
+    }
+
+    // 업무 작업이력
+    @GetMapping("/api/tasks/activityLogs/{id}")
+    public List<TaskLogDto> getActivityLogsByTaskId(@PathVariable Integer id) {
+        return service.getActivityLogsByTaskId(id);
     }
 }

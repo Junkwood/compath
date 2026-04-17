@@ -126,26 +126,64 @@
                   />
                 </el-form-item>
               </div>
-              <div class="mb-6">
-                <el-upload
-                  v-model:file-list="fileList"
-                  class="upload-demo"
-                  action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                  :on-change="handleChange"
-                >
-                  <el-button type="primary">파일선택</el-button>
-                  <template #tip>
-                    <div class="el-upload__tip">
-                      jpg/png 파일은 최대 500kb까지 가능합니다.
+              <div class="mb-8">
+                <div class="flex items-center gap-3 mb-3">
+                  <span class="text-sm font-semibold text-gray-700"
+                    >첨부 파일</span
+                  >
+                  <el-upload
+                    v-model:file-list="fileList"
+                    action="#"
+                    :auto-upload="false"
+                    :show-file-list="false"
+                    multiple
+                    :on-change="handleChange"
+                  >
+                    <template #trigger>
+                      <button type="button" class="btn-select-custom text-xs">
+                        파일 추가
+                      </button>
+                    </template>
+                  </el-upload>
+                </div>
+                <div class="border rounded-lg overflow-hidden border-gray-200">
+                  <div
+                    v-for="(file, index) in fileList"
+                    :key="index"
+                    class="flex items-center justify-between p-3 bg-white border-b last:border-b-0 hover:bg-gray-50 transition-colors"
+                  >
+                    <div class="flex items-center gap-3 overflow-hidden">
+                      <span class="text-red-500 font-bold text-xs uppercase">{{
+                        file.name.split(".").pop()
+                      }}</span>
+                      <span class="text-sm text-gray-700 truncate">{{
+                        file.name
+                      }}</span>
                     </div>
-                  </template>
-                </el-upload>
+                    <div class="flex items-center gap-4 text-xs text-gray-400">
+                      <span>{{
+                        file.size ? (file.size / 1024).toFixed(1) + " KB" : ""
+                      }}</span>
+                      <button
+                        type="button"
+                        @click="removeFile(file, index)"
+                        class="text-gray-400 hover:text-red-500"
+                      >
+                        <i class="el-icon-delete"></i> 삭제
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    v-if="fileList.length === 0"
+                    class="p-4 text-center text-xs text-gray-400"
+                  >
+                    첨부된 파일이 없습니다.
+                  </div>
+                </div>
               </div>
 
               <div class="flex justify-between">
-                <button @click="goBack" type="button" class="btn-navy">
-                  ← 목록으로
-                </button>
+                <div></div>
                 <div class="flex gap-2">
                   <button @click="resetForm" type="button" class="btn-red">
                     초기화
@@ -175,6 +213,7 @@ import Header from "../partials/Header.vue";
 import { useAuthStore } from "../stores/auth";
 import { useNoticeStore } from "../stores/notice";
 import { usetaskKJHStore } from "../stores/taksKJH";
+import { useAttachmentStore } from "../stores/attachment";
 import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
 
@@ -183,6 +222,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 const noticeStore = useNoticeStore();
 const taskStore = usetaskKJHStore();
+const attachmentStore = useAttachmentStore();
 const sidebarOpen = ref(false);
 
 const id = route.params.projectId;
@@ -234,7 +274,24 @@ const submitForm = async (formEl) => {
           category: form.roleId,
           createdBy: userInfo.value.userId,
         };
-        await noticeStore.registerNotice(obj);
+
+        // formData에 게시글 정보 담기
+        const formData = new FormData();
+        formData.append(
+          "obj",
+          new Blob([JSON.stringify(obj)], {
+            type: "application/json",
+          }),
+        );
+
+        // 첨부파일 있을 경우 담기
+        if (fileList.value && fileList.value.length > 0) {
+          fileList.value.forEach((file) => {
+            formData.append("files", file.raw);
+          });
+        }
+
+        await noticeStore.registerNotice(formData);
       } else {
         const result = await Swal.fire({
           title: "정말 수정하시겠습니까?",
@@ -255,8 +312,31 @@ const submitForm = async (formEl) => {
           isPinned: form.emerency == true ? "B1" : "B2",
           category: form.roleId,
           isEditorUserId: userInfo.value.userId,
+          attachmentGroupId:
+            fileList.value.length > 0 ? form.attachmentGroupId : null,
         };
-        await noticeStore.modifyNotice(obj);
+
+        console.log(obj);
+        console.log(fileList.value.length > 0);
+
+        const formData = new FormData();
+        formData.append(
+          "obj",
+          new Blob([JSON.stringify(obj)], {
+            type: "application/json",
+          }),
+        );
+
+        if (fileList.value && fileList.value.length > 0) {
+          fileList.value.forEach((file) => {
+            if (file.isExisting == null) {
+              console.log(file);
+              formData.append("files", file.raw);
+            }
+          });
+        }
+
+        await noticeStore.modifyNotice(formData);
       }
 
       router.push({
@@ -292,8 +372,23 @@ onBeforeMount(async () => {
     // 수정일때
     isModified.value = true;
     await noticeStore.getNoticeById(noticeId);
-    let noticeInfo = noticeStore.noticeInfo;
-    Swal.close();
+    let noticeInfo = noticeStore.noticeInfo.noticeInfo;
+    let attachment = noticeStore.noticeInfo.attachmentList;
+
+    if (attachment != null) {
+      attachment.forEach((att) => {
+        let obj = {
+          name: att.fileName,
+          uid: att.attachmentId,
+          url: att.filePath,
+          status: "success",
+          isExisting: true,
+          attId: att.attachmentId,
+          attGId: att.attachmentGroupId,
+        };
+        fileList.value.push(obj);
+      });
+    }
 
     // 폼에 대입
     form.roleId = noticeInfo.category;
@@ -302,6 +397,8 @@ onBeforeMount(async () => {
     form.title = noticeInfo.title;
     form.content = noticeInfo.content;
     form.isPinned = noticeInfo.isPinned == "B1" ? true : false;
+    form.attachmentGroupId = noticeInfo.attachmentGroupId;
+    Swal.close();
   }
   userInfo.value = authStore.user; // 작성자 정보 받아오기
 
@@ -362,15 +459,34 @@ const resetForm = (formEl) => {
 };
 
 // 첨부파일api
-const fileList = ref([
-  {
-    name: "food.jpeg",
-    url: "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100",
-  },
-]);
+const fileList = ref([]);
 
 const handleChange = (uploadFile, uploadFiles) => {
   fileList.value = fileList.value.slice(-3);
+};
+
+/// 첨부파일 삭제
+const removeFile = async (file, index) => {
+  if (file.isExisting == null) {
+    fileList.splice(index, 1);
+  } else {
+    let obj = { attachmentId: file.attId, attachmentGroupId: file.attGId };
+    await attachmentStore.removeFile(obj);
+
+    fileList.value = [];
+    attachmentStore.removeResult.forEach((att) => {
+      let obj = {
+        name: att.fileName,
+        uid: att.attachmentId,
+        url: att.filePath,
+        status: "success",
+        isExisting: true,
+        attId: att.attachmentId,
+        attGId: att.attachmentGroupId,
+      };
+      fileList.value.push(obj);
+    });
+  }
 };
 </script>
 
@@ -579,5 +695,22 @@ const handleChange = (uploadFile, uploadFiles) => {
   background: #60aee2;
   box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
   transform: translateY(-1px);
+}
+
+.btn-select-custom {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  background: #fff;
+  border: 1.5px solid #475569;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-select-custom:hover {
+  background: #f8fafc;
+  color: #1e293b;
+  border-color: #1e293b;
 }
 </style>

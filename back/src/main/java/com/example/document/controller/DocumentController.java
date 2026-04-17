@@ -51,8 +51,6 @@ public class DocumentController {
         DocumentDTO detail = (DocumentDTO) info.get("documentInfo");
         Integer groupId = detail.getAttachmentGroupId();
 
-        System.out.println("skdhkfkfkfk: " + groupId);
-
         if(groupId != null) {
             List<AttachmentDTO> list = attachmentService.getFileList(groupId);
             result.put("attachmentList", list);
@@ -62,7 +60,20 @@ public class DocumentController {
 
     // 문서 수정
     @PutMapping("/docuemnts/update")
-    public DocumentDTO modifyDocument(@RequestBody DocumentDTO dto){
+    public DocumentDTO modifyDocument(@RequestPart(value = "files", required = false) List<MultipartFile> files,
+                                      @RequestPart("obj") DocumentDTO dto) throws IOException {
+
+        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+
+            Integer groupId = dto.getAttachmentGroupId();
+            if(groupId == null) {
+                groupId = 0;
+            }
+            int id = attachmentService.registerAttachments(files, groupId);
+
+            dto.setAttachmentGroupId(id);
+        }
+
         return service.modifyDocument(dto);
     }
 

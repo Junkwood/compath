@@ -148,7 +148,11 @@
                   <div
                     v-for="(file, index) in attachmentList"
                     :key="index"
-                    v-if="attachmentList && attachmentList.length > 0"
+                    v-if="
+                      attachmentList != null &&
+                      attachmentList != undefined &&
+                      attachmentList.length > 0
+                    "
                     class="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl border border-transparent hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-sm transition-all duration-200 group cursor-pointer"
                     @click="attachmentDownload(file)"
                   >
@@ -205,7 +209,7 @@
 
                   <!-- empty -->
                   <div
-                    v-if="attachmentList != null"
+                    v-else
                     class="py-10 flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-200"
                   >
                     <div

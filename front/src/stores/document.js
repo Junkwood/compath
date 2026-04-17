@@ -34,14 +34,15 @@ export const useDocumentStore = defineStore("document", {
     },
 
     // 문서 수정
-    async modifyDocument(obj) {
-      console.log("수정전 데이터: ", obj);
+    async modifyDocument(formData) {
+      console.log("수정전 데이터: ", formData);
 
       await api //
-        .put("/docuemnts/update", obj)
+        .put("/docuemnts/update", formData, {
+          headers: {},
+        })
         .then((res) => {
           this.registeredDocument = res.data;
-          console.log("수정완료", this.registeredDocument);
         });
     },
 

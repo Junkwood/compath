@@ -78,7 +78,12 @@ public class MeetingController {
                                     @RequestPart("obj") MeetingDTO dto) throws IOException {
 
         if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
-            int groupId = dto.getAttachmentGroupId();
+            Integer groupId = dto.getAttachmentGroupId();
+
+            if(groupId == null) {
+                groupId = 0;
+            }
+
             int id = attachmentService.registerAttachments(files, groupId);
             dto.setAttachmentGroupId(id);
         }

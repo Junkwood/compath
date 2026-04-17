@@ -2,6 +2,7 @@ package com.example.task.service.impl;
 
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
+import com.example.task.dto.TaskLogDto;
 import com.example.task.dto.TaskReqDtoJJW;
 import com.example.task.mapper.TaskMapperJJW;
 import com.example.task.mapper.TaskMapperKJH;
@@ -111,6 +112,11 @@ public class TaskServiceImplKJH implements TaskServiceKJH {
     @Override
     public int modifyTaskUser(TaskListDTOKJH dto) {
         return mapper.modifyTaskUser(dto);
+    }
+
+    @Override
+    public List<TaskLogDto> getActivityLogsByTaskId(Integer id) {
+        return mapper.getActivityLogsByTaskId(id);
     }
 
 }

@@ -115,7 +115,8 @@
             editor_user_id = #{editorUserId},
             place = #{place},
             updated_at = SYSDATE,
-            meeting_date = #{meetingDate}
+            meeting_date = #{meetingDate},
+            attachment_group_id = #{attachmentGroupId}
         WHERE meeting_log_id = #{meetingLogId}
     </update>
 

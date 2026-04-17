@@ -11,6 +11,7 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     plPmList: [],
     modifyResult: 0,
     projectName: [],
+    taskLog: [],
   }),
   getters: {},
   actions: {
@@ -88,6 +89,71 @@ export const usetaskKJHStore = defineStore("taskKJH", {
         .put("/tasks/modifyUser", obj)
         .then((res) => {
           this.modifyTaskInfo = res.data;
+        });
+    },
+
+    // 업무 작업 이력
+    async getActivityLogsByTaskId(id) {
+      await api //
+        .get("/tasks/activityLogs/" + id)
+        .then((res) => {
+          let result = res.data;
+          result.forEach((task) => {
+            if (task.actionType == "T0") {
+              task.message = `${task.userName}님이 "${task.afterValue}"를 생성하셨습니다.`;
+            } else if (task.actionType == "T4") {
+              task.message = `${task.userName}님이 진척도를 ${task.beforeValue}%에서 ${task.afterValue}%로 변경하셨습니다.`;
+            } else if (task.actionType == "T2" && task.beforeValue == "Q1") {
+              task.message = `${task.userName}님이 업무의 삭제를 해제하셨습니다.`;
+            } else if (task.actionType == "T2" && task.beforeValue == "Q2") {
+              task.message = `${task.userName}님이 업무를 삭제하셨습니다.`;
+            } else if (task.actionType == "T1") {
+              const PRIORITY_LABEL_MAP = {
+                H1: "긴급",
+                H2: "상",
+                H3: "중",
+                H4: "하",
+              };
+              task.beforeValue =
+                PRIORITY_LABEL_MAP[task.beforeValue] || task.beforeValue;
+
+              task.afterValue =
+                PRIORITY_LABEL_MAP[task.afterValue] || task.afterValue;
+              task.message = `${task.userName}님이 업무정보를 "${task.beforeValue}"에서 "${task.afterValue}"로 변경하셨습니다.`;
+            } else if (task.actionType == "T5") {
+              task.message = `${task.userName}님이 소요시간을 ${task.beforeValue}시간에서 ${task.afterValue}시간으로 변경하셨습니다.`;
+            } else if (task.actionType == "T6") {
+              const PRIORITY_LABEL_MAP = {
+                H1: "긴급",
+                H2: "상",
+                H3: "중",
+                H4: "하",
+              };
+              task.beforeValue =
+                PRIORITY_LABEL_MAP[task.beforeValue] || task.beforeValue;
+
+              task.afterValue =
+                PRIORITY_LABEL_MAP[task.afterValue] || task.afterValue;
+
+              task.message = `${task.userName}님이 우선순위을 "${task.beforeValue}"에서 "${task.afterValue}"로 변경하셨습니다.`;
+            } else if (task.actionType == "T3") {
+              const TASK_STATUS_LABEL_MAP = {
+                1: "시작 전",
+                2: "진행중",
+                3: "개발완료",
+                4: "반려",
+                5: "종료",
+              };
+
+              task.beforeValue =
+                TASK_STATUS_LABEL_MAP[task.beforeValue] || task.beforeValue;
+
+              task.afterValue =
+                TASK_STATUS_LABEL_MAP[task.afterValue] || task.afterValue;
+              task.message = `${task.userName}님이 업무상태를 "${task.beforeValue}"에서 "${task.afterValue}"(으)로 변경하셨습니다.`;
+            }
+          });
+          this.taskLog = result;
         });
     },
   },

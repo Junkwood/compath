@@ -81,4 +81,15 @@ public class AttachmentServiceImpl implements AttachmentService {
     public List<AttachmentDTO> getFileList(Integer id) {
         return attachmentMapper.getFileList(id);
     }
+
+    @Override
+    public List<AttachmentDTO> removeAttachment(AttachmentDTO dto) {
+        // 첨부파일 삭제
+        int id = dto.getAttachmentId();
+        attachmentMapper.removeAttachment(id);
+
+        // 첨부파일 조회
+        int gId = dto.getAttachmentGroupId();
+        return attachmentMapper.getFileList(gId);
+    }
 }

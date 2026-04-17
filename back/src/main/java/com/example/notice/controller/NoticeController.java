@@ -57,7 +57,20 @@ public class NoticeController {
 
     // 공지사항 수정
     @PutMapping("/notice/update")
-    public NoticeDTO modifyNotice(@RequestBody NoticeDTO dto){
+    public NoticeDTO modifyNotice(@RequestPart(value = "files", required = false) List<MultipartFile> files,
+                                  @RequestPart("obj") NoticeDTO dto) throws IOException {
+
+        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+
+            Integer groupId = dto.getAttachmentGroupId();
+            if(groupId == null) {
+                groupId = 0;
+            }
+            int id = attachmentService.registerAttachments(files, groupId);
+
+            dto.setAttachmentGroupId(id);
+        }
+
         return service.modifyNotice(dto);
     }
 

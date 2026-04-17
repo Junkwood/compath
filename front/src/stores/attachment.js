@@ -2,7 +2,9 @@ import { defineStore } from "pinia";
 import api from "../utils/api";
 
 export const useAttachmentStore = defineStore("attachment", {
-  state: () => ({}),
+  state: () => ({
+    removeResult: 0,
+  }),
 
   actions: {
     // 파일 다운로드
@@ -34,6 +36,17 @@ export const useAttachmentStore = defineStore("attachment", {
           a.click();
           document.body.removeChild(a);
           window.URL.revokeObjectURL(newUrl);
+        });
+    },
+
+    // 첨부파일 삭제(이미 등록된 거)
+    async removeFile(obj) {
+      await api //
+        .delete("/attachment/remove", {
+          data: obj,
+        })
+        .then((res) => {
+          this.removeResult = res.data;
         });
     },
   },

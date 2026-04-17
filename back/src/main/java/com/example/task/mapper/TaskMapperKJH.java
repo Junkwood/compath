@@ -2,6 +2,7 @@ package com.example.task.mapper;
 
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
+import com.example.task.dto.TaskLogDto;
 import com.example.task.dto.TaskReqDtoJJW;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -64,4 +65,8 @@ public interface TaskMapperKJH {
 
   //  업무 담당자 지정(미지정)
   public int  modifyTaskUser(TaskListDTOKJH dto);
+
+//  업무 작업 이력
+  public List<TaskLogDto> getActivityLogsByTaskId(Integer id);
+
 }

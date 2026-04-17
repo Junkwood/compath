@@ -38,7 +38,11 @@
               >
                 수정
               </button>
-              <button v-if="isAssignee" class="btn-lock" @click="delDocument">
+              <button
+                v-if="isAssignee && commentList.length > 0"
+                class="btn-lock"
+                @click="delDocument"
+              >
                 삭제
               </button>
               <button @click="goBack" type="button" class="btn-back">
@@ -98,7 +102,11 @@
                   v-for="(file, index) in attachmentList"
                   :key="index"
                   class="py-2 flex items-center justify-between group"
-                  v-if="attachmentList && attachmentList.length > 0"
+                  v-if="
+                    attachmentList != null &&
+                    attachmentList != undefined &&
+                    attachmentList.length > 0
+                  "
                 >
                   <div
                     class="flex items-center gap-2 flex-1 cursor-pointer"
@@ -130,10 +138,7 @@
                     다운로드 <span class="text-[10px] text-gray-300">〉</span>
                   </button>
                 </div>
-                <div
-                  class="py-11 flex justify-center"
-                  v-if="attachmentList !== null"
-                >
+                <div class="py-11 flex justify-center" v-else>
                   <span>첨부파일이 존재하지 않습니다.</span>
                 </div>
               </div>

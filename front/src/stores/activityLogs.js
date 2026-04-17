@@ -97,9 +97,7 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
   function badgeClass(type) {
     if (["J0", "M0", "T0"].includes(type)) return "create";
     if (["J2", "M2", "T2"].includes(type)) return "delete";
-    if (
-      ["J1", "J3", "M1", "M3", "T1", "T3", "T4", "T5", "T6"].includes(type)
-    ) {
+    if (["J1", "J3", "M1", "M3", "T1", "T3", "T4", "T5", "T6"].includes(type)) {
       return "update";
     }
     return "";

@@ -221,6 +221,8 @@ onMounted(async () => {
 });
 
 const handleSubmit = async () => {
+  form.value.estimatedHours =
+    parseInt(String(form.value.estTime).replace(/[^0-9]/g, "")) || 0;
   let obj = {
     ...form.value,
     createdBy: Number(authStore.user?.userId),

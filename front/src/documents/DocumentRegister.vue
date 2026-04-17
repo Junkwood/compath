@@ -173,13 +173,11 @@
                     </div>
                     <div class="flex items-center gap-4 text-xs text-gray-400">
                       <span>{{
-                        file.size
-                          ? (file.size / 1024).toFixed(1) + " KB"
-                          : "Existing"
+                        file.size ? (file.size / 1024).toFixed(1) + " KB" : ""
                       }}</span>
                       <button
                         type="button"
-                        @click="fileList.splice(index, 1)"
+                        @click="removeFile(file, index)"
                         class="text-gray-400 hover:text-red-500"
                       >
                         <i class="el-icon-delete"></i> 삭제
@@ -265,6 +263,7 @@ import { useProjectKJHStore } from "../stores/projectKJH";
 import { changeDate } from "../utils/commonFunc"; // 날짜 변경 함수(utils/commonFunc 에 있음)
 import Swal from "sweetalert2";
 import { useDocumentStore } from "../stores/document";
+import { useAttachmentStore } from "../stores/attachment";
 import DocumentNotificationModal from "./DocumentNotificationModal.vue";
 
 const router = useRouter();
@@ -273,6 +272,7 @@ const authStore = useAuthStore();
 const noticeStore = useNoticeStore();
 const documentStore = useDocumentStore();
 const taskStore = usetaskKJHStore();
+const attachmentStore = useAttachmentStore();
 
 const projectStore = useProjectKJHStore();
 const sidebarOpen = ref(false);
@@ -401,8 +401,28 @@ const submitForm = async (formEl) => {
           isComment: form.isComment == true ? "O2" : "O1",
           category: form.roleId == "전체" ? null : form.roleId,
           isEditorUserId: userInfo.value.userId,
+          attachmentGroupId:
+            fileList.value.length > 0 ? form.attachmentGroupId : null,
         };
-        await documentStore.modifyDocument(obj);
+
+        const formData = new FormData();
+        formData.append(
+          "obj",
+          new Blob([JSON.stringify(obj)], {
+            type: "application/json",
+          }),
+        );
+
+        if (fileList.value && fileList.value.length > 0) {
+          fileList.value.forEach((file) => {
+            if (file.isExisting == null) {
+              console.log(file);
+              formData.append("files", file.raw);
+            }
+          });
+        }
+
+        await documentStore.modifyDocument(formData);
       }
 
       router.push({
@@ -449,6 +469,7 @@ onBeforeMount(async () => {
     });
 
     await documentStore.getDocumentById(documentId);
+    let attachment = documentStore.documentDetail.attachmentList;
     let documentInfo = documentStore.documentDetail.documentInfo.documentInfo;
     // 폼에 대입
     form.roleId =
@@ -459,6 +480,22 @@ onBeforeMount(async () => {
     form.content = documentInfo.content;
     form.isPinned = documentInfo.isPinned == "O1" ? true : false;
     form.isComment = documentInfo.isComment == "O1" ? false : true;
+    form.attachmentGroupId = documentInfo.attachmentGroupId;
+
+    if (attachment != null) {
+      attachment.forEach((att) => {
+        let obj = {
+          name: att.fileName,
+          uid: att.attachmentId,
+          url: att.filePath,
+          status: "success",
+          isExisting: true,
+          attId: att.attachmentId,
+          attGId: att.attachmentGroupId,
+        };
+        fileList.value.push(obj);
+      });
+    }
 
     Swal.close();
   }
@@ -528,11 +565,35 @@ const resetForm = (formEl) => {
   formEl.resetFields();
 };
 
-// 첨부파일api(좌측)
+// 첨부파일api
 const fileList = ref([]);
 
 const handleChange = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles);
+  fileList.value = fileList.value.slice(-3);
+};
+
+/// 첨부파일 삭제
+const removeFile = async (file, index) => {
+  if (file.isExisting == null) {
+    fileList.splice(index, 1);
+  } else {
+    let obj = { attachmentId: file.attId, attachmentGroupId: file.attGId };
+    await attachmentStore.removeFile(obj);
+
+    fileList.value = [];
+    attachmentStore.removeResult.forEach((att) => {
+      let obj = {
+        name: att.fileName,
+        uid: att.attachmentId,
+        url: att.filePath,
+        status: "success",
+        isExisting: true,
+        attId: att.attachmentId,
+        attGId: att.attachmentGroupId,
+      };
+      fileList.value.push(obj);
+    });
+  }
 };
 </script>
 

@@ -32,7 +32,7 @@
             <div class="flex gap-2 self-end">
               <button
                 v-if="isAssignee"
-                @click="modifyDocument"
+                @click="modifyMeeting"
                 class="btn-modify"
               >
                 수정
@@ -275,7 +275,7 @@ const goBack = () => {
 };
 
 // 수정 버튼
-const modifyDocument = () => {
+const modifyMeeting = () => {
   router.push({
     name: "meetingRegister",
     params: { projectId: projectId, subProjectId: subId, meetingId: meetingId },
