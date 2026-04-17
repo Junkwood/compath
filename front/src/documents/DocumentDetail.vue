@@ -31,8 +31,16 @@
               </div>
             </div>
             <div class="flex gap-2 self-end">
-              <button @click="modifyDocument" class="btn-modify">수정</button>
-              <button class="btn-lock" @click="delDocument">삭제</button>
+              <button
+                v-if="isAssignee"
+                @click="modifyDocument"
+                class="btn-modify"
+              >
+                수정
+              </button>
+              <button v-if="isAssignee" class="btn-lock" @click="delDocument">
+                삭제
+              </button>
               <button @click="goBack" type="button" class="btn-back">
                 ← 돌아가기
               </button>
@@ -170,7 +178,10 @@
                       comment.content
                     }}</el-text>
 
-                    <div class="flex flex-row-reverse mt-2">
+                    <div
+                      v-if="comment.userId == authStore.user.userId"
+                      class="flex flex-row-reverse mt-2"
+                    >
                       <el-button
                         link
                         type="danger"
@@ -236,7 +247,7 @@
 </template>
 
 <script setup>
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, computed } from "vue";
 import { useDocumentStore } from "../stores/document";
 import { useAuthStore } from "../stores/auth";
 import { usetaskKJHStore } from "../stores/taksKJH";
@@ -437,6 +448,10 @@ onBeforeMount(async () => {
 
   let id = subId ? subId : projectId;
   await taskStore.getProjectName(id);
+
+  let roleObj = { projectId: projectId, subProjectId: subId };
+  await taskStore.getProjectRole(roleObj);
+
   let projectInfo = taskStore.projectName;
   if (projectInfo.parentProjectName != null) {
     taskPjList.value = [projectInfo.parentProjectName, projectInfo.projectName];
@@ -447,6 +462,20 @@ onBeforeMount(async () => {
   name.value = projectInfo.projectName;
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
+});
+
+// 권한 파악
+const isAssignee = computed(() => {
+  const currentUserId = authStore.user?.userId || authStore.user?.id;
+  if (!currentUserId) return false;
+
+  const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  const isManager = (taskStore.plPmList?.empList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  return isPmPl || isManager;
 });
 </script>
 <style scoped>

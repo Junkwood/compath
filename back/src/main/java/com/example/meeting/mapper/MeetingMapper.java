@@ -60,4 +60,6 @@ public interface MeetingMapper {
   //    회의록 업무 등록
   public int registerMeetingMember(MeetingDTO dto);
 
+  // 회의록 삭제
+  public int removeMeeting(Integer id);
 }

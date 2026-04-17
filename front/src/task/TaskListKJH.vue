@@ -249,7 +249,7 @@
                         <td
                           :class="[
                             task.assigneeUserId === null ||
-                            task.assigneeUserId === 'null'
+                            (task.assigneeUserId === 'null' && isAssignee)
                               ? 'text-blue'
                               : 'text-center',
                           ]"
@@ -394,6 +394,9 @@ onBeforeMount(async () => {
 
   if (subId > 0) filteredList.value.parentProjectId = subId;
 
+  let obj = { projectId: id, subProjectId: subId };
+  await taskStore.getProjectRole(obj);
+
   await handleCurrentChange(1);
   await taskStore.getAllFilterInfo(id);
   filterInfo.value = taskStore.filterInfo;
@@ -405,9 +408,6 @@ onBeforeMount(async () => {
       userType: task.roleName,
     });
   });
-
-  let obj = { projectId: id, subProjectId: subId };
-  await taskStore.getProjectRole(obj);
 
   Swal.close();
 });

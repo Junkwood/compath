@@ -31,7 +31,11 @@
               </div>
             </div>
             <div class="self-end">
-              <el-button class="btn-create-task" @click="goResister()">
+              <el-button
+                v-if="isAssignee"
+                class="btn-create-task"
+                @click="goResister()"
+              >
                 + 공지사항 생성
               </el-button>
             </div>
@@ -233,13 +237,13 @@
 </template>
 
 <script setup>
-import { onBeforeMount } from "vue";
+import { onBeforeMount, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ref } from "vue";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { useNoticeStore } from "../stores/notice";
+import { useAuthStore } from "../stores/auth";
 import Swal from "sweetalert2";
 import { Lock } from "@element-plus/icons-vue";
 
@@ -247,6 +251,7 @@ const route = useRoute();
 const router = useRouter();
 const taskStore = usetaskKJHStore();
 const noticeStore = useNoticeStore();
+const authStore = useAuthStore();
 
 const projectId = route.params.projectId;
 const subId = route.params.subProjectId;
@@ -396,6 +401,9 @@ onBeforeMount(async () => {
     parentProjectId: subId ? subId : projectId,
   };
 
+  let roleObj = { projectId: projectId, subProjectId: subId };
+  await taskStore.getProjectRole(roleObj);
+
   await noticeStore.getFilterList(obj);
   filterList.value = noticeStore.filterList;
   pagingList.value = noticeStore.filterList.noticeList;
@@ -405,6 +413,20 @@ onBeforeMount(async () => {
       : 0;
 
   Swal.close();
+});
+
+// 권한 파악
+const isAssignee = computed(() => {
+  const currentUserId = authStore.user?.userId || authStore.user?.id;
+  if (!currentUserId) return false;
+
+  const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  const isManager = (taskStore.plPmList?.empList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  return isPmPl || isManager;
 });
 
 const resetForm = () => {
