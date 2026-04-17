@@ -9,6 +9,7 @@
         <result property="isActive" column="is_active"/>
         <result property="description" column="description"/>
         <result property="groupType" column="group_type"/>
+
         <collection property="members" ofType="com.example.emp.entity.EmpVOSJW">
             <id property="groupMemberId" column="group_member_id"/>
             <result property="userId" column="user_id"/>
@@ -17,6 +18,11 @@
             <result property="name" column="user_name"/>
             <result property="primaryGroupName" column="primary_group_name"/>
         </collection>
+
+        <collection property="permissions" column="group_id"
+                    javaType="java.util.List"
+                    ofType="com.example.role.dto.PermissionDTOSJW"
+                    select="getGroupPermissionsByGroupId" />
     </resultMap>
     <sql id="group">
         GROUP_ID,
@@ -33,7 +39,7 @@
         SELECT
         g.group_id,
         g.group_name,
-        common(g.group_type) as group_type,
+        g.group_type,
         g.description,
         active(g.is_active) as is_active,
         COUNT(gm.user_id) AS member_count  -- 추가
@@ -43,7 +49,7 @@
         AND gm.is_active = 'O1'             -- 활성 멤버만 집계
         GROUP BY         g.group_id,
         g.group_name,
-        common(g.group_type),
+        g.group_type,
         g.description,
         active(g.is_active)
         ORDER BY g.group_id desc
@@ -77,6 +83,19 @@
         LEFT JOIN groups pg ON pm.group_id = pg.group_id
 
         WHERE g.group_id = #{groupId}
+    </select>
+    <select id="getGroupPermissionsByGroupId" resultType="com.example.role.dto.PermissionDTOSJW">
+        SELECT
+        gp.group_permission_id AS groupPermissionId,
+        p.permission_id        AS permissionId,
+        p.permission_name      AS permissionName,
+        p.permission_url       AS permissionUrl,
+        p.permission_method    AS permissionMethod,
+        p.permission_group_id  AS permissionGroupId,
+        p.description          AS description
+        FROM GROUP_PERMISSIONS gp
+        JOIN permissions p ON gp.permission_id = p.permission_id
+        WHERE gp.group_id = #{groupId}
     </select>
     <select id="getAllGroupForEmpRegister">
         SELECT
@@ -208,4 +227,18 @@
         SYSDATE
         )
     </insert>
+    <delete id="deletePermissionsByGroupId" parameterType="int">
+        DELETE FROM GROUP_PERMISSIONS
+        WHERE group_id = #{groupId}
+    </delete>
+
+    <insert id="insertGroupPermissions">
+        INSERT INTO GROUP_PERMISSIONS (group_permission_id, group_id, permission_id)
+        SELECT SEQ_GROUP_PERMISSION.NEXTVAL, A.* FROM (
+        <foreach collection="permissionIds" item="permId" separator=" UNION ALL ">
+            SELECT #{groupId} AS group_id, #{permId} AS permission_id FROM DUAL
+        </foreach>
+        ) A
+    </insert>
+
 </mapper>

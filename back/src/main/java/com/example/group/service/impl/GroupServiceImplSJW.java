@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,7 @@ public class GroupServiceImplSJW implements GroupServiceSJW {
     @Override
     public String checkDuplicatedName(String name) {
         Integer result = groupMapper.checkDuplicatedName(name);
-        if(result <= 0) {
+        if (result <= 0) {
             return "Y";
         }
         return "N";
@@ -56,7 +57,7 @@ public class GroupServiceImplSJW implements GroupServiceSJW {
     @Transactional
     public String registerGroup(GroupDTOSJW group) {
         Integer result = groupMapper.registerGroup(group);
-        if(result > 0) {
+        if (result > 0) {
             group.getMembers().forEach(item -> {
                 EmpVOSJW emp = new EmpVOSJW();
                 emp.setUserId(item.getUserId());
@@ -65,6 +66,9 @@ public class GroupServiceImplSJW implements GroupServiceSJW {
                 emp.setRoleId(item.getRoleId());
                 empMapperSJW.insertGroupMember(emp);
             });
+            if (group.getPermissionIds() != null && !group.getPermissionIds().isEmpty()) {
+                groupMapper.insertGroupPermissions(group.getGroupId(), group.getPermissionIds());
+            }
             return "Y";
         }
         return "N";
@@ -73,14 +77,23 @@ public class GroupServiceImplSJW implements GroupServiceSJW {
     @Override
     @Transactional
     public GroupDTOSJW modifyGroup(GroupDTOSJW group) {
-    
+
         // 1. 그룹 기본 정보 수정
         groupMapper.modifyGroup(group);
-        if(group.getMembers() != null ) {
+        if (group.getMembers() != null) {
             if (group.getMembers().size() <= 0) {
                 return null;
             }
+            // 권한 리스트가 파라미터로 넘어왔다면 (비어있는 배열 포함)
+            if (group.getPermissionIds() != null) {
+                // 해당 그룹의 기존 권한을 싹 다 지우고
+                groupMapper.deletePermissionsByGroupId(group.getGroupId());
 
+                // 새로 넘어온 권한이 1개라도 있다면 새로 Insert
+                if (!group.getPermissionIds().isEmpty()) {
+                    groupMapper.insertGroupPermissions(group.getGroupId(), group.getPermissionIds());
+                }
+            }
             // 2. DB에 있던 '기존 멤버' 조회 (💡 주의: Mapper에서 is_active = 'Y'인 사람만 가져와야 함)
             List<EmpVOSJW> oldMembers = groupMapper.getMembersByGroupId(group.getGroupId());
 
@@ -141,7 +154,6 @@ public class GroupServiceImplSJW implements GroupServiceSJW {
         }
         return group;
     }
-
 
 
 }

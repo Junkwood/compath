@@ -156,7 +156,9 @@ api.interceptors.response.use(
             allowOutsideClick: false,
           });
           isForbiddenAlertOpen = false; // 자물쇠 풀기
-          router.back();
+          if (router.currentRoute.value.path !== "/") {
+            router.back();
+          }
         }
       }
       // 💡 404 페이지 없음
@@ -170,7 +172,9 @@ api.interceptors.response.use(
             confirmButtonText: "확인",
           });
           isErrorAlertOpen = false;
-          router.back();
+          if (router.currentRoute.value.path !== "/") {
+            router.back();
+          }
         }
       }
       // 💡 500 서버 오류
@@ -184,7 +188,9 @@ api.interceptors.response.use(
             confirmButtonText: "확인",
           });
           isErrorAlertOpen = false;
-          router.back();
+          if (router.currentRoute.value.path !== "/") {
+            router.back();
+          }
         }
       }
       // 💡 기타 요류
@@ -199,7 +205,9 @@ api.interceptors.response.use(
             confirmButtonText: "확인",
           });
           isErrorAlertOpen = false;
-          router.back();
+          if (router.currentRoute.value.path !== "/") {
+            router.back();
+          }
         }
       }
     }
