@@ -381,8 +381,8 @@ export const useTaskStore = defineStore("task", () => {
       projectId: form.value.subProjectId
         ? Number(form.value.subProjectId)
         : Number(form.value.projectId),
-      estStartDate: form.value.estStartDate,
-      estEndDate: form.value.estEndDate,
+      estStartDate: form.value.estStartDate || form.value.startDate || null,
+      estEndDate: form.value.estEndDate || form.value.dueDate || null,
       startDate: form.value.taskId ? form.value.startDate || null : null,
       dueDate: form.value.taskId ? form.value.dueDate || null : null,
       estimatedHours:
