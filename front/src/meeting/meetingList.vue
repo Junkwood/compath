@@ -32,7 +32,11 @@
               </div>
             </div>
             <div class="self-end">
-              <el-button class="btn-create-task" @click="goResister()">
+              <el-button
+                v-if="isAssignee"
+                class="btn-create-task"
+                @click="goResister()"
+              >
                 + 회의록 생성
               </el-button>
             </div>
@@ -220,12 +224,12 @@
 </template>
 
 <script setup>
-import { onBeforeMount } from "vue";
+import { onBeforeMount, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ref } from "vue";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
+import { useAuthStore } from "../stores/auth";
 import Swal from "sweetalert2";
 import { useMeetingStore } from "../stores/meeting";
 import { Paperclip } from "@element-plus/icons-vue";
@@ -233,6 +237,7 @@ import { Paperclip } from "@element-plus/icons-vue";
 const route = useRoute();
 const router = useRouter();
 const taskStore = usetaskKJHStore();
+const authStore = useAuthStore();
 const meetingStore = useMeetingStore();
 
 const projectId = route.params.projectId;
@@ -357,6 +362,9 @@ onBeforeMount(async () => {
   let obj = { projectId: subId != "" ? subId : projectId };
   await meetingStore.getFilterList(obj);
 
+  let roleObj = { projectId: projectId, subProjectId: subId };
+  await taskStore.getProjectRole(roleObj);
+
   filterList.value = meetingStore.filterList;
   pagingList.value = meetingStore.filterList.meetingList.listLength;
   filterList.value.meetingList.length > 0
@@ -364,6 +372,20 @@ onBeforeMount(async () => {
     : 0;
   await handleCurrentChange(1);
   Swal.close();
+});
+
+// 권한 파악
+const isAssignee = computed(() => {
+  const currentUserId = authStore.user?.userId || authStore.user?.id;
+  if (!currentUserId) return false;
+
+  const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  const isManager = (taskStore.plPmList?.empList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  return isPmPl || isManager;
 });
 
 const resetForm = () => {
@@ -387,7 +409,7 @@ const resetForm = () => {
 
 .sub-header {
   background: #fff;
-  padding: 12px 24px;
+  padding: 12px 28px;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
@@ -788,5 +810,9 @@ const resetForm = () => {
 }
 .btn-search:hover {
   background: #1e293b;
+}
+
+:deep(.task-table th:nth-child(1), .task-table td:nth-child(1)) {
+  max-width: 5%;
 }
 </style>

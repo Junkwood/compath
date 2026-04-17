@@ -14,8 +14,8 @@
             <span>홈</span><span class="bc-sep">›</span> ><span
               v-for="info in taskPjList"
               :key="info"
-              >{{ info }} › </span
-            ><span class="bc-sep">›</span>
+              >{{ info }} ›
+            </span>
             <span class="bc-cur">{{
               !isModified ? "공지사항 생성" : "공지사항 수정"
             }}</span>
@@ -126,66 +126,26 @@
                   />
                 </el-form-item>
               </div>
-              <div class="mb-8">
-                <div class="flex items-center gap-3 mb-3">
-                  <span class="text-sm font-semibold text-gray-700"
-                    >첨부 파일</span
-                  >
-                  <el-upload
-                    v-model:file-list="fileList"
-                    action="#"
-                    :auto-upload="false"
-                    :show-file-list="false"
-                    multiple
-                    :on-change="handleChange"
-                  >
-                    <template #trigger>
-                      <button type="button" class="btn-select-custom text-xs">
-                        파일 추가
-                      </button>
-                    </template>
-                  </el-upload>
-                </div>
-                <div class="border rounded-lg overflow-hidden border-gray-200">
-                  <div
-                    v-for="(file, index) in fileList"
-                    :key="index"
-                    class="flex items-center justify-between p-3 bg-white border-b last:border-b-0 hover:bg-gray-50 transition-colors"
-                  >
-                    <div class="flex items-center gap-3 overflow-hidden">
-                      <span class="text-red-500 font-bold text-xs uppercase">{{
-                        file.name.split(".").pop()
-                      }}</span>
-                      <span class="text-sm text-gray-700 truncate">{{
-                        file.name
-                      }}</span>
+              <div class="mb-6">
+                <el-upload
+                  v-model:file-list="fileList"
+                  class="upload-demo"
+                  action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+                  :on-change="handleChange"
+                >
+                  <el-button type="primary">파일선택</el-button>
+                  <template #tip>
+                    <div class="el-upload__tip">
+                      jpg/png 파일은 최대 500kb까지 가능합니다.
                     </div>
-                    <div class="flex items-center gap-4 text-xs text-gray-400">
-                      <span>{{
-                        file.size
-                          ? (file.size / 1024).toFixed(1) + " KB"
-                          : "Existing"
-                      }}</span>
-                      <button
-                        type="button"
-                        @click="fileList.splice(index, 1)"
-                        class="text-gray-400 hover:text-red-500"
-                      >
-                        <i class="el-icon-delete"></i> 삭제
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    v-if="fileList.length === 0"
-                    class="p-4 text-center text-xs text-gray-400"
-                  >
-                    첨부된 파일이 없습니다.
-                  </div>
-                </div>
+                  </template>
+                </el-upload>
               </div>
 
               <div class="flex justify-between">
-                <div></div>
+                <button @click="goBack" type="button" class="btn-navy">
+                  ← 목록으로
+                </button>
                 <div class="flex gap-2">
                   <button @click="resetForm" type="button" class="btn-red">
                     초기화
@@ -263,8 +223,9 @@ const checkedBox = (event) => {
 const submitForm = async (formEl) => {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
+      console.log(form);
+      // 공지사항 등록
       if (!isModified.value) {
-        // 문서 등록
         let obj = {
           projectId: subId ? subId : id,
           title: form.title,
@@ -273,33 +234,8 @@ const submitForm = async (formEl) => {
           category: form.roleId,
           createdBy: userInfo.value.userId,
         };
-
-        // formData에 게시글 정보 담기
-        const formData = new FormData();
-        formData.append(
-          "obj",
-          new Blob([JSON.stringify(obj)], {
-            type: "application/json",
-          }),
-        );
-
-        // 첨부파일 있을 경우 담기
-        if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach((file) => {
-            formData.append("files", file.raw);
-          });
-        }
-        await noticeStore.registerNotice(formData);
-
-        const result = await Swal.fire({
-          title: "공지사항 등록 및 알림 전송이 완료되었습니다.",
-          text: "상세페이지로 이동합니다.",
-          icon: "success",
-          confirmButtonText: "확인",
-          reverseButtons: true,
-        });
+        await noticeStore.registerNotice(obj);
       } else {
-        // 문서 수정
         const result = await Swal.fire({
           title: "정말 수정하시겠습니까?",
           text: "",
@@ -316,7 +252,7 @@ const submitForm = async (formEl) => {
           noticeId: noticeId,
           title: form.title,
           content: form.content,
-          isPinned: form.isPinned == true ? "B1" : "B2",
+          isPinned: form.emerency == true ? "B1" : "B2",
           category: form.roleId,
           isEditorUserId: userInfo.value.userId,
         };
@@ -356,7 +292,7 @@ onBeforeMount(async () => {
     // 수정일때
     isModified.value = true;
     await noticeStore.getNoticeById(noticeId);
-    let noticeInfo = noticeStore.noticeInfo.noticeInfo;
+    let noticeInfo = noticeStore.noticeInfo;
     Swal.close();
 
     // 폼에 대입
@@ -425,11 +361,16 @@ const resetForm = (formEl) => {
   formEl.resetFields();
 };
 
-// 첨부파일api(좌측)
-const fileList = ref([]);
+// 첨부파일api
+const fileList = ref([
+  {
+    name: "food.jpeg",
+    url: "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100",
+  },
+]);
 
 const handleChange = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles);
+  fileList.value = fileList.value.slice(-3);
 };
 </script>
 
@@ -638,22 +579,5 @@ const handleChange = (uploadFile, uploadFiles) => {
   background: #60aee2;
   box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
   transform: translateY(-1px);
-}
-
-.btn-select-custom {
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 6px;
-  background: #fff;
-  border: 1.5px solid #475569;
-  color: #475569;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-select-custom:hover {
-  background: #f8fafc;
-  color: #1e293b;
-  border-color: #1e293b;
 }
 </style>

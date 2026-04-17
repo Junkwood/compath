@@ -131,4 +131,10 @@ public class MeetingController {
         return service.registerDetailConnect(dto);
 
     };
+
+    // 회의록 삭제
+    @PutMapping("/meeting/remove/{id}")
+    public int removeMeeting(@PathVariable Integer id) {
+        return service.removeMeeting(id);
+    }
 }

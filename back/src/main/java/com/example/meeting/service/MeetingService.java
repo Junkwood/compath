@@ -40,4 +40,7 @@ public interface MeetingService {
 
     //  회의록 연결 업무 연결 해제(상세)
     public List<MeetingDTO> removeDetailConnect(MeetingDTO dto);
+
+    // 회의록 삭제
+    public int removeMeeting(Integer id);
 }

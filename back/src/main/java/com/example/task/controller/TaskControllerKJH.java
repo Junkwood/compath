@@ -1,5 +1,8 @@
 package com.example.task.controller;
 
+import com.example.attachment.dto.AttachmentDTO;
+import com.example.attachment.service.AttachmentService;
+import com.example.meeting.dto.MeetingDTO;
 import com.example.task.dto.TaskDetailDTOKJH;
 import com.example.task.dto.TaskListDTOKJH;
 import com.example.task.dto.TaskReqDtoJJW;
@@ -8,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +20,7 @@ import java.util.Map;
 public class TaskControllerKJH {
 
     private final TaskServiceKJH service;
+    private final AttachmentService attachmentService;
 
     // 목록 조회
     @GetMapping("/api/tasks")
@@ -37,8 +42,21 @@ public class TaskControllerKJH {
 
     // 업무 단건 조회
     @GetMapping("/api/tasks/detail/{id}")
-    public TaskDetailDTOKJH getTaskById(@PathVariable Integer id){
-        return service.getTaskById(id);
+    public Map<String, Object> getTaskById(@PathVariable Integer id){
+        // 결과 담을 그릇
+        Map<String, Object> result = new HashMap<>();
+
+        TaskDetailDTOKJH info = service.getTaskById(id);
+        result.put("taskInfo", info);
+
+        Integer groupId = info.getAttachmentGroupId();
+
+        if(groupId != null) {
+            List<AttachmentDTO> list = attachmentService.getFileList(groupId);
+            result.put("attachmentList", list);
+        }
+
+        return result;
     }
 
     // 소요시간 등록

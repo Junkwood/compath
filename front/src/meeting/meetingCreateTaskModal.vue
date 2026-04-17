@@ -221,7 +221,11 @@ onMounted(async () => {
 });
 
 const handleSubmit = async () => {
-  let obj = { ...form.value, createdBy: Number(authStore.user?.userId) };
+  let obj = {
+    ...form.value,
+    createdBy: Number(authStore.user?.userId),
+    progressRate: 0,
+  };
   console.log(obj);
   try {
     await meetingStore.registerRecommandTask(obj);
