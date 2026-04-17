@@ -308,8 +308,8 @@ const reset = () => {
 };
 
 onMounted(async () => {
-  await roleStore.getRoleList();
-  roles.value = roleStore.roleList;
+  await roleStore.getActiveRoleList();
+  roles.value = roleStore.activeRoleList;
 });
 </script>
 <style>
