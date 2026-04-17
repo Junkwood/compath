@@ -172,6 +172,7 @@
               </div>
               <div class="panel-body">
                 <el-table
+                   class="task-summary-table"
                   :data="taskSummaryData"
                   style="width: 100%"
                   :header-cell-style="tableHeaderStyle"
@@ -900,6 +901,10 @@ onMounted(() => {
 
 :deep(.clickable-row) {
   cursor: pointer;
+}
+
+:deep(.task-summary-table .el-table__row:hover > td) {
+  background: #fff !important;
 }
 
 /* ── 반응형 ── */

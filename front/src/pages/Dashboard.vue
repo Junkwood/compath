@@ -186,7 +186,7 @@
                 >
                   <el-option label="최신 생성순" value="createdDesc" />
                   <el-option label="오래된 생성순" value="createdAsc" />
-                  <el-option label="프로젝트ID순" value="idDesc" />
+                  <el-option label="프로젝트ID순" value="idAsc" />
                 </el-select>
               </div>
             </div>
@@ -460,8 +460,7 @@ const sortedProjectList = computed(() => {
       );
     }
 
-    return Number(b.projectId || 0) - Number(a.projectId || 0);
-  });
+    return Number(a.projectId || 0) - Number(b.projectId || 0);  });
 
   return sorted;
 });

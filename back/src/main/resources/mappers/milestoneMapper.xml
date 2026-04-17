@@ -41,30 +41,16 @@
     </select>
 
 <!-- 마일스톤 탭용 조회 -->
-<!--    <select id="getMilestoneTab" resultType="MilestoneTabDto">-->
-<!--    SELECT DISTINCT-->
-<!--        M.MILESTONE_NAME,-->
-<!--        M.MILESTONE_ID,-->
-<!--        M.START_DATE,-->
-<!--        M.DUE_DATE,-->
-<!--        M.DESCRIPTION-->
-<!--    FROM MILESTONES M-->
-<!--    JOIN PROJECTS P-->
-<!--        ON P.PARENT_PROJECT_ID = M.PROJECT_ID-->
-<!--    WHERE P.PARENT_PROJECT_ID = #{projectId}-->
-<!--        AND M.STATUS='E1'-->
-<!--    ORDER BY M.MILESTONE_ID-->
-<!--    </select>-->
     <select id="getMilestoneTab" resultType="MilestoneTabDto">
         SELECT
-        M.MILESTONE_NAME,
-        M.MILESTONE_ID,
-        M.START_DATE,
-        M.DUE_DATE,
-        M.DESCRIPTION
+            M.MILESTONE_NAME,
+            M.MILESTONE_ID,
+            M.START_DATE,
+            M.DUE_DATE,
+            M.DESCRIPTION
         FROM MILESTONES M
         WHERE M.PROJECT_ID = #{projectId}
-        AND M.STATUS IN ('E1', 'E2')
+            AND M.STATUS IN ('E1', 'E2')
         ORDER BY M.MILESTONE_ID
     </select>
 
@@ -162,7 +148,7 @@
     </update>
 
 
-    <!--마일스톤 삭제 (상태값 업데이트 : E2로)-->
+    <!--마일스톤 삭제 (상태값 업데이트 : E3로)-->
     <update id="removeMilestoneProc" statementType="CALLABLE">
         { CALL DELETE_MILESTONE_PROC(
         #{projectId, mode=IN, jdbcType=NUMERIC},

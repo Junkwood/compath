@@ -53,6 +53,13 @@
               >
                 ⚙ 프로젝트 설정
               </el-button>
+             <el-button
+                v-if="isMilestoneUsed"
+                class="action-btn btn-secondary"
+                @click="handleGoToMilestone"
+              >
+                마일스톤 바로가기
+              </el-button>
             </div>
           </div>
 
@@ -71,6 +78,7 @@
                   </el-button>
                 </div>
                 <el-table
+                  class="task-summary-table"
                   :data="taskSummaryData"
                   style="width: 100%"
                   :header-cell-style="headerStyle"
@@ -170,6 +178,7 @@
 
                 <div class="sub-body">
                   <template v-if="isMilestoneEnabled">
+                    <!-- 마일스톤 탭 부분  -->
                     <template v-if="milestoneTabs.length > 0">
                       <el-tabs
                         v-model="activeMilestoneKey"
@@ -423,6 +432,7 @@
     :isEditMode="isMemoEditMode"
     @submitted="handleMemoSubmitted"
   />
+  <!-- 하위프로젝트 생성 버튼 클릭 -->
   <ProjectSubCreateModal
     v-model="createSubProjectModalOpen"
     :project-id="projectInfo.projectId"
@@ -432,6 +442,7 @@
     :parent-use-milestone="projectInfo.useMilestone"
     @submitted="handleSubProjectSubmitted"
   />
+
   <MilestoneCreateModal
     v-model="milestoneModalVisible"
     :project-id="projectInfo.projectId"
@@ -444,83 +455,228 @@
 
 <script setup>
 import { onMounted, ref, computed, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import Swal from "sweetalert2";
-import api from "../utils/api";
+
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectMemoModal from "../project/ProjectMemoModal.vue";
-import { useAuthStore } from "../stores/auth";
 import ProjectSubCreateModal from "../project/ProjectSubCreateModal.vue";
 import MilestoneCreateModal from "../milestone/MilestoneCreateModal.vue";
 
+import { useAuthStore } from "../stores/auth";
+import { useProjectDashboardStore } from "../stores/projectDashboard";
+
 const authStore = useAuthStore();
+const dashboardStore = useProjectDashboardStore();
+
 const route = useRoute();
 const router = useRouter();
+
+const {
+  projectInfo,
+  milestoneList,
+  taskSummaryData,
+  noticeList,
+  projectMembers,
+  memoList,
+  subProjects,
+  isMilestoneUsed,
+  milestoneLabel,
+  isMilestoneEnabled,
+  milestoneTabs,
+  groupedMembers,
+} = storeToRefs(dashboardStore);
+
+const {
+  fetchAll,
+  fetchProjectDetail,
+  fetchMilestoneList,
+  fetchSubProject,
+  saveMemo,
+  deleteMemo,
+} = dashboardStore;
+
+/* -------------------- 페이지 UI 상태 -------------------- */
 const sidebarOpen = ref(false);
 const createSubProjectModalOpen = ref(false);
 const milestoneModalVisible = ref(false);
 const milestoneRedirectAfterSave = ref(false);
 
-/* -------------------- 프로젝트 기본정보 -------------------- */
-const projectInfo = ref({
-  projectId: null,
-  projectName: "",
-  identifier: "",
-  description: "",
-  startDate: "",
-  endDate: "",
-  useMilestone: "",
+const memoModalVisible = ref(false);
+const isMemoEditMode = ref(false);
+const editingMemoId = ref(null);
+const editingMemoText = ref("");
+
+const activeMilestoneKey = ref(null);
+const subProjectPage = ref(1);
+const subProjectPageSize = 5;
+
+const openedMemberGroups = ref({});
+
+/* -------------------- 구성원 아코디언 -------------------- */
+const setDefaultOpenedGroups = () => {
+  const next = {};
+  groupedMembers.value.forEach((group, index) => {
+    next[group.key] = index === 0;
+  });
+  openedMemberGroups.value = next;
+};
+
+// 구성원토글
+const toggleMemberGroup = (groupKey) => {
+  const isCurrentlyOpen = openedMemberGroups.value[groupKey];
+  const next = {};
+  groupedMembers.value.forEach((group) => {
+    next[group.key] = false;
+  });
+  next[groupKey] = !isCurrentlyOpen;
+  openedMemberGroups.value = next;
+};
+
+watch(
+  groupedMembers,
+  (groups) => {
+    if (!groups.length) {
+      openedMemberGroups.value = {};
+      return;
+    }
+
+    const hasOpened = groups.some((group) => openedMemberGroups.value[group.key]);
+
+    if (!hasOpened) {
+      setDefaultOpenedGroups();
+    } else {
+      const next = {};
+      groups.forEach((group) => {
+        next[group.key] = !!openedMemberGroups.value[group.key];
+      });
+      openedMemberGroups.value = next;
+    }
+  },
+  { immediate: true },
+);
+
+/* -------------------- 메모 -------------------- */
+const handleEditMemo = (memo) => {
+  isMemoEditMode.value = true;
+  editingMemoId.value = memo.memoId;
+  editingMemoText.value = memo.memoContent;
+  memoModalVisible.value = true;
+};
+
+const getMemoColorClass = (index) =>
+  ["memo-blue", "memo-yellow", "memo-pink", "memo-green"][index % 4];
+
+const handleDeleteMemo = async (memoId) => {
+  const result = await Swal.fire({
+    title: "메모를 삭제할까요?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "삭제",
+    cancelButtonText: "취소",
+    reverseButtons: true,
+  });
+  if (!result.isConfirmed) return;
+
+  try {
+    await deleteMemo(
+      memoId,
+      authStore.user?.userId,
+      route.params.projectId,
+    );
+
+    await Swal.fire({
+      title: "삭제되었습니다.",
+      icon: "success",
+      confirmButtonText: "확인",
+    });
+  } catch (err) {
+    console.error("메모 삭제 불가:", err);
+  }
+};
+
+// 메모 등록
+const handleMemoSubmitted = async (payload) => {
+  try {
+    const projectId = route.params.projectId;
+    const userId = authStore.user?.userId;
+    if (!userId) return;
+
+    await saveMemo({
+      projectId,
+      userId,
+      memoId: editingMemoId.value,
+      memoContent: payload.text,
+      isEditMode: isMemoEditMode.value,
+    });
+
+    memoModalVisible.value = false;
+    isMemoEditMode.value = false;
+    editingMemoId.value = null;
+    editingMemoText.value = "";
+  } catch (err) {
+    console.error("메모 저장 실패:", err);
+  }
+};
+
+const handleAddMemo = () => {
+  isMemoEditMode.value = false;
+  editingMemoId.value = null;
+  editingMemoText.value = "";
+  memoModalVisible.value = true;
+};
+
+/* -------------------- 하위프로젝트 / 마일스톤 탭 -------------------- */
+const getMilestoneTabKey = (tab) => String(tab.milestoneId ?? "unassigned");
+
+const currentMilestone = computed(() => {
+  if (!milestoneTabs.value.length) return null;
+
+  return (
+    milestoneTabs.value.find(
+      (tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value,
+    ) || milestoneTabs.value[0]
+  );
 });
 
-const normalizeMilestoneValue = (value) =>
-  String(value ?? "")
-    .trim()
-    .toUpperCase();
+// 하위프젝 페이지네이션
+const pagedSubProjects = computed(() => {
+  if (!currentMilestone.value) return [];
+  const start = (subProjectPage.value - 1) * subProjectPageSize;
+  return currentMilestone.value.projects.slice(
+    start,
+    start + subProjectPageSize,
+  );
+});
 
-const isMilestoneUsed = computed(
-  () => normalizeMilestoneValue(projectInfo.value.useMilestone) === "O1",
-);
-
-const milestoneLabel = computed(() =>
-  isMilestoneUsed.value ? "마일스톤 사용" : "마일스톤 미사용",
-);
-
-const fetchProjectDetail = async () => {
-  try {
-    const res = await api.get(`/ProjectDetail/${route.params.projectId}`);
-    projectInfo.value = {
-      projectId: res.data?.projectId ?? null,
-      projectName: res.data?.projectName ?? "",
-      identifier: res.data?.identifier ?? "",
-      description: res.data?.description ?? "",
-      startDate: res.data?.startDate ?? "",
-      endDate: res.data?.endDate ?? "",
-      useMilestone: res.data?.useMilestone ?? "",
-    };
-  } catch (err) {
-    console.error("프로젝트 상세 조회 실패:", err);
-  }
+//마일스톤 탭클릭
+const handleMilestoneTabClick = () => {
+  subProjectPage.value = 1;
 };
 
-/* -------------------- 실제 마일스톤 목록 -------------------- */
-/* 중요: 하위프로젝트 목록이 아니라 진짜 마일스톤 목록을 따로 관리 */
-const milestoneList = ref([]);
 
-const fetchMilestoneList = async () => {
-  if (!isMilestoneUsed.value) {
-    milestoneList.value = [];
-    return;
-  }
+watch(
+  milestoneTabs,
+  (tabs) => {
+    if (!tabs.length) {
+      activeMilestoneKey.value = null;
+      subProjectPage.value = 1;
+      return;
+    }
 
-  try {
-    const res = await api.get(`/MilestoneTab/${route.params.projectId}`);
-    milestoneList.value = Array.isArray(res.data) ? res.data : [];
-  } catch (err) {
-    console.error("마일스톤 목록 조회 실패:", err);
-    milestoneList.value = [];
-  }
-};
+    const exists = tabs.some(
+      (tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value,
+    );
+
+    if (!exists) {
+      activeMilestoneKey.value = getMilestoneTabKey(tabs[0]);
+      subProjectPage.value = 1;
+    }
+  },
+  { immediate: true },
+);
 
 /* -------------------- 하위프로젝트 생성 -------------------- */
 const handleAddSubProject = async () => {
@@ -547,351 +703,44 @@ const handleAddSubProject = async () => {
 
 const handleSubProjectSubmitted = async () => {
   createSubProjectModalOpen.value = false;
-  await fetchSubProject();
+  await fetchSubProject(route.params.projectId);
 };
 
+//마일스톤 여부 체크해서 하위프로젝트 분기 나누기
+//마일스톤 생성 후 하위프로젝트 생성모달 띄우는 분기
 const handleMilestoneSaved = async () => {
   milestoneModalVisible.value = false;
 
-  await fetchProjectDetail();
-  await fetchMilestoneList();
-  await fetchSubProject();
+  await fetchProjectDetail(route.params.projectId);
+  await fetchMilestoneList(route.params.projectId);
+  await fetchSubProject(route.params.projectId);
+
+  if (
+    milestoneRedirectAfterSave.value &&
+    isMilestoneUsed.value &&
+    milestoneList.value.length > 0
+  ) {
+    const result = await Swal.fire({
+      icon: "success",
+      title: "마일스톤이 생성되었습니다.",
+      text: "하위프로젝트 생성으로 이동합니다.",
+      confirmButtonText: "확인",
+      cancelButtonText: "취소",
+      showCancelButton: true,
+      reverseButtons: true,
+    });
+
+    milestoneRedirectAfterSave.value = false;
+
+    if (result.isConfirmed) {
+      createSubProjectModalOpen.value = true;
+    }
+
+    return;
+  }
 
   milestoneRedirectAfterSave.value = false;
-
-  // 마일스톤 만들고 바로 하위프로젝트 생성으로 넘기고 싶으면 이 줄 추가
-  if (isMilestoneUsed.value && milestoneList.value.length > 0) {
-    createSubProjectModalOpen.value = true;
-  }
 };
-
-/* -------------------- 업무 현황 -------------------- */
-const taskSummaryData = ref([]);
-
-const fetchTaskSummary = async () => {
-  try {
-    const res = await api.get(`/TaskSummary/${route.params.projectId}`);
-    taskSummaryData.value = res.data || [];
-  } catch (err) {
-    console.error("업무 현황 조회 실패:", err);
-    taskSummaryData.value = [];
-  }
-};
-
-/* -------------------- 공지사항 -------------------- */
-const noticeList = ref([]);
-
-const formatDate = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-};
-
-const isWithin7Days = (value) => {
-  if (!value) return false;
-  const target = new Date(value);
-  if (Number.isNaN(target.getTime())) return false;
-  const diff =
-    (new Date().getTime() - target.getTime()) / (1000 * 60 * 60 * 24);
-  return diff >= 0 && diff <= 7;
-};
-
-const fetchNoticeList = async () => {
-  try {
-    const res = await api.get(
-      `/notices/getNoticeLists/${Number(route.params.projectId)}`,
-    );
-    const rawList = Array.isArray(res.data) ? res.data : [];
-    noticeList.value = rawList
-      .map((item) => ({
-        noticeId: item.noticeId,
-        title: item.title,
-        createdAt: formatDate(item.createdAt),
-        rawCreatedAt: item.createdAt,
-        pinStatusCode: item.pinStatusCode ?? "B2",
-        isNew: isWithin7Days(item.createdAt),
-      }))
-      .sort((a, b) => {
-        const diff =
-          (b.pinStatusCode === "B1" ? 1 : 0) -
-          (a.pinStatusCode === "B1" ? 1 : 0);
-        return diff !== 0
-          ? diff
-          : new Date(b.rawCreatedAt) - new Date(a.rawCreatedAt);
-      })
-      .slice(0, 7);
-  } catch (err) {
-    console.error("공지사항 목록 조회 실패:", err);
-    noticeList.value = [];
-  }
-};
-
-/* -------------------- 구성원 -------------------- */
-const projectMembers = ref([]);
-const openedMemberGroups = ref({});
-
-const normalizeRoleName = (roleName) => {
-  if (!roleName || !String(roleName).trim()) return "구성원";
-  const value = String(roleName).trim();
-  if (value.includes("PM")) return "PM";
-  if (value.includes("PL")) return "PL";
-  if (value.includes("QA")) return "QA";
-  if (value.includes("관리")) return "관리자";
-  if (value.includes("개발")) return "개발";
-  return value;
-};
-
-const roleOrderMap = { PM: 1, PL: 2, 관리자: 3, 개발: 4, QA: 5, 구성원: 99 };
-
-const groupedMembers = computed(() => {
-  const map = new Map();
-  projectMembers.value.forEach((member) => {
-    const groupName = normalizeRoleName(member.roleName);
-    if (!map.has(groupName))
-      map.set(groupName, { key: groupName, label: groupName, members: [] });
-    map.get(groupName).members.push(member);
-  });
-
-  return Array.from(map.values())
-    .map((group) => ({
-      ...group,
-      members: [...group.members].sort((a, b) =>
-        String(a.userName || "").localeCompare(String(b.userName || ""), "ko"),
-      ),
-    }))
-    .sort((a, b) => {
-      const orderA = roleOrderMap[a.label] ?? 50;
-      const orderB = roleOrderMap[b.label] ?? 50;
-      if (orderA !== orderB) return orderA - orderB;
-      return a.label.localeCompare(b.label, "ko");
-    });
-});
-
-const setDefaultOpenedGroups = () => {
-  const next = {};
-  groupedMembers.value.forEach((group, index) => {
-    next[group.key] = index === 0;
-  });
-  openedMemberGroups.value = next;
-};
-
-const toggleMemberGroup = (groupKey) => {
-  const isCurrentlyOpen = openedMemberGroups.value[groupKey];
-  const next = {};
-  groupedMembers.value.forEach((group) => {
-    next[group.key] = false;
-  });
-  next[groupKey] = !isCurrentlyOpen;
-  openedMemberGroups.value = next;
-};
-
-const fetchPmemList = async () => {
-  try {
-    const res = await api.get(`/GroupMemList/${route.params.projectId}`);
-    projectMembers.value = res.data || [];
-    setDefaultOpenedGroups();
-  } catch (err) {
-    console.error("구성원 목록 조회 실패:", err);
-    projectMembers.value = [];
-    openedMemberGroups.value = {};
-  }
-};
-
-/* -------------------- 메모 -------------------- */
-const memoList = ref([]);
-const memoModalVisible = ref(false);
-const isMemoEditMode = ref(false);
-const editingMemoId = ref(null);
-const editingMemoText = ref("");
-
-const handleEditMemo = (memo) => {
-  isMemoEditMode.value = true;
-  editingMemoId.value = memo.memoId;
-  editingMemoText.value = memo.memoContent;
-  memoModalVisible.value = true;
-};
-
-const fetchMemoList = async () => {
-  try {
-    const res = await api.get(`/MemoList/${route.params.projectId}`, {
-      params: { userId: authStore.user?.userId },
-    });
-    memoList.value = res.data || [];
-  } catch (err) {
-    console.error("메모 목록 조회 실패:", err);
-    memoList.value = [];
-  }
-};
-
-const getMemoColorClass = (index) =>
-  ["memo-blue", "memo-yellow", "memo-pink", "memo-green"][index % 4];
-
-const handleDeleteMemo = async (memoId) => {
-  const result = await Swal.fire({
-    title: "메모를 삭제할까요?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "삭제",
-    cancelButtonText: "취소",
-    reverseButtons: true,
-  });
-  if (!result.isConfirmed) return;
-
-  try {
-    await api.post("/MemoStatUpdate", {
-      memoId,
-      userId: authStore.user?.userId,
-    });
-    await fetchMemoList();
-    await Swal.fire({
-      title: "삭제되었습니다.",
-      icon: "success",
-      confirmButtonText: "확인",
-    });
-  } catch (err) {
-    console.error("메모 삭제 불가:", err);
-  }
-};
-
-const handleMemoSubmitted = async (payload) => {
-  try {
-    const projectId = route.params.projectId;
-    const userId = authStore.user?.userId;
-    if (!userId) return;
-
-    if (isMemoEditMode.value) {
-      await api.post("/MemoContentUpdate", {
-        memoId: editingMemoId.value,
-        projectId,
-        userId,
-        memoContent: payload.text,
-      });
-    } else {
-      await api.post("/MemoRegister", {
-        projectId,
-        userId,
-        memoContent: payload.text,
-      });
-    }
-
-    memoModalVisible.value = false;
-    isMemoEditMode.value = false;
-    editingMemoId.value = null;
-    editingMemoText.value = "";
-    await fetchMemoList();
-  } catch (err) {
-    console.error("메모 저장 실패:", err);
-  }
-};
-
-const handleAddMemo = () => {
-  isMemoEditMode.value = false;
-  editingMemoId.value = null;
-  editingMemoText.value = "";
-  memoModalVisible.value = true;
-};
-
-/* -------------------- 하위프로젝트 목록 -------------------- */
-const subProjects = ref([]);
-const activeMilestoneKey = ref(null);
-const subProjectPage = ref(1);
-const subProjectPageSize = 5;
-
-const fetchSubProject = async () => {
-  try {
-    const res = await api.get(`/ProjectSubList/${route.params.projectId}`);
-    subProjects.value = res.data || [];
-  } catch (err) {
-    console.error("하위프로젝트 조회 실패:", err);
-    subProjects.value = [];
-  }
-};
-
-const isMilestoneEnabled = computed(
-  () =>
-    isMilestoneUsed.value ||
-    subProjects.value.some((item) => item.milestoneId != null),
-);
-
-const milestoneTabs = computed(() => {
-  const map = new Map();
-
-  subProjects.value.forEach((item) => {
-    const key = item.milestoneId ?? "unassigned";
-
-    if (!map.has(key)) {
-      map.set(key, {
-        milestoneId: item.milestoneId,
-        milestoneName: item.milestoneName || "미분류",
-        projects: [],
-      });
-    }
-
-    if (item.projectId) {
-      map.get(key).projects.push({
-        projectId: item.projectId,
-        projectName: item.projectName,
-        identifier: item.identifier,
-        userName: item.userName,
-        startDate: item.startDate || "",
-        endDate: item.endDate || "",
-      });
-    }
-  });
-
-  return Array.from(map.values()).sort((a, b) => {
-    if (a.milestoneId == null) return 1;
-    if (b.milestoneId == null) return -1;
-    return Number(a.milestoneId) - Number(b.milestoneId);
-  });
-});
-
-const getMilestoneTabKey = (tab) => String(tab.milestoneId ?? "unassigned");
-
-const currentMilestone = computed(() => {
-  if (!milestoneTabs.value.length) return null;
-
-  return (
-    milestoneTabs.value.find(
-      (tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value,
-    ) || milestoneTabs.value[0]
-  );
-});
-
-const pagedSubProjects = computed(() => {
-  if (!currentMilestone.value) return [];
-  const start = (subProjectPage.value - 1) * subProjectPageSize;
-  return currentMilestone.value.projects.slice(
-    start,
-    start + subProjectPageSize,
-  );
-});
-
-const handleMilestoneTabClick = () => {
-  subProjectPage.value = 1;
-};
-
-watch(
-  milestoneTabs,
-  (tabs) => {
-    if (!tabs.length) {
-      activeMilestoneKey.value = null;
-      subProjectPage.value = 1;
-      return;
-    }
-
-    const exists = tabs.some(
-      (tab) => getMilestoneTabKey(tab) === activeMilestoneKey.value,
-    );
-
-    if (!exists) {
-      activeMilestoneKey.value = getMilestoneTabKey(tabs[0]);
-      subProjectPage.value = 1;
-    }
-  },
-  { immediate: true },
-);
 
 /* -------------------- 라우팅 -------------------- */
 const handleProjectSetting = () =>
@@ -916,6 +765,12 @@ const handleSubProjectRowClick = (row) =>
   router.push({
     name: "subProjectDashboard",
     params: { projectId: route.params.projectId, subProjectId: row.projectId },
+  });
+
+const handleGoToMilestone = () =>   
+    router.push({
+    name: "milestoneDashboard",
+    params: { projectId: route.params.projectId},
   });
 
 /* -------------------- 테이블 스타일 -------------------- */
@@ -954,14 +809,10 @@ const getAvatarColor = (roleName) => {
   return "#10b981";
 };
 
+/* -------------------- 초기 로딩 -------------------- */
 onMounted(async () => {
-  await fetchProjectDetail();
-  await fetchMilestoneList();
-  await fetchSubProject();
-  fetchMemoList();
-  fetchPmemList();
-  fetchTaskSummary();
-  fetchNoticeList();
+  await fetchAll(route.params.projectId, authStore.user?.userId);
+  setDefaultOpenedGroups();
 });
 </script>
 
@@ -1665,6 +1516,10 @@ onMounted(async () => {
 }
 :deep(.sub-body .el-table__empty-block) {
   min-height: 200px !important;
+}
+
+:deep(.task-summary-table .el-table__row:hover > td) {
+  background: #fff !important;
 }
 
 /* accordion */
