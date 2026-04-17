@@ -122,16 +122,21 @@
             </p>
           </div>
           <div v-if="hasMilestone">
-            <label class="block text-sm font-medium mb-1"
-              >마일스톤 <span class="text-red-500">*</span></label
+            <label class="field-label"
+              >마일스톤 <span class="required">*</span></label
             >
-            <input
-              v-model="form.milestone"
-              disabled
-              class="input w-full bg-gray-100"
-              placeholder="자동 선택됨"
-            />
+            <select v-model="form.milestoneId" class="input w-full">
+              <option value="">마일스톤 선택</option>
+              <option
+                v-for="item in visibleMilestoneList"
+                :key="item.value"
+                :value="item.value"
+              >
+                {{ item.name }}
+              </option>
+            </select>
           </div>
+
           <ProjectSelectModal
             v-if="hasMilestone"
             v-model="milestoneModal"
@@ -180,7 +185,7 @@
 </template>
 
 <script setup>
-import { onMounted, defineProps, defineEmits, watch } from "vue";
+import { onMounted, defineProps, defineEmits, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "../stores/auth";
@@ -212,6 +217,10 @@ const {
   subProjectList,
 } = storeToRefs(store);
 const { selectMilestone, onPriorityChange, calcEstTime, resetForm } = store;
+
+const visibleMilestoneList = computed(() =>
+  milestoneList.value.filter((m) => m.statusCode !== "e3"),
+);
 
 onMounted(async () => {
   await store.initCreate(
