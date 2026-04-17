@@ -106,6 +106,7 @@
                 </template>
               </el-table-column>
 
+              <!-- ✅ 그룹 유형 뱃지 (GroupForm.vue 동일 방식) -->
               <el-table-column label="그룹 유형" align="center" width="140">
                 <template #default="{ row }">
                   <el-tag
@@ -114,8 +115,9 @@
                     effect="light"
                     round
                     class="font-medium"
+                    :type="row.groupType === 'C2' ? 'primary' : 'warning'"
                   >
-                    {{ row.groupType }}
+                    {{ row.groupType === "C2" ? "프로젝트 그룹" : "직군 그룹" }}
                   </el-tag>
                   <span v-else class="text-gray-400">-</span>
                 </template>
@@ -141,12 +143,14 @@
                 </template>
               </el-table-column>
 
+              <!-- ✅ 활성화 스위치: 클릭 시 권한 체크 후 처리 -->
               <el-table-column label="활성화 상태" align="center" width="140">
                 <template #default="{ row }">
                   <el-switch
                     v-model="row.isActive"
                     active-value="Y"
                     inactive-value="N"
+                    :disabled="!authStore.isAdmin && row.groupType !== 'C2'"
                     @change="handleToggle(row)"
                   />
                 </template>
@@ -257,20 +261,34 @@ onMounted(async () => {
 });
 
 const handleCreateGroup = () => {
-  router.push("../group/register");
+  router.push("./group/register");
 };
 
 const toGroupInfo = (id) => {
-  router.push({ name: "groupInfo", params: { id: id } });
+  router.push(`./group/info/${id}`);
 };
 
 const handleUpdateGroup = (groupId) => {
-  router.push(`../group/modify/${groupId}`);
+  router.push(`./group/modify/${groupId}`);
 };
 
-// 💡 SweetAlert가 적용된 통일된 토글 로직
+// ✅ 활성화 토글: 권한 체크 → 미권한 시 403 SweetAlert
 const handleToggle = async (row) => {
   const prevStatus = row.isActive === "Y" ? "N" : "Y";
+
+  // 관리자가 아닌데 직군 그룹(C2 아님)인 경우 → 403 에러 알림 + 스위치 롤백
+  if (!authStore.isAdmin && row.groupType !== "C2") {
+    row.isActive = prevStatus;
+    Swal.fire({
+      icon: "error",
+      title: "403 Forbidden",
+      text: "직군 그룹의 활성화 상태는 관리자만 변경할 수 있습니다.",
+      confirmButtonColor: "#2563eb",
+      confirmButtonText: "확인",
+    });
+    return;
+  }
+
   const action = row.isActive === "Y" ? "활성화" : "비활성화";
 
   const result = await Swal.fire({
@@ -285,7 +303,6 @@ const handleToggle = async (row) => {
   });
 
   if (!result.isConfirmed) {
-    // 취소 시 스위치 원상복구
     row.isActive = prevStatus;
     return;
   }
@@ -352,7 +369,7 @@ const handleToggle = async (row) => {
   border-top: 1px solid #f0f0f0;
 }
 
-/* 버튼 스타일 (업무유형과 동일) */
+/* 버튼 스타일 */
 .btn-register {
   background: #2563eb;
   border: none;
@@ -388,6 +405,13 @@ const handleToggle = async (row) => {
 :deep(.el-pagination.is-background .el-pager li.is-active) {
   background-color: #2563eb;
 }
+
+/* el-switch disabled 상태에서 커서 표시 */
+:deep(.el-switch.is-disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 :global(.swal2-container) {
   z-index: 9999 !important;
 }

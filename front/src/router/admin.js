@@ -58,18 +58,18 @@ const adminRoutes = [
     //그룹 등록페이지
     path: "/admin/group/register",
     name: "groupRegister",
-    component: () => import("../group/GroupCreate.vue"),
+    component: () => import("../group/GroupModify.vue"),
   },
   {
     //그룹 단건조회 페이지
-    path: "/admin/group/Info/:id",
+    path: "/admin/group/info/:id",
     name: "groupInfo",
     component: () => import("../group/GroupInfo.vue"),
     props: true,
   },
   {
     //그룹 수정 페이지
-    path: "/admin/group/modify/:groupId",
+    path: "/admin/group/modify/:id",
     component: () => import("../group/GroupModify.vue"),
     meta: { requiresAuth: true },
   },
@@ -83,18 +83,18 @@ const adminRoutes = [
     //그룹 등록페이지
     path: "/group/register",
     name: "groupRegisterPM",
-    component: () => import("../group/GroupCreate.vue"),
+    component: () => import("../group/GroupModify.vue"),
   },
   {
     //그룹 단건조회 페이지
-    path: "/group/Info/:id",
+    path: "/group/info/:id",
     name: "groupInfoPM",
     component: () => import("../group/GroupInfo.vue"),
     props: true,
   },
   {
     //그룹 수정 페이지
-    path: "/group/modify/:groupId",
+    path: "/group/modify/:id",
     component: () => import("../group/GroupModify.vue"),
     meta: { requiresAuth: true },
   },

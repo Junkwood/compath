@@ -20,5 +20,6 @@ public class PermissionDTOSJW {
     private String permissionUrl;      // 매핑 URL (예: /api/upper-projects)
     private String permissionMethod;   // HTTP 메서드 (예: GET, POST)
     private String createdAt;          // 생성일
+    private Integer groupPermissionId;// 대표그룹 퍼미션 테이블용 아이디
 
 }

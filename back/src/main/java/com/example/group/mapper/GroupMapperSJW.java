@@ -44,4 +44,7 @@ public interface GroupMapperSJW {
     void insertDeleteLog(@Param("groupId") String groupId,
                          @Param("logBeforeValue") Integer logBeforeValue,
                          @Param("editorUserId") Integer editorUserId);
+
+    void deletePermissionsByGroupId(@Param("groupId") Integer groupId);
+    void insertGroupPermissions(@Param("groupId") Integer groupId, @Param("permissionIds") List<Integer> permissionIds);
 }

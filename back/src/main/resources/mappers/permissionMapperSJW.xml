@@ -44,11 +44,9 @@
     </select>
     <select id="checkGroupAccess" resultType="boolean">
         SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
-        FROM groups g
-            JOIN roles r ON r.role_name = g.group_name
-                 JOIN role_permissions rp ON r.role_id = rp.role_id
-                 JOIN permissions p ON rp.permission_id = p.permission_id
-        WHERE g.group_id = #{groupId}
+        FROM GROUP_PERMISSIONS gp
+                 JOIN permissions p ON gp.permission_id = p.permission_id
+        WHERE gp.group_id = #{groupId}
           AND p.permission_url = #{targetUrl}
           AND p.permission_method = #{method}
     </select>
