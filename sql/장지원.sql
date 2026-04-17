@@ -295,19 +295,19 @@ WHERE t.task_id = p_task_id;
        OR parent_project_id = v_target_project_id;
 
     -- 유저 
-    OPEN userList FOR
-    SELECT
-        u.user_id   AS user_id,
-        u.user_name AS user_name,
-        r.role_name AS role_name
-    FROM users u
-    JOIN project_members pm ON u.user_id = pm.user_id
-        AND pm.project_id = v_root_project_id
-        AND pm.is_active = 'O1'
-    JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
-    JOIN roles r ON pmr.role_id = r.role_id
-    WHERE u.is_active = 'O1'
-      AND r.role_name = '개발자';
+	OPEN userList FOR
+	SELECT DISTINCT
+	    u.user_id   AS user_id,
+	    u.user_name AS user_name,
+	    r.role_name AS user_type
+	FROM users u
+	JOIN project_members pm ON u.user_id = pm.user_id
+	    AND pm.project_id = v_root_project_id
+	    AND pm.is_active = 'O1'
+	JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+	JOIN roles r ON pmr.role_id = r.role_id
+	WHERE u.is_active = 'O1'
+	  AND r.role_name NOT IN ('총괄PL', 'PM', 'PL'); 
     
 -- 업무 유형 
     OPEN taskTypeList FOR SELECT task_type_id, type_name FROM task_types WHERE is_active = 'O1';

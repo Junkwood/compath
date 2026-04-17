@@ -325,17 +325,8 @@ const {
   resetForm,
 } = store;
 
-/*
-  SelectModal.vue는 item.id / item.name / item.userType 형태를 기대함.
-  그래서 userList가 어떤 형태로 들어와도 모달용으로 한 번 정규화해서 넘김.
-*/
 const assigneeItems = computed(() => {
-  const rawUsers =
-    Array.isArray(userList.value) && userList.value.length > 0
-      ? userList.value
-      : Array.isArray(store.filterInfo?.developerList)
-        ? store.filterInfo.developerList
-        : [];
+  const rawUsers = Array.isArray(userList.value) ? userList.value : [];
 
   return rawUsers
     .map((user) => ({
