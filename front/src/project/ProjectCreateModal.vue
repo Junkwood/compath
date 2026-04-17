@@ -213,7 +213,7 @@ const handleSubmit = async () => {
       isPublic: form.isPublic ? "P1" : "P2",
       createdBy: authStore.user.userId,
       plUserId: form.plUserId,
-      useMilestone: form.useMilestone ? "O2" : "O1",
+      useMilestone: form.useMilestone ? "O1" : "O2",
     };
 
     await api.post("/ProjectRegister", payload);

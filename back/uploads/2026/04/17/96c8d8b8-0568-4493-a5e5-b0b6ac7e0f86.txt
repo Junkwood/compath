@@ -25,6 +25,12 @@
             <div class="panel main-task-panel">
               <div class="panel-head">
                 <h2 class="panel-title">업무 통합 현황</h2>
+                <div class="panel-actions">
+                  <label class="tog-row">
+                    <span>내 업무만</span>
+                    <el-switch v-model="myTaskOnly" size="small" />
+                  </label>
+                </div>
               </div>
 
               <div class="panel-body">
@@ -126,7 +132,7 @@
                 <div class="panel-head">
                   <span class="panel-title">나의 업무 현황</span>
                 </div>
-                <div class="task-inner" v-loading="loadingMyTaskSummary">
+                <div class="task-inner">
                   <div class="task-summary">
                     <span class="label">총 업무량</span>
                     <span class="value">
@@ -177,18 +183,10 @@
                 <h2 class="panel-title">프로젝트 목록</h2>
                 <span class="count-tag">{{ projectList.length }}</span>
               </div>
-
-              <div class="flex items-center gap-3">
-                <el-select
-                  v-model="projectSort"
-                  size="small"
-                  style="width: 150px"
-                >
-                  <el-option label="최신 생성순" value="createdDesc" />
-                  <el-option label="오래된 생성순" value="createdAsc" />
-                  <el-option label="프로젝트ID순" value="idAsc" />
-                </el-select>
-              </div>
+              <label class="tog-row">
+                <span>내 프로젝트만</span>
+                <el-switch v-model="myProjectOnly" size="small" />
+              </label>
             </div>
 
             <el-table
@@ -203,53 +201,29 @@
               <el-table-column
                 prop="projectName"
                 label="프로젝트명"
-                width="260"
-                show-overflow-tooltip
+                min-width="220"
               />
-
-              <el-table-column label="공개범위" width="120" align="center">
-                <template #default="{ row }">
-                  <span :class="['scope-pill', getProjectScopeClass(row)]">
-                    {{ getProjectScopeLabel(row) }}
-                  </span>
-                </template>
-              </el-table-column>
-
               <el-table-column label="진척도" min-width="180">
                 <template #default="{ row }">
                   <el-progress
-                    :percentage="Number(row.progressRate || 0)"
+                    :percentage="row.progressRate"
                     :stroke-width="8"
-                    :color="
-                      Number(row.progressRate || 0) >= 100
-                        ? '#10b981'
-                        : '#1B5C9C'
-                    "
+                    :color="row.progressRate >= 100 ? '#10b981' : '#1B5C9C'"
                   />
                 </template>
               </el-table-column>
-
-              <el-table-column
-                prop="createdAt"
-                label="생성일"
-                width="120"
-                align="center"
-              />
-
               <el-table-column
                 prop="endDate"
                 label="마감일"
                 width="120"
                 align="center"
               />
-
               <el-table-column
                 prop="pmName"
                 label="PM"
-                width="100"
+                width="120"
                 align="center"
               />
-
               <el-table-column label="상태" width="100" align="center">
                 <template #default="{ row }">
                   <span :class="['status-pill', statusClass(row)]">
@@ -286,49 +260,44 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { storeToRefs } from "pinia";
 import { Plus, CopyDocument } from "@element-plus/icons-vue";
 import api from "../utils/api";
-import { useAuthStore } from "../stores/auth";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import ProjectCreateModal from "../project/ProjectCreateModal.vue";
 import ProjectCopyModal from "../project/ProjectCopyModal.vue";
 
 const router = useRouter();
-const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
 
 const sidebarOpen = ref(false);
 const createProjectModalOpen = ref(false);
 const copyProjectModalOpen = ref(false);
+
+const myTaskOnly = ref(true);
+const myProjectOnly = ref(true);
 
 const workPage = ref(1);
 const workPageSize = 5;
 
 const projectPage = ref(1);
 const projectPageSize = 8;
-const projectSort = ref("createdDesc");
 
 const loadingTasks = ref(false);
 const loadingProjects = ref(false);
-const loadingMyTaskSummary = ref(false);
 
 const taskProjects = ref([]);
 const projectList = ref([]);
 
 const myTasks = ref({
-  created: 0,
-  inProgress: 0,
-  done: 0,
-  rejected: 0,
-  deadline: 0,
+  inProgress: 5,
+  done: 10,
+  rejected: 3,
+  deadline: 1,
 });
 
 const taskStatusList = computed(() => [
-  { label: "시작 전", count: myTasks.value.created, color: "#6b7280" },
   { label: "진행중", count: myTasks.value.inProgress, color: "#1B5C9C" },
   { label: "완료", count: myTasks.value.done, color: "#10b981" },
   { label: "반려", count: myTasks.value.rejected, color: "#ef4444" },
@@ -369,67 +338,9 @@ const fetchProjectList = async () => {
   }
 };
 
-const fetchMyTaskSummary = async () => {
-  const userId = user.value?.userId;
-
-  if (!userId) {
-    console.warn("로그인 사용자 userId가 없습니다.", user.value);
-
-    myTasks.value = {
-      created: 0,
-      inProgress: 0,
-      done: 0,
-      rejected: 0,
-      deadline: 0,
-    };
-    return;
-  }
-
-  loadingMyTaskSummary.value = true;
-
-  try {
-    const res = await api.get(`/project/myTaskSummary/${userId}`);
-
-    myTasks.value = {
-      created: res.data?.created || 0,
-      inProgress: res.data?.inProgress || 0,
-      done: res.data?.done || 0,
-      rejected: res.data?.rejected || 0,
-      deadline: res.data?.deadline || 0,
-    };
-  } catch (err) {
-    console.error("나의 업무 현황 조회 실패:", err);
-
-    myTasks.value = {
-      created: 0,
-      inProgress: 0,
-      done: 0,
-      rejected: 0,
-      deadline: 0,
-    };
-  } finally {
-    loadingMyTaskSummary.value = false;
-  }
-};
-
 onMounted(() => {
   fetchProjectList();
   fetchTaskList();
-  fetchMyTaskSummary();
-});
-
-watch(
-  () => user.value?.userId,
-  (newUserId) => {
-    if (newUserId) {
-      fetchMyTaskSummary();
-    }
-  },
-  { immediate: true },
-);
-
-watch(projectSort, () => {
-  projectPage.value = 1;
 });
 
 const pagedTaskData = computed(() => {
@@ -442,68 +353,21 @@ const pagedTaskData = computed(() => {
     }));
 });
 
-const sortedProjectList = computed(() => {
-  const sorted = [...projectList.value];
-
-  sorted.sort((a, b) => {
-    if (projectSort.value === "createdDesc") {
-      return (
-        new Date(b.createdAt || "1900-01-01").getTime() -
-        new Date(a.createdAt || "1900-01-01").getTime()
-      );
-    }
-
-    if (projectSort.value === "createdAsc") {
-      return (
-        new Date(a.createdAt || "1900-01-01").getTime() -
-        new Date(b.createdAt || "1900-01-01").getTime()
-      );
-    }
-
-    return Number(a.projectId || 0) - Number(b.projectId || 0);  });
-
-  return sorted;
-});
-
 const pagedProjectData = computed(() => {
   const start = (projectPage.value - 1) * projectPageSize;
-  return sortedProjectList.value.slice(start, start + projectPageSize);
+  return projectList.value.slice(start, start + projectPageSize);
 });
 
-const getProjectScopeValue = (row) => {
-  return String(row.isPublic || "").toUpperCase();
-};
-
-const getProjectScopeLabel = (row) => {
-  const scope = getProjectScopeValue(row);
-
-  if (scope === "P1") return "전체공개";
-  if (scope === "P2") return "멤버공개";
-  return "-";
-};
-
-const getProjectScopeClass = (row) => {
-  const scope = getProjectScopeValue(row);
-
-  if (scope === "P1") return "scope-public";
-  if (scope === "P2") return "scope-member";
-  return "scope-default";
-};
-
 const statusLabel = (row) => {
-  const progress = Number(row.progressRate || 0);
-
-  if (progress >= 100) return "완료";
-  if (progress >= 80) return "마감임박";
-  return progress > 0 ? "진행중" : "준비중";
+  if (row.progressRate >= 100) return "완료";
+  if (row.progressRate >= 80) return "마감임박";
+  return row.progressRate > 0 ? "진행중" : "준비중";
 };
 
 const statusClass = (row) => {
-  const progress = Number(row.progressRate || 0);
-
-  if (progress >= 100) return "pill-green";
-  if (progress >= 80) return "pill-orange";
-  return progress > 0 ? "pill-blue" : "pill-gray";
+  if (row.progressRate >= 100) return "pill-green";
+  if (row.progressRate >= 80) return "pill-orange";
+  return row.progressRate > 0 ? "pill-blue" : "pill-gray";
 };
 
 const headerStyle = () => ({
@@ -736,31 +600,6 @@ const goProjectDashboard = (row) => {
   color: #4b5563;
 }
 
-.scope-pill {
-  display: inline-block;
-  min-width: 72px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.scope-public {
-  background: #ecfdf5;
-  color: #065f46;
-}
-
-.scope-member {
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.scope-default {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
 .num-hi {
   color: #1b5c9c;
   font-weight: 700;
@@ -770,11 +609,13 @@ const goProjectDashboard = (row) => {
   --el-table-header-bg-color: #f9fafb;
 }
 
+/* 업무 통합 현황 hover 효과 제거 */
 .main-task-panel :deep(.el-table__body tr:hover > td) {
   background-color: #ffffff !important;
   cursor: default !important;
 }
 
+/* 프로젝트 목록 hover 효과 + 손가락 커서 */
 .project-list-panel :deep(.el-table__body tr.clickable-row) {
   cursor: pointer !important;
   transition: background-color 0.2s ease;
