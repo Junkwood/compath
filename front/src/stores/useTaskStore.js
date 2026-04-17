@@ -299,25 +299,28 @@ export const useTaskStore = defineStore("task", () => {
 
   // ───────────── 추정시간 ─────────────
   const calcEstTime = () => {
+    const estStart = form.value.estStartDate?.trim();
+    const estEnd = form.value.estEndDate?.trim();
+    const realStart = form.value.startDate?.trim();
+    const realEnd = form.value.dueDate?.trim();
+
     let start = null;
     let end = null;
 
-    // 예정일이 둘 다 있으면 예정일 기준
-    if (form.value.estStartDate && form.value.estEndDate) {
-      start = form.value.estStartDate;
-      end = form.value.estEndDate;
-    }
-    // 하나라도 없으면 실제 시작/마감일 기준
-    else if (form.value.startDate && form.value.dueDate) {
-      start = form.value.startDate;
-      end = form.value.dueDate;
+    if (estStart && estEnd) {
+      // 예정 시작일 + 예정 종료일 둘 다 있을 때만 예정일 기준
+      start = estStart;
+      end = estEnd;
+    } else if (realStart && realEnd) {
+      // 하나라도 비어 있으면 실제 시작/마감일로 fallback
+      start = realStart;
+      end = realEnd;
     } else {
       return;
     }
 
     const workdays = countWorkdays(new Date(start), new Date(end));
     const hours = Math.max(1, workdays) * 8;
-
     form.value.estTime = `${hours}시간`;
   };
   // ───────────── 업무상태 변경 시 소요시간 자동계산 ─────────────
@@ -360,31 +363,32 @@ export const useTaskStore = defineStore("task", () => {
   );
 
   watch(
-    () => [
-      form.value.estStartDate,
-      form.value.estEndDate,
-      form.value.startDate,
-      form.value.dueDate,
-    ],
+    () => ({
+      estStartDate: form.value.estStartDate,
+      estEndDate: form.value.estEndDate,
+      startDate: form.value.startDate,
+      dueDate: form.value.dueDate,
+    }),
     () => calcEstTime(),
+    { deep: true },
   );
-  watch(
-    () => form.value.startDate,
-    (v) => {
-      if (!form.value.estStartDate) {
-        form.value.estStartDate = v;
-      }
-    },
-  );
+  // watch(
+  //   () => form.value.startDate,
+  //   (v) => {
+  //     if (!form.value.estStartDate) {
+  //       form.value.estStartDate = v;
+  //     }
+  //   },
+  // );
 
-  watch(
-    () => form.value.dueDate,
-    (v) => {
-      if (!form.value.estEndDate) {
-        form.value.estEndDate = v;
-      }
-    },
-  );
+  // watch(
+  //   () => form.value.dueDate,
+  //   (v) => {
+  //     if (!form.value.estEndDate) {
+  //       form.value.estEndDate = v;
+  //     }
+  //   },
+  // );
   // ───────────── 폼 초기화 ─────────────
   const resetForm = (mode = "create") => {
     if (mode === "edit" && originalForm.value) {
