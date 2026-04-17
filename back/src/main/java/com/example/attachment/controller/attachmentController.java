@@ -68,4 +68,10 @@ public class attachmentController {
         }
     }
 
+    // 첨부파일 삭제
+    @DeleteMapping("/attachment/remove")
+    public List<AttachmentDTO> removeAttachment(@RequestBody AttachmentDTO dto) {
+        return service.removeAttachment(dto);
+    }
+
 }

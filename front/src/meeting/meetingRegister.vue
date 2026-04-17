@@ -17,7 +17,7 @@
               >{{ info }} ›
             </span>
             <span class="bc-cur">{{
-              !isModified ? "공지사항 생성" : "공지사항 수정"
+              !isModified ? "회의록 생성" : "회의록 수정"
             }}</span>
           </div>
           <button class="btn-back" @click="goBack">
@@ -182,11 +182,11 @@
                           <span>{{
                             file.size
                               ? (file.size / 1024).toFixed(1) + " KB"
-                              : "Existing"
+                              : ""
                           }}</span>
                           <button
                             type="button"
-                            @click="fileList.splice(index, 1)"
+                            @click="removeFile(file, index)"
                             class="text-gray-400 hover:text-red-500"
                           >
                             <i class="el-icon-delete"></i> 삭제
@@ -364,7 +364,7 @@
                     <button
                       type="button"
                       class="btn-create w-full text-xs py-1"
-                      @click="openCreateModal(file)"
+                      @click="openCreateModal(file, idx)"
                     >
                       + 업무 생성
                     </button>
@@ -415,6 +415,7 @@ import Swal from "sweetalert2";
 import meetingCreateTaskModal from "./meetingCreateTaskModal.vue";
 import meetingNotifirationModal from "./meetingNotificationModal.vue";
 import meetingConnectTaskModal from "./meetingConnectTaskModal.vue";
+import { useAttachmentStore } from "../stores/attachment";
 
 const router = useRouter();
 const route = useRoute();
@@ -422,6 +423,7 @@ const authStore = useAuthStore();
 const meetingStore = useMeetingStore();
 const taskStore = usetaskKJHStore();
 const store = useTaskStore();
+const attachmentStore = useAttachmentStore();
 
 const projectStore = useProjectKJHStore();
 const sidebarOpen = ref(false);
@@ -740,6 +742,7 @@ onBeforeMount(async () => {
 
     await meetingStore.getMeetingById(meetingId);
     let meetingInfo = meetingStore.meetingDetail.meetingList.meetingDetail;
+    let attachment = meetingStore.meetingDetail.attachmentList;
 
     // 폼에 대입
     form.meetingType = meetingInfo.meetingTypeCode;
@@ -750,14 +753,16 @@ onBeforeMount(async () => {
     form.meetingRoom = meetingInfo.place;
     form.attachmentGroupId = meetingInfo.attachmentGroupId;
 
-    if (meetingInfo.attachmentList) {
-      meetingInfo.attachmentList.forEach((att) => {
+    if (attachment) {
+      attachment.forEach((att) => {
         let obj = {
           name: att.fileName,
           uid: att.attachmentId,
           url: att.filePath,
           status: "success",
           isExisting: true,
+          attId: att.attachmentId,
+          attGId: att.attachmentGroupId,
         };
         fileList.value.push(obj);
       });
@@ -776,7 +781,9 @@ onBeforeMount(async () => {
 });
 
 // 추천 업무 생성 버튼
-const openCreateModal = (value) => {
+let selectedToDo = ref();
+const openCreateModal = (value, idx) => {
+  selectedToDo.value = idx;
   taskInfo.value = {
     ...value,
     meetingLogId:
@@ -795,6 +802,11 @@ const closeCreateModal = () => {
 // 추천 업무 생성 모달 생성 버튼
 const registerTask = async () => {
   connectTaskList.value = meetingStore.recommandTask;
+
+  todoList.value = todoList.value.filter(
+    (todo, index) => index != selectedToDo.value,
+  );
+
   closeCreateModal();
 
   await Swal.fire({
@@ -879,11 +891,35 @@ const handleChange = (uploadFile, uploadFiles) => {
   console.log(uploadFile, uploadFiles);
 };
 
-// 첨부파일api(우측)
+// 음성 첨부파일api(우측)
 const voiceList = ref([]);
 
 const voiceChange = (uploadFile, uploadFiles) => {
   voiceList.value.push(uploadFile);
+};
+
+/// 첨부파일 삭제
+const removeFile = async (file, index) => {
+  if (file.isExisting == null) {
+    fileList.splice(index, 1);
+  } else {
+    let obj = { attachmentId: file.attId, attachmentGroupId: file.attGId };
+    await attachmentStore.removeFile(obj);
+
+    fileList.value = [];
+    attachmentStore.removeResult.forEach((att) => {
+      let obj = {
+        name: att.fileName,
+        uid: att.attachmentId,
+        url: att.filePath,
+        status: "success",
+        isExisting: true,
+        attId: att.attachmentId,
+        attGId: att.attachmentGroupId,
+      };
+      fileList.value.push(obj);
+    });
+  }
 };
 </script>
 

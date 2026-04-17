@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AttachmentDTO { // 첨부파일
 
-    private Long attachmentId;
+    private Integer attachmentId;
 
     private String fileName;      // 원본 파일명
     private String filePath;      // 저장된 물리 경로

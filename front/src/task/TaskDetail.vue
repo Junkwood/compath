@@ -23,9 +23,9 @@
           <div class="pg-row">
             <div class="pg-left">
               <div class="proj-meta">
-                <span class="proj-name">{{ taskInfo.projectName }}</span>
+                <span class="proj-name">{{ name }}</span>
                 <span class="proj-period">
-                  {{ taskInfo.estStartDate }} ~ {{ taskInfo.estEndDate }}
+                  {{ projectStartDate }} ~ {{ projectEndDate }}
                 </span>
               </div>
             </div>
@@ -153,49 +153,6 @@
                 </div>
               </div>
 
-              <!-- 📎 첨부파일 (추가된 영역) -->
-              <!-- <div class="bg-white rounded-2xl shadow p-6">
-                <div class="flex items-center justify-between mb-4">
-                  <h2 class="text-lg font-semibold">첨부파일</h2>
-                  <button
-                    class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    + 업로드
-                  </button>
-                </div>
-
-                <div v-if="files.length > 0" class="space-y-3">
-                  <div
-                    v-for="file in files"
-                    :key="file.id"
-                    class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
-                  >
-                    <div class="flex items-center gap-3">
-                      📎
-                      <div>
-                        <div class="text-sm font-medium text-gray-800">
-                          {{ file.name }}
-                        </div>
-                        <div class="text-xs text-gray-400">
-                          {{ file.uploadedAt }} · {{ file.user }}
-                        </div>
-                      </div>
-                    </div>
-
-                    <button class="text-sm text-blue-600 hover:underline">
-                      다운로드
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  v-else
-                  class="text-center text-gray-400 py-10 border rounded-lg"
-                >
-                  첨부파일이 없습니다.
-                </div>
-              </div> -->
-
               <div class="panel">
                 <div class="panel-body tab-body">
                   <el-tabs v-model="activeName" @tab-click="handleClick">
@@ -216,18 +173,24 @@
                                 ⌛ 로딩중입니다.
                               </td>
                             </tr>
-                            <template v-else-if="pagedTimeData.length > 0">
+                            <template v-else-if="paginatedData.length > 0">
                               <tr
-                                v-for="item in pagedTimeData"
+                                v-for="(item, idx) in paginatedData"
                                 :key="item.idx"
                                 class="table-row"
                               >
-                                <td class="text-center">{{ item.idx }}</td>
+                                <td class="text-center">
+                                  {{
+                                    (timeEntriesPage - 1) * pagedtimeEntries +
+                                    idx +
+                                    1
+                                  }}
+                                </td>
                                 <td class="text-center">
                                   {{ item.createdAt }}
                                 </td>
                                 <td class="text-center">{{ item.userName }}</td>
-                                <td class="text-left">{{ item.taskDesc }}</td>
+                                <td class="text-left">{{ item.message }}</td>
                               </tr>
                             </template>
                             <tr v-else>
@@ -238,15 +201,12 @@
                           </tbody>
                         </table>
                       </div>
-                      <div
-                        class="pagination-wrap"
-                        v-if="pagedTimeData.length > 0"
-                      >
+                      <div class="pagination-wrap">
                         <el-pagination
                           v-model:current-page="timeEntriesPage"
                           :page-size="pagedtimeEntries"
-                          :hide-on-single-page="real"
-                          :total="timeEntriesList.length"
+                          :hide-on-single-page="true"
+                          :total="activityLogs.length"
                           layout="prev, pager, next"
                           background
                         />
@@ -350,8 +310,15 @@
                   <span class="panel-title">첨부파일</span>
                 </div>
 
-                <div class="panel-body" style="padding: 12px 16px">
-                  <div v-if="files.length > 0" class="flex flex-col gap-2">
+                <div class="memo-body" style="padding: 12px 16px">
+                  <div
+                    v-if="
+                      attachmentList != null &&
+                      attachmentList != undefined &&
+                      attachmentList.length > 0
+                    "
+                    class="flex flex-col gap-2"
+                  >
                     <div
                       v-for="(file, index) in attachmentList"
                       :key="index"
@@ -446,30 +413,33 @@ let taskInfo = ref({
   title: "",
   typeName: "",
 });
-
-const files = ref([
-  {
-    id: 1,
-    name: "기획서_v1.pdf",
-    uploadedAt: "2026-04-17",
-    user: "admin",
-  },
-  {
-    id: 2,
-    name: "API명세서.xlsx",
-    uploadedAt: "2026-04-17",
-    user: "developer01",
-  },
-]);
+let name = ref();
+let projectStartDate = ref();
+let projectEndDate = ref();
 
 let taskPjList = ref([]);
 let activityList = ref([]);
 let attachmentList = ref([]);
 let activeName = ref("first");
 const loadingProjects = ref(false);
+let activityLogs = ref([]);
+
+// 페이지네이션
+const paginatedData = computed(() => {
+  const start = (timeEntriesPage.value - 1) * pagedtimeEntries.value;
+  const end = start + pagedtimeEntries.value;
+  return activityLogs.value.slice(start, end);
+});
 
 onBeforeMount(async () => {
   await taskStore.getTaskById(taskId.value);
+
+  let id = subId.value > 0 ? subId.value : projectId.value;
+  await taskStore.getProjectName(id);
+  name.value = taskStore.projectName.projectName;
+  projectStartDate.value = taskStore.projectName.startDate;
+  projectEndDate.value = taskStore.projectName.endDate;
+
   taskInfo.value = { ...taskStore.taskDetail.taskInfo };
   attachmentList.value = { ...taskStore.taskDetail.attachmentList };
   taskInfo.value.createdAt = changeDate(taskInfo.value.createdAt);
@@ -495,6 +465,9 @@ onBeforeMount(async () => {
 
   let obj = { projectId: projectId.value, subProjectId: subId.value };
   await taskStore.getProjectRole(obj);
+
+  await taskStore.getActivityLogsByTaskId(taskId.value);
+  activityLogs.value = taskStore.taskLog;
 });
 
 const openTimeModal = ref(false);
@@ -610,6 +583,9 @@ const submitted = async (val) => {
 
 const chageTaskDesc = async () => {
   await taskStore.getActivityLogs(taskId.value);
+  await taskStore.getActivityLogsByTaskId(taskId.value);
+  activityLogs.value = taskStore.taskLog;
+
   activityList.value = taskStore.activityList;
   activityList.value.forEach((el) => {
     if (el.targetType == "time_entries" && el.actionType == "J1") {
@@ -637,11 +613,13 @@ const tableList = ref([]);
 const real = ref(true);
 
 const pagedTimeData = computed(() => {
-  const s = (timeEntriesPage.value - 1) * workPageSize;
-  return tableList.value.slice(s, s + workPageSize).map((item, index) => ({
-    ...item,
-    no: s + index + 1,
-  }));
+  const result = (timeEntriesPage.value - 1) * workPageSize;
+  return tableList.value
+    .slice(result, result + workPageSize)
+    .map((item, index) => ({
+      ...item,
+      no: result + index + 1,
+    }));
 });
 
 // 날짜 없는 경우 형식 변경
@@ -1147,5 +1125,105 @@ const changeInfoType = (val) => {
 .btn-sub:hover {
   transform: translateY(-2px);
   filter: brightness(1.08);
+}
+
+/* ── 메모 ── */
+.memo-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.btn-memo-add {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(27, 92, 156, 0.22);
+  transition: filter 0.15s;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn-memo-add:hover {
+  filter: brightness(1.1);
+}
+
+.memo-card {
+  border-radius: 10px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.memo-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.memo-blue {
+  background: #eff6ff;
+}
+.memo-yellow {
+  background: #fefce8;
+}
+.memo-pink {
+  background: #fdf2f8;
+}
+.memo-green {
+  background: #ecfdf5;
+}
+
+.memo-content {
+  flex: 1;
+  min-width: 0;
+}
+.memo-date {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-bottom: 5px;
+}
+.memo-text {
+  font-size: 12.5px;
+  color: #1f2937;
+  white-space: pre-line;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.memo-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.memo-del:hover {
+  color: #dc2626;
 }
 </style>

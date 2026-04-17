@@ -17,16 +17,16 @@
             </choose>
         </selectKey>
         INSERT INTO attachments ( attachment_id,
-                                  file_name,
-                                  file_path,
-                                  file_ext,
-                                  attachment_group_id )
+        file_name,
+        file_path,
+        file_ext,
+        attachment_group_id )
         VALUES ((SELECT NVL(MAX(attachment_id),0)+1 as attachmentId
-                 FROM attachments),
-                 #{fileName},
-                 #{filePath},
-                 #{fileExt},
-                 #{attachmentGroupId} )
+        FROM attachments),
+        #{fileName},
+        #{filePath},
+        #{fileExt},
+        #{attachmentGroupId} )
     </insert>
 
 <!--    첨부파일 조회-->
@@ -39,4 +39,10 @@
         FROM attachments
         WHERE attachment_group_id = #{id}
     </select>
+
+<!--    첨부파일 삭제-->
+    <delete id="removeAttachment">
+        DELETE FROM attachments
+        WHERE attachment_id = #{id}
+    </delete>
 </mapper>

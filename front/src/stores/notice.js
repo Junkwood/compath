@@ -36,14 +36,15 @@ export const useNoticeStore = defineStore("notice", {
     },
 
     // 공지사항 수정
-    async modifyNotice(obj) {
-      console.log("수정전 데이터: ", obj);
+    async modifyNotice(formData) {
+      console.log("수정전 데이터: ", formData);
 
       await api //
-        .put("/notice/update", obj) //
+        .put("/notice/update", formData, {
+          headers: {},
+        }) //
         .then((res) => {
           this.registeredNotice = res.data;
-          console.log("수정완료", this.registeredNotice);
         });
     },
 
