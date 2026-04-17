@@ -52,4 +52,7 @@ public class TaskReqDtoJJW {
 
     Integer meetingLogId;
 
+    List<Integer> deletedAttachmentIds;
+
+
 }

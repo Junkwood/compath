@@ -25,6 +25,7 @@ DELETE FROM notification_targets;
 DELETE FROM notifications;
 COMMIT;
 
+SELECT * FROM attachments;
 -- 시퀀스도 초기화
 DROP SEQUENCE notifications_seq;
 CREATE SEQUENCE notifications_seq
@@ -201,6 +202,7 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('receiver: ' || v_id);
     END LOOP;
 END;
+SELECT * FROM milestones;
 
 ---------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE SP_GET_TASK_TOTAL_INFO (
@@ -311,11 +313,12 @@ WHERE t.task_id = p_task_id;
     OPEN taskTypeList FOR SELECT task_type_id, type_name FROM task_types WHERE is_active = 'O1';
 
     -- 마일스톤 
-    OPEN milestoneList FOR
-    SELECT milestone_id, milestone_name FROM milestones
-    WHERE project_id = v_target_project_id
-       OR project_id = (SELECT parent_project_id FROM projects WHERE project_id = v_target_project_id);
-    
+	OPEN milestoneList FOR
+	SELECT milestone_id, milestone_name
+	FROM milestones
+	WHERE (project_id = v_target_project_id
+	   OR project_id = (SELECT parent_project_id FROM projects WHERE project_id = v_target_project_id))
+	  AND status!= 'E3' AND status != 'E2';    
     --업무 상태
     OPEN statusList FOR
     SELECT task_status_id, status_name, is_final
@@ -337,10 +340,7 @@ WHERE t.task_id = p_task_id;
 
 END;
 
-SELECT column_name
-FROM user_tab_columns
-WHERE table_name = 'ATTACHMENTS'
-ORDER BY column_id;
+
 ------------------------------------------------------------------------
 
 --알림 전용 프로시저

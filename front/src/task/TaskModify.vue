@@ -160,7 +160,6 @@
             </div>
 
             <!-- 섹션 5: 설명 -->
-            <!-- 섹션 5: 설명 -->
             <div class="form-section">
               <label class="field-label">업무 설명</label>
               <textarea
@@ -170,8 +169,25 @@
                 class="input w-full"
               />
 
-              <!-- 기존 첨부파일 목록 -->
-              <div v-if="attachmentList.length > 0" class="file-list">
+              <input
+                type="file"
+                ref="fileInputRef"
+                multiple
+                style="display: none"
+                @change="onFileChange"
+              />
+
+              <button
+                type="button"
+                class="btn btn-select mt-2"
+                :disabled="isTerminated"
+                @click="fileInputRef.click()"
+              >
+                파일 선택
+              </button>
+
+              <!-- 기존 첨부파일 -->
+              <div class="file-list">
                 <div
                   v-for="file in attachmentList"
                   :key="file.attachmentId"
@@ -188,8 +204,8 @@
                 </div>
               </div>
 
-              <!-- 5. 새 파일 선택 -->
-              <div v-if="selectedFiles.length > 0" class="file-list new-files">
+              <!-- 새로 추가한 파일 -->
+              <div class="file-list new-files">
                 <div
                   v-for="(file, idx) in selectedFiles"
                   :key="idx"
@@ -204,21 +220,6 @@
                   </button>
                 </div>
               </div>
-
-              <input
-                type="file"
-                ref="fileInputRef"
-                multiple
-                style="display: none"
-                @change="onFileChange"
-              />
-              <button
-                class="btn btn-select mt-2"
-                :disabled="isTerminated"
-                @click="fileInputRef.click()"
-              >
-                파일 선택
-              </button>
             </div>
             <!-- 섹션 6: 상태 / 우선순위 / 마일스톤 -->
             <div class="form-section grid-3">

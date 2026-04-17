@@ -4,7 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.attachment.mapper.AttachmentMapper">
 
-    <!--    첨부파일 등록-->
+<!--    첨부파일 등록-->
     <insert id="registerAttachments">
         <selectKey order="BEFORE" resultType="int" keyProperty="attachmentGroupId">
             <choose>
@@ -17,149 +17,26 @@
             </choose>
         </selectKey>
         INSERT INTO attachments ( attachment_id,
-        file_name,
-        file_path,
-        file_ext,
-        attachment_group_id )
+                                  file_name,
+                                  file_path,
+                                  file_ext,
+                                  attachment_group_id )
         VALUES ((SELECT NVL(MAX(attachment_id),0)+1 as attachmentId
-        FROM attachments),
-        #{fileName},
-        #{filePath},
-        #{fileExt},
-        #{attachmentGroupId} )
+                 FROM attachments),
+                 #{fileName},
+                 #{filePath},
+                 #{fileExt},
+                 #{attachmentGroupId} )
     </insert>
 
-    <!--    첨부파일 조회-->
+<!--    첨부파일 조회-->
     <select id="getFileList">
         SELECT  attachment_id,
-        file_name,
-        file_path,
-        file_ext,
-        attachment_group_id
+                file_name,
+                file_path,
+                file_ext,
+                attachment_group_id
         FROM attachments
         WHERE attachment_group_id = #{id}
     </select>
-</mapper><?xml version="1.0" encoding="UTF-8" ?>
-        <!DOCTYPE mapper
-                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-                "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.attachment.mapper.AttachmentMapper">
-
-<!--    첨부파일 등록-->
-<insert id="registerAttachments">
-    <selectKey order="BEFORE" resultType="int" keyProperty="attachmentGroupId">
-        <choose>
-            <when test="attachmentGroupId != null and attachmentGroupId > 0">
-                SELECT #{attachmentGroupId} FROM DUAL
-            </when>
-            <otherwise>
-                SELECT NVL(MAX(attachment_group_id), 0) + 1 FROM attachments
-            </otherwise>
-        </choose>
-    </selectKey>
-    INSERT INTO attachments ( attachment_id,
-    file_name,
-    file_path,
-    file_ext,
-    attachment_group_id )
-    VALUES ((SELECT NVL(MAX(attachment_id),0)+1 as attachmentId
-    FROM attachments),
-    #{fileName},
-    #{filePath},
-    #{fileExt},
-    #{attachmentGroupId} )
-</insert>
-
-<!--    첨부파일 조회-->
-<select id="getFileList">
-    SELECT  attachment_id,
-    file_name,
-    file_path,
-    file_ext,
-    attachment_group_id
-    FROM attachments
-    WHERE attachment_group_id = #{id}
-</select>
-</mapper><?xml version="1.0" encoding="UTF-8" ?>
-        <!DOCTYPE mapper
-                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-                "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.attachment.mapper.AttachmentMapper">
-
-<!--    첨부파일 등록-->
-<insert id="registerAttachments">
-    <selectKey order="BEFORE" resultType="int" keyProperty="attachmentGroupId">
-        <choose>
-            <when test="attachmentGroupId != null and attachmentGroupId > 0">
-                SELECT #{attachmentGroupId} FROM DUAL
-            </when>
-            <otherwise>
-                SELECT NVL(MAX(attachment_group_id), 0) + 1 FROM attachments
-            </otherwise>
-        </choose>
-    </selectKey>
-    INSERT INTO attachments ( attachment_id,
-    file_name,
-    file_path,
-    file_ext,
-    attachment_group_id )
-    VALUES ((SELECT NVL(MAX(attachment_id),0)+1 as attachmentId
-    FROM attachments),
-    #{fileName},
-    #{filePath},
-    #{fileExt},
-    #{attachmentGroupId} )
-</insert>
-
-<!--    첨부파일 조회-->
-<select id="getFileList">
-    SELECT  attachment_id,
-    file_name,
-    file_path,
-    file_ext,
-    attachment_group_id
-    FROM attachments
-    WHERE attachment_group_id = #{id}
-</select>
-</mapper><?xml version="1.0" encoding="UTF-8" ?>
-        <!DOCTYPE mapper
-                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-                "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.attachment.mapper.AttachmentMapper">
-
-<!--    첨부파일 등록-->
-<insert id="registerAttachments">
-    <selectKey order="BEFORE" resultType="int" keyProperty="attachmentGroupId">
-        <choose>
-            <when test="attachmentGroupId != null and attachmentGroupId > 0">
-                SELECT #{attachmentGroupId} FROM DUAL
-            </when>
-            <otherwise>
-                SELECT NVL(MAX(attachment_group_id), 0) + 1 FROM attachments
-            </otherwise>
-        </choose>
-    </selectKey>
-    INSERT INTO attachments ( attachment_id,
-    file_name,
-    file_path,
-    file_ext,
-    attachment_group_id )
-    VALUES ((SELECT NVL(MAX(attachment_id),0)+1 as attachmentId
-    FROM attachments),
-    #{fileName},
-    #{filePath},
-    #{fileExt},
-    #{attachmentGroupId} )
-</insert>
-
-<!--    첨부파일 조회-->
-<select id="getFileList">
-    SELECT  attachment_id,
-    file_name,
-    file_path,
-    file_ext,
-    attachment_group_id
-    FROM attachments
-    WHERE attachment_group_id = #{id}
-</select>
 </mapper>

@@ -203,12 +203,16 @@
                 <label class="field-label"
                   >마일스톤 <span class="required">*</span></label
                 >
-                <input
-                  v-model="form.milestone"
-                  disabled
-                  class="input w-full"
-                  placeholder="자동 선택됨"
-                />
+                <select v-model="form.milestoneId" class="input w-full">
+                  <option value="">마일스톤 선택</option>
+                  <option
+                    v-for="item in visibleMilestoneList"
+                    :key="item.value"
+                    :value="item.value"
+                  >
+                    {{ item.name }}
+                  </option>
+                </select>
               </div>
 
               <ProjectSelectModal
@@ -371,6 +375,10 @@ watch(
       : "";
   },
   { immediate: true },
+);
+
+const visibleMilestoneList = computed(() =>
+  milestoneList.value.filter((m) => m.statusCode !== "e3"),
 );
 
 const handleFileChange = (e) => {

@@ -81,6 +81,9 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
             }
         }
 
+        if (dto.getDeletedAttachmentIds() != null && !dto.getDeletedAttachmentIds().isEmpty()) {
+            taskMapperJJW.deleteAttachments(dto);
+        }
 
         int result = taskMapperJJW.updateTask(dto);
 
