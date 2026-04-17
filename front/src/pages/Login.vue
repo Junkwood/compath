@@ -12,19 +12,22 @@
             src="../images/whiteBgComPath.png"
             alt="Compath_logo"
           />
-          <span class="text-white font-semibold text-lg tracking-tight"
-            >ComPath</span
-          >
+          <div class="flex items-center text-lg font-bold tracking-tight">
+            <span class="text-white">com</span>
+            <span class="text-orange-500">Path</span>
+          </div>
         </div>
 
         <!-- 중앙 카피 -->
         <div>
           <h1 class="text-3xl font-bold text-white mb-4 leading-snug">
-            팀의 모든 업무를<br />한 곳에서 관리하세요
+            성공을 향해,<br />가장 빠르게. com<span class="text-[#f26a36]"
+              >Path</span
+            >™
           </h1>
           <p class="text-slate-400 text-sm leading-relaxed">
-            진척률 추적, 마일스톤 관리, 팀 협업까지.<br />
-            프로젝트 성공을 위한 모든 도구가 준비되어 있습니다.
+            더 쉽고 빠른 프로젝트 진행을 위한 최선의 선택.<br />
+            프로젝트 관리를 위한 다양한 도구들이 준비되어 있습니다.
           </p>
         </div>
         <div></div>
@@ -46,12 +49,16 @@
           </div>
 
           <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-1">
-            어서오세요 👋
+            환영합니다!🎉
           </h2>
           <p class="text-sm text-slate-500 dark:text-slate-400 mb-8">
             계정에 로그인하여 프로젝트를 관리하세요
           </p>
-
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-8">
+            <span>관리자 계정 (id : 1001, pw:1234)</span><br />
+            <span>PM 계정 (id : 1003, pw:1234)</span><br />
+            <span>일반 개발자 계정 (id : 1002, pw:1234)</span>
+          </p>
           <!-- 오류 메시지 -->
           <div
             v-if="errorMsg"

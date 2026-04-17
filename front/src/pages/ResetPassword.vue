@@ -768,7 +768,6 @@ async function handleSendCode() {
   isLoading.value = true;
   try {
     const response = await auth.post("/email/sendCode", form);
-    console.log(response);
     emailId.value = response.data.emailId;
     if (emailId.value <= 0) {
       //에러 일으키기
@@ -817,7 +816,6 @@ async function handleVerifyCode() {
       emailId: emailId.value,
       code: code,
     });
-    console.log(response);
     let success = response.data.success;
     if (!success) {
       throw new Error("Invalid code");
@@ -855,7 +853,6 @@ async function handleResetPassword() {
       userId: form.userId,
       password: form.newPassword,
     });
-    console.log(response.data);
     if (!response.data) {
       throw new Error("password change failed.");
     }

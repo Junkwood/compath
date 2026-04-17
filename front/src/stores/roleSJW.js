@@ -17,8 +17,6 @@ export const useRoleStore = defineStore("role", {
     async getActiveRoleList() {
       const response = await api.get("/role/active");
       this.activeRoleList = response.data;
-      console.log("activeRoles");
-      console.log();
       return this.roleList;
     },
     async getPermissionList() {
@@ -27,7 +25,6 @@ export const useRoleStore = defineStore("role", {
       return this.permissionList;
     },
     async changeRoleStatus(roleId, isActive) {
-      console.log(roleId, isActive);
       const response = await admin.put(`/role/${roleId}/activation`, {
         isActive: isActive,
       });
