@@ -93,14 +93,12 @@
                   </div>
 
                   <div class="mb-6">
-                    <el-form-item label="내용" prop="content">
-                      <el-input
-                        :rows="15"
-                        v-model="form.content"
-                        type="textarea"
-                        class="w-full"
-                      />
-                    </el-form-item>
+                    <Editor
+                      class="w-full"
+                      :modelValue="form.content"
+                      :isRead="isRead"
+                      @update:current-page="form.content = $event"
+                    />
                   </div>
 
                   <div v-if="!isModified" class="mb-8">
@@ -396,7 +394,7 @@
 </template>
 
 <script setup>
-import { ref, onBeforeMount, reactive, watch } from "vue";
+import { ref, onBeforeMount, reactive, watch, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
@@ -414,6 +412,8 @@ import meetingNotifirationModal from "./meetingNotificationModal.vue";
 import meetingConnectTaskModal from "./meetingConnectTaskModal.vue";
 import { useAttachmentStore } from "../stores/attachment";
 
+import Editor from "../components/Editor.vue";
+const isRead = false;
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
@@ -465,7 +465,7 @@ const projectInfo = ref({
 
 watch(
   () => recommandTask.value,
-  newVal => {
+  (newVal) => {
     connectTaskList.value = newVal;
   },
 );
@@ -476,14 +476,14 @@ const openConnectTaskModal = () => {
 };
 
 // 모달창 연결버튼
-const closeModal = val => {
+const closeModal = (val) => {
   console.log(val);
   openConnectModal.value = false;
   connectTaskList.value = meetingStore.detailConnectList;
 };
 
 // 공지사항 생성 버튼
-const submitForm = async formEl => {
+const submitForm = async (formEl) => {
   console.log(formEl.validate);
   await formEl.validate(async (valid, fields) => {
     if (valid) {
@@ -514,7 +514,7 @@ const submitForm = async formEl => {
         );
 
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach(file => {
+          fileList.value.forEach((file) => {
             formData.append("files", file.raw);
           });
         }
@@ -532,14 +532,14 @@ const submitForm = async formEl => {
           ];
 
           if (alarmList.value.length > 0) {
-            alarmList.value.forEach(al => {
+            alarmList.value.forEach((al) => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
               });
             });
           } else {
-            memberList.value.forEach(al => {
+            memberList.value.forEach((al) => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
@@ -593,7 +593,7 @@ const submitForm = async formEl => {
         );
 
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach(file => {
+          fileList.value.forEach((file) => {
             if (file.isExisting == null) {
               console.log(file);
               formData.append("files", file.raw);
@@ -622,17 +622,17 @@ const submitForm = async formEl => {
 };
 
 // 알림대상 모달 추가버튼 데이터 받기\
-const memberInsert = mem => {
+const memberInsert = (mem) => {
   modalOpen.value = false;
   alarmList.value = mem;
 };
 
-const handleClose = tag => {
+const handleClose = (tag) => {
   alarmList.value.splice(alarmList.value.indexOf(tag), 1);
 };
 
 // 회의록 내용 요약 받기
-const getContentByGemmini = async val => {
+const getContentByGemmini = async (val) => {
   const formData = new FormData();
   if (!isVoice.value) {
     console.log(val);
@@ -652,7 +652,7 @@ const getContentByGemmini = async val => {
 
     formData.append("prompt", prompt);
   } else {
-    voiceList.value.forEach(vo => {
+    voiceList.value.forEach((vo) => {
       formData.append("files", vo.raw);
     });
   }
@@ -753,7 +753,7 @@ onBeforeMount(async () => {
     form.attachmentGroupId = meetingInfo.attachmentGroupId;
 
     if (attachment) {
-      attachment.forEach(att => {
+      attachment.forEach((att) => {
         let obj = {
           name: att.fileName,
           uid: att.attachmentId,
@@ -805,8 +805,8 @@ const registerTask = async () => {
   connectTaskList.value = meetingStore.recommandTask;
 
   todoList.value = geminiTaskList.value.filter(
-    todo =>
-      !connectTaskList.value.some(sel => Object.keys(todo)[0] == sel.title),
+    (todo) =>
+      !connectTaskList.value.some((sel) => Object.keys(todo)[0] == sel.title),
   );
 
   closeCreateModal();
@@ -821,10 +821,10 @@ const registerTask = async () => {
 };
 
 // 연결 업무 x 버튼
-const delTask = async task => {
+const delTask = async (task) => {
   console.log(task);
   let result = geminiTaskList.value.some(
-    li => Object.keys(li)[0] == task.title,
+    (li) => Object.keys(li)[0] == task.title,
   );
 
   console.log(result);
@@ -840,8 +840,8 @@ const delTask = async task => {
   connectTaskList.value = meetingStore.connectTaskList;
 
   todoList.value = geminiTaskList.value.filter(
-    todo =>
-      !connectTaskList.value.some(sel => Object.keys(todo)[0] == sel.title),
+    (todo) =>
+      !connectTaskList.value.some((sel) => Object.keys(todo)[0] == sel.title),
   );
 };
 // 알림대상 선택
@@ -899,7 +899,7 @@ const rules = reactive({
   ],
 });
 
-const resetForm = formEl => {
+const resetForm = (formEl) => {
   if (!formEl) return;
   formEl.resetFields();
 };
@@ -927,7 +927,7 @@ const removeFile = async (file, index) => {
     await attachmentStore.removeFile(obj);
 
     fileList.value = [];
-    attachmentStore.removeResult.forEach(att => {
+    attachmentStore.removeResult.forEach((att) => {
       let obj = {
         name: att.fileName,
         uid: att.attachmentId,

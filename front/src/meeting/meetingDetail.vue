@@ -84,11 +84,10 @@
             <div class="detail-content-card">
               <h3 class="detail-section-title">회의 내용</h3>
               <div class="detail-content-body">
-                <textarea
-                  rows="12"
-                  class="input w-full"
-                  :value="meetingInfo.content"
-                  disabled
+                <Editor
+                  class="w-full"
+                  :modelValue="meetingInfo.content"
+                  :isRead="isRead"
                 />
               </div>
 
@@ -218,7 +217,9 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import meetingConnectTaskModal from "./meetingConnectTaskModal.vue";
 import Swal from "sweetalert2";
+import Editor from "../components/Editor.vue";
 
+const isRead = true;
 const route = useRoute();
 const router = useRouter();
 const meetingStore = useMeetingStore();

@@ -5,9 +5,10 @@ import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 import { createVfm } from "vue-final-modal";
 import "vue-final-modal/style.css";
-import { createPinia } from 'pinia'
+import { createPinia } from "pinia";
 import "./css/style.css";
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+import { Ckeditor } from "@ckeditor/ckeditor5-vue";
 
 const app = createApp(App);
 const vfm = createVfm();
@@ -15,7 +16,9 @@ const vfm = createVfm();
 app.use(ElementPlus);
 app.use(router);
 app.use(vfm);
-const pinia = createPinia()
-pinia.use(piniaPluginPersistedstate)
-app.use(pinia)
+
+const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate);
+app.use(pinia);
+app.use(Ckeditor);
 app.mount("#app");
