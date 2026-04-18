@@ -1,12 +1,11 @@
 <template>
   <el-dialog
-    v-model="visible"
+    :model-value="true"
     title=""
     width="1000px"
     height="100"
     :close-on-click-modal="false"
     class="custom-dialog"
-    @close="handleClose"
   >
     <main class="grow">
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 p-3">
@@ -219,7 +218,7 @@ const {
 const { selectMilestone, onPriorityChange, calcEstTime, resetForm } = store;
 
 const visibleMilestoneList = computed(() =>
-  milestoneList.value.filter((m) => m.statusCode !== "e3"),
+  milestoneList.value.filter(m => m.statusCode !== "e3"),
 );
 
 onMounted(async () => {
@@ -237,9 +236,9 @@ const handleSubmit = async () => {
     createdBy: Number(authStore.user?.userId),
     progressRate: 0,
   };
-  console.log(obj);
   try {
     await meetingStore.registerRecommandTask(obj);
+    resetForm();
     emit("registerTask");
   } catch (e) {
     alert(e.message || "등록에 실패했습니다. 입력값을 확인해 주세요.");
@@ -255,7 +254,7 @@ const closeModal = () => {
 
 watch(
   () => props.taskInfo,
-  (newVal) => {
+  newVal => {
     form.value.title = Object.keys(newVal)[0];
     form.value.content = Object.values(newVal)[0];
     form.value.meetingLogId = newVal.meetingLogId;

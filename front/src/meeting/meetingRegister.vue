@@ -291,9 +291,6 @@
                     multiple
                     :on-change="voiceChange"
                   >
-                    <el-icon class="el-icon--upload text-purple-400"
-                      ><upload-filled
-                    /></el-icon>
                     <div class="el-upload__text text-xs">
                       드래그 앤 드롭 또는 <em>클릭하여 업로드</em>
                       <p class="text-[10px] text-gray-400 mt-1">
@@ -451,7 +448,8 @@ let modalOpen = ref(false); // 알림대상 모달창
 const memberList = ref([]); // 구성원 테이블
 const alarmList = ref([]); // 알림대상 추가된 회원 목록
 const isAiSummary = ref(false); // ai 사용했는지 확인 여부
-const todoList = ref([]); // 업무 추천 목록
+const geminiTaskList = ref([]);
+const todoList = ref([]); // 업무 추천 목록 필터링한 거
 const isVoice = ref(false); // 음성요약 파일 잇는지 확인
 const createModalOpen = ref(false); // 추천업무 생성 모달창 여는 거
 const taskInfo = ref([]);
@@ -467,7 +465,7 @@ const projectInfo = ref({
 
 watch(
   () => recommandTask.value,
-  (newVal) => {
+  newVal => {
     connectTaskList.value = newVal;
   },
 );
@@ -478,14 +476,14 @@ const openConnectTaskModal = () => {
 };
 
 // 모달창 연결버튼
-const closeModal = (val) => {
+const closeModal = val => {
   console.log(val);
   openConnectModal.value = false;
   connectTaskList.value = meetingStore.detailConnectList;
 };
 
 // 공지사항 생성 버튼
-const submitForm = async (formEl) => {
+const submitForm = async formEl => {
   console.log(formEl.validate);
   await formEl.validate(async (valid, fields) => {
     if (valid) {
@@ -516,7 +514,7 @@ const submitForm = async (formEl) => {
         );
 
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach((file) => {
+          fileList.value.forEach(file => {
             formData.append("files", file.raw);
           });
         }
@@ -534,14 +532,14 @@ const submitForm = async (formEl) => {
           ];
 
           if (alarmList.value.length > 0) {
-            alarmList.value.forEach((al) => {
+            alarmList.value.forEach(al => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
               });
             });
           } else {
-            memberList.value.forEach((al) => {
+            memberList.value.forEach(al => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
@@ -595,7 +593,7 @@ const submitForm = async (formEl) => {
         );
 
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach((file) => {
+          fileList.value.forEach(file => {
             if (file.isExisting == null) {
               console.log(file);
               formData.append("files", file.raw);
@@ -624,17 +622,17 @@ const submitForm = async (formEl) => {
 };
 
 // 알림대상 모달 추가버튼 데이터 받기\
-const memberInsert = (mem) => {
+const memberInsert = mem => {
   modalOpen.value = false;
   alarmList.value = mem;
 };
 
-const handleClose = (tag) => {
+const handleClose = tag => {
   alarmList.value.splice(alarmList.value.indexOf(tag), 1);
 };
 
 // 회의록 내용 요약 받기
-const getContentByGemmini = async (val) => {
+const getContentByGemmini = async val => {
   const formData = new FormData();
   if (!isVoice.value) {
     console.log(val);
@@ -654,7 +652,7 @@ const getContentByGemmini = async (val) => {
 
     formData.append("prompt", prompt);
   } else {
-    voiceList.value.forEach((vo) => {
+    voiceList.value.forEach(vo => {
       formData.append("files", vo.raw);
     });
   }
@@ -680,7 +678,8 @@ const getContentByGemmini = async (val) => {
     console.log(match);
     const jsonStr = match[0].replace(/'/g, '"');
     console.log(jsonStr);
-    todoList.value = JSON.parse(jsonStr);
+    geminiTaskList.value = JSON.parse(jsonStr);
+    todoList.value = geminiTaskList.value;
   }
 
   form.content = form.aiSummary.replace(
@@ -754,7 +753,7 @@ onBeforeMount(async () => {
     form.attachmentGroupId = meetingInfo.attachmentGroupId;
 
     if (attachment) {
-      attachment.forEach((att) => {
+      attachment.forEach(att => {
         let obj = {
           name: att.fileName,
           uid: att.attachmentId,
@@ -783,6 +782,7 @@ onBeforeMount(async () => {
 // 추천 업무 생성 버튼
 let selectedToDo = ref();
 const openCreateModal = (value, idx) => {
+  console.log(value);
   selectedToDo.value = idx;
   taskInfo.value = {
     ...value,
@@ -797,14 +797,16 @@ const openCreateModal = (value, idx) => {
 // 추천 업무 생성 모달 취소버튼
 const closeCreateModal = () => {
   createModalOpen.value = false;
+  selectedToDo.value = [];
 };
 
 // 추천 업무 생성 모달 생성 버튼
 const registerTask = async () => {
   connectTaskList.value = meetingStore.recommandTask;
 
-  todoList.value = todoList.value.filter(
-    (todo, index) => index != selectedToDo.value,
+  todoList.value = geminiTaskList.value.filter(
+    todo =>
+      !connectTaskList.value.some(sel => Object.keys(todo)[0] == sel.title),
   );
 
   closeCreateModal();
@@ -819,10 +821,28 @@ const registerTask = async () => {
 };
 
 // 연결 업무 x 버튼
-const delTask = async (task) => {
+const delTask = async task => {
   console.log(task);
-  await meetingStore.removeConnectTask(task);
+  let result = geminiTaskList.value.some(
+    li => Object.keys(li)[0] == task.title,
+  );
+
+  console.log(result);
+
+  let obj = {
+    meetingLogId: task.meetingLogId,
+    meetingtaskId: task.meetingtaskId,
+    taskId: result ? task.taskId : null,
+  };
+
+  console.log(obj);
+  await meetingStore.removeConnectTask(obj);
   connectTaskList.value = meetingStore.connectTaskList;
+
+  todoList.value = geminiTaskList.value.filter(
+    todo =>
+      !connectTaskList.value.some(sel => Object.keys(todo)[0] == sel.title),
+  );
 };
 // 알림대상 선택
 const openModal = () => {
@@ -879,7 +899,7 @@ const rules = reactive({
   ],
 });
 
-const resetForm = (formEl) => {
+const resetForm = formEl => {
   if (!formEl) return;
   formEl.resetFields();
 };
@@ -907,7 +927,7 @@ const removeFile = async (file, index) => {
     await attachmentStore.removeFile(obj);
 
     fileList.value = [];
-    attachmentStore.removeResult.forEach((att) => {
+    attachmentStore.removeResult.forEach(att => {
       let obj = {
         name: att.fileName,
         uid: att.attachmentId,

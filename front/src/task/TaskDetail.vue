@@ -322,7 +322,7 @@
                     <div
                       v-for="(file, index) in attachmentList"
                       :key="index"
-                      class="flex items-center justify-between text-sm"
+                      class="memo-card"
                     >
                       <div class="truncate text-gray-700">
                         <el-tooltip
@@ -337,23 +337,15 @@
                       </div>
                       <button
                         type="button"
-                        class="text-xs text-blue-600 hover:underline"
+                        class="memo-del"
                         @click="attachmentDownload(file)"
                       >
                         다운
                       </button>
                     </div>
-
-                    <!-- 더보기 -->
-                    <div
-                      v-if="files.length > 3"
-                      class="text-xs text-gray-400 text-center mt-1"
-                    >
-                      +{{ files.length - 3 }}개 더
-                    </div>
                   </div>
 
-                  <div v-else class="text-xs text-gray-400 text-center py-4">
+                  <div v-else class="text -xs text-gray-400 text-center py-4">
                     파일 없음
                   </div>
                 </div>
@@ -488,10 +480,10 @@ const isAssignee = computed(() => {
   const isDirectAssignee =
     Number(taskInfo.value?.assigneeUserId) === Number(currentUserId);
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   return isDirectAssignee || isPmPl || isManager;
 });
@@ -521,13 +513,11 @@ const goModify = () => {
 };
 
 // 파일 다운로드
-const attachmentDownload = async (file) => {
-  console.log(file);
+const attachmentDownload = async file => {
   await attachmentStore.downloadFile(file);
 };
 
-const changefileNameLength = (fileName) => {
-  console.log(fileName);
+const changefileNameLength = fileName => {
   if (fileName.length > 20) {
     fileName = fileName.slice(0, 19) + ".....";
   }
@@ -561,7 +551,7 @@ const lockTask = async () => {
 };
 
 const timeEntriesList = ref([]);
-const submitted = async (val) => {
+const submitted = async val => {
   openTimeModal.value = false;
   let obj = {
     taskId: taskInfo.value.taskId,
@@ -587,7 +577,7 @@ const chageTaskDesc = async () => {
   activityLogs.value = taskStore.taskLog;
 
   activityList.value = taskStore.activityList;
-  activityList.value.forEach((el) => {
+  activityList.value.forEach(el => {
     if (el.targetType == "time_entries" && el.actionType == "J1") {
       if (el.beforeValue == null) el.beforeValue = 0;
       el.taskDesc = `소요시간을 ${el.beforeValue}시간에서 ${el.afterValue}시간으로 변경 했습니다.`;
@@ -623,7 +613,7 @@ const pagedTimeData = computed(() => {
 });
 
 // 날짜 없는 경우 형식 변경
-const changeInfoType = (val) => {
+const changeInfoType = val => {
   if (val.assigneeUserId == null) {
     val.assigneeUserName = "미지정";
   }
@@ -1133,7 +1123,7 @@ const changeInfoType = (val) => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 400px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
@@ -1215,15 +1205,15 @@ const changeInfoType = (val) => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   color: #9ca3af;
   padding: 0;
-  line-height: 1;
+  line-height: normal;
   flex-shrink: 0;
   transition: color 0.15s;
 }
 
 .memo-del:hover {
-  color: #dc2626;
+  color: #2d3afa;
 }
 </style>

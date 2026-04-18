@@ -83,8 +83,8 @@
                     JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
                     JOIN common_code c ON t.priority_code = c.code_value
                     LEFT JOIN users u ON t.assignee_user_id = u.user_id
-                    WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId}
-                    AND t.is_deleted != 'Q1')
+                    WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
+                    AND t.is_deleted = 'Q2'
                     <if test="taskId != null and taskId != ''">
                         AND t.task_id = #{taskId}
                     </if>
