@@ -16,8 +16,8 @@ public class ProjectControllerJDJ {
 
     //프로젝트 전체목록 조회e
     @GetMapping("/ProjectList")
-    public List<ProjectListDto> list() {
-        return projectServiceJDJ.getAllProject();
+    public List<ProjectListDto> list(@RequestParam Integer userId) {
+        return projectServiceJDJ.getAllProject(userId);
     }
 
     //프로젝트 생성
