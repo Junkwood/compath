@@ -157,8 +157,18 @@ const fetchPlList = async () => {
 
 const fetchProjectList = async () => {
   try {
-    const res = await api.get("/ProjectList");
-    projectOptions.value = res.data || [];
+    const userId = authStore.user?.userId;
+
+    if (!userId) {
+      projectOptions.value = [];
+      return;
+    }
+
+    const res = await api.get("/ProjectList", {
+      params: { userId },
+    });
+
+    projectOptions.value = Array.isArray(res.data) ? res.data : [];
   } catch (err) {
     console.error("프로젝트 목록 조회 실패:", err);
     projectOptions.value = [];

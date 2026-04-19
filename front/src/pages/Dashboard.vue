@@ -1,4 +1,3 @@
-<!-- MainDashboard -->
 <template>
   <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
@@ -175,10 +174,15 @@
             <div class="panel-head">
               <div class="flex items-center gap-2">
                 <h2 class="panel-title">프로젝트 목록</h2>
-                <span class="count-tag">{{ projectList.length }}</span>
+                <span class="count-tag">{{ filteredProjectList.length }}</span>
               </div>
 
               <div class="flex items-center gap-3">
+                <div class="my-project-switch">
+                  <span class="switch-label">내 프로젝트만 보기</span>
+                  <el-switch v-model="showOnlyMyProjects" />
+                </div>
+
                 <el-select
                   v-model="projectSort"
                   size="small"
@@ -263,7 +267,7 @@
               <el-pagination
                 v-model:current-page="projectPage"
                 :page-size="projectPageSize"
-                :total="projectList.length"
+                :total="filteredProjectList.length"
                 layout="prev, pager, next"
                 background
               />
@@ -311,6 +315,7 @@ const workPageSize = 5;
 const projectPage = ref(1);
 const projectPageSize = 8;
 const projectSort = ref("createdDesc");
+const showOnlyMyProjects = ref(false);
 
 const loadingTasks = ref(false);
 const loadingProjects = ref(false);
@@ -358,12 +363,22 @@ const fetchTaskList = async () => {
 };
 
 const fetchProjectList = async () => {
+  const userId = user.value?.userId;
+
+  if (!userId) {
+    projectList.value = [];
+    return;
+  }
+
   loadingProjects.value = true;
   try {
-    const res = await api.get("/ProjectList");
-    projectList.value = res.data || [];
+    const res = await api.get("/ProjectList", {
+      params: { userId },
+    });
+    projectList.value = Array.isArray(res.data) ? res.data : [];
   } catch (err) {
     console.error("프로젝트 목록 조회 실패:", err);
+    projectList.value = [];
   } finally {
     loadingProjects.value = false;
   }
@@ -422,13 +437,16 @@ watch(
   () => user.value?.userId,
   (newUserId) => {
     if (newUserId) {
+      fetchProjectList();
       fetchMyTaskSummary();
+    } else {
+      projectList.value = [];
     }
   },
   { immediate: true },
 );
 
-watch(projectSort, () => {
+watch([projectSort, showOnlyMyProjects], () => {
   projectPage.value = 1;
 });
 
@@ -442,8 +460,18 @@ const pagedTaskData = computed(() => {
     }));
 });
 
+const filteredProjectList = computed(() => {
+  if (!showOnlyMyProjects.value) {
+    return projectList.value;
+  }
+
+  return projectList.value.filter(
+    (project) => String(project.isMyProject || "").toUpperCase() === "Y",
+  );
+});
+
 const sortedProjectList = computed(() => {
-  const sorted = [...projectList.value];
+  const sorted = [...filteredProjectList.value];
 
   sorted.sort((a, b) => {
     if (projectSort.value === "createdDesc") {
@@ -460,7 +488,8 @@ const sortedProjectList = computed(() => {
       );
     }
 
-    return Number(a.projectId || 0) - Number(b.projectId || 0);  });
+    return Number(a.projectId || 0) - Number(b.projectId || 0);
+  });
 
   return sorted;
 });
@@ -621,6 +650,32 @@ const goProjectDashboard = (row) => {
   font-size: 15px;
   font-weight: 700;
   color: #111827;
+}
+
+.count-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.my-project-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.switch-label {
+  font-size: 13px;
+  color: #374151;
+  font-weight: 500;
 }
 
 .panel-body {

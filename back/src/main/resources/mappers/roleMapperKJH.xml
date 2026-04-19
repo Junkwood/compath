@@ -10,6 +10,9 @@
         FROM project_members pm
         LEFT JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
         WHERE pm.project_id=#{projectId}
+        <if test="subProjectId != null and subProjectId != 0" >
+            OR pm.project_id=#{subProjectId}
+        </if>
         AND pm.is_active = 'O1'
         AND pmr.role_id IN (17,18,19)
     </select>

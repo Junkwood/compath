@@ -22,7 +22,8 @@ public class ProjectListDto {
 
     private String isPublic;
     private String useMilestone;
-
+    private String isMyProject;  //추가
+    
     private Integer progressRate;
     private String createdAt;
 }

@@ -7,7 +7,7 @@ import java.util.List;
 public interface ProjectServiceJDJ {
 
     //프로젝트 전체목록 조회
-    public List<ProjectListDto> getAllProject();
+    public List<ProjectListDto> getAllProject(Integer userId);
 
     //프로젝트 생성
     void registerProject(ProjectCreateDtoJDJ dto);

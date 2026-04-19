@@ -66,23 +66,48 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
     H4: "하",
   };
 
-  function startOfDay(date) {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }
-
-  function endOfDay(date) {
-    const d = new Date(date);
-    d.setHours(23, 59, 59, 999);
-    return d;
-  }
-
   function applyQuickRange(type) {
     selectedQuickRange.value = type;
-    if (type !== "CUSTOM") {
+
+    const today = new Date();
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    if (type === "ALL") {
       startDate.value = "";
       endDate.value = "";
+      return;
+    }
+
+    if (type === "TODAY") {
+      const todayStr = formatDate(today);
+      startDate.value = todayStr;
+      endDate.value = todayStr;
+      return;
+    }
+
+    if (type === "7D") {
+      const fromDate = new Date(today);
+      fromDate.setDate(today.getDate() - 6);
+      startDate.value = formatDate(fromDate);
+      endDate.value = formatDate(today);
+      return;
+    }
+
+    if (type === "30D") {
+      const fromDate = new Date(today);
+      fromDate.setDate(today.getDate() - 29);
+      startDate.value = formatDate(fromDate);
+      endDate.value = formatDate(today);
+      return;
+    }
+
+    if (type === "CUSTOM") {
+      // 직접선택은 기존 값 유지
     }
   }
 
@@ -333,7 +358,17 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
         return;
       }
 
-      const res = await api.get(`/activityLogs/${projectId}`);
+      const params = {
+        projectId,
+        searchKeyword: searchKeyword.value || null,
+        activityType: selectedActivityType.value || null,
+        targetType: selectedTargetType.value || null,
+        startDate: startDate.value || null,
+        endDate: endDate.value || null,
+        sortOrder: sortOrder.value || "DESC",
+      };
+
+      const res = await api.get("/activityLogs", { params });
       logs.value = Array.isArray(res.data) ? res.data.map(mapLogItem) : [];
     } catch (err) {
       console.error("작업내역 조회 실패:", err);
@@ -341,84 +376,7 @@ export const useActivityLogsStore = defineStore("activityLogs", () => {
     }
   }
 
-  const filteredLogs = computed(() => {
-    let result = [...logs.value];
-
-    if (selectedActivityType.value) {
-      result = result.filter(
-        (item) => item.activityType === selectedActivityType.value,
-      );
-    }
-
-    if (selectedTargetType.value) {
-      result = result.filter(
-        (item) => item.targetType === selectedTargetType.value,
-      );
-    }
-
-    if (searchKeyword.value.trim()) {
-      const keyword = searchKeyword.value.trim().toLowerCase();
-      result = result.filter((item) => {
-        return (
-          (item.userName || "").toLowerCase().includes(keyword) ||
-          (item.targetName || "").toLowerCase().includes(keyword) ||
-          (item.message || "").toLowerCase().includes(keyword) ||
-          (item.detail || "").toLowerCase().includes(keyword) ||
-          (item.projectPath || "").toLowerCase().includes(keyword)
-        );
-      });
-    }
-
-    if (
-      selectedQuickRange.value === "CUSTOM" &&
-      startDate.value &&
-      endDate.value
-    ) {
-      result = result.filter((item) => {
-        const itemDate = item.createdAt.split(" ")[0];
-        return itemDate >= startDate.value && itemDate <= endDate.value;
-      });
-    }
-
-    if (selectedQuickRange.value === "TODAY") {
-      const today = new Date().toISOString().slice(0, 10);
-      result = result.filter((item) => item.createdAt.startsWith(today));
-    }
-
-    if (selectedQuickRange.value === "7D") {
-      const baseDate = new Date();
-      const fromDate = new Date(baseDate);
-      fromDate.setDate(baseDate.getDate() - 6);
-
-      result = result.filter((item) => {
-        const itemDate = new Date(item.createdAt.replace(" ", "T"));
-        return (
-          itemDate >= startOfDay(fromDate) && itemDate <= endOfDay(baseDate)
-        );
-      });
-    }
-
-    if (selectedQuickRange.value === "30D") {
-      const baseDate = new Date();
-      const fromDate = new Date(baseDate);
-      fromDate.setDate(baseDate.getDate() - 29);
-
-      result = result.filter((item) => {
-        const itemDate = new Date(item.createdAt.replace(" ", "T"));
-        return (
-          itemDate >= startOfDay(fromDate) && itemDate <= endOfDay(baseDate)
-        );
-      });
-    }
-
-    result.sort((a, b) => {
-      const aTime = new Date(a.createdAt.replace(" ", "T")).getTime();
-      const bTime = new Date(b.createdAt.replace(" ", "T")).getTime();
-      return sortOrder.value === "DESC" ? bTime - aTime : aTime - bTime;
-    });
-
-    return result;
-  });
+  const filteredLogs = computed(() => logs.value);
 
   const groupedLogs = computed(() => {
     const groupMap = {};
