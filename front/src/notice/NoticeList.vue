@@ -309,7 +309,7 @@ const searchInfo = async () => {
   searchInfo;
 };
 
-const handleCurrentChange = async val => {
+const handleCurrentChange = async (val) => {
   val = val == undefined ? 1 : val;
   nowPage.value = val;
 
@@ -338,10 +338,10 @@ const handleCurrentChange = async val => {
     await noticeStore.getPagingList(obj);
     Swal.close();
 
-    if (isAssignee) {
+    if (isAssignee.value) {
       pagingList.value = noticeStore.pagingList;
     } else {
-      noticeStore.pagingList.forEach(notice => {
+      noticeStore.pagingList.forEach((notice) => {
         if (notice.isDeleted != "Q1") {
           pagingList.value.push(notice);
         }
@@ -367,7 +367,7 @@ const goResister = () => {
   });
 };
 
-const goDetail = tr => {
+const goDetail = (tr) => {
   router.push({
     name: "noticeDetail",
     params: {
@@ -415,10 +415,10 @@ onBeforeMount(async () => {
 
   await noticeStore.getFilterList(obj);
   filterList.value = noticeStore.filterList;
-  if (isAssignee) {
+  if (isAssignee.value) {
     pagingList.value = noticeStore.filterList.noticeList;
   } else {
-    noticeStore.filterList.noticeList.forEach(notice => {
+    noticeStore.filterList.noticeList.forEach((notice) => {
       if (notice.isDeleted != "Q1") {
         pagingList.value.push(notice);
       }
@@ -438,10 +438,10 @@ const isAssignee = computed(() => {
   if (!currentUserId) return false;
 
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   return isPmPl || isManager;
 });

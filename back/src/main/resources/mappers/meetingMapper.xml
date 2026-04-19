@@ -222,7 +222,7 @@
         FROM meeting_tasks mt
         LEFT JOIN tasks t ON mt.task_id = t.task_id
         LEFT JOIN task_statuses ts ON t.task_status_id = ts.task_status_id
-        WHERE mt.meeting_log_id = #{id}
+        WHERE mt.meeting_log_id = #{id} AND t.is_deleted = 'Q2'
     </select>
 <!--    연결된 업무 연결 해제-->
     <delete id="removeConnectTask">

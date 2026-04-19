@@ -164,7 +164,6 @@
                       attachmentList.length > 0
                     "
                     class="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl border border-transparent hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-sm transition-all duration-200 group cursor-pointer"
-                    @click="attachmentDownload(file)"
                   >
                     <!-- 왼쪽 -->
                     <div class="flex items-center gap-3 flex-1">
@@ -198,22 +197,11 @@
 
                     <!-- 다운로드 버튼 -->
                     <button
+                      type="button"
+                      @click.stop="attachmentDownload(file)"
                       class="flex items-center gap-1 px-3 py-1.5 text-[12px] font-medium text-gray-500 bg-white border border-gray-200 rounded-md group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-200 cursor-pointer"
                     >
                       다운로드
-                      <svg
-                        class="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                        />
-                      </svg>
                     </button>
                   </div>
 
@@ -337,7 +325,7 @@ const lockNotice = async () => {
 };
 
 // 파일 다운로드
-const attachmentDownload = async file => {
+const attachmentDownload = async (file) => {
   console.log(file);
   await attachmentStore.downloadFile(file);
 };
@@ -375,10 +363,10 @@ const isAssignee = computed(() => {
   if (!currentUserId) return false;
 
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   return isPmPl || isManager;
 });
