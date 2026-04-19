@@ -4,44 +4,44 @@
 -->
     <select id="getAllProject" resultType="ProjectListDTO">
         SELECT
-        P2.PROJECT_ID                         AS projectId,
-        P2.PROJECT_NAME                       AS projectName,
-        P2.IDENTIFIER                         AS identifier,
-        TO_CHAR(P2.START_DATE, 'YYYY-MM-DD') AS startDate,
-        TO_CHAR(P2.END_DATE, 'YYYY-MM-DD')   AS endDate,
-        TO_CHAR(P2.CREATED_AT, 'YYYY-MM-DD') AS createdAt,
-        P2.IS_PUBLIC                          AS isPublic,
-        P2.USE_MILESTONE                      AS useMilestone,
-        P2.PM_USER_ID                         AS pmUserId,
-        P2.PL_USER_ID                         AS plUserId,
-        PM.USER_NAME                          AS pmName,
-        PL.USER_NAME                          AS plName,
-        NVL(ROUND(AVG(NVL(T.PROGRESS_RATE, 0)), 0), 0) AS progressRate
+            P2.PROJECT_ID                         AS projectId,
+            P2.PROJECT_NAME                       AS projectName,
+            P2.IDENTIFIER                         AS identifier,
+            TO_CHAR(P2.START_DATE, 'YYYY-MM-DD') AS startDate,
+            TO_CHAR(P2.END_DATE, 'YYYY-MM-DD')   AS endDate,
+            TO_CHAR(P2.CREATED_AT, 'YYYY-MM-DD') AS createdAt,
+            P2.IS_PUBLIC                          AS isPublic,
+            P2.USE_MILESTONE                      AS useMilestone,
+            P2.PM_USER_ID                         AS pmUserId,
+            P2.PL_USER_ID                         AS plUserId,
+            PM.USER_NAME                          AS pmName,
+            PL.USER_NAME                          AS plName,
+            NVL(ROUND(AVG(NVL(T.PROGRESS_RATE, 0)), 0), 0) AS progressRate
         FROM PROJECTS P2
         LEFT JOIN USERS PM
-        ON PM.USER_ID = P2.PM_USER_ID
+            ON PM.USER_ID = P2.PM_USER_ID
         LEFT JOIN USERS PL
-        ON PL.USER_ID = P2.PL_USER_ID
+            ON PL.USER_ID = P2.PL_USER_ID
         LEFT JOIN PROJECTS P
-        ON P.PARENT_PROJECT_ID = P2.PROJECT_ID
-        AND P.STATUS = 'F1'
+            ON P.PARENT_PROJECT_ID = P2.PROJECT_ID
+            AND P.STATUS = 'F1'
         LEFT JOIN TASKS T
-        ON T.PROJECT_ID = P.PROJECT_ID
+            ON T.PROJECT_ID = P.PROJECT_ID
         WHERE P2.PARENT_PROJECT_ID IS NULL
-        AND P2.STATUS = 'F1'
+            AND P2.STATUS = 'F1'
         GROUP BY
-        P2.PROJECT_ID,
-        P2.PROJECT_NAME,
-        P2.IDENTIFIER,
-        P2.START_DATE,
-        P2.END_DATE,
-        P2.CREATED_AT,
-        P2.IS_PUBLIC,
-        P2.USE_MILESTONE,
-        P2.PM_USER_ID,
-        P2.PL_USER_ID,
-        PM.USER_NAME,
-        PL.USER_NAME
+            P2.PROJECT_ID,
+            P2.PROJECT_NAME,
+            P2.IDENTIFIER,
+            P2.START_DATE,
+            P2.END_DATE,
+            P2.CREATED_AT,
+            P2.IS_PUBLIC,
+            P2.USE_MILESTONE,
+            P2.PM_USER_ID,
+            P2.PL_USER_ID,
+            PM.USER_NAME,
+            PL.USER_NAME
         ORDER BY P2.PROJECT_ID
     </select>
 
@@ -96,7 +96,7 @@
         FROM USERS U
         JOIN GROUP_MEMBERS GM
             ON GM.USER_ID = U.USER_ID
-        WHERE GM.GROUP_ID = 6 AND U.is_active = 'O1' AND U.user_type = 'M2'
+        WHERE GM.GROUP_ID = 32 AND U.is_active = 'O1' AND U.user_type = 'M2'
     </select>
 
     <!--하위프로젝트 생성 시 그 프로젝트의 role이 PL인 사람 불러오기-->
@@ -113,7 +113,7 @@
             ON R.ROLE_ID = PMR.ROLE_ID
         WHERE PM.PROJECT_ID = #{projectId}
             AND PM.IS_ACTIVE = 'O1'
-            AND R.ROLE_NAME = 'PL'
+            AND R.ROLE_NAME = '하위PL'
         ORDER BY U.USER_ID
     </select>
 

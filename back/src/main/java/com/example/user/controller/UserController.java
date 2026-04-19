@@ -60,7 +60,8 @@ public class UserController {
                 userDTO.getUserId(),
                 userDTO.getPassword()
         );
-        log.error(user.toString());
+//        log.error(user.toString());3
+        log.error("login user = {}", user);
         if(user != null) {
             String accessToken = tokenProvider.createAccessToken(user);
             String refreshToken = tokenProvider.createRefreshToken(user);

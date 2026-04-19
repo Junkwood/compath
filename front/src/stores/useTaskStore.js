@@ -39,7 +39,7 @@ export const useTaskStore = defineStore("task", () => {
   // 등록 시 시작전/진행중만, 수정 시 전체
   const filteredStatusList = computed(() => {
     if (form.value.taskId) return statusList.value;
-    return statusList.value.filter((s) => [1, 2].includes(s.taskStatusId));
+    return statusList.value.filter((s) => [10, 11].includes(s.taskStatusId));
   });
 
   // 소요시간/진척도 표시 여부 (개발완료=3 또는 종료)
