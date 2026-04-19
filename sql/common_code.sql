@@ -8,9 +8,11 @@ SELECT * FROM common_code ORDER BY code_value;
 COMMIT;
 
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0A', 'ROOT', '권한 코드', 'O1');
+INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0B', 'ROOT', '공지사항 pin', 'O1');
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0C', 'ROOT', '그룹 유형 코드', 'O1');
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0D', 'ROOT', '회의록처리 상태코드', 'O1');
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0E', 'ROOT', '마일스톤 상태 코드', 'O1');
+INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0F', 'ROOT', '프로젝트 상태 코드', 'O1');
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0H', 'ROOT', '업무 우선순위 코드', 'O1');
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0I', 'ROOT', '읽음 여부 코드', 'O1');
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0J', 'ROOT', '활동 유형 코드', 'O1');
@@ -48,6 +50,12 @@ INSERT INTO common_code VALUES ('A19', '0A', '회의록 수정', 'O1');
 INSERT INTO common_code VALUES ('A20', '0A', '회의록 삭제', 'O1');
 
 ------------------------------------------------------------
+-- 2. 공지사항 pin (0B)
+------------------------------------------------------------
+INSERT INTO common_code VALUES ('B1', '0B', '고정공지', 'O1');
+INSERT INTO common_code VALUES ('B2', '0B', '일반공지', 'O1');
+
+------------------------------------------------------------
 -- 3. 그룹 유형 코드 (0C)
 ------------------------------------------------------------
 INSERT INTO common_code VALUES ('C1', '0C', '직권 그룹', 'O1');
@@ -64,16 +72,15 @@ INSERT INTO common_code VALUES ('D2', '0D', '완료', 'O1');
 ------------------------------------------------------------
 INSERT INTO common_code VALUES ('E1', '0E', '진행중', 'O1');
 INSERT INTO common_code VALUES ('E2', '0E', '완료', 'O1');
+INSERT INTO common_code VALUES ('E3', '0E', '삭제', 'O1');
 
 ------------------------------------------------------------
--- 6. 업무 상태 코드 (0G)
+-- 4. 프로젝트상태코드 (0F) 
 ------------------------------------------------------------
-INSERT INTO common_code VALUES ('G1', '0G', '시작 전', 'O1');
-INSERT INTO common_code VALUES ('G2', '0G', '진행중', 'O1');
-INSERT INTO common_code VALUES ('G3', '0G', '개발 완료', 'O1');
-INSERT INTO common_code VALUES ('G4', '0G', '반려', 'O1');
-INSERT INTO common_code VALUES ('G5', '0G', '피드백', 'O1');
-INSERT INTO common_code VALUES ('G6', '0G', '종료', 'O1');
+INSERT INTO common_code VALUES ('F1', '0F', '진행중', 'O1');
+INSERT INTO common_code VALUES ('F2', '0F', '완료', 'O1');
+INSERT INTO common_code VALUES ('F3', '0F', '비활성화', 'O1');
+
 
 ------------------------------------------------------------
 -- 7. 업무 우선순위 코드 (0H)
