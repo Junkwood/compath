@@ -5,28 +5,28 @@
         SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
         FROM permissions
         WHERE permission_url = #{urlPattern}
-          AND permission_method = #{method}
+        AND permission_method = #{method}
     </select>
 
     <select id="checkUserPermission" resultType="int">
         SELECT
-            -- [조건 1] 원래 하시던 대로 멤버의 Role과 매핑된 권한이 있는지 카운트
-            (SELECT COUNT(1)
-             FROM project_members pm
-                      JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
-                      JOIN role_permissions rp ON pmr.role_id = rp.role_id
-                      JOIN permissions p ON rp.permission_id = p.permission_id
-             WHERE pm.user_id = #{userId}
-               AND pm.project_id = #{projectId}
-               AND p.permission_method = #{method}
-               AND p.permission_url = #{url})
-                +
-                -- [조건 2] 💡 해당 프로젝트가 전체 공개(P1)이고, 요청이 조회(GET)면 무조건 1을 더해줌
-            (SELECT COUNT(1)
-             FROM projects
-             WHERE project_id = #{projectId}
-               AND is_public = 'P1'
-               AND #{method} = 'GET')
+        -- [조건 1] 원래 하시던 대로 멤버의 Role과 매핑된 권한이 있는지 카운트
+        (SELECT COUNT(1)
+        FROM project_members pm
+        JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+        JOIN role_permissions rp ON pmr.role_id = rp.role_id
+        JOIN permissions p ON rp.permission_id = p.permission_id
+        WHERE pm.user_id = #{userId}
+        AND pm.project_id = #{projectId}
+        AND p.permission_method = #{method}
+        AND p.permission_url = #{url})
+        +
+        -- [조건 2] 💡 해당 프로젝트가 전체 공개(P1)이고, 요청이 조회(GET)면 무조건 1을 더해줌
+        (SELECT COUNT(1)
+        FROM projects
+        WHERE project_id = #{projectId}
+        AND is_public = 'P1'
+        AND #{method} = 'GET')
         FROM DUAL
     </select>
 
@@ -45,9 +45,9 @@
     <select id="checkGroupAccess" resultType="boolean">
         SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
         FROM GROUP_PERMISSIONS gp
-                 JOIN permissions p ON gp.permission_id = p.permission_id
+        JOIN permissions p ON gp.permission_id = p.permission_id
         WHERE gp.group_id = #{groupId}
-          AND p.permission_url = #{targetUrl}
-          AND p.permission_method = #{method}
+        AND p.permission_url = #{targetUrl}
+        AND p.permission_method = #{method}
     </select>
 </mapper>
