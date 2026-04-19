@@ -50,11 +50,11 @@
                p.project_name,
                p.start_date,
                p.end_date,
-               r.role_name,
+               t.type_name,
                u.user_name
         FROM documents d
         JOIN projects p ON p.project_id = d.project_id
-        LEFT JOIN roles r ON r.role_id = d.category
+        LEFT JOIN task_types t ON d.category = t.task_type_id
         JOIN users u ON u.user_id = d.created_by
         WHERE d.document_id = #{id} AND d.is_deleted='Q2'
     </select>

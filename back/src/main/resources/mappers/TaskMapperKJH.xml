@@ -83,8 +83,8 @@
                     JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
                     JOIN common_code c ON t.priority_code = c.code_value
                     LEFT JOIN users u ON t.assignee_user_id = u.user_id
-                    WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId}
-                    AND t.is_deleted != 'Q1')
+                    WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
+                    AND t.is_deleted = 'Q2'
                     <if test="taskId != null and taskId != ''">
                         AND t.task_id = #{taskId}
                     </if>
@@ -288,9 +288,10 @@
     
 <!--   프로젝트의 담당자 추출-->
     <select id="getProjectDeveloper">
-        SELECT  u.user_id,
-                u.user_name,
-                r.role_name
+        SELECT DISTINCT
+        u.user_id   AS user_id,
+        u.user_name AS user_name,
+        r.role_name AS user_type
         FROM users u
         JOIN project_members pm ON u.user_id = pm.user_id
         AND pm.project_id = #{id}
@@ -298,7 +299,7 @@
         JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
         JOIN roles r ON pmr.role_id = r.role_id
         WHERE u.is_active = 'O1'
-        AND r.role_name = '개발자'
+        AND r.role_name NOT IN ('총괄PL', 'PM', 'PL')
     </select>
 
     <!--    업무 담당자 지정(미지정이었을경우)-->

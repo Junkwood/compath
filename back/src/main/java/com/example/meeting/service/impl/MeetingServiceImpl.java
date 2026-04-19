@@ -6,6 +6,7 @@ import com.example.meeting.mapper.MeetingMapper;
 import com.example.meeting.service.MeetingService;
 import com.example.task.dto.TaskReqDtoJJW;
 import com.example.task.mapper.TaskMapperJJW;
+import com.example.task.mapper.TaskMapperKJH;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class MeetingServiceImpl implements MeetingService {
 
     private final MeetingMapper mapper;
     private final TaskMapperJJW taskMapperJJW;
+    private final TaskMapperKJH taskMapperKJH;
 
     @Override
     public List<MeetingDTO> getMeetingType() {
@@ -152,8 +154,6 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     @Override
-// @Transactional을 메서드 레벨에서 제거하거나,
-// 클래스 상단에 붙어있다면 아래처럼 순수 로직만 남깁니다.
     public List<MeetingDTO> removeConnectTask(MeetingDTO dto) {
 
         // 1. 연결 업무 삭제
@@ -163,14 +163,17 @@ public class MeetingServiceImpl implements MeetingService {
         // 2. 조회가 아니라 '남은 개수'를 숫자로 직접 세버리세요 (가장 정확함)
         int meetingId = dto.getMeetingLogId();
 
-        // Mapper 인터페이스에 int getConnectCount(int meetingId) 하나 만드세요.
-        // 쿼리: SELECT COUNT(*) FROM meeting_tasks WHERE meeting_log_id = #{id}
         int count = mapper.getConnectCount(meetingId);
+        Integer taskId = dto.getTaskId();
 
         if (count == 0) {
             // 3. 개수가 0이면 확실하게 삭제
             mapper.removeNullMeeting(meetingId);
             return new ArrayList<>();
+        }
+
+        if(taskId != null) {
+            taskMapperKJH.modifyTaskStatus(taskId);
         }
 
         return mapper.getRecommandTask(meetingId);

@@ -96,6 +96,12 @@
         JOIN roles r ON pmr.role_id = r.role_id
         JOIN users u ON pm.user_id=u.user_id
         WHERE pm.project_id = #{id}
+        ORDER BY
+            CASE WHEN r.role_name = 'PM' THEN 1
+               WHEN r.role_name = '총괄PL' THEN 2
+               WHEN r.role_name = 'PL' THEN 3
+          ELSE 4
+        END, r.role_name
     </select>
 
 <!--    프로젝트 구성원 역할 삭제-->

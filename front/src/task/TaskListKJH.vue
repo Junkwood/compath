@@ -319,10 +319,12 @@
 <script setup>
 import { onBeforeMount, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
 import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
+import { useTaskStore } from "../stores/useTaskStore";
 import { useAuthStore } from "../stores/auth";
 import { changeDate } from "../utils/commonFunc";
 import ProjectSelectModal from "../components/SelectModal.vue";
@@ -330,6 +332,7 @@ import ProjectSelectModal from "../components/SelectModal.vue";
 const sidebarOpen = ref(false);
 const taskStore = usetaskKJHStore();
 const authStore = useAuthStore();
+const store = useTaskStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -405,7 +408,7 @@ onBeforeMount(async () => {
     userList.value.push({
       name: task.userName,
       value: task.userId,
-      userType: task.roleName,
+      userType: task.userType,
     });
   });
 
