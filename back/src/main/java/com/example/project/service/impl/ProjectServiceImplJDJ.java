@@ -21,10 +21,9 @@ public class ProjectServiceImplJDJ implements ProjectServiceJDJ {
 
     //프로젝트 전체목록 조회
     @Override
-    public List<ProjectListDto> getAllProject() {
-        return projectMapperJDJ.getAllProject();
+    public List<ProjectListDto> getAllProject(Integer userId) {
+        return projectMapperJDJ.getAllProject(userId);
     }
-
     //프로젝트 생성
     @Override
     public void registerProject(ProjectCreateDtoJDJ dto) {

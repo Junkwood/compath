@@ -94,7 +94,9 @@
           <div class="panel">
             <div class="panel-head list-head">
               <span class="panel-title">프로젝트 목록</span>
-              <span class="count-badge">총 {{ filteredProjects.length }}건</span>
+              <span class="count-badge"
+                >총 {{ filteredProjects.length }}건</span
+              >
             </div>
 
             <div class="panel-body list-body">
@@ -114,9 +116,7 @@
 
                   <tbody>
                     <tr v-if="listLoading">
-                      <td colspan="7" class="empty-cell">
-                        ⌛ 로딩중입니다.
-                      </td>
+                      <td colspan="7" class="empty-cell">⌛ 로딩중입니다.</td>
                     </tr>
 
                     <template v-else-if="pagedProjects.length > 0">
@@ -202,9 +202,11 @@ import Swal from "sweetalert2";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import api from "../utils/api";
+import { useAuthStore } from "../stores/auth";
 
 const sidebarOpen = ref(false);
 const router = useRouter();
+const authStore = useAuthStore();
 
 const listLoading = ref(false);
 const projectList = ref([]);
@@ -226,19 +228,19 @@ onBeforeMount(async () => {
 const fetchProjectList = async () => {
   listLoading.value = true;
 
-  // Swal.fire({
-  //   title: "잠시만 기다려주세요...",
-  //   html: "데이터를 불러오는 중입니다.",
-  //   allowOutsideClick: false,
-  //   showConfirmButton: false,
-  //   didOpen: () => {
-  //     Swal.showLoading();
-  //   },
-  // });
-
   try {
-    const res = await api.get("/ProjectList");
-    projectList.value = res.data || [];
+    const userId = authStore.user?.userId;
+
+    if (!userId) {
+      projectList.value = [];
+      return;
+    }
+
+    const res = await api.get("/ProjectList", {
+      params: { userId },
+    });
+
+    projectList.value = Array.isArray(res.data) ? res.data : [];
   } catch (err) {
     console.error("프로젝트 목록 조회 실패:", err);
     Swal.fire({
@@ -246,6 +248,7 @@ const fetchProjectList = async () => {
       title: "프로젝트 목록 조회 실패",
       text: "데이터를 불러오지 못했습니다.",
     });
+    projectList.value = [];
   } finally {
     listLoading.value = false;
     Swal.close();
