@@ -52,38 +52,6 @@
         <el-input v-model="form.description" type="textarea" :rows="3" />
       </el-form-item>
 
-      <el-form-item label="식별자 안내">
-        <div class="inherit-box">
-          <div class="inherit-row">
-            <span class="inherit-label">최상위 프로젝트 식별자</span>
-            <span class="inherit-value"> 자동 생성됩니다. </span>
-          </div>
-          <div class="inherit-row">
-            <span class="inherit-label">하위프로젝트 식별자</span>
-            <span class="inherit-value">
-              새 최상위 식별자 기준으로 자동 생성됩니다.
-            </span>
-          </div>
-        </div>
-      </el-form-item>
-
-      <el-form-item label="복사 기준">
-        <div class="inherit-box">
-          <div class="inherit-row">
-            <span class="inherit-label">프로젝트 기간</span>
-            <span class="inherit-value">원본 프로젝트 기간을 따릅니다.</span>
-          </div>
-          <div class="inherit-row">
-            <span class="inherit-label">공개 여부</span>
-            <span class="inherit-value">원본 프로젝트 설정을 따릅니다.</span>
-          </div>
-          <div class="inherit-row">
-            <span class="inherit-label">마일스톤 사용 여부</span>
-            <span class="inherit-value">원본 프로젝트 설정을 따릅니다.</span>
-          </div>
-        </div>
-      </el-form-item>
-
       <el-form-item label="복사 옵션">
         <div class="copy-option-box">
           <el-checkbox v-model="form.copyMembers">구성원 복사</el-checkbox>

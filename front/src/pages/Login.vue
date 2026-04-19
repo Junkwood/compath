@@ -56,8 +56,8 @@
           </p>
           <p class="text-sm text-slate-500 dark:text-slate-400 mb-8">
             <span>관리자 계정 (id : 1001, pw:1234)</span><br />
-            <span>PM 계정 (id : 1003, pw:1234)</span><br />
-            <span>일반 개발자 계정 (id : 1002, pw:1234)</span>
+            <span>PM 계정 (id : 1024, pw:1234)</span><br />
+            <span>일반 개발자 계정 (id : 1025, pw:1234)</span>
           </p>
           <!-- 오류 메시지 -->
           <div
