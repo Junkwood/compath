@@ -5,7 +5,7 @@
       @update:modelValue="$emit('update:modelValue', $event)"
       :config="config"
       :disabled="disabled"
-      class="w-full pl-9 pr-3 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-[10px] outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_3px_rgba(148,163,184,0.15)] disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
+      class="w-full pl-9 pr-3 py-2 text-sm font-normal text-gray-700 bg-white border border-gray-200 rounded-[10px] outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_3px_rgba(148,163,184,0.15)] disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
       placeholder="날짜를 선택하세요"
     />
     <div
@@ -40,7 +40,7 @@ defineProps({
 
 defineEmits(["update:modelValue", "change"]);
 
-const reorderHeader = (instance) => {
+const reorderHeader = instance => {
   const monthEl = instance.monthNav;
   if (!monthEl) return;
   const year = monthEl.querySelector(".numInputWrapper");
@@ -55,7 +55,7 @@ const config = {
   dateFormat: "Y-m-d",
   disableMobile: true,
   locale: Korean,
-  disable: [(date) => date.getDay() === 0 || date.getDay() === 6],
+  disable: [date => date.getDay() === 0 || date.getDay() === 6],
 };
 </script>
 

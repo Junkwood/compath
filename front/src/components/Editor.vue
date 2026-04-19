@@ -12,6 +12,7 @@
             :editor="editor"
             :config="editorConfig"
             :disabled="isModified"
+            class="text-xs text-gray-400 font-light self-center"
           />
         </div>
       </div>
@@ -73,7 +74,7 @@ const props = defineProps({
 
 const currentContent = computed({
   get: () => props.modelValue,
-  set: (value) => emit("update:currentPage", value),
+  set: value => emit("update:currentPage", value),
 });
 
 const isModified = computed({
@@ -216,13 +217,10 @@ const editorConfig = computed(() => {
         reversed: true,
       },
     },
-    menuBar: {
-      isVisible: isModified.value ? false : true,
-    },
+
     initialData: "",
     language: "ko",
     translations: [translations],
-    placeholder: "내용을 입력해주세요.",
   };
 });
 
@@ -232,66 +230,117 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 에디터 높이 조절 등 공통 스타일 */
+/* ── 에디터 전체 width 문제 해결 ── */
+:deep(.ck.ck-editor),
+:deep(.ck-editor__main),
 :deep(.ck-editor__editable) {
-  min-height: 300px;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-/* 1. 에디터 내부 리스트(번호, 불렛)의 왼쪽 여백 확보 */
+/* ── 리스트 (번호/불릿) 여백 ── */
 :deep(.ck-content ul),
 :deep(.ck-content ol) {
-  padding-left: 40px !important; /* 번호나 점이 보일 공간 확보 */
+  padding-left: 24px !important;
   margin-left: 0;
 }
 
-/* 에디터 내부의 제목(Heading) 스타일 강제 부여 */
+/* ── Heading 스타일 ── */
 :deep(.ck-content h1) {
-  font-size: 2.1em !important;
-  font-weight: bold !important;
-  margin-top: 1.2em;
-  display: block !important;
+  font-size: 1.8em;
+  font-weight: 700;
+  margin-top: 1em;
 }
 :deep(.ck-content h2) {
-  font-size: 1.8em !important;
-  font-weight: bold !important;
-  margin-top: 1em;
-  display: block !important;
-}
-
-:deep(.ck-content h3) {
-  font-size: 1.5em !important;
-  font-weight: bold !important;
+  font-size: 1.5em;
+  font-weight: 700;
   margin-top: 0.8em;
-  display: block !important;
 }
-
+:deep(.ck-content h3) {
+  font-size: 1.3em;
+  font-weight: 600;
+  margin-top: 0.6em;
+}
 :deep(.ck-content h4) {
-  font-size: 1.2em !important;
-  font-weight: bold !important;
-  display: block !important;
+  font-size: 1.1em;
+  font-weight: 600;
 }
 
-/* 문단(p) 스타일 */
+/* ── 본문 텍스트 ── */
 :deep(.ck-content p) {
-  font-size: 1em;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #374151;
+  margin: 0 0 6px 0;
 }
 
-:deep(.write .ck.ck-editor__main > .ck-editor__editable) {
-  border-radius: 10px !important;
-  border: 1px solid #e2e8f0 !important;
-  background: #f8fafc !important;
-  box-shadow: none !important;
+/* ── 기본 에디터 스타일 (작성 모드) ── */
+:deep(.ck.ck-editor__main > .ck-editor__editable) {
+  min-height: 260px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 12px;
+  font-size: 14px;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
-  font-size: 13px;
-  padding: 12px !important;
 }
 
-/* :deep([data-v-9a196164] .ck.ck-editor__main > .ck-editor__editable:focus) {
-  border-color: #94a3b8 !important;
-  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15) !important;
-  background: #fff !important;
-} */
+/* 포커스 */
+:deep(.ck.ck-editor__main > .ck-editor__editable:focus) {
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
+  background: #fff;
+}
+
+:deep(.write .ck.ck-editor__main > .ck-editor__editable) {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  min-height: auto !important;
+  box-shadow: none !important;
+}
+
+/* 툴바 제거 */
+:deep(.write .ck-editor__top) {
+  display: none !important;
+}
+
+/* ── 테이블 스타일 ── */
+:deep(.ck-content table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+
+:deep(.ck-content td),
+:deep(.ck-content th) {
+  border: 1px solid #e5e7eb;
+  padding: 8px;
+  font-size: 13px;
+}
+
+/* ── 링크 스타일 ── */
+:deep(.ck-content a) {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* ── blockquote ── */
+:deep(.ck-content blockquote) {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 12px;
+  color: #6b7280;
+  margin: 10px 0;
+}
+
+/* ── 코드 블럭 ── */
+:deep(.ck-content pre) {
+  background: #1e293b;
+  color: #f1f5f9;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  overflow-x: auto;
+}
 </style>

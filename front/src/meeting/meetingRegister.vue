@@ -33,7 +33,7 @@
             목록으로
           </button>
         </div>
-        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-8xl mx-auto">
           <div class="grid grid-cols-10 gap-6">
             <div :class="isModified ? 'col-span-10 lg' : 'col-span-7'">
               <el-form
@@ -47,20 +47,28 @@
                 <div
                   class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100"
                 >
-                  <el-form-item label="제목" prop="title" class="mb-6">
+                  <el-form-item
+                    label="제목"
+                    prop="title"
+                    class="mb-6 text-sm font-semibold text-gray-700"
+                  >
                     <el-input
                       placeholder="회의 제목을 입력하세요"
                       v-model="form.title"
-                      class="w-full"
+                      class="w-full text-xs text-gray-400 font-medium self-center"
                     />
                   </el-form-item>
 
                   <div class="grid grid-cols-2 gap-6">
-                    <el-form-item label="회의 유형" prop="meetingType">
+                    <el-form-item
+                      label="회의 유형"
+                      prop="meetingType"
+                      class="text-sm font-semibold text-gray-700"
+                    >
                       <el-select
                         v-model="form.meetingType"
                         placeholder="유형을 선택하세요"
-                        class="w-full"
+                        class="w-full text-xs text-gray-400 font-medium self-center"
                       >
                         <el-option
                           v-for="type in meetingType"
@@ -70,35 +78,58 @@
                         />
                       </el-select>
                     </el-form-item>
-                    <el-form-item label="작성자">
-                      <el-input disabled v-model="form.author" class="w-full" />
+                    <el-form-item
+                      label="작성자"
+                      class="text-sm font-semibold text-gray-700"
+                    >
+                      <el-input
+                        disabled
+                        v-model="form.author"
+                        class="w-full text-xs text-gray-400 font-medium self-center"
+                      />
                     </el-form-item>
                   </div>
 
                   <div class="grid grid-cols-2 gap-6">
-                    <el-form-item label="회의 일시" prop="date">
+                    <el-form-item
+                      label="회의 일시"
+                      prop="date"
+                      class="text-sm font-semibold text-gray-700"
+                    >
                       <TaskDatePicker
-                        placeholder="시작일 선택"
                         v-model="form.date"
                         @change="calcEstTime(true)"
+                        class="text-xs text-gray-400 font-medium self-center"
                       />
                     </el-form-item>
-                    <el-form-item label="회의 장소" prop="meetingRoom">
+                    <el-form-item
+                      label="회의 장소"
+                      prop="meetingRoom"
+                      class="text-sm font-semibold text-gray-700"
+                    >
                       <el-input
                         placeholder="회의 장소를 입력하세요"
                         v-model="form.meetingRoom"
-                        class="w-full"
+                        class="w-full text-xs text-gray-400 font-medium self-center"
                       />
                     </el-form-item>
                   </div>
 
                   <div class="mb-6">
-                    <Editor
-                      class="w-full"
-                      :modelValue="form.content"
-                      :isRead="isRead"
-                      @update:current-page="form.content = $event"
-                    />
+                    <el-form-item
+                      label="내용"
+                      prop="content"
+                      class="text-sm font-semibold text-gray-700"
+                    >
+                      <div class="editor-wrap">
+                        <Editor
+                          :modelValue="form.content"
+                          :isRead="isRead"
+                          @update:current-page="form.content = $event"
+                          class="text-xs text-gray-400 font-medium self-center"
+                        />
+                      </div>
+                    </el-form-item>
                   </div>
 
                   <div v-if="!isModified" class="mb-8">
@@ -465,7 +496,7 @@ const projectInfo = ref({
 
 watch(
   () => recommandTask.value,
-  (newVal) => {
+  newVal => {
     connectTaskList.value = newVal;
   },
 );
@@ -476,14 +507,14 @@ const openConnectTaskModal = () => {
 };
 
 // 모달창 연결버튼
-const closeModal = (val) => {
+const closeModal = val => {
   console.log(val);
   openConnectModal.value = false;
   connectTaskList.value = meetingStore.detailConnectList;
 };
 
 // 공지사항 생성 버튼
-const submitForm = async (formEl) => {
+const submitForm = async formEl => {
   console.log(formEl.validate);
   await formEl.validate(async (valid, fields) => {
     if (valid) {
@@ -514,7 +545,7 @@ const submitForm = async (formEl) => {
         );
 
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach((file) => {
+          fileList.value.forEach(file => {
             formData.append("files", file.raw);
           });
         }
@@ -532,14 +563,14 @@ const submitForm = async (formEl) => {
           ];
 
           if (alarmList.value.length > 0) {
-            alarmList.value.forEach((al) => {
+            alarmList.value.forEach(al => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
               });
             });
           } else {
-            memberList.value.forEach((al) => {
+            memberList.value.forEach(al => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
@@ -593,7 +624,7 @@ const submitForm = async (formEl) => {
         );
 
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach((file) => {
+          fileList.value.forEach(file => {
             if (file.isExisting == null) {
               console.log(file);
               formData.append("files", file.raw);
@@ -622,17 +653,17 @@ const submitForm = async (formEl) => {
 };
 
 // 알림대상 모달 추가버튼 데이터 받기\
-const memberInsert = (mem) => {
+const memberInsert = mem => {
   modalOpen.value = false;
   alarmList.value = mem;
 };
 
-const handleClose = (tag) => {
+const handleClose = tag => {
   alarmList.value.splice(alarmList.value.indexOf(tag), 1);
 };
 
 // 회의록 내용 요약 받기
-const getContentByGemmini = async (val) => {
+const getContentByGemmini = async val => {
   const formData = new FormData();
   if (!isVoice.value) {
     console.log(val);
@@ -652,7 +683,7 @@ const getContentByGemmini = async (val) => {
 
     formData.append("prompt", prompt);
   } else {
-    voiceList.value.forEach((vo) => {
+    voiceList.value.forEach(vo => {
       formData.append("files", vo.raw);
     });
   }
@@ -753,7 +784,7 @@ onBeforeMount(async () => {
     form.attachmentGroupId = meetingInfo.attachmentGroupId;
 
     if (attachment) {
-      attachment.forEach((att) => {
+      attachment.forEach(att => {
         let obj = {
           name: att.fileName,
           uid: att.attachmentId,
@@ -805,8 +836,8 @@ const registerTask = async () => {
   connectTaskList.value = meetingStore.recommandTask;
 
   todoList.value = geminiTaskList.value.filter(
-    (todo) =>
-      !connectTaskList.value.some((sel) => Object.keys(todo)[0] == sel.title),
+    todo =>
+      !connectTaskList.value.some(sel => Object.keys(todo)[0] == sel.title),
   );
 
   closeCreateModal();
@@ -821,10 +852,10 @@ const registerTask = async () => {
 };
 
 // 연결 업무 x 버튼
-const delTask = async (task) => {
+const delTask = async task => {
   console.log(task);
   let result = geminiTaskList.value.some(
-    (li) => Object.keys(li)[0] == task.title,
+    li => Object.keys(li)[0] == task.title,
   );
 
   console.log(result);
@@ -840,8 +871,8 @@ const delTask = async (task) => {
   connectTaskList.value = meetingStore.connectTaskList;
 
   todoList.value = geminiTaskList.value.filter(
-    (todo) =>
-      !connectTaskList.value.some((sel) => Object.keys(todo)[0] == sel.title),
+    todo =>
+      !connectTaskList.value.some(sel => Object.keys(todo)[0] == sel.title),
   );
 };
 // 알림대상 선택
@@ -899,7 +930,7 @@ const rules = reactive({
   ],
 });
 
-const resetForm = (formEl) => {
+const resetForm = formEl => {
   if (!formEl) return;
   formEl.resetFields();
 };
@@ -927,7 +958,7 @@ const removeFile = async (file, index) => {
     await attachmentStore.removeFile(obj);
 
     fileList.value = [];
-    attachmentStore.removeResult.forEach((att) => {
+    attachmentStore.removeResult.forEach(att => {
       let obj = {
         name: att.fileName,
         uid: att.attachmentId,
@@ -1003,6 +1034,7 @@ const removeFile = async (file, index) => {
   border-color: #94a3b8;
   color: #0f172a;
 }
+
 /* 1. Element Plus 입력창/텍스트영역 기본 스타일 (요청하신 deep 유지) */
 :deep(.el-input__inner) {
   height: 42px;
@@ -1175,5 +1207,11 @@ const removeFile = async (file, index) => {
 /* 추가로 TaskDatePicker 컴포넌트 자체가 100%인지 확인 */
 :deep(.el-form-item__content > *) {
   width: 100% !important;
+}
+
+.editor-wrap {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
 }
 </style>

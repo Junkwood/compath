@@ -65,7 +65,9 @@
           <!-- 공지 본문 -->
           <div class="panel notice-panel">
             <div class="notice-article">
-              <div class="notice-top-row">
+              <div class="flex flex-row gap-2">
+                <h2 class="notice-title">{{ noticeInfo.title }}</h2>
+
                 <div class="notice-badge-wrap">
                   <span
                     v-if="noticeInfo.isPinned === 'B1'"
@@ -73,21 +75,25 @@
                   >
                     긴급
                   </span>
-                  <span class="notice-badge badge-category">
+                  <!-- <span v-else class="notice-badge badge-category">
                     {{ noticeInfo.roleName || "일반" }}
-                  </span>
-                  <span
+                  </span> -->
+                  <!-- <span
                     v-if="noticeInfo.isDeleted === 'Q1'"
                     class="notice-badge badge-disabled"
                   >
                     비활성
-                  </span>
+                  </span> -->
                 </div>
               </div>
 
-              <h2 class="notice-title">{{ noticeInfo.title }}</h2>
-
               <div class="notice-meta">
+                <span class="meta-item">
+                  <span class="meta-label">카테고리</span>
+                  <span class="notice-badge badge-category">{{
+                    noticeInfo.typeName == null ? "전체" : noticeInfo.typeName
+                  }}</span>
+                </span>
                 <span class="meta-item">
                   <span class="meta-label">작성자</span>
                   <span class="meta-value">{{
@@ -107,7 +113,11 @@
 
               <div class="notice-content-wrap">
                 <div class="notice-content">
-                  {{ noticeInfo.content || "내용이 없습니다." }}
+                  <Editor
+                    class="w-full"
+                    :modelValue="noticeInfo.content"
+                    :isRead="isRead"
+                  />
                 </div>
               </div>
 
@@ -256,6 +266,7 @@ import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { Lock } from "@element-plus/icons-vue";
 import Swal from "sweetalert2";
+import Editor from "../components/Editor.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -273,6 +284,7 @@ let taskPjList = ref([]);
 const attachmentList = ref([]);
 
 const memberList = ref([]); // 구성원 테이블
+const isRead = true;
 
 // 목록으로
 const goBack = () => {
@@ -325,7 +337,7 @@ const lockNotice = async () => {
 };
 
 // 파일 다운로드
-const attachmentDownload = async (file) => {
+const attachmentDownload = async file => {
   console.log(file);
   await attachmentStore.downloadFile(file);
 };
@@ -363,10 +375,10 @@ const isAssignee = computed(() => {
   if (!currentUserId) return false;
 
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   return isPmPl || isManager;
 });

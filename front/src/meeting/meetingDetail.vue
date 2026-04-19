@@ -260,7 +260,7 @@ const openModal = () => {
 };
 
 // 모달창 연결버튼
-const closeModal = (val) => {
+const closeModal = val => {
   console.log(val);
   openConnectModal.value = false;
   connectList.value = meetingStore.detailConnectList;
@@ -316,7 +316,7 @@ const lockMeeting = async () => {
 };
 
 // 연결 업무 상세페이지 이동
-const gotaskDetail = (task) => {
+const gotaskDetail = task => {
   router.push({
     name: "taskDetail",
     params: { projectId: projectId, subProjectId: subId, taskId: task.taskId },
@@ -324,7 +324,7 @@ const gotaskDetail = (task) => {
 };
 
 // 연결 업무 해제
-const delDtailConnect = async (task) => {
+const delDtailConnect = async task => {
   console.log(task);
   let obj = {
     meetingtaskId: task.meetingtaskId,
@@ -335,7 +335,7 @@ const delDtailConnect = async (task) => {
 };
 
 // 파일 다운로드
-const attachmentDownload = async (file) => {
+const attachmentDownload = async file => {
   console.log(file);
   await attachmentStore.downloadFile(file);
 };
@@ -373,71 +373,71 @@ const isAssignee = computed(() => {
   if (!currentUserId) return false;
 
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   return isPmPl || isManager;
 });
 </script>
 <style scoped>
 /* ── 상단 헤더 카드 ── */
+
 .sub-header {
   background: #fff;
-  padding: 12px 24px;
+  padding: 15px 24px;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
   z-index: 30;
 }
+
 .breadcrumb {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
 }
+
 .bc-home {
   color: #9ca3af;
 }
+
 .bc-sep {
   color: #d1d5db;
 }
+
 .bc-cur {
   color: #111827;
   font-weight: 600;
 }
 
+/* ── 페이지 전체 간격 ── */
 .page-container {
-  padding: 24px 30px 24px 30px;
+  padding: 24px 30px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
+/* ── 프로젝트 상단 영역 ── */
 .pg-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 20px 24px;
+  padding: 16px 20px;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.pg-left {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .proj-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .proj-name {
@@ -450,26 +450,27 @@ const isAssignee = computed(() => {
   font-size: 13px;
   color: #6b7280;
 }
+
+/* ── 상단 헤더 카드 ── */
 .detail-header-card {
   background: #fff;
-  border: 1px solid #e8edf2;
-  border-radius: 16px;
-  padding: 28px 32px 24px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 22px 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .detail-main-title {
-  font-size: 25px;
+  font-size: 22px;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 20px 0;
-  letter-spacing: -0.02em;
+  margin-bottom: 14px;
 }
 
 .detail-meta-row {
   display: grid;
-  gap: 48px;
-  grid-column: 4;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
 }
 
 .detail-meta-item {
@@ -479,23 +480,21 @@ const isAssignee = computed(() => {
 }
 
 .detail-meta-label {
-  font-size: 13px;
-  color: #94a3b8;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-size: 12px;
+  color: #9ca3af;
 }
 
 .detail-meta-value {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
   color: #1e293b;
 }
 
-/* ── 하단 2단 레이아웃 ── */
+/* ── 하단 레이아웃 ── */
 .detail-body-row {
   display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 16px;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
   align-items: start;
 }
 
@@ -508,134 +507,127 @@ const isAssignee = computed(() => {
 /* ── 회의 내용 카드 ── */
 .detail-content-card {
   background: #fff;
-  border: 1px solid #e8edf2;
-  border-radius: 16px;
-  padding: 24px 28px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  min-height: 360px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .detail-section-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 16px 0;
+  margin-bottom: 12px;
 }
 
-.detail-section-task-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #0f172a;
+/* 내용 영역 강조 */
+.detail-content-body {
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
 }
 
-.detail-textarea {
-  border-radius: 10px !important;
-  border: none !important;
-  background: transparent !important;
-  resize: none;
-  font-size: 14px;
-  color: #334155;
-  line-height: 1.75;
-  padding: 0 !important;
+/* ── 첨부파일 ── */
+.detail-content-card label {
+  font-size: 13px;
+  color: #6b7280;
 }
 
-/* ── 연결된 일감 카드 ── */
+.mt-6 {
+  margin-top: 20px;
+}
+
+/* ── 연결된 업무 카드 ── */
 .detail-task-card {
   background: #fff;
-  border: 1px solid #e8edf2;
-  border-radius: 16px;
-  padding: 24px 24px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  min-height: 566.5px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .detail-task-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.detail-section-task-title {
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .detail-task-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
+/* 버튼 */
 .task-btn-secondary {
-  height: 30px;
-  padding: 0 14px;
+  height: 28px;
+  padding: 0 12px;
   font-size: 12px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1.5px solid #64b5f6;
-  background: #e3f2fd;
-  color: #1565c0;
-  transition: all 0.15s;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #2563eb;
 }
 
 .task-btn-secondary:hover {
-  background: #bbdefb;
+  background: #dbeafe;
 }
 
 .task-btn-primary {
-  height: 30px;
-  padding: 0 14px;
+  height: 28px;
+  padding: 0 12px;
   font-size: 12px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  border: none;
-  background: #2e7d32;
+  border-radius: 6px;
+  background: #16a34a;
   color: #fff;
-  transition: all 0.15s;
 }
 
 .task-btn-primary:hover {
-  background: #1b5e20;
+  background: #15803d;
 }
 
-/* ── 일감 목록 ── */
+/* ── 업무 리스트 ── */
 .detail-task-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .task-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border: 1px solid #e8edf2;
-  border-radius: 10px;
+  padding: 10px 14px;
+  border: 1px solid #eef2f7;
+  border-radius: 8px;
+  background: #fff;
   cursor: pointer;
   transition: all 0.15s;
-  background: #f8fafc;
 }
 
 .task-item:hover {
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  background: #f8fafc;
+  border-color: #c7d2fe;
 }
 
 .task-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
   color: #1e293b;
   flex: 1;
 }
 
 .task-status {
   font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
-  background: #fef3c7;
-  color: #92400e;
-  margin-right: 10px;
+  background: #eef2ff;
+  color: #4f46e5;
+  margin-right: 8px;
 }
 
 .task-arrow {
@@ -643,161 +635,76 @@ const isAssignee = computed(() => {
   color: #94a3b8;
 }
 
+/* 빈 상태 */
 .task-empty {
-  padding: 200px 20px;
+  padding: 120px 10px;
   text-align: center;
   font-size: 13px;
-  color: #94a3b8;
+  color: #9ca3af;
 }
 
-/* ── 하단 버튼 영역 ── */
-.detail-footer-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* ── 공통 버튼 ── */
-.btn-navy {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #1e3a5f;
+/* ── 버튼 (상단) ── */
+.btn-modify {
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%);
   color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
-}
-
-.btn-navy:hover {
-  background: #162d4a;
-  transform: translateY(-1px);
-}
-
-.btn-green {
+  box-shadow: 0 4px 12px rgba(27, 92, 156, 0.22);
   height: 38px;
-  padding: 0 20px;
+  padding: 0 16px;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
   cursor: pointer;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
   border: none;
-  background: #1882c9;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(24, 130, 201, 0.25);
-}
-
-.btn-green:hover {
-  background: #60aee2;
-  transform: translateY(-1px);
-}
-
-/* 인풋 전체 라운드 */
-:deep(.input) {
-  border-radius: 10px !important;
-  border: 1px solid #e2e8f0 !important;
-  background: #f8fafc !important;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-  font-size: 13px;
-}
-:deep(.input:focus) {
-  border-color: #94a3b8 !important;
-  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15) !important;
-  background: #fff !important;
-  outline: none;
-}
-:deep(.input:disabled) {
-  background: #f1f5f9 !important;
-  color: #94a3b8 !important;
-}
-:deep(select.input) {
-  border-radius: 10px !important;
-  appearance: auto !important;
-  -webkit-appearance: auto !important;
-  padding-right: 28px !important;
-}
-:deep(textarea.input) {
-  border-radius: 10px !important;
-}
-:deep(.input:disabled) {
-  background: #f1f5f9 !important;
-  color: #475569 !important; /* #94a3b8 → #475569 으로 변경! */
-}
-
-/* ── 반응형 ── */
-@media (max-width: 768px) {
-  .detail-meta-row {
-    gap: 20px;
-  }
-  .detail-header-card {
-    padding: 20px;
-  }
-  .detail-content-card,
-  .detail-task-card {
-    padding: 18px;
-  }
-}
-
-:deep(.btn-modify) {
-  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
-  color: white !important;
-  height: 40px;
-  padding: 0 18px;
   font-size: 13px;
   font-weight: 700;
-  border-radius: 8px;
   cursor: pointer;
-  border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .btn-modify:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-}
-/* 돌아가기 버튼 */
-.btn-back {
-  height: 40px;
-  padding: 0 18px;
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #374151;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-.btn-back:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  color: #111827;
+  transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 
 .btn-lock {
-  height: 40px;
-  padding: 0 18px;
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid #e5e7eb;
-  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: #ef4444;
   color: #fff;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn-lock:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
+  transform: translateY(-1px);
+  background: #dc2626;
+}
+
+.btn-back {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid #dbe4f0;
+  background: #fff;
+  color: #1b5c9c;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.btn-back:hover {
+  background: #eff6ff;
+  border-color: #bfd3f6;
 }
 </style>
