@@ -93,7 +93,13 @@
                 </div>
               </div>
               <div class="grid grid-cols-20 gap-4">
-                <div class="col-span-17">
+                <div
+                  :class="
+                    isModified && form.commentCount == 0
+                      ? 'col-span-17'
+                      : 'col-span-18'
+                  "
+                >
                   <el-form-item
                     label="제목"
                     class="block text-sm font-medium mb-1"
@@ -106,7 +112,13 @@
                     />
                   </el-form-item>
                 </div>
-                <div class="self-center col-span-3">
+                <div
+                  :class="
+                    isModified && form.commentCount == 0
+                      ? 'self-center col-span-3'
+                      : 'self-center col-span-2'
+                  "
+                >
                   <label class="mx-2">
                     <input
                       type="checkbox"
@@ -116,7 +128,7 @@
                     />
                     <span class="text-lg">📌</span><span>상단고정</span>
                   </label>
-                  <label>
+                  <label v-if="isModified && form.commentCount == 0">
                     <input
                       type="checkbox"
                       :value="form.isComment"
@@ -129,12 +141,13 @@
               </div>
               <div>
                 <el-form-item label="내용" prop="content">
-                  <el-input
-                    :rows="15"
-                    class="input w-full"
-                    v-model="form.content"
-                    type="textarea"
-                  />
+                  <div class="editor-wrap">
+                    <Editor
+                      :modelValue="form.content"
+                      :isRead="isRead"
+                      @update:current-page="form.content = $event"
+                    />
+                  </div>
                 </el-form-item>
               </div>
               <div class="mb-8">
@@ -265,7 +278,9 @@ import Swal from "sweetalert2";
 import { useDocumentStore } from "../stores/document";
 import { useAttachmentStore } from "../stores/attachment";
 import DocumentNotificationModal from "./DocumentNotificationModal.vue";
+import Editor from "../components/Editor.vue";
 
+const isRead = false;
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
@@ -299,19 +314,19 @@ const memberList = ref([]); // 구성원 테이블
 const alarmList = ref([]); // 알림대상 추가된 회원 목록
 
 // 상단고정 체크시
-const checkedPin = (event) => {
+const checkedPin = event => {
   form.isPinned = event.target.checked;
   console.log("상단고정", form.isPinned);
 };
 
 // 댓글잠금 체크시
-const checkedComment = (event) => {
+const checkedComment = event => {
   form.isComment = event.target.checked;
   console.log("댓글잠금", form.isComment);
 };
 
 // 공지사항 생성 버튼
-const submitForm = async (formEl) => {
+const submitForm = async formEl => {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
       // 공지사항 등록
@@ -337,7 +352,7 @@ const submitForm = async (formEl) => {
 
         // 첨부파일 있을 경우 담기
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach((file) => {
+          fileList.value.forEach(file => {
             formData.append("files", file.raw);
           });
         }
@@ -355,14 +370,14 @@ const submitForm = async (formEl) => {
           ];
 
           if (alarmList.value.length > 0) {
-            alarmList.value.forEach((al) => {
+            alarmList.value.forEach(al => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
               });
             });
           } else {
-            memberList.value.forEach((al) => {
+            memberList.value.forEach(al => {
               alarmArr.push({
                 receiverId: al.userId,
                 notificationId: "",
@@ -399,7 +414,7 @@ const submitForm = async (formEl) => {
           content: form.content,
           isPinned: form.isPinned == true ? "O1" : "O2",
           isComment: form.isComment == true ? "O2" : "O1",
-          category: form.roleId == "전체" ? null : form.roleId,
+          category: form.typeId == "전체" ? null : form.typeId,
           isEditorUserId: userInfo.value.userId,
           attachmentGroupId:
             fileList.value.length > 0 ? form.attachmentGroupId : null,
@@ -414,7 +429,7 @@ const submitForm = async (formEl) => {
         );
 
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach((file) => {
+          fileList.value.forEach(file => {
             if (file.isExisting == null) {
               console.log(file);
               formData.append("files", file.raw);
@@ -444,12 +459,12 @@ const submitForm = async (formEl) => {
 };
 
 // 알림대상 모달 추가버튼 데이터 받기\
-const memberInsert = (mem) => {
+const memberInsert = mem => {
   modalOpen.value = false;
   alarmList.value = mem;
 };
 
-const handleClose = (tag) => {
+const handleClose = tag => {
   alarmList.value.splice(alarmList.value.indexOf(tag), 1);
 };
 
@@ -471,8 +486,10 @@ onBeforeMount(async () => {
     await documentStore.getDocumentById(documentId);
     let attachment = documentStore.documentDetail.attachmentList;
     let documentInfo = documentStore.documentDetail.documentInfo.documentInfo;
+    let commentCount =
+      documentStore.documentDetail.documentInfo.commentInfo.length;
     // 폼에 대입
-    form.roleId =
+    form.typeId =
       documentInfo.category == null ? "전체" : documentInfo.category;
     form.author = documentInfo.userName;
     form.date = documentInfo.createdAt;
@@ -481,9 +498,10 @@ onBeforeMount(async () => {
     form.isPinned = documentInfo.isPinned == "O1" ? true : false;
     form.isComment = documentInfo.isComment == "O1" ? false : true;
     form.attachmentGroupId = documentInfo.attachmentGroupId;
+    form.commentCount = commentCount;
 
     if (attachment != null) {
-      attachment.forEach((att) => {
+      attachment.forEach(att => {
         let obj = {
           name: att.fileName,
           uid: att.attachmentId,
@@ -560,7 +578,7 @@ const rules = reactive({
   ],
 });
 
-const resetForm = (formEl) => {
+const resetForm = formEl => {
   if (!formEl) return;
   formEl.resetFields();
 };
@@ -581,7 +599,7 @@ const removeFile = async (file, index) => {
     await attachmentStore.removeFile(obj);
 
     fileList.value = [];
-    attachmentStore.removeResult.forEach((att) => {
+    attachmentStore.removeResult.forEach(att => {
       let obj = {
         name: att.fileName,
         uid: att.attachmentId,
@@ -870,5 +888,14 @@ const removeFile = async (file, index) => {
   background: #f8fafc;
   color: #1e293b;
   border-color: #1e293b;
+}
+.editor-wrap {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+:deep(.el-form-item__content) {
+  display: contents;
 }
 </style>

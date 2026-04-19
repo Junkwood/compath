@@ -47,13 +47,13 @@
                p.project_name,
                p.start_date,
                p.end_date,
-               r.role_name,
+               t.type_name,
                c.code_name AS pinned_name,
                u.user_name,
                n.attachment_group_id
         FROM notices n
         JOIN projects p ON p.project_id = n.project_id
-        JOIN roles r ON r.role_id = n.category
+        LEFT JOIN task_types t ON n.category = t.task_type_id
         JOIN common_code c ON n.is_pinned = c.code_value
         JOIN users u ON u.user_id = n.created_by
         WHERE n.notice_id = #{id}

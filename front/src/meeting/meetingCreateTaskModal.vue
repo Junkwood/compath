@@ -1,12 +1,11 @@
 <template>
   <el-dialog
-    v-model="visible"
+    :model-value="true"
     title=""
     width="1000px"
     height="100"
     :close-on-click-modal="false"
     class="custom-dialog"
-    @close="handleClose"
   >
     <main class="grow">
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 p-3">
@@ -122,16 +121,21 @@
             </p>
           </div>
           <div v-if="hasMilestone">
-            <label class="block text-sm font-medium mb-1"
-              >마일스톤 <span class="text-red-500">*</span></label
+            <label class="field-label"
+              >마일스톤 <span class="required">*</span></label
             >
-            <input
-              v-model="form.milestone"
-              disabled
-              class="input w-full bg-gray-100"
-              placeholder="자동 선택됨"
-            />
+            <select v-model="form.milestoneId" class="input w-full">
+              <option value="">마일스톤 선택</option>
+              <option
+                v-for="item in visibleMilestoneList"
+                :key="item.value"
+                :value="item.value"
+              >
+                {{ item.name }}
+              </option>
+            </select>
           </div>
+
           <ProjectSelectModal
             v-if="hasMilestone"
             v-model="milestoneModal"
@@ -180,7 +184,7 @@
 </template>
 
 <script setup>
-import { onMounted, defineProps, defineEmits, watch } from "vue";
+import { onMounted, defineProps, defineEmits, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "../stores/auth";
@@ -213,6 +217,10 @@ const {
 } = storeToRefs(store);
 const { selectMilestone, onPriorityChange, calcEstTime, resetForm } = store;
 
+const visibleMilestoneList = computed(() =>
+  milestoneList.value.filter(m => m.statusCode !== "e3"),
+);
+
 onMounted(async () => {
   await store.initCreate(
     route.params.projectId || route.query.projectId,
@@ -228,9 +236,9 @@ const handleSubmit = async () => {
     createdBy: Number(authStore.user?.userId),
     progressRate: 0,
   };
-  console.log(obj);
   try {
     await meetingStore.registerRecommandTask(obj);
+    resetForm();
     emit("registerTask");
   } catch (e) {
     alert(e.message || "등록에 실패했습니다. 입력값을 확인해 주세요.");
@@ -246,7 +254,7 @@ const closeModal = () => {
 
 watch(
   () => props.taskInfo,
-  (newVal) => {
+  newVal => {
     form.value.title = Object.keys(newVal)[0];
     form.value.content = Object.values(newVal)[0];
     form.value.meetingLogId = newVal.meetingLogId;

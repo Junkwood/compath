@@ -69,4 +69,8 @@ public class TaskListDTOKJH {
 
     private String search;
 
+//    담당자 미지정
+    private String userType;
+
+
 }

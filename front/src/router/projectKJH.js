@@ -10,7 +10,6 @@ const projectRoutes1 = [
     path: "/project/:projectId/setting",
     name: "projectSetting",
     component: () => import("../project/ProjectSettingKJH.vue"),
-    props: true,
   },
 ];
 export default projectRoutes1;

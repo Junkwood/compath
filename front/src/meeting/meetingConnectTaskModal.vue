@@ -81,7 +81,7 @@
               {{ task.title }} #{{ task.taskId }}
             </span>
             <el-tag
-              :type="statusType(task.taskStatusId)"
+              :type="task.taskStatusType"
               size="small"
               effect="light"
               class="!rounded-full"
@@ -210,11 +210,11 @@ const closeModalTask = () => {
 const isPageAllSelected = computed(
   () =>
     allTasks.value.length > 0 &&
-    allTasks.value.every((t) => selectedIds.has(t.taskId)),
+    allTasks.value.every(t => selectedIds.has(t.taskId)),
 );
 const isPageIndeterminate = computed(
   () =>
-    allTasks.value.some((t) => selectedIds.has(t.taskId)) &&
+    allTasks.value.some(t => selectedIds.has(t.taskId)) &&
     !isPageAllSelected.value,
 );
 
@@ -236,7 +236,7 @@ function toggleTask(id) {
 }
 
 function toggleSelectAll(val) {
-  allTasks.value.forEach((t) => {
+  allTasks.value.forEach(t => {
     if (val) selectedIds.add(t.taskId);
     else selectedIds.delete(t.taskId);
   });
@@ -247,7 +247,7 @@ function removeSelected(id) {
 }
 
 function getTask(id) {
-  return allTasks.value.find((t) => t.taskId === id);
+  return allTasks.value.find(t => t.taskId === id);
 }
 
 function truncate(str, len) {
@@ -266,7 +266,7 @@ const handleConnect = async () => {
   const ids = [...selectedIds];
   console.log(ids);
   let arr = [];
-  ids.forEach((id) => {
+  ids.forEach(id => {
     arr.push({
       projectId: props.projectInfo.projectId,
       meetingLogId: props.projectInfo.meetingLogId,
@@ -286,7 +286,7 @@ function statusType(status) {
 }
 
 // 페이지네이션
-const handleCurrentChange = async (val) => {
+const handleCurrentChange = async val => {
   currentPage.value = val;
   loading.value = true;
 
@@ -305,7 +305,7 @@ const handleCurrentChange = async (val) => {
     await taskStore.getAllTask(obj);
 
     allTasks.value = [...taskStore.taskAllList].filter(
-      (task) => !props.connectList?.some((c) => c.taskId === task.taskId),
+      task => !props.connectList?.some(c => c.taskId === task.taskId),
     );
   } catch (err) {
   } finally {
@@ -319,9 +319,9 @@ const handleCurrentChange = async (val) => {
 };
 
 // 날짜 null 일 경우 형식 변경
-const changeDateType = (val) => {
-  console.log(val);
+const changeDateType = val => {
   for (let i = 0; i < val.length; i++) {
+    val.taskStatusType = statusType(val.taskStatusId);
     // 담당자 미지정
     if (val[i].userName == null) {
       val[i].userName = "미지정";
@@ -342,7 +342,7 @@ const changeDateType = (val) => {
 
 watch(
   () => props.projectInfo?.projectId,
-  (newId) => {
+  newId => {
     if (newId) {
       console.log("프로젝트 ID 확인됨:", newId);
       handleCurrentChange(1);
@@ -354,11 +354,11 @@ watch(
 
 watch(
   () => props.connectList,
-  (newId) => {
+  newId => {
     if (newId) {
       handleCurrentChange(1);
       allTasks.value = taskStore.taskAllList.filter(
-        (task) => !newId.some((id) => id.taskId == task.taskId),
+        task => !newId.some(id => id.taskId == task.taskId),
       );
 
       console.log(taskStore.taskAllList.length);

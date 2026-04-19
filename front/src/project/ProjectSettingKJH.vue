@@ -117,14 +117,13 @@
                       tab.key === "ALL"
                         ? memberList.length
                         : memberList.filter(
-                            (member) => (member.roleName || "기타") === tab.key,
+                            member => (member.roleName || "기타") === tab.key,
                           ).length
                     }}</span>
                   </template>
 
                   <div class="table-inner-wrap">
                     <el-table
-                      v-loading="loadingProjects"
                       :data="filteredMemberList"
                       style="width: 100%"
                       :header-cell-style="headerStyle"
@@ -141,6 +140,13 @@
                         label="사번"
                         width="180"
                         align="center"
+                      />
+                      <el-table-column
+                        prop="roleName"
+                        label="사번"
+                        width="180"
+                        align="center"
+                        v-if="activeRoleTab === 'ALL'"
                       />
                       <el-table-column
                         prop="email"
@@ -233,6 +239,26 @@ const authStore = useAuthStore();
 const projectStore = useProjectKJHStore();
 const router = useRouter();
 const currentPage = ref(1);
+const pageSize = ref(5); // 추가
+const totalCount = computed(() =>
+  activeRoleTab.value === "ALL"
+    ? memberList.value.length
+    : filteredMemberList.length,
+); // 추가
+
+// 페이지네이션
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return memberList.value.slice(start, end);
+});
+
+const filteredMemberList = computed(() => {
+  if (activeRoleTab.value === "ALL") return paginatedData.value;
+  return memberList.value.filter(
+    member => (member.roleName || "기타") === activeRoleTab.value,
+  );
+});
 
 const sidebarOpen = ref(false);
 
@@ -270,7 +296,7 @@ const roleTabs = computed(() => {
   const tabs = [{ key: "ALL", label: "전체" }];
   const roleMap = new Map();
 
-  memberList.value.forEach((member) => {
+  memberList.value.forEach(member => {
     const roleName = member.roleName || "기타";
     if (!roleMap.has(roleName)) {
       roleMap.set(roleName, {
@@ -287,13 +313,6 @@ const roleTabs = computed(() => {
 const handleGoBack = () => {
   router.back();
 };
-
-const filteredMemberList = computed(() => {
-  if (activeRoleTab.value === "ALL") return memberList.value;
-  return memberList.value.filter(
-    (member) => (member.roleName || "기타") === activeRoleTab.value,
-  );
-});
 
 const headerStyle = () => ({
   background: "#f9fafb",
@@ -335,7 +354,7 @@ const closeModifyMdoal = () => {
   ModifyProjectModalOpen.value = false;
 };
 
-const modifyProject = async (form) => {
+const modifyProject = async form => {
   const payload = {
     projectId: form.projectId,
     projectName: form.projectName,
@@ -362,9 +381,9 @@ const closeMemberMdoal = () => {
   MemberModalOpen.value = false;
 };
 
-const memberInsert = async (value) => {
+const memberInsert = async value => {
   const list = [];
-  value.forEach((val) => {
+  value.forEach(val => {
     list.push({
       userId: val.userId,
       projectId: id,
@@ -376,7 +395,7 @@ const memberInsert = async (value) => {
   closeMemberMdoal();
 };
 
-const handleDelete = async (val) => {
+const handleDelete = async val => {
   const result = await Swal.fire({
     title: "정말 구성원을 삭제하시겠습니까?",
     text: "삭제된 구성원은 목록에서 확인 불가능합니다.",
@@ -405,7 +424,7 @@ const handleBeforeLeave = () => {
   return true; // true를 반환해야 탭이 바뀝니다.
 };
 
-const handleClick = (pane) => {
+const handleClick = pane => {
   // 1. 현재 스크롤 위치 저장
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
@@ -922,5 +941,14 @@ watch(
 
 :deep(.el-tabs__header) {
   margin: 0px;
+}
+
+/* 페이지네이션 */
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  border-top: 1px solid #f3f4f6;
+  background: #f9fafb;
 }
 </style>

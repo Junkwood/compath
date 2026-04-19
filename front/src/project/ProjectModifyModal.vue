@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    v-model="visible"
+    :model-value="true"
     title="프로젝트 수정"
     width="560px"
     :close-on-click-modal="false"
@@ -122,9 +122,6 @@ import {
   defineEmits,
 } from "vue";
 import api from "../utils/api";
-import { useProjectKJHStore } from "../stores/projectKJH";
-
-const projectStore = useProjectKJHStore();
 
 const props = defineProps({
   originInfo: { type: Object },
@@ -134,12 +131,12 @@ const emit = defineEmits(["update:modelValue", "submitted"]);
 
 watch(
   () => props.originInfo,
-  (newVal) => {
+  newVal => {
     console.log("변경전: ", newVal);
 
     const data = { ...newVal };
 
-    plOptions.value.forEach((pl) => {
+    plOptions.value.forEach(pl => {
       if (data.plUserId == pl.userName) {
         data.plUserId = pl.userId;
       }
@@ -205,7 +202,7 @@ const handleClose = () => {
 
 const visible = computed({
   get: () => props.modelValue,
-  set: (v) => emit("update:modelValue", v),
+  set: v => emit("update:modelValue", v),
 });
 
 onMounted(() => {

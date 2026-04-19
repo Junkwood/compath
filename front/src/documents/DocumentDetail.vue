@@ -1,17 +1,17 @@
 <template>
-  <div class="flex min-h-screen overflow-hidden">
+  <div class="dashboard-page flex h-screen overflow-hidden">
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
     <div
-      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden"
+      class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
     >
-      <!-- Header -->
       <Header
         :sidebarOpen="sidebarOpen"
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
 
       <main class="grow">
+        <!-- 서브 헤더 / 브레드크럼 -->
         <div class="sub-header">
           <div class="breadcrumb">
             <span class="bc-home">홈</span>
@@ -20,7 +20,9 @@
             <span class="bc-cur"> 문서 상세</span>
           </div>
         </div>
+
         <div class="page-container">
+          <!-- 상단 프로젝트 정보 -->
           <div class="pg-row">
             <div class="pg-left">
               <div class="proj-meta">
@@ -30,11 +32,12 @@
                 </span>
               </div>
             </div>
-            <div class="flex gap-2 self-end">
+
+            <div class="notice-action-wrap">
               <button
                 v-if="isAssignee"
                 @click="modifyDocument"
-                class="btn-modify"
+                class="btn-edit"
               >
                 수정
               </button>
@@ -45,75 +48,93 @@
               >
                 삭제
               </button>
-              <button @click="goBack" type="button" class="btn-back">
-                ← 돌아가기
+              <button @click="goBack" type="button" class="btn-back-top">
+                목록으로
               </button>
             </div>
           </div>
-          <!-- projectDashboard.vue와 동일한 제목 영역 -->
 
-          <div
-            class="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl mb-0 p-6"
-          >
-            <div
-              class="text-xl md:text-2xl text-gray-800 dark:text-gray-100 font-bold mb-8"
-            >
-              <h4>{{ documentInfo.title }}</h4>
-            </div>
-            <div class="grid grid-cols-3 gap-6 mb-8">
-              <div class="flex flex-row gap-10">
-                <label class="block text-base font-semibold mb-1"
-                  >카테고리</label
-                >
-                <span>{{
-                  documentInfo.roleName == null ? "전체" : documentInfo.roleName
-                }}</span>
-              </div>
-              <div class="flex flex-row gap-10">
-                <label class="block text-base font-semibold mb-1">작성자</label>
-                <span>{{ documentInfo.userName }}</span>
-              </div>
-              <div class="flex flex-row gap-10">
-                <label class="block text-base font-semibold mb-1">등록일</label>
-                <span>{{ documentInfo.createdAt }}</span>
-              </div>
-            </div>
-
-            <div class="mb-6">
-              <label class="block text-base font-semibold mb-1"
-                >문서 설명</label
-              >
-              <textarea
-                rows="5"
-                class="input w-full"
-                :value="documentInfo.content"
-                disabled
-              />
-            </div>
-            <!-- 첨부파일 -->
-            <div class="mt-6">
-              <label class="block text-sm font-semibold mb-2 text-gray-600"
-                >첨부파일</label
-              >
-              <div
-                class="border-t border-b border-gray-200 divide-y divide-gray-100"
-              >
-                <div
-                  v-for="(file, index) in attachmentList"
-                  :key="index"
-                  class="py-2 flex items-center justify-between group"
-                  v-if="
-                    attachmentList != null &&
-                    attachmentList != undefined &&
-                    attachmentList.length > 0
-                  "
-                >
-                  <div
-                    class="flex items-center gap-2 flex-1 cursor-pointer"
-                    @click="attachmentDownload(file)"
+          <!-- 문서 본문 패널 -->
+          <div class="panel notice-panel">
+            <div class="notice-article">
+              <div class="flex flex-row gap-2">
+                <!-- 제목 -->
+                <h2 class="notice-title">{{ documentInfo.title }}</h2>
+                <div class="flex items-center">
+                  <span
+                    v-if="documentInfo.isPinned === 'O1'"
+                    class="fixed-badge"
                   >
                     <svg
-                      class="w-4 h-4 text-gray-400 shrink-0"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      style="
+                        display: inline;
+                        vertical-align: -1px;
+                        margin-right: 2px;
+                      "
+                    >
+                      <path
+                        d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"
+                      />
+                    </svg>
+                    중요
+                  </span>
+                </div>
+              </div>
+
+              <!-- 메타 정보 -->
+              <div class="notice-meta">
+                <span class="meta-item">
+                  <span class="meta-label">카테고리</span>
+                  <span class="notice-badge badge-category">{{
+                    documentInfo.typeName == null
+                      ? "전체"
+                      : documentInfo.typeName
+                  }}</span>
+                </span>
+                <span class="meta-item">
+                  <span class="meta-label">작성자</span>
+                  <span class="meta-value">{{
+                    documentInfo.userName || "-"
+                  }}</span>
+                </span>
+                <span class="meta-divider"></span>
+                <span class="meta-item">
+                  <span class="meta-label">등록일</span>
+                  <span class="meta-value">{{
+                    documentInfo.createdAt || "-"
+                  }}</span>
+                </span>
+              </div>
+
+              <div class="notice-divider"></div>
+
+              <!-- 문서 설명 -->
+              <div class="notice-content-wrap">
+                <div class="notice-content">
+                  <Editor
+                    class="w-full"
+                    :modelValue="documentInfo.content"
+                    :isRead="isRead"
+                  />
+                </div>
+              </div>
+
+              <!-- 첨부파일 -->
+              <div
+                class="mt-8 p-6 bg-white rounded-2xl border border-gray-200 shadow-sm"
+              >
+                <!-- 헤더 -->
+                <div class="flex items-center gap-2 mb-5">
+                  <div
+                    class="w-6 h-6 flex items-center justify-center bg-blue-50 rounded-md"
+                  >
+                    <svg
+                      class="w-4 h-4 text-blue-500"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -122,126 +143,240 @@
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
-                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
                       />
                     </svg>
-                    <span
-                      class="text-[13px] text-gray-700 group-hover:text-blue-600 transition-colors"
-                    >
-                      {{ file.fileName }}
-                    </span>
                   </div>
-                  <button
-                    @click="attachmentDownload(file)"
-                    class="text-[12px] text-gray-500 hover:text-blue-600 flex items-center gap-1"
-                  >
-                    다운로드 <span class="text-[10px] text-gray-300">〉</span>
-                  </button>
+                  <label class="text-[15px] font-semibold text-gray-800">
+                    첨부파일
+                    <span class="text-blue-600 ml-1 font-bold">
+                      {{ attachmentList != null ? attachmentList.length : 0 }}
+                    </span>
+                  </label>
                 </div>
-                <div class="py-11 flex justify-center" v-else>
-                  <span>첨부파일이 존재하지 않습니다.</span>
+
+                <!-- 파일 리스트 -->
+                <div class="space-y-3">
+                  <div
+                    v-for="(file, index) in attachmentList"
+                    :key="index"
+                    v-if="
+                      attachmentList != null &&
+                      attachmentList != undefined &&
+                      attachmentList.length > 0
+                    "
+                    class="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl border border-transparent hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-sm transition-all duration-200 group cursor-pointer"
+                    @click="attachmentDownload(file)"
+                  >
+                    <div class="flex items-center gap-3 flex-1">
+                      <div
+                        class="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-gray-200 group-hover:border-blue-200 group-hover:bg-blue-100 transition"
+                      >
+                        <svg
+                          class="w-4 h-4 text-gray-400 group-hover:text-blue-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                      <div class="flex flex-col">
+                        <span
+                          class="text-[14px] font-medium text-gray-800 group-hover:text-blue-600 transition"
+                        >
+                          {{ file.fileName }}
+                        </span>
+                        <span class="text-[11px] text-gray-400">1.2 MB</span>
+                      </div>
+                    </div>
+                    <button
+                      class="flex items-center gap-1 px-3 py-1.5 text-[12px] font-medium text-gray-500 bg-white border border-gray-200 rounded-md group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-200 cursor-pointer"
+                    >
+                      다운로드
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- empty -->
+                  <div
+                    v-else
+                    class="py-10 flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-200"
+                  >
+                    <div
+                      class="w-12 h-12 flex items-center justify-center bg-white rounded-full mb-3 border border-gray-200"
+                    >
+                      <svg
+                        class="w-6 h-6 text-gray-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                    </div>
+                    <span class="text-gray-400 text-sm"
+                      >첨부된 파일이 없습니다.</span
+                    >
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div v-if="documentInfo.isComment == 'O1'" class="filter-card mb-0">
-            <!-- 검색어 -->
-            <div class="filter-item filter-item--wide mt-3">
-              <div class="search-wrap">
-                <input
-                  v-model="comment"
-                  type="text"
-                  placeholder="댓글을 입력해주세요."
-                  class="search-input"
-                  @keyup.enter="registerComment()"
-                />
-                <div class="filter-actions">
-                  <button
-                    type="button"
-                    @click="registerComment()"
-                    class="btn-search"
+
+          <!-- 댓글 섹션 -->
+          <div
+            v-if="documentInfo.isComment == 'O1'"
+            class="panel comment-panel"
+          >
+            <div class="comment-panel-header">
+              <div class="comment-panel-title">
+                <svg
+                  class="w-4 h-4 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 10h.01M12 10h.01M16 10h.01M21 16c0 1.1-.9 2-2 2H5l-4 4V6c0-1.1.9-2 2-2h16c0 1.1.9 2 2 2v10z"
+                  />
+                </svg>
+                댓글
+                <span class="comment-count">{{ commentList.length }}</span>
+              </div>
+            </div>
+
+            <!-- 댓글 입력 -->
+            <div class="comment-input-wrap">
+              <textarea
+                v-model="comment"
+                placeholder="댓글을 입력해주세요."
+                class="comment-textarea"
+                @keyup.ctrl.enter="registerComment()"
+                rows="3"
+              />
+              <div class="comment-input-footer">
+                <div></div>
+                <button
+                  type="button"
+                  @click="registerComment()"
+                  class="btn-comment-submit"
+                >
+                  등록
+                </button>
+              </div>
+            </div>
+
+            <!-- 댓글 목록 -->
+            <div class="comment-list-wrap">
+              <div
+                class="comment-item"
+                v-for="commentItem in commentList"
+                :key="commentItem.documentCommentId"
+              >
+                <!-- 일반 표시 -->
+                <div v-if="!commentItem.modifyOpen" class="comment-view">
+                  <div class="comment-meta-row">
+                    <span class="comment-author">{{
+                      commentItem.userName
+                    }}</span>
+                    <span class="comment-date">{{
+                      commentItem.createdAt
+                    }}</span>
+                  </div>
+                  <p class="comment-text">{{ commentItem.content }}</p>
+                  <div
+                    v-if="commentItem.userId == authStore.user.userId"
+                    class="comment-actions"
                   >
-                    등록
-                  </button>
+                    <button
+                      class="btn-comment-action"
+                      @click="openModifyComment(commentItem)"
+                    >
+                      수정
+                    </button>
+                    <span class="action-divider"></span>
+                    <button
+                      class="btn-comment-action btn-comment-danger"
+                      @click="removeComment(commentItem)"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 수정 모드 -->
+                <div v-if="commentItem.modifyOpen" class="comment-edit-wrap">
+                  <div class="comment-edit-label">댓글 수정 중...</div>
+                  <div class="comment-meta-row">
+                    <span class="comment-author">{{
+                      commentItem.userName
+                    }}</span>
+                    <span class="comment-date">{{
+                      commentItem.createdAt
+                    }}</span>
+                  </div>
+                  <el-input
+                    type="textarea"
+                    :autosize="{ minRows: 2 }"
+                    v-model="commentItem.content"
+                    class="edit-textarea"
+                  />
+                  <div class="comment-edit-actions">
+                    <el-button size="small" @click="cancelModify(commentItem)"
+                      >취소</el-button
+                    >
+                    <el-button
+                      type="primary"
+                      size="small"
+                      @click="modifyComment(commentItem)"
+                      >수정완료</el-button
+                    >
+                  </div>
                 </div>
               </div>
-              <!-- 버튼 -->
-            </div>
-            <div class="comment-list" v-for="comment in commentList">
-              <div class="flex gap-4 pt-4 pb-2 border-b-2 border-gray-100">
-                <div class="flex-1">
-                  <div v-if="!comment.modifyOpen">
-                    <div class="flex items-center gap-2 mb-1">
-                      <el-text size="large" strong>{{
-                        comment.userName
-                      }}</el-text>
-                      <el-text size="small" type="info">{{
-                        comment.createdAt
-                      }}</el-text>
-                    </div>
-                    <el-text class="block leading-relaxed">{{
-                      comment.content
-                    }}</el-text>
 
-                    <div
-                      v-if="comment.userId == authStore.user.userId"
-                      class="flex flex-row-reverse mt-2"
-                    >
-                      <el-button
-                        link
-                        type="danger"
-                        size="small"
-                        @click="removeComment(comment)"
-                        >삭제</el-button
-                      >
-                      <el-button
-                        type="button"
-                        @click="openModifyComment(comment)"
-                        link
-                        size="small"
-                        >수정</el-button
-                      >
-                    </div>
-                  </div>
-                  <div
-                    class="p-4 bg-indigo-50/50 border-2 border-indigo-200 rounded-lg transition-all"
-                    v-if="comment.modifyOpen"
-                  >
-                    <div
-                      class="flex items-center gap-2 mb-2 text-indigo-600 font-bold text-xs"
-                    >
-                      <i class="el-icon-edit"></i> 댓글 수정 중...
-                    </div>
-
-                    <div class="flex-1">
-                      <div class="flex items-center gap-2 mb-1">
-                        <el-text size="large" strong>{{
-                          comment.userName
-                        }}</el-text>
-                        <el-text size="small" type="info">{{
-                          comment.createdAt
-                        }}</el-text>
-                      </div>
-                      <el-input
-                        type="textarea"
-                        :autosize="{ minRows: 2 }"
-                        v-model="comment.content"
-                        class="edit-textarea"
-                      />
-                      <div class="flex flex-row-reverse mt-2 gap-1">
-                        <el-button size="small" @click="cancelModify(comment)"
-                          >취소</el-button
-                        >
-                        <el-button
-                          type="primary"
-                          size="small"
-                          @click="modifyComment(comment)"
-                          >수정완료</el-button
-                        >
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <!-- 댓글 없음 -->
+              <div v-if="commentList.length === 0" class="comment-empty">
+                <svg
+                  class="w-8 h-8 text-gray-300 mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M8 10h.01M12 10h.01M16 10h.01M21 16c0 1.1-.9 2-2 2H5l-4 4V6c0-1.1.9-2 2-2h16c0 1.1.9 2 2 2v10z"
+                  />
+                </svg>
+                <span>첫 번째 댓글을 남겨보세요.</span>
               </div>
             </div>
           </div>
@@ -260,7 +395,9 @@ import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import Swal from "sweetalert2";
+import Editor from "../components/Editor.vue";
 
+const isRead = true;
 const route = useRoute();
 const router = useRouter();
 const documentStore = useDocumentStore();
@@ -275,24 +412,21 @@ const subId = route.params.subProjectId;
 let taskPjList = ref([]);
 const attachmentList = ref([]);
 
-const commentList = ref([]); // 댓글목록
-const comment = ref(); // 댓글
+const commentList = ref([]);
+const comment = ref();
 const modifyOpen = ref(false);
 
-let name = ref(); // 프로젝트명
-let projectStartDate = ref(); // 프로젝트 날짜
-let projectendDate = ref(); // 프로젝트 날짜
+let name = ref();
+let projectStartDate = ref();
+let projectendDate = ref();
 
-// 목록으로
 const goBack = () => {
-  console.log(projectId);
   router.push({
     name: "documentList",
     params: { projectId: projectId, subProjectId: subId },
   });
 };
 
-// 수정 버튼
 const modifyDocument = () => {
   router.push({
     name: "documentRegister",
@@ -304,18 +438,16 @@ const modifyDocument = () => {
   });
 };
 
-// 삭제 버튼
 const delDocument = async () => {
   const result = await Swal.fire({
     title: "정말 삭제하시겠습니까?",
-    text: "비활성한 문서는 목록에서 보이지 않습니다.",
+    text: "삭제된 문서는 목록에서 보이지 않습니다.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: "삭제",
     cancelButtonText: "취소",
     reverseButtons: true,
   });
-
   if (!result.isConfirmed) return;
 
   let obj = {
@@ -323,78 +455,62 @@ const delDocument = async () => {
     isDeleted: "Q1",
     isEditorUserId: authStore.user.userId,
   };
-
   await documentStore.modifyDocument(obj);
 
   await Swal.fire({
     title: "삭제를 완료했습니다.",
     icon: "success",
     confirmButtonText: "확인",
-    reverseButtons: true,
   });
-
   router.push({
     name: "documentList",
     params: { projectId: projectId, subProjectId: subId },
   });
 };
 
-// 댓글 등록
 const registerComment = async () => {
-  // 작성한 내용 없을 경우 알림창
   if (!comment.value || comment.value == " ") {
-    const result = await Swal.fire({
+    await Swal.fire({
       title: "댓글을 작성해주세요",
       icon: "error",
       confirmButtonText: "확인",
-      reverseButtons: true,
     });
-
-    if (!result.isConfirmed) return;
     return;
   }
-
   const result = await Swal.fire({
-    title: "댓글을 등록하시겠습니까??",
+    title: "댓글을 등록하시겠습니까?",
     icon: "question",
     showCancelButton: true,
     confirmButtonText: "확인",
     cancelButtonText: "취소",
     reverseButtons: true,
   });
-
   if (!result.isConfirmed) return;
 
-  let user = authStore.user; // 로그인한 사람 정보
-
+  let user = authStore.user;
   let commentInfo = {
-    // 백으로 보낼 정보
     documentId: documentId,
     userId: user.userId,
     content: comment.value,
   };
-
   await documentStore.registerComment(commentInfo);
   commentList.value = documentStore.registeredComment;
   comment.value = null;
 };
 
-// 댓글 수정
-const openModifyComment = (comment) => {
-  console.log(comment);
+const openModifyComment = comment => {
   comment.modifyOpen = true;
 };
 
-const modifyComment = async (comment) => {
+const modifyComment = async comment => {
   const result = await Swal.fire({
-    title: "댓글을 수정하시겠습니까??",
+    title: "댓글을 수정하시겠습니까?",
     icon: "question",
     showCancelButton: true,
     confirmButtonText: "확인",
     cancelButtonText: "취소",
     reverseButtons: true,
   });
-
   if (!result.isConfirmed) return;
 
   let obj = {
@@ -403,29 +519,24 @@ const modifyComment = async (comment) => {
     content: comment.content,
     editorUserId: authStore.user.userId,
   };
-
   modifyOpen.value = false;
   await documentStore.modifyComment(obj);
-
   commentList.value = documentStore.registeredComment;
 };
 
-// 댓글 수정 취소
-const cancelModify = (comment) => {
+const cancelModify = comment => {
   comment.modifyOpen = false;
 };
 
-// 댓글 삭제
-const removeComment = async (comment) => {
+const removeComment = async comment => {
   const result = await Swal.fire({
-    title: "댓글을 삭제하시겠습니까??",
+    title: "댓글을 삭제하시겠습니까?",
     icon: "question",
     showCancelButton: true,
     confirmButtonText: "확인",
     cancelButtonText: "취소",
     reverseButtons: true,
   });
-
   if (!result.isConfirmed) return;
 
   let obj = {
@@ -434,20 +545,22 @@ const removeComment = async (comment) => {
     editorUserId: authStore.user.userId,
     isDeleted: "O1",
   };
-
   await documentStore.modifyComment(obj);
-
   commentList.value = documentStore.registeredComment;
 };
 
+const attachmentDownload = async file => {
+  console.log(file);
+  // await attachmentStore.downloadFile(file);
+};
+
 onBeforeMount(async () => {
-  // 문서 및 프로젝트 정보
   await documentStore.getDocumentById(documentId);
   documentInfo.value = documentStore.documentDetail.documentInfo.documentInfo;
   commentList.value = documentStore.documentDetail.documentInfo.commentInfo;
   attachmentList.value = documentStore.documentDetail.attachmentList;
 
-  commentList.value.forEach((comment) => {
+  commentList.value.forEach(comment => {
     comment.modifyOpen = false;
   });
 
@@ -469,28 +582,33 @@ onBeforeMount(async () => {
   projectendDate.value = projectInfo.endDate;
 });
 
-// 권한 파악
 const isAssignee = computed(() => {
   const currentUserId = authStore.user?.userId || authStore.user?.id;
   if (!currentUserId) return false;
-
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   return isPmPl || isManager;
 });
 </script>
+
 <style scoped>
+/* ── 공통 레이아웃 (notice 동일) ── */
+.dashboard-page {
+  font-family: "Pretendard", sans-serif;
+  background-color: #f3f4f6;
+}
+
 .sub-header {
   background: #fff;
-  padding: 12px 24px;
+  padding: 15px 24px;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 30;
 }
 
 .breadcrumb {
@@ -499,46 +617,29 @@ const isAssignee = computed(() => {
   gap: 8px;
   font-size: 13px;
 }
-
 .bc-home {
   color: #9ca3af;
 }
-
 .bc-sep {
   color: #d1d5db;
 }
-
 .bc-cur {
   color: #111827;
   font-weight: 600;
 }
 
-/* 상단 */
-.proj-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.proj-title-left {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .page-container {
-  padding: 24px 30px 24px 30px;
+  padding: 24px 30px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-:deep(.pg-row) {
+/* 상단 카드 */
+.pg-row {
   display: flex;
   justify-content: space-between;
-  align-items: center !important;
+  align-items: center;
   gap: 16px;
   padding: 20px 24px;
   background: #fff;
@@ -546,7 +647,6 @@ const isAssignee = computed(() => {
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-
 .pg-left {
   display: flex;
   flex-direction: column;
@@ -559,280 +659,441 @@ const isAssignee = computed(() => {
   gap: 12px;
   flex-wrap: wrap;
 }
-
-.pg-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: #111827;
-}
 .proj-name {
   font-size: 15px;
   font-weight: 700;
   color: #1b5c9c;
 }
-
 .proj-period {
   font-size: 13px;
   color: #6b7280;
 }
-/* 인풋 전체 라운드 */
-:deep(.input) {
-  border-radius: 10px !important;
-  border: 1px solid #e2e8f0 !important;
-  background: #f8fafc !important;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-  font-size: 13px;
-}
-:deep(.input:focus) {
-  border-color: #94a3b8 !important;
-  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15) !important;
-  background: #fff !important;
-  outline: none;
-}
-:deep(.input:disabled) {
-  background: #f1f5f9 !important;
-  color: #94a3b8 !important;
-}
-:deep(select.input) {
-  border-radius: 10px !important;
-  appearance: auto !important;
-  -webkit-appearance: auto !important;
-  padding-right: 28px !important;
-}
-:deep(textarea.input) {
-  border-radius: 10px !important;
-}
-:deep(.input:disabled) {
-  background: #f1f5f9 !important;
-  color: #475569 !important; /* #94a3b8 → #475569 으로 변경! */
-}
-/* 목록으로 */
-.btn-navy {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #1e3a5f;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.25);
-}
-.btn-navy:hover {
-  background: #162d4a;
-  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);
-  transform: translateY(-1px);
-}
-/* 수정버튼 */
-.btn-green {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #1882c9;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
-  letter-spacing: 0.01em;
-}
-.btn-green:hover {
-  background: #60aee2;
-  box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
-  transform: translateY(-1px);
-}
 
-/* 비활성 버튼 */
-.btn-red {
-  height: 38px;
-  padding: 0 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: #dc2626;
-  color: #fff;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
-  letter-spacing: 0.01em;
-}
-.btn-red:hover {
-  background: #b91c1c;
-  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-  transform: translateY(-1px);
-}
-/* ── 카드 공통 ── */
-.card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-}
-.card-header {
-  padding: 14px 20px;
-  border-bottom: 1px solid #f0f0f0;
+/* 액션 버튼 묶음 */
+.notice-action-wrap {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-.card-title {
-  font-weight: 600;
-  font-size: 14px;
-  color: #1a1a2e;
-}
-.filter-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-}
-
-.filter-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 120px;
-  flex: 1;
-}
-
-.filter-item--wide {
-  flex: 2;
-  min-width: 180px;
-}
-
-.filter-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #6b7280;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* ── 검색어 ── */
-.search-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.search-input {
-  width: 100%;
-  height: 100px;
-  padding: 8px 10px 70px 8px;
-  margin-right: 3px;
-  border: 1px solid #d1d5db;
-  border-radius: 7px;
-  font-size: 0.85rem;
-  color: #374151;
-  background: #f9fafb;
-  outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-}
-.search-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+.btn-back-top {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid #dbe4f0;
   background: #fff;
+  color: #1b5c9c;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.btn-back-top:hover {
+  background: #eff6ff;
+  border-color: #bfd3f6;
 }
 
-/* ── 버튼 ── */
-.filter-actions {
-  display: flex;
-  gap: 8px;
-  padding-bottom: 1px;
-}
-.btn-search {
-  flex: 1;
-  padding: 8px 20px;
-  background: #334155;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 7px;
+.btn-edit {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
   border: none;
-  cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
-  height: 100px;
-}
-.btn-search:hover {
-  background: #1e293b;
-}
-
-:deep(.el-button + .el-button) {
-  margin-left: 0px;
-}
-
-:deep(.btn-modify) {
-  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%) !important;
-  color: white !important;
-  height: 40px;
-  padding: 0 18px;
   font-size: 13px;
   font-weight: 700;
-  border-radius: 8px;
   cursor: pointer;
-  border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, #1b5c9c 0%, #144677 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(27, 92, 156, 0.22);
 }
-
-.btn-modify:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-}
-/* 돌아가기 버튼 */
-.btn-back {
-  height: 40px;
-  padding: 0 18px;
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #374151;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-.btn-back:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  color: #111827;
+.btn-edit:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 
 .btn-lock {
-  height: 40px;
-  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: none;
   font-size: 13px;
   font-weight: 700;
-  border-radius: 8px;
   cursor: pointer;
-  border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
   background: #ef4444;
   color: #fff;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
-
 .btn-lock:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
+  transform: translateY(-1px);
+  background: #dc2626;
+}
+
+/* 공통 패널 */
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+/* ── 문서 본문 (notice-article 동일) ── */
+.notice-panel {
+  overflow: hidden;
+}
+
+.notice-article {
+  padding: 28px 32px 32px;
+}
+
+.notice-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.notice-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.notice-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.badge-category {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.notice-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+
+.notice-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.meta-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+}
+.meta-value {
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+}
+.meta-divider {
+  width: 1px;
+  height: 14px;
+  background: #d1d5db;
+}
+
+.notice-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 22px 0 24px;
+}
+
+.notice-content-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.content-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.notice-content {
+  min-height: 120px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 10px;
+  color: #334155;
+  font-size: 15px;
+  line-height: 1.95;
+  word-break: break-word;
+}
+
+.doc-description {
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* ── 댓글 패널 ── */
+.comment-panel {
+  overflow: hidden;
+}
+
+.comment-panel-header {
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid #f0f2f5;
+}
+.comment-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+.comment-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* 댓글 입력 */
+.comment-input-wrap {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f2f5;
+}
+.comment-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-size: 14px;
+  color: #374151;
+  resize: vertical;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.comment-textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: #fff;
+}
+.comment-input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.comment-hint {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.btn-comment-submit {
+  height: 36px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: none;
+  background: #334155;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-comment-submit:hover {
+  background: #1e293b;
+}
+
+/* 댓글 목록 */
+.comment-list-wrap {
+  padding: 8px 24px 20px;
+}
+
+.comment-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-view {
+}
+.comment-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.comment-author {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+.comment-date {
+  font-size: 12px;
+  color: #9ca3af;
+}
+.comment-text {
+  margin: 0;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.7;
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}
+.btn-comment-action {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+.btn-comment-action:hover {
+  color: #111827;
+}
+.btn-comment-danger:hover {
+  color: #ef4444;
+}
+.action-divider {
+  width: 1px;
+  height: 10px;
+  background: #e5e7eb;
+}
+
+/* 댓글 수정 모드 */
+.comment-edit-wrap {
+  padding: 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+}
+.comment-edit-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1d4ed8;
+  margin-bottom: 10px;
+}
+.comment-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+}
+:deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
+/* 댓글 없음 */
+.comment-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .sub-header {
+    padding: 12px 16px;
+  }
+  .page-container {
+    padding: 16px;
+    gap: 16px;
+  }
+  .pg-row {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .notice-article {
+    padding: 18px 16px 20px;
+  }
+  .notice-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .notice-title {
+    font-size: 21px;
+    line-height: 1.5;
+  }
+  .notice-meta {
+    gap: 10px;
+  }
+  .meta-divider {
+    display: none;
+  }
+  .notice-action-wrap {
+    width: 100%;
+  }
+  .btn-edit,
+  .btn-lock {
+    flex: 1;
+    justify-content: center;
+  }
+  .btn-back-top {
+    width: 100%;
+  }
+  .comment-panel-header,
+  .comment-input-wrap,
+  .comment-list-wrap {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.fixed-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+  font-size: 11px;
+  font-weight: 700;
 }
 </style>

@@ -157,9 +157,9 @@
                     class="notice-row cursor-pointer"
                     :class="[
                       notice.isPinned === 'B1' ? 'pinned-row' : '',
-                      notice.isDeleted === 'O1'
-                        ? 'grayscale blur-[4px] opacity-60'
-                        : '',
+                      // notice.isDeleted === 'Q1'
+                      //   ? 'grayscale blur-[4px] opacity-60'
+                      //   : '',
                     ]"
                   >
                     <td class="col-num">
@@ -309,7 +309,7 @@ const searchInfo = async () => {
   searchInfo;
 };
 
-const handleCurrentChange = async (val) => {
+const handleCurrentChange = async val => {
   val = val == undefined ? 1 : val;
   nowPage.value = val;
 
@@ -338,7 +338,16 @@ const handleCurrentChange = async (val) => {
     await noticeStore.getPagingList(obj);
     Swal.close();
 
-    pagingList.value = noticeStore.pagingList;
+    if (isAssignee) {
+      pagingList.value = noticeStore.pagingList;
+    } else {
+      noticeStore.pagingList.forEach(notice => {
+        if (notice.isDeleted != "Q1") {
+          pagingList.value.push(notice);
+        }
+      });
+    }
+
     listLength.value =
       pagingList.value.length == 0 ? 0 : pagingList.value[0].taskCounts;
   } catch (err) {
@@ -358,7 +367,7 @@ const goResister = () => {
   });
 };
 
-const goDetail = (tr) => {
+const goDetail = tr => {
   router.push({
     name: "noticeDetail",
     params: {
@@ -406,7 +415,15 @@ onBeforeMount(async () => {
 
   await noticeStore.getFilterList(obj);
   filterList.value = noticeStore.filterList;
-  pagingList.value = noticeStore.filterList.noticeList;
+  if (isAssignee) {
+    pagingList.value = noticeStore.filterList.noticeList;
+  } else {
+    noticeStore.filterList.noticeList.forEach(notice => {
+      if (notice.isDeleted != "Q1") {
+        pagingList.value.push(notice);
+      }
+    });
+  }
   listLength.value =
     filterList.value.noticeList.length > 0
       ? filterList.value.noticeList[0].taskCounts
@@ -421,10 +438,10 @@ const isAssignee = computed(() => {
   if (!currentUserId) return false;
 
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    (item) => Number(item.userId) === Number(currentUserId),
+    item => Number(item.userId) === Number(currentUserId),
   );
   return isPmPl || isManager;
 });
