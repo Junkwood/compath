@@ -154,12 +154,16 @@
                 <label class="field-label"
                   >마일스톤 <span class="req">*</span></label
                 >
-                <input
-                  v-model="form.milestone"
-                  disabled
-                  class="field-input"
-                  placeholder="자동 선택됨"
-                />
+                <select v-model="form.milestoneId" class="field-input">
+                  <option value="">마일스톤 선택</option>
+                  <option
+                    v-for="item in milestoneList"
+                    :key="item.value"
+                    :value="item.value"
+                  >
+                    {{ item.name }}
+                  </option>
+                </select>
               </div>
             </div>
 
