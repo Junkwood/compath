@@ -295,6 +295,16 @@ const submitForm = async (formEl) => {
         }
 
         await noticeStore.registerNotice(formData);
+
+        const result = await Swal.fire({
+          title: "등록이 완료되었습니다.",
+          text: "해당 공지사항의 상세페이지로 이동합니다.",
+          icon: "success",
+          confirmButtonText: "확인",
+          reverseButtons: true,
+        });
+
+        if (!result.isConfirmed) return;
       } else {
         const result = await Swal.fire({
           title: "정말 수정하시겠습니까?",
@@ -312,7 +322,7 @@ const submitForm = async (formEl) => {
           noticeId: noticeId,
           title: form.title,
           content: form.content,
-          isPinned: form.emerency == true ? "B1" : "B2",
+          isPinned: form.isPinned == true ? "B1" : "B2",
           category: form.roleId,
           isEditorUserId: userInfo.value.userId,
           attachmentGroupId:
