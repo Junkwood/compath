@@ -227,8 +227,10 @@
                         ]"
                         @click="goDetail(task)"
                       >
-                        <td class="text-center">{{ task.num }}</td>
-                        <td class="text-left title-cell">
+                        <td class="text-center font-semibold">
+                          {{ task.num }}
+                        </td>
+                        <td class="text-left font-semibold title-cell">
                           <el-tooltip
                             class="box-item"
                             effect="dark"
@@ -250,16 +252,22 @@
                           :class="[
                             task.assigneeUserId === null ||
                             (task.assigneeUserId === 'null' && isAssignee)
-                              ? 'text-blue'
-                              : 'text-center',
+                              ? 'text-blue  font-semibold'
+                              : 'text-center  font-semibold',
                           ]"
                           @click.stop="selectingUser(task)"
                         >
                           {{ task.userName }}
                         </td>
-                        <td class="text-center">{{ task.statusName }}</td>
-                        <td class="text-center">{{ task.typeName }}</td>
-                        <td class="text-center">{{ task.codeName }}</td>
+                        <td class="text-center font-semibold">
+                          {{ task.statusName }}
+                        </td>
+                        <td class="text-center font-semibold">
+                          {{ task.typeName }}
+                        </td>
+                        <td class="text-center font-semibold">
+                          {{ task.codeName }}
+                        </td>
                         <td>
                           <div class="progress-wrap">
                             <el-progress
@@ -274,10 +282,18 @@
                             >
                           </div>
                         </td>
-                        <td class="text-center">{{ task.startDate }}</td>
-                        <td class="text-center">{{ task.dueDate }}</td>
-                        <td class="text-left">{{ task.projectName }}</td>
-                        <td class="text-center">{{ task.createdAt }}</td>
+                        <td class="text-center font-semibold">
+                          {{ task.startDate }}
+                        </td>
+                        <td class="text-center font-semibold">
+                          {{ task.dueDate }}
+                        </td>
+                        <td class="text-left font-semibold">
+                          {{ task.projectName }}
+                        </td>
+                        <td class="text-center font-semibold">
+                          {{ task.createdAt }}
+                        </td>
                       </tr>
                     </template>
 
