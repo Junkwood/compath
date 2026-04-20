@@ -8,7 +8,6 @@ const api = axios.create({
   baseURL: "http://localhost:8080/api", // 백엔드 기본 URL
   withCredentials: true, // 세션 쿠키를 백엔드와 주고받으려면 무조건 true
 });
-
 let isTokenRefreshing = false; // 현재 토큰 갱신 중인지 여부
 let refreshSubscribers = []; // 토큰 갱신을 기다리는 대기열(Queue)
 
@@ -170,11 +169,12 @@ api.interceptors.response.use(
             title: "페이지 없음",
             text: "요청하신 페이지나 데이터를 찾을 수 없습니다.",
             confirmButtonText: "확인",
+          }).then(() => {
+            isErrorAlertOpen = false;
+            if (router.currentRoute.value.path !== "/") {
+              router.back();
+            }
           });
-          isErrorAlertOpen = false;
-          if (router.currentRoute.value.path !== "/") {
-            router.back();
-          }
         }
       }
       // 💡 500 서버 오류

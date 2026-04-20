@@ -10,13 +10,17 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
 
-      <main class="page">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">타임 리포트</h1>
-            <p class="page-subtitle">프로젝트별 소요 시간을 확인하세요</p>
-          </div>
+    <div class="sub-header">
+        <div class="breadcrumb">
+          <span>홈</span>
+          <span class="bc-sep">›</span>
+          <span>프로젝트</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">타임 리포트</span>
         </div>
+      </div>
+
+      <main class="page">
 
         <!-- 필터 바 -->
         <div class="filter-card">
@@ -407,6 +411,31 @@ export default {
   margin: 0;
   padding: 0;
   font-family: "Pretendard", "Noto Sans KR", sans-serif;
+}
+.sub-header {
+  background: #ffffff;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+.bc-sep {
+  color: #cbd5e1;
+}
+.bc-cur {
+  color: #0f172a;
+  font-weight: 600;
 }
 .page {
   padding: 28px 32px;

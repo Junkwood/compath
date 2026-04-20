@@ -18,7 +18,7 @@
         <!-- 중앙 카피 -->
         <div>
           <h1 class="text-3xl font-bold text-white mb-4 leading-snug">
-            비밀번호를<br />재설정할게요
+            비밀번호를<br />재설정하세요
           </h1>
           <p class="text-slate-400 text-sm leading-relaxed">
             가입하신 이메일로 인증번호를 보내드립니다.<br />

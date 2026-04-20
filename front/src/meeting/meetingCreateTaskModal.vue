@@ -181,9 +181,7 @@
           <div></div>
           <div class="flex gap-2">
             <button @click="closeModal()" class="btn-navy">취소</button>
-            <button @click="handleSubmit" class="btn-green">
-              프로젝트 등록
-            </button>
+            <button @click="handleSubmit" class="btn-green">업무 등록</button>
           </div>
         </div>
       </div>
