@@ -53,11 +53,6 @@ public class GeminiServiceImpl implements GeminiService {
 
     @Override
     public Mono<String> getChatResponse(String prompt) {
-
-
-        /*
-         * { "contents": [{ "parts":[{"text": "Explain how AI works"}] }] }
-         */
         // 요청의 body 구성하기
         // 위의 형식에 맞게 요청의 body 구성하기
         List<Map<String, Object>> parts = List.of(Map.of("text", createFullPrompt(prompt)));

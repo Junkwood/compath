@@ -227,7 +227,7 @@
                         ]"
                         @click="goDetail(task)"
                       >
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.num }}
                         </td>
                         <td class="text-left font-semibold title-cell">
@@ -238,34 +238,36 @@
                             placement="top-start"
                             :disabled="task.title.length < 20"
                           >
-                            <span
-                              v-if="task.parentTaskId"
-                              :style="{
-                                marginLeft: (task.level - 1) * 20 + 'px',
-                              }"
-                            >
-                              ㄴ [하위]&nbsp; </span
-                            >{{ changeTitleLength(task.title) }}</el-tooltip
-                          >
+                            <div>
+                              <span
+                                v-if="task.parentTaskId"
+                                :style="{
+                                  marginLeft: (task.level - 1) * 10 + 'px',
+                                }"
+                              >
+                                ㄴ</span
+                              >{{ changeTitleLength(task.title) }}
+                            </div>
+                          </el-tooltip>
                         </td>
                         <td
                           :class="[
                             task.assigneeUserId === null ||
                             (task.assigneeUserId === 'null' && isAssignee)
-                              ? 'text-blue  font-semibold'
-                              : 'text-center  font-semibold',
+                              ? 'text-blue  font-medium'
+                              : 'text-center  font-medium',
                           ]"
                           @click.stop="selectingUser(task)"
                         >
                           {{ task.userName }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.statusName }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.typeName }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.codeName }}
                         </td>
                         <td>
@@ -282,16 +284,16 @@
                             >
                           </div>
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.startDate }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.dueDate }}
                         </td>
-                        <td class="text-left font-semibold">
+                        <td class="text-left font-medium">
                           {{ task.projectName }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.createdAt }}
                         </td>
                       </tr>
@@ -385,7 +387,7 @@ let filteredList = ref({
   parentProjectId: "",
 });
 
-const listNum = ref(10);
+const listNum = ref(7);
 const real = ref(true);
 const nowPage = ref(1);
 let listLength = ref(0);
@@ -589,11 +591,12 @@ const changeDateType = (val) => {
 };
 
 const changeTitleLength = (title) => {
-  console.log(title);
+  console.log(title, title.length);
   if (title.length > 20) {
     console.log(title.slice(0, 19));
     title = title.slice(0, 19) + ".....";
   }
+  console.log(title);
   return title;
 };
 </script>

@@ -18,20 +18,26 @@
         JOIN roles r ON gm.role_id = r.role_id
         JOIN users u ON gm.user_id = u.user_id
         WHERE g.group_type = 'C2' AND g.is_active = 'O1' AND u.is_active = 'O1' AND u.user_type='M2'
-        ORDER BY gm.group_id
+        ORDER BY (CASE WHEN g.group_id = 31 THEN 1
+                  WHEN g.group_id = 32 THEN 2
+                  WHEN g.group_id = 33 THEN 3
+                  ELSE 4 END), g.group_name
     </select>
     <select id="getAllForGroup" >
         SELECT
         u.user_id,
         u.user_name AS name,
-        NVL(g.group_name,'그룹 없음') as group_name,
+        g.group_name,
         g.group_type,
         g.group_id
         FROM users u
-        LEFT JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y'
+        JOIN group_members gm ON u.user_id = gm.user_id AND gm.is_active = 'O1' AND gm.is_primary = 'Y'
         LEFT JOIN groups g ON gm.group_id = g.group_id AND g.is_active='O1'
         WHERE u.is_active='O1' AND u.user_type='M2'
-        ORDER BY u.user_id
+        ORDER BY (CASE WHEN g.group_id = 31 THEN 1
+                  WHEN g.group_id = 32 THEN 2
+                  WHEN g.group_id = 33 THEN 3
+                  ELSE 4 END), g.group_name
     </select>
 
 </mapper>
