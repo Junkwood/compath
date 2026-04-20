@@ -227,8 +227,10 @@
                         ]"
                         @click="goDetail(task)"
                       >
-                        <td class="text-center">{{ task.num }}</td>
-                        <td class="text-left title-cell">
+                        <td class="text-center font-semibold">
+                          {{ task.num }}
+                        </td>
+                        <td class="text-left font-semibold title-cell">
                           <el-tooltip
                             class="box-item"
                             effect="dark"
@@ -236,30 +238,38 @@
                             placement="top-start"
                             :disabled="task.title.length < 20"
                           >
-                            <span
-                              v-if="task.parentTaskId"
-                              :style="{
-                                marginLeft: (task.level - 1) * 20 + 'px',
-                              }"
-                            >
-                              ㄴ [하위]&nbsp; </span
-                            >{{ changeTitleLength(task.title) }}</el-tooltip
-                          >
+                            <div>
+                              <span
+                                v-if="task.parentTaskId"
+                                :style="{
+                                  marginLeft: (task.level - 1) * 10 + 'px',
+                                }"
+                              >
+                                ㄴ</span
+                              >{{ changeTitleLength(task.title) }}
+                            </div>
+                          </el-tooltip>
                         </td>
                         <td
                           :class="[
                             task.assigneeUserId === null ||
                             (task.assigneeUserId === 'null' && isAssignee)
-                              ? 'text-blue'
-                              : 'text-center',
+                              ? 'text-blue  font-semibold'
+                              : 'text-center  font-semibold',
                           ]"
                           @click.stop="selectingUser(task)"
                         >
                           {{ task.userName }}
                         </td>
-                        <td class="text-center">{{ task.statusName }}</td>
-                        <td class="text-center">{{ task.typeName }}</td>
-                        <td class="text-center">{{ task.codeName }}</td>
+                        <td class="text-center font-semibold">
+                          {{ task.statusName }}
+                        </td>
+                        <td class="text-center font-semibold">
+                          {{ task.typeName }}
+                        </td>
+                        <td class="text-center font-semibold">
+                          {{ task.codeName }}
+                        </td>
                         <td>
                           <div class="progress-wrap">
                             <el-progress
@@ -274,10 +284,18 @@
                             >
                           </div>
                         </td>
-                        <td class="text-center">{{ task.startDate }}</td>
-                        <td class="text-center">{{ task.dueDate }}</td>
-                        <td class="text-left">{{ task.projectName }}</td>
-                        <td class="text-center">{{ task.createdAt }}</td>
+                        <td class="text-center font-semibold">
+                          {{ task.startDate }}
+                        </td>
+                        <td class="text-center font-semibold">
+                          {{ task.dueDate }}
+                        </td>
+                        <td class="text-left font-semibold">
+                          {{ task.projectName }}
+                        </td>
+                        <td class="text-center font-semibold">
+                          {{ task.createdAt }}
+                        </td>
                       </tr>
                     </template>
 
@@ -369,7 +387,7 @@ let filteredList = ref({
   parentProjectId: "",
 });
 
-const listNum = ref(10);
+const listNum = ref(7);
 const real = ref(true);
 const nowPage = ref(1);
 let listLength = ref(0);
@@ -573,11 +591,12 @@ const changeDateType = (val) => {
 };
 
 const changeTitleLength = (title) => {
-  console.log(title);
+  console.log(title, title.length);
   if (title.length > 20) {
     console.log(title.slice(0, 19));
     title = title.slice(0, 19) + ".....";
   }
+  console.log(title);
   return title;
 };
 </script>

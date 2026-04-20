@@ -177,7 +177,9 @@
                               gap: 4px;
                             "
                           >
-                            [{{ meeting.typeName }}]{{ meeting.title
+                            <span class="category-badge">
+                              {{ meeting.typeName }} </span
+                            >{{ meeting.title
                             }}<el-icon
                               class="text-lg"
                               v-if="
@@ -617,9 +619,10 @@ const resetForm = () => {
 }
 
 .task-table td {
+  font-weight: bold;
   padding: 14px 12px;
   font-size: 13px;
-  color: #1f2937;
+  color: #374151;
   border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
 }
@@ -814,5 +817,19 @@ const resetForm = () => {
 
 :deep(.task-table th:nth-child(1), .task-table td:nth-child(1)) {
   max-width: 5%;
+}
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
 }
 </style>

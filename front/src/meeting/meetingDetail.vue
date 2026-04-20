@@ -188,7 +188,7 @@
                 </div>
 
                 <!-- 예시 더미 (데이터 없을 때 빈 상태 표시) -->
-                <div v-if="!connectList" class="task-empty">
+                <div v-if="connectList.length == 0" class="task-empty">
                   연결된 업무가 없습니다.
                 </div>
               </div>
@@ -260,7 +260,7 @@ const openModal = () => {
 };
 
 // 모달창 연결버튼
-const closeModal = val => {
+const closeModal = (val) => {
   console.log(val);
   openConnectModal.value = false;
   connectList.value = meetingStore.detailConnectList;
@@ -316,7 +316,7 @@ const lockMeeting = async () => {
 };
 
 // 연결 업무 상세페이지 이동
-const gotaskDetail = task => {
+const gotaskDetail = (task) => {
   router.push({
     name: "taskDetail",
     params: { projectId: projectId, subProjectId: subId, taskId: task.taskId },
@@ -324,7 +324,7 @@ const gotaskDetail = task => {
 };
 
 // 연결 업무 해제
-const delDtailConnect = async task => {
+const delDtailConnect = async (task) => {
   console.log(task);
   let obj = {
     meetingtaskId: task.meetingtaskId,
@@ -335,7 +335,7 @@ const delDtailConnect = async task => {
 };
 
 // 파일 다운로드
-const attachmentDownload = async file => {
+const attachmentDownload = async (file) => {
   console.log(file);
   await attachmentStore.downloadFile(file);
 };
@@ -373,10 +373,10 @@ const isAssignee = computed(() => {
   if (!currentUserId) return false;
 
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   return isPmPl || isManager;
 });

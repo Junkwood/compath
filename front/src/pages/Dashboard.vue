@@ -294,6 +294,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { Plus, CopyDocument } from "@element-plus/icons-vue";
+import Swal from "sweetalert2";
 import api from "../utils/api";
 import { useAuthStore } from "../stores/auth";
 import Sidebar from "../partials/Sidebar.vue";
@@ -330,6 +331,12 @@ const myTasks = ref({
   done: 0,
   rejected: 0,
   deadline: 0,
+});
+
+const canManageProject = computed(() => {
+  const group = user.value?.primaryGroupName;
+
+  return group === "PM" || group === "총괄PL";
 });
 
 const taskStatusList = computed(() => [
@@ -549,11 +556,31 @@ const cellStyle = () => ({
   padding: "10px 0",
 });
 
+const showNoPermissionAlert = (message) => {
+  Swal.fire({
+    icon: "warning",
+    title: "권한 없음",
+    text: message,
+    confirmButtonText: "확인",
+    confirmButtonColor: "#1f4f82",
+  });
+};
+
 const handleCreateProject = () => {
+  if (!canManageProject.value) {
+    showNoPermissionAlert("프로젝트 생성은 PM/총괄PL만 가능합니다.");
+    return;
+  }
+
   createProjectModalOpen.value = true;
 };
 
 const handleCopyProject = () => {
+  if (!canManageProject.value) {
+    showNoPermissionAlert("프로젝트 복사는 PM/총괄PL만 가능합니다.");
+    return;
+  }
+
   copyProjectModalOpen.value = true;
 };
 
@@ -573,6 +600,11 @@ const goProjectDashboard = (row) => {
     params: { projectId: row.projectId },
   });
 };
+
+onMounted(() => {
+  console.log("user:", user.value);
+  console.log("roleId:", user.value?.roleId);
+});
 </script>
 
 <style scoped>

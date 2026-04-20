@@ -90,7 +90,7 @@
         <el-input v-model="form.description" type="textarea" :rows="3" />
       </el-form-item>
 
-      <el-form-item label="공개 여부">
+      <!-- <el-form-item label="공개 여부">
         <div class="switch-row">
           <el-switch v-model="form.isPublic" />
           <span class="switch-desc">
@@ -100,7 +100,7 @@
             </span>
           </span>
         </div>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
 
     <template #footer>

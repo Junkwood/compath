@@ -29,6 +29,34 @@
         </el-select>
       </el-form-item>
 
+      <el-form-item label="복사 기간">
+        <div class="date-range-row">
+          <el-date-picker
+            v-model="form.startDate"
+            type="date"
+            placeholder="시작일 선택"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+            disabled
+          />
+          <span class="date-separator">~</span>
+          <el-date-picker
+            v-model="form.endDate"
+            type="date"
+            placeholder="종료일 선택"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+            disabled
+          />
+        </div>
+
+        <div class="inherit-help">
+          원본 프로젝트 선택 시 오늘 기준으로 기간이 자동 계산됩니다.
+        </div>
+      </el-form-item>
+
       <el-form-item label="새 프로젝트 명" prop="projectName">
         <el-input v-model="form.projectName" />
       </el-form-item>
@@ -59,11 +87,24 @@
             체크하지 않으면 하위프로젝트 담당자와 업무 담당자는 비워집니다.
           </span>
 
-          <el-checkbox v-model="form.copyMilestones">
+          <el-checkbox
+            v-model="form.copySubProjects"
+            :disabled="isSubProjectLocked"
+          >
+            하위프로젝트 복사
+          </el-checkbox>
+          <span class="copy-help">
+            체크하면 원본 프로젝트의 하위프로젝트 구조도 함께 복사됩니다.
+          </span>
+
+          <el-checkbox
+            v-model="form.copyMilestones"
+            :disabled="isMilestoneLocked"
+          >
             마일스톤 복사
           </el-checkbox>
           <span class="copy-help">
-            체크하지 않으면 마일스톤과 매핑 정보는 복사되지 않습니다.
+            하위프로젝트 또는 업무를 복사하면 마일스톤도 함께 복사됩니다.
           </span>
 
           <el-checkbox v-model="form.copyTasks">업무 복사</el-checkbox>
@@ -122,9 +163,12 @@ const defaultForm = () => ({
   projectName: "",
   plUserId: null,
   description: "",
+  startDate: "",
+  endDate: "",
   copyMembers: false,
-  copyMilestones: true,
-  copyTasks: true,
+  copySubProjects: false,
+  copyMilestones: false,
+  copyTasks: false,
 });
 
 const form = reactive(defaultForm());
@@ -143,6 +187,137 @@ const rules = {
   plUserId: [
     { required: true, message: "총괄PL을 선택하세요", trigger: "change" },
   ],
+  startDate: [
+    { required: true, message: "시작일을 선택하세요", trigger: "change" },
+  ],
+  endDate: [
+    { required: true, message: "종료일을 선택하세요", trigger: "change" },
+  ],
+};
+
+const selectedProject = computed(() => {
+  return (
+    projectOptions.value.find(
+      (item) => item.projectId === form.sourceProjectId
+    ) || null
+  );
+});
+
+const isSubProjectLocked = computed(() => {
+  return form.copyTasks;
+});
+
+const isMilestoneLocked = computed(() => {
+  return form.copyTasks || form.copySubProjects;
+});
+
+const parseLocalDate = (dateStr) => {
+  if (!dateStr) return null;
+
+  const pureDate = String(dateStr).split("T")[0];
+  const parts = pureDate.split("-");
+
+  if (parts.length !== 3) return null;
+
+  const year = Number(parts[0]);
+  const month = Number(parts[1]) - 1;
+  const day = Number(parts[2]);
+
+  return new Date(year, month, day);
+};
+
+const formatDate = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const isWeekday = (date) => {
+  const day = date.getDay();
+  return day !== 0 && day !== 6;
+};
+
+const getWorkdaysBetween = (start, end) => {
+  if (!start || !end) return null;
+
+  const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const e = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+  if (e < s) return 1;
+
+  let count = 0;
+  const cursor = new Date(s);
+
+  while (cursor <= e) {
+    if (isWeekday(cursor)) {
+      count += 1;
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return count < 1 ? 1 : count;
+};
+
+const addWorkdays = (start, days) => {
+  if (!start) return null;
+
+  const result = new Date(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate()
+  );
+
+  if (!days || days <= 1) {
+    return result;
+  }
+
+  let added = 1;
+
+  while (added < days) {
+    result.setDate(result.getDate() + 1);
+
+    if (isWeekday(result)) {
+      added += 1;
+    }
+  }
+
+  return result;
+};
+
+const applyAutoDateRange = () => {
+  const source = selectedProject.value;
+
+  if (!source) {
+    form.startDate = "";
+    form.endDate = "";
+    return;
+  }
+
+  const originalStart = parseLocalDate(source.startDate);
+  const originalEnd = parseLocalDate(source.endDate);
+
+  const today = new Date();
+  const todayOnly = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
+  const workdays = getWorkdaysBetween(originalStart, originalEnd);
+
+  form.startDate = formatDate(todayOnly);
+
+  if (!workdays) {
+    form.endDate = "";
+    return;
+  }
+
+  const newEndDate = addWorkdays(todayOnly, workdays);
+  form.endDate = formatDate(newEndDate);
 };
 
 const fetchPlList = async () => {
@@ -181,12 +356,46 @@ onMounted(() => {
 });
 
 watch(
+  () => form.sourceProjectId,
+  (newVal) => {
+    if (!newVal) {
+      form.startDate = "";
+      form.endDate = "";
+      form.projectName = "";
+      return;
+    }
+
+    const source = selectedProject.value;
+
+    if (source) {
+      form.projectName = `${source.projectName}_COPY`;
+    }
+
+    applyAutoDateRange();
+
+    if (form.copyTasks || form.copySubProjects) {
+      form.copyMilestones = true;
+    }
+  }
+);
+
+watch(
   () => form.copyTasks,
+  (val) => {
+    if (val) {
+      form.copySubProjects = true;
+      form.copyMilestones = true;
+    }
+  }
+);
+
+watch(
+  () => form.copySubProjects,
   (val) => {
     if (val) {
       form.copyMilestones = true;
     }
-  },
+  }
 );
 
 const handleClose = () => {
@@ -205,23 +414,28 @@ const handleSubmit = async () => {
   submitting.value = true;
 
   try {
-    const selectedProject = projectOptions.value.find(
-      (item) => item.projectId === form.sourceProjectId,
-    );
-
     const payload = {
       sourceProjectId: form.sourceProjectId,
       projectName: form.projectName,
       description: form.description,
-      startDate: selectedProject?.startDate ?? null,
-      endDate: selectedProject?.endDate ?? null,
-      isPublic: selectedProject?.isPublic ?? selectedProject?.is_public ?? null,
+      startDate: form.startDate || null,
+      endDate: form.endDate || null,
+      isPublic:
+        selectedProject.value?.isPublic ??
+        selectedProject.value?.is_public ??
+        null,
       useMilestone:
-        selectedProject?.useMilestone ?? selectedProject?.use_milestone ?? null,
-      pmUserId: selectedProject?.pmUserId ?? null,
+        selectedProject.value?.useMilestone ??
+        selectedProject.value?.use_milestone ??
+        null,
+      pmUserId:
+        selectedProject.value?.pmUserId ??
+        selectedProject.value?.pm_user_id ??
+        null,
       plUserId: form.plUserId,
       createdBy: authStore.user?.userId,
       copyMembers: form.copyMembers ? "Y" : "N",
+      copySubProjects: form.copySubProjects ? "Y" : "N",
       copyMilestones: form.copyMilestones ? "Y" : "N",
       copyTasks: form.copyTasks ? "Y" : "N",
     };
@@ -271,33 +485,26 @@ const handleSubmit = async () => {
   line-height: 1.5;
 }
 
-.inherit-box {
+.date-range-row {
   width: 100%;
-  padding: 14px 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #f8fafc;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 10px;
 }
 
-.inherit-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.inherit-label {
-  font-size: 13px;
+.date-separator {
+  flex-shrink: 0;
+  font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: #6b7280;
 }
 
-.inherit-value {
-  font-size: 13px;
-  color: #6b7280;
-  text-align: right;
+.inherit-help {
+  margin-top: 8px;
+  margin-left: 2px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
 }
 
 .modal-footer {
