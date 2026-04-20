@@ -31,7 +31,7 @@
             </div>
             <div class="flex gap-2 self-end">
               <button
-                v-if="taskInfo.taskStatusId == 4 && isAssignee"
+                v-if="taskInfo.taskStatusId == 13 && isAssignee"
                 @click="goCreateSubTask"
                 class="btn-action btn-sub"
               >

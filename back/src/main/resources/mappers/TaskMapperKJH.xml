@@ -35,62 +35,63 @@
         SELECT C.*
         FROM  (SELECT ROWNUM AS num, B.*
                FROM (SELECT COUNT(*) OVER() AS task_counts, A.*
-                     FROM (SELECT CONNECT_BY_ROOT(t.created_at) AS created_at,
-                           CONNECT_BY_ROOT(t.assignee_user_id) AS assignee_user_id,
-                       t.title,
-                       t.content,
-                       t.task_id,
-                       t.parent_task_id,
-                       LEVEL,
-                       u.user_name,
-                       c.code_name,
-                       t.progress_rate,
-                       t.start_date,
-                       t.due_date,
-                       p.project_name,
-                       p.project_id,
-                       p.parent_project_id,
-                       t2.type_name,
-                       t3.status_name,
-                       t3.task_status_id
-                    FROM tasks t
-                    JOIN projects p ON t.project_id = p.project_id
-                    JOIN task_types t2 ON t.task_type_id = t2.task_type_id
-                    JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
-                    JOIN common_code c ON t.priority_code = c.code_value
-                    LEFT JOIN users u ON t.assignee_user_id = u.user_id
-                    WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
-                    AND t.is_deleted = 'Q2'
-                    <if test="taskId != null and taskId != ''">
-                        AND t.task_id = #{taskId}
-                    </if>
-                    <if test="assigneeUserId != null and assigneeUserId != ''">
-                        AND t.assignee_user_id = #{assigneeUserId}
-                    </if>
-                    <if test="taskTypeId != null and taskTypeId != ''">
-                        AND t.task_type_id = #{taskTypeId}
-                    </if>
-                    <if test="taskStatusId != null and taskStatusId != ''">
-                        AND t.task_status_id = #{taskStatusId}
-                    </if>
-                    <if test="startDate != null ">
-                        AND t.start_date &gt;= #{startDate}
-                    </if>
-                    <if test="endDate != null ">
-                        AND t.due_date &lt;= #{endDate}
-                    </if>
-                    <if test="priorityCode != null and priorityCode != ''">
-                        AND t.priority_code = #{priorityCode}
-                    </if>
-                    <if test="parentProjectId != null and parentProjectId != ''and parentProjectId != projectId">
-                       AND t.project_id = #{parentProjectId}
-                    </if>
-                    <if test="search != null and search != ''">
-                        AND t.title LIKE '%' || #{search} || '%'
-                    </if>
+                     FROM (SELECT t.*, LEVEL
+                           FROM (SELECT t.created_at,
+                                      t.assignee_user_id,
+                                      t.title,
+                                      t.content,
+                                      t.task_id,
+                                      t.parent_task_id,
+                                      u.user_name,
+                                      c.code_name,
+                                      t.progress_rate,
+                                      t.start_date,
+                                      t.due_date,
+                                      p.project_name,
+                                      p.project_id,
+                                      p.parent_project_id,
+                                      t2.type_name,
+                                      t3.status_name,
+                                      t3.task_status_id
+                                FROM tasks t
+                                JOIN projects p ON t.project_id = p.project_id
+                                JOIN task_types t2 ON t.task_type_id = t2.task_type_id
+                                JOIN task_statuses t3 ON t.task_status_id = t3.task_status_id
+                                JOIN common_code c ON t.priority_code = c.code_value
+                                LEFT JOIN users u ON t.assignee_user_id = u.user_id
+                                WHERE (p.project_id=#{projectId} OR p.parent_project_id = #{projectId})
+                                AND t.is_deleted = 'Q2'
+                                <if test="taskId != null and taskId != ''">
+                                    AND t.task_id = #{taskId}
+                                </if>
+                                <if test="assigneeUserId != null and assigneeUserId != ''">
+                                    AND t.assignee_user_id = #{assigneeUserId}
+                                </if>
+                                <if test="taskTypeId != null and taskTypeId != ''">
+                                    AND t.task_type_id = #{taskTypeId}
+                                </if>
+                                <if test="taskStatusId != null and taskStatusId != ''">
+                                    AND t.task_status_id = #{taskStatusId}
+                                </if>
+                                <if test="startDate != null ">
+                                    AND t.start_date &gt;= #{startDate}
+                                </if>
+                                <if test="endDate != null ">
+                                    AND t.due_date &lt;= #{endDate}
+                                </if>
+                                <if test="priorityCode != null and priorityCode != ''">
+                                    AND t.priority_code = #{priorityCode}
+                                </if>
+                                <if test="parentProjectId != null and parentProjectId != ''and parentProjectId != projectId">
+                                   AND t.project_id = #{parentProjectId}
+                                </if>
+                                <if test="search != null and search != ''">
+                                    AND t.title LIKE '%' || #{search} || '%'
+                                </if>
+                           ORDER BY (CASE WHEN t.assignee_user_id IS NULL THEN 0 ELSE 1 END), t.created_at DESC)t
                     START WITH t.parent_task_id IS NULL
                     CONNECT BY PRIOR t.task_id = t.parent_task_id
-                    ORDER SIBLINGS BY t.assignee_user_id DESC, t.created_at DESC) A)B
+                    ORDER SIBLINGS BY (CASE WHEN t.assignee_user_id IS NULL THEN 0 ELSE 1 END), t.created_at DESC) A)B
                WHERE ROWNUM BETWEEN 1 AND #{endNum})C
         WHERE C.num >= #{startNum}
     </select>
@@ -296,7 +297,7 @@
     </update>
 
 <!--    업무 작업 이력-->
-    <select id="getActivityLogsByTaskId" >
+    <select id="getActivityLogsByTaskId" resultType="TaskDetailDTOKJH" >
         SELECT
         AL.ACTIVITY_LOG_ID AS activityLogId,
         AL.TARGET_TYPE     AS targetType,
@@ -306,7 +307,7 @@
         U.USER_NAME        AS userName,
         AL.BEFORE_VALUE    AS beforeValue,
         AL.AFTER_VALUE     AS afterValue,
-        TO_CHAR(AL.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+        AL.CREATED_AT AS createdAt,
         AL.PROJECT_ID      AS projectId
         FROM ACTIVITY_LOGS AL
         LEFT JOIN USERS U

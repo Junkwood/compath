@@ -98,6 +98,7 @@ export const usetaskKJHStore = defineStore("taskKJH", {
         .get("/tasks/activityLogs/" + id)
         .then((res) => {
           let result = res.data;
+          console.log(result);
           result.forEach((task) => {
             if (task.actionType == "T0") {
               task.message = `${task.userName}님이 "${task.afterValue}"를 생성하셨습니다.`;
@@ -138,11 +139,11 @@ export const usetaskKJHStore = defineStore("taskKJH", {
               task.message = `${task.userName}님이 우선순위을 "${task.beforeValue}"에서 "${task.afterValue}"로 변경하셨습니다.`;
             } else if (task.actionType == "T3") {
               const TASK_STATUS_LABEL_MAP = {
-                1: "시작 전",
-                2: "진행중",
-                3: "개발완료",
-                4: "반려",
-                5: "종료",
+                10: "시작 전",
+                11: "진행중",
+                12: "개발완료",
+                13: "반려",
+                14: "완료",
               };
 
               task.beforeValue =
