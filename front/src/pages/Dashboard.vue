@@ -180,6 +180,16 @@
               <div class="flex items-center gap-3">
                 <div class="my-project-switch">
                   <span class="switch-label">내 프로젝트만 보기</span>
+
+                  <el-button
+                    size="small"
+                    circle
+                    plain
+                    @click="showMyProjectInfo"
+                  >
+                    ?
+                  </el-button>
+
                   <el-switch v-model="showOnlyMyProjects" />
                 </div>
 
@@ -294,6 +304,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { Plus, CopyDocument } from "@element-plus/icons-vue";
+import Swal from "sweetalert2";
 import api from "../utils/api";
 import { useAuthStore } from "../stores/auth";
 import Sidebar from "../partials/Sidebar.vue";
@@ -571,6 +582,22 @@ const goProjectDashboard = (row) => {
   router.push({
     name: "projectDash",
     params: { projectId: row.projectId },
+  });
+};
+
+const showMyProjectInfo = async () => {
+  await Swal.fire({
+    title: "내 프로젝트만 보기",
+    html: `
+      <div style="text-align:left; line-height:1.7;">
+        프로젝트 멤버 여부를 기준으로 <b>isMyProject</b> 값을 계산하여
+        토글 필터링에 활용했습니다.<br/><br/>
+        <b>Y</b> : 내가 참여 중인 프로젝트<br/>
+        <b>N</b> : 내가 참여하지 않은 프로젝트
+      </div>
+    `,
+    icon: "info",
+    confirmButtonText: "확인",
   });
 };
 </script>

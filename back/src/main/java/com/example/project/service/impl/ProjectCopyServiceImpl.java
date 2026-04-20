@@ -21,6 +21,21 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
     public Integer copyProject(ProjectCopyRequestDto dto) {
         Map<String, Object> params = new HashMap<>();
 
+        String copyMembers = dto.getCopyMembers();
+        String copySubProjects = dto.getCopySubProjects();
+        String copyMilestones = dto.getCopyMilestones();
+        String copyTasks = dto.getCopyTasks();
+        String useMilestone = dto.getUseMilestone();
+
+        if ("Y".equals(copyTasks)) {
+            copySubProjects = "Y";
+            copyMilestones = "Y";
+        }
+
+        if ("O2".equals(useMilestone) && "Y".equals(copySubProjects)) {
+            copyMilestones = "Y";
+        }
+
         params.put("sourceProjectId", dto.getSourceProjectId());
         params.put("projectName", dto.getProjectName());
         params.put("description", dto.getDescription());
@@ -31,9 +46,10 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
         params.put("pmUserId", dto.getPmUserId());
         params.put("plUserId", dto.getPlUserId());
         params.put("createdBy", dto.getCreatedBy());
-        params.put("copyMembers", dto.getCopyMembers());
-        params.put("copyMilestones", dto.getCopyMilestones());
-        params.put("copyTasks", dto.getCopyTasks());
+        params.put("copyMembers", copyMembers);
+        params.put("copySubProjects", copySubProjects);
+        params.put("copyMilestones", copyMilestones);
+        params.put("copyTasks", copyTasks);
 
         projectCopyMapper.copyProjectProc(params);
 

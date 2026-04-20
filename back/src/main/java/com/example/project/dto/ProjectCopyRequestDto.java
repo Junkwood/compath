@@ -17,7 +17,8 @@ public class ProjectCopyRequestDto {
     private Integer plUserId;
     private Integer createdBy;
 
-    private String copyMembers;     // Y / N
-    private String copyMilestones;  // Y / N
-    private String copyTasks;       // Y / N
+    private String copyMembers;      // Y / N
+    private String copySubProjects;  // Y / N
+    private String copyMilestones;   // Y / N
+    private String copyTasks;        // Y / N
 }
