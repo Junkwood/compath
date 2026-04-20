@@ -149,6 +149,15 @@ export const useTaskStore = defineStore("task", () => {
       form.value.milestone =
         milestoneList.value.find((m) => m.value === parent.milestoneId)?.name ??
         form.value.milestone;
+      //부모 하위프젝 가져오기
+      const parentProjectList = parentRes.data.projectList;
+      const parentSubProject = parentProjectList?.find(
+        (p) => p.parentProjectId,
+      );
+      if (parentSubProject) {
+        form.value.subProjectId = parentSubProject.projectId;
+        form.value.subProjectName = parentSubProject.projectName;
+      }
     }
   };
 
