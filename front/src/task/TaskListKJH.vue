@@ -238,15 +238,17 @@
                             placement="top-start"
                             :disabled="task.title.length < 20"
                           >
-                            <span
-                              v-if="task.parentTaskId"
-                              :style="{
-                                marginLeft: (task.level - 1) * 20 + 'px',
-                              }"
-                            >
-                              ㄴ [하위]&nbsp; </span
-                            >{{ changeTitleLength(task.title) }}</el-tooltip
-                          >
+                            <div>
+                              <span
+                                v-if="task.parentTaskId"
+                                :style="{
+                                  marginLeft: (task.level - 1) * 10 + 'px',
+                                }"
+                              >
+                                ㄴ</span
+                              >{{ changeTitleLength(task.title) }}
+                            </div>
+                          </el-tooltip>
                         </td>
                         <td
                           :class="[
@@ -385,7 +387,7 @@ let filteredList = ref({
   parentProjectId: "",
 });
 
-const listNum = ref(10);
+const listNum = ref(7);
 const real = ref(true);
 const nowPage = ref(1);
 let listLength = ref(0);
@@ -589,11 +591,12 @@ const changeDateType = (val) => {
 };
 
 const changeTitleLength = (title) => {
-  console.log(title);
+  console.log(title, title.length);
   if (title.length > 20) {
     console.log(title.slice(0, 19));
     title = title.slice(0, 19) + ".....";
   }
+  console.log(title);
   return title;
 };
 </script>
