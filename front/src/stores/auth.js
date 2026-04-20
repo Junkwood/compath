@@ -38,6 +38,7 @@ export const useAuthStore = defineStore("auth", {
       this.user.name = decoded.userName;
       this.user.primaryGroupId = decoded.primaryGroupId;
       this.user.primaryGroupName = decoded.primaryGroupName;
+      this.user.roleId = decoded.roleId;
       // console.log("디코딩된 토큰 정보:", decoded);
       localStorage.setItem("user", JSON.stringify(this.user));
     },

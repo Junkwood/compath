@@ -180,16 +180,6 @@
               <div class="flex items-center gap-3">
                 <div class="my-project-switch">
                   <span class="switch-label">내 프로젝트만 보기</span>
-
-                  <el-button
-                    size="small"
-                    circle
-                    plain
-                    @click="showMyProjectInfo"
-                  >
-                    ?
-                  </el-button>
-
                   <el-switch v-model="showOnlyMyProjects" />
                 </div>
 
@@ -341,6 +331,12 @@ const myTasks = ref({
   done: 0,
   rejected: 0,
   deadline: 0,
+});
+
+const canManageProject = computed(() => {
+  const group = user.value?.primaryGroupName;
+
+  return group === "PM" || group === "총괄PL";
 });
 
 const taskStatusList = computed(() => [
@@ -560,11 +556,31 @@ const cellStyle = () => ({
   padding: "10px 0",
 });
 
+const showNoPermissionAlert = (message) => {
+  Swal.fire({
+    icon: "warning",
+    title: "권한 없음",
+    text: message,
+    confirmButtonText: "확인",
+    confirmButtonColor: "#1f4f82",
+  });
+};
+
 const handleCreateProject = () => {
+  if (!canManageProject.value) {
+    showNoPermissionAlert("프로젝트 생성은 PM/총괄PL만 가능합니다.");
+    return;
+  }
+
   createProjectModalOpen.value = true;
 };
 
 const handleCopyProject = () => {
+  if (!canManageProject.value) {
+    showNoPermissionAlert("프로젝트 복사는 PM/총괄PL만 가능합니다.");
+    return;
+  }
+
   copyProjectModalOpen.value = true;
 };
 
@@ -585,21 +601,10 @@ const goProjectDashboard = (row) => {
   });
 };
 
-const showMyProjectInfo = async () => {
-  await Swal.fire({
-    title: "내 프로젝트만 보기",
-    html: `
-      <div style="text-align:left; line-height:1.7;">
-        프로젝트 멤버 여부를 기준으로 <b>isMyProject</b> 값을 계산하여
-        토글 필터링에 활용했습니다.<br/><br/>
-        <b>Y</b> : 내가 참여 중인 프로젝트<br/>
-        <b>N</b> : 내가 참여하지 않은 프로젝트
-      </div>
-    `,
-    icon: "info",
-    confirmButtonText: "확인",
-  });
-};
+onMounted(() => {
+  console.log("user:", user.value);
+  console.log("roleId:", user.value?.roleId);
+});
 </script>
 
 <style scoped>
