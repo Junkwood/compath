@@ -48,6 +48,14 @@ public class TaskListDTOKJH {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDate dueDate;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+    private LocalDate estStartDate;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+    private LocalDate estEndDate;
+
     private String projectName;
     private Integer projectId;
     private Integer parentProjectId;

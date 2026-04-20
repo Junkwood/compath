@@ -227,7 +227,7 @@
                         ]"
                         @click="goDetail(task)"
                       >
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.num }}
                         </td>
                         <td class="text-left font-semibold title-cell">
@@ -254,20 +254,20 @@
                           :class="[
                             task.assigneeUserId === null ||
                             (task.assigneeUserId === 'null' && isAssignee)
-                              ? 'text-blue  font-semibold'
-                              : 'text-center  font-semibold',
+                              ? 'text-blue  font-medium'
+                              : 'text-center  font-medium',
                           ]"
                           @click.stop="selectingUser(task)"
                         >
                           {{ task.userName }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.statusName }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.typeName }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.codeName }}
                         </td>
                         <td>
@@ -284,16 +284,16 @@
                             >
                           </div>
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.startDate }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.dueDate }}
                         </td>
-                        <td class="text-left font-semibold">
+                        <td class="text-left font-medium">
                           {{ task.projectName }}
                         </td>
-                        <td class="text-center font-semibold">
+                        <td class="text-center font-medium">
                           {{ task.createdAt }}
                         </td>
                       </tr>
