@@ -106,7 +106,9 @@
         FROM USERS U
         JOIN GROUP_MEMBERS GM
             ON GM.USER_ID = U.USER_ID
-        WHERE GM.GROUP_ID = 32 AND U.is_active = 'O1' AND U.user_type = 'M2'
+        WHERE GM.GROUP_ID = 32
+            AND U.is_active = 'O1'
+            AND U.user_type = 'M2'
     </select>
 
     <!--하위프로젝트 생성 시 그 프로젝트의 role이 PL인 사람 불러오기-->

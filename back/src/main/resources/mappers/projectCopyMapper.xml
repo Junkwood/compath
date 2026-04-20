@@ -5,21 +5,22 @@
 <mapper namespace="com.example.project.mapper.ProjectCopyMapper">
 
     <select id="copyProjectProc" statementType="CALLABLE" parameterType="map">
-        { CALL COPY_PROJECT_PROC(
-        #{sourceProjectId, mode=IN, jdbcType=INTEGER},
+        { CALL COMPATH.COPY_PROJECT_PROC(
+        #{sourceProjectId, mode=IN, jdbcType=NUMERIC},
         #{projectName, mode=IN, jdbcType=VARCHAR},
         #{description, mode=IN, jdbcType=VARCHAR},
         #{startDate, mode=IN, jdbcType=VARCHAR},
         #{endDate, mode=IN, jdbcType=VARCHAR},
         #{isPublic, mode=IN, jdbcType=VARCHAR},
         #{useMilestone, mode=IN, jdbcType=VARCHAR},
-        #{pmUserId, mode=IN, jdbcType=INTEGER},
-        #{plUserId, mode=IN, jdbcType=INTEGER},
-        #{createdBy, mode=IN, jdbcType=INTEGER},
+        #{pmUserId, mode=IN, jdbcType=NUMERIC},
+        #{plUserId, mode=IN, jdbcType=NUMERIC},
+        #{createdBy, mode=IN, jdbcType=NUMERIC},
         #{copyMembers, mode=IN, jdbcType=VARCHAR},
+        #{copySubProjects, mode=IN, jdbcType=VARCHAR},
         #{copyMilestones, mode=IN, jdbcType=VARCHAR},
         #{copyTasks, mode=IN, jdbcType=VARCHAR},
-        #{newProjectId, mode=OUT, jdbcType=INTEGER}
+        #{newProjectId, mode=OUT, jdbcType=NUMERIC}
         ) }
     </select>
 
