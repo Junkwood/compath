@@ -32,7 +32,7 @@ export const useTaskStore = defineStore("task", () => {
   // 종료 상태 ID 목록 (IS_FINAL = 'O1')
   const finishedIds = computed(() =>
     (statusList.value ?? [])
-      .filter((s) => s.isFinal === "O1")
+      .filter((s) => s.isFinal === "O1" || s.statusName === "개발완료")
       .map((s) => s.taskStatusId),
   );
 
@@ -42,11 +42,11 @@ export const useTaskStore = defineStore("task", () => {
     return statusList.value.filter((s) => [10, 11].includes(s.taskStatusId));
   });
 
-  // 소요시간/진척도 표시 여부 (개발완료=3 또는 종료)
+  // 소요시간/진척도 표시 여부
   const isCompletedStatus = computed(
     () =>
       finishedIds.value.includes(Number(form.value.taskStatusId)) ||
-      Number(form.value.taskStatusId) === 3,
+      Number(form.value.taskStatusId) === 12,
   );
 
   // ───────────── Form ─────────────
@@ -339,7 +339,7 @@ export const useTaskStore = defineStore("task", () => {
     () => form.value.taskStatusId,
     (newVal) => {
       const status = Number(newVal);
-      const isFinished = finishedIds.value.includes(status) || status === 3;
+      const isFinished = finishedIds.value.includes(status);
 
       if (isFinished) {
         if (form.value.displayActualHours > 0) {
@@ -421,7 +421,7 @@ export const useTaskStore = defineStore("task", () => {
     const status = Number(
       String(form.value.taskStatusId).replace(/[^0-9]/g, ""),
     );
-    const isFinished = finishedIds.value.includes(status) || status === 3;
+    const isFinished = finishedIds.value.includes(status);
     const estStartDate =
       form.value.estStartDate && form.value.estStartDate.trim() !== ""
         ? form.value.estStartDate
@@ -513,8 +513,12 @@ export const useTaskStore = defineStore("task", () => {
     calcEstTime();
     const status = Number(form.value.taskStatusId);
 
+    // 현재 상태 이름 가져오기
+    const statusName = statusList.value.find(
+      (s) => s.taskStatusId === status,
+    )?.statusName;
     // 반려 처리
-    if (status === 4) {
+    if (statusName === "반려") {
       const { value: text, isConfirmed } = await Swal.fire({
         title: "업무 반려",
         input: "textarea",
@@ -532,7 +536,7 @@ export const useTaskStore = defineStore("task", () => {
     }
 
     // 종료 확인
-    if (finishedIds.value.includes(status)) {
+    if (statusName === "완료") {
       const result = await Swal.fire({
         title: "업무를 종료하시겠습니까?",
         text: "종료 후에는 상태를 변경할 수 없습니다.",

@@ -66,7 +66,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     //업무 수정
     @Override
     public int updateTask(TaskReqDtoJJW dto,List<MultipartFile> files) throws IOException {
-        if (dto.getTaskStatusId() != null && dto.getTaskStatusId() == 2) {
+        if (dto.getTaskStatusId() != null && dto.getTaskStatusId() == 11) {
             if (dto.getStartDate() == null) dto.setStartDate(new Date());
         }
         // 첨부파일 처리
@@ -88,7 +88,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
         int result = taskMapperJJW.updateTask(dto);
 
         // 진행중
-        if (dto.getTaskStatusId() == 2) {
+        if (dto.getTaskStatusId() == 11) {
             notificationService.sendToProjectMembers(
                     dto.getProjectId(), dto.getAssigneeUserId(),
                     "R3", dto.getTaskId(),
@@ -98,7 +98,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
         }
 
         // 개발완료
-        if (dto.getTaskStatusId() == 3) {
+        if (dto.getTaskStatusId() == 12) {
             notificationService.sendToProjectMembers(
                     dto.getProjectId(), dto.getAssigneeUserId(),
                     "R3", dto.getTaskId(),
@@ -108,7 +108,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
         }
 
         // 업무 종료(보내는 사람 0은 임의로 해둠 딱히 문제 x)
-        if (dto.getTaskStatusId() == 5) {
+        if (dto.getTaskStatusId() == 14) {
             notificationService.sendToOne(
                     dto.getAssigneeUserId(),
                     "R3", dto.getTaskId(),
@@ -122,7 +122,7 @@ public class TaskServiceImplJJW implements TaskServiceJJW {
     @Override
     public void insert1(TaskRejectDtoJJW re) {
         taskMapperJJW.insert1(re);
-        taskMapperJJW.updateTaskStatus(re.getTaskId(), 4);
+        taskMapperJJW.updateTaskStatus(re.getTaskId(), 13);
 
         TaskReqDtoJJW task = taskMapperJJW.getTaskById(re.getTaskId());
 

@@ -271,7 +271,7 @@ FROM tasks t
 LEFT JOIN users u ON t.assignee_user_id = u.user_id
 WHERE t.task_id = p_task_id;
 
-    -- 타임 엔트리 목록 ← 추가
+    -- 타임 엔트리 목록 
     OPEN timeEntryList FOR
     SELECT
         te.time_entry_id,
