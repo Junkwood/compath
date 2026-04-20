@@ -4,7 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.log.mapper.ActivityLogMapper">
 
-    <select id="getActivityLogsByProjectId" resultType="ActivityLogDto">
+    <select id="getActivityLogs" parameterType="com.example.log.dto.ActivityLogSearchDto" resultType="com.example.log.dto.ActivityLogDto">
         SELECT
             AL.ACTIVITY_LOG_ID AS activityLogId,
             AL.TARGET_TYPE     AS targetType,
@@ -19,8 +19,45 @@
         FROM ACTIVITY_LOGS AL
         LEFT JOIN USERS U
             ON U.USER_ID = AL.ACTOR_USER_ID
-        WHERE AL.PROJECT_ID = #{projectId}
-        ORDER BY AL.CREATED_AT DESC
+        WHERE 1 = 1
+
+        <if test="projectId != null">
+            AND AL.PROJECT_ID = #{projectId}
+        </if>
+
+        <if test="activityType != null and activityType != ''">
+            AND AL.ACTION_TYPE = #{activityType}
+        </if>
+
+        <if test="targetType != null and targetType != ''">
+            AND AL.TARGET_TYPE = #{targetType}
+        </if>
+
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (
+            U.USER_NAME LIKE '%' || #{searchKeyword} || '%'
+            OR AL.BEFORE_VALUE LIKE '%' || #{searchKeyword} || '%'
+            OR AL.AFTER_VALUE LIKE '%' || #{searchKeyword} || '%'
+            OR AL.TARGET_ID LIKE '%' || #{searchKeyword} || '%'
+            )
+        </if>
+
+        <if test="startDate != null and startDate != ''">
+            AND AL.CREATED_AT &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+        </if>
+
+        <if test="endDate != null and endDate != ''">
+            AND AL.CREATED_AT &lt; TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1
+        </if>
+
+        <choose>
+            <when test="sortOrder != null and sortOrder == 'ASC'">
+                ORDER BY AL.CREATED_AT ASC
+            </when>
+            <otherwise>
+                ORDER BY AL.CREATED_AT DESC
+            </otherwise>
+        </choose>
     </select>
 
 </mapper>
