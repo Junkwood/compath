@@ -74,7 +74,7 @@ const props = defineProps({
 
 const currentContent = computed({
   get: () => props.modelValue,
-  set: value => emit("update:currentPage", value),
+  set: (value) => emit("update:currentPage", value),
 });
 
 const isModified = computed({
@@ -276,7 +276,7 @@ onMounted(() => {
 
 /* ── 기본 에디터 스타일 (작성 모드) ── */
 :deep(.ck.ck-editor__main > .ck-editor__editable) {
-  min-height: 260px;
+  height: 400px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   padding: 12px;

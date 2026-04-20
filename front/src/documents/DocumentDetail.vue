@@ -42,7 +42,7 @@
                 수정
               </button>
               <button
-                v-if="isAssignee && commentList.length > 0"
+                v-if="isAssignee && commentList.length == 0"
                 class="btn-lock"
                 @click="delDocument"
               >
@@ -196,6 +196,8 @@
                       </div>
                     </div>
                     <button
+                      type="button"
+                      @click="attachmentDownload(file)"
                       class="flex items-center gap-1 px-3 py-1.5 text-[12px] font-medium text-gray-500 bg-white border border-gray-200 rounded-md group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-200 cursor-pointer"
                     >
                       다운로드
@@ -391,11 +393,13 @@ import { onBeforeMount, ref, computed } from "vue";
 import { useDocumentStore } from "../stores/document";
 import { useAuthStore } from "../stores/auth";
 import { usetaskKJHStore } from "../stores/taksKJH";
+import { useAttachmentStore } from "../stores/attachment";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import Swal from "sweetalert2";
 import Editor from "../components/Editor.vue";
+import { downloadFile } from "../utils/commonFunc";
 
 const isRead = true;
 const route = useRoute();
@@ -403,6 +407,7 @@ const router = useRouter();
 const documentStore = useDocumentStore();
 const authStore = useAuthStore();
 const taskStore = usetaskKJHStore();
+const attachmentStore = useAttachmentStore();
 const sidebarOpen = ref(false);
 
 const documentInfo = ref({});
@@ -455,7 +460,17 @@ const delDocument = async () => {
     isDeleted: "Q1",
     isEditorUserId: authStore.user.userId,
   };
-  await documentStore.modifyDocument(obj);
+
+  const formData = new FormData();
+
+  formData.append(
+    "obj",
+    new Blob([JSON.stringify(obj)], {
+      type: "application/json",
+    }),
+  );
+
+  await documentStore.modifyDocument(formData);
 
   await Swal.fire({
     title: "삭제를 완료했습니다.",
@@ -498,11 +513,11 @@ const registerComment = async () => {
   comment.value = null;
 };
 
-const openModifyComment = comment => {
+const openModifyComment = (comment) => {
   comment.modifyOpen = true;
 };
 
-const modifyComment = async comment => {
+const modifyComment = async (comment) => {
   const result = await Swal.fire({
     title: "댓글을 수정하시겠습니까?",
     icon: "question",
@@ -524,11 +539,11 @@ const modifyComment = async comment => {
   commentList.value = documentStore.registeredComment;
 };
 
-const cancelModify = comment => {
+const cancelModify = (comment) => {
   comment.modifyOpen = false;
 };
 
-const removeComment = async comment => {
+const removeComment = async (comment) => {
   const result = await Swal.fire({
     title: "댓글을 삭제하시겠습니까?",
     icon: "question",
@@ -549,9 +564,9 @@ const removeComment = async comment => {
   commentList.value = documentStore.registeredComment;
 };
 
-const attachmentDownload = async file => {
+const attachmentDownload = async (file) => {
   console.log(file);
-  // await attachmentStore.downloadFile(file);
+  await attachmentStore.downloadFile(file);
 };
 
 onBeforeMount(async () => {
@@ -560,7 +575,7 @@ onBeforeMount(async () => {
   commentList.value = documentStore.documentDetail.documentInfo.commentInfo;
   attachmentList.value = documentStore.documentDetail.attachmentList;
 
-  commentList.value.forEach(comment => {
+  commentList.value.forEach((comment) => {
     comment.modifyOpen = false;
   });
 
@@ -586,10 +601,10 @@ const isAssignee = computed(() => {
   const currentUserId = authStore.user?.userId || authStore.user?.id;
   if (!currentUserId) return false;
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   return isPmPl || isManager;
 });

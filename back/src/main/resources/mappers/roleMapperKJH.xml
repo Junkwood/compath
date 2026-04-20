@@ -14,6 +14,6 @@
             OR pm.project_id=#{subProjectId}
         </if>
         AND pm.is_active = 'O1'
-        AND (pmr.role_id = 17 OR pmr.role_id = 18)
+        AND pmr.role_id IN (17,18,19)
     </select>
 </mapper>

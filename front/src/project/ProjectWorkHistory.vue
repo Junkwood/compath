@@ -1,4 +1,3 @@
-<!-- 작업내역  -->
 <template>
   <div class="dashboard-page flex h-screen overflow-hidden">
     <!-- Sidebar -->
@@ -31,7 +30,7 @@
             <div class="activity-title-left">
               <div class="activity-sub-row">
                 <span class="activity-project-name">
-                   {{ projectInfo.projectName }} 작업내역
+                  {{ projectInfo.projectName }} 작업내역
                 </span>
                 <span class="activity-project-period">
                   {{ projectInfo.startDate }} - {{ projectInfo.endDate }}
@@ -42,7 +41,6 @@
 
           <!-- 상단 필터 카드 -->
           <section class="panel activity-filter-card">
-
             <div class="panel-body filter-card-body">
               <div class="filter-row">
                 <div class="filter-item search-box">
@@ -107,7 +105,7 @@
                     :class="{
                       active: activityStore.selectedQuickRange === item.value,
                     }"
-                    @click="activityStore.applyQuickRange(item.value)"
+                    @click="handleQuickRange(item.value)"
                   >
                     {{ item.label }}
                   </button>
@@ -140,7 +138,8 @@
                 <div class="panel-title-wrap">
                   <h3 class="panel-title">작업내역 목록</h3>
                   <div class="result-count">
-                    총 <strong>{{ activityStore.filteredLogs.length }}</strong>건
+                    총 <strong>{{ activityStore.filteredLogs.length }}</strong
+                    >건
                   </div>
                 </div>
               </div>
@@ -193,7 +192,9 @@
                             <span class="user-name">{{ log.userName }}</span>
                             <span class="dot">•</span>
                             <span class="target-type">
-                              {{ activityStore.getTargetTypeLabel(log.targetType) }}
+                              {{
+                                activityStore.getTargetTypeLabel(log.targetType)
+                              }}
                             </span>
                           </div>
 
@@ -201,7 +202,11 @@
                             class="type-badge"
                             :class="activityStore.badgeClass(log.activityType)"
                           >
-                            {{ activityStore.getActivityTypeLabel(log.activityType) }}
+                            {{
+                              activityStore.getActivityTypeLabel(
+                                log.activityType,
+                              )
+                            }}
                           </span>
                         </div>
 
@@ -294,11 +299,44 @@ const fetchProjectDetail = async () => {
   }
 };
 
-onMounted(async () => {
+const fetchLogs = async () => {
   const projectId = route.params.projectId;
-  await fetchProjectDetail();
+  if (!projectId) return;
   await activityStore.fetchActivityLogs(projectId);
+};
+
+const handleQuickRange = async (value) => {
+  activityStore.applyQuickRange(value);
+  await fetchLogs();
+};
+
+onMounted(async () => {
+  await fetchProjectDetail();
+  await fetchLogs();
 });
+
+watch(
+  [
+    () => activityStore.searchKeyword,
+    () => activityStore.selectedActivityType,
+    () => activityStore.selectedTargetType,
+    () => activityStore.sortOrder,
+    () => activityStore.startDate,
+    () => activityStore.endDate,
+  ],
+  async () => {
+    await fetchLogs();
+  },
+);
+
+watch(
+  () => route.params.projectId,
+  async (newProjectId) => {
+    if (!newProjectId) return;
+    await fetchProjectDetail();
+    await fetchLogs();
+  },
+);
 </script>
 
 <style scoped>
@@ -463,7 +501,9 @@ onMounted(async () => {
   background: #fff;
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .filter-item input:focus,

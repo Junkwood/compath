@@ -31,7 +31,11 @@
               </div>
             </div>
             <div class="self-end">
-              <el-button class="btn-create-task" @click="goResister()">
+              <el-button
+                v-if="isAssignee"
+                class="btn-create-task"
+                @click="goResister()"
+              >
                 + 문서 생성
               </el-button>
             </div>
@@ -267,19 +271,21 @@
 </template>
 
 <script setup>
-import { onBeforeMount } from "vue";
+import { onBeforeMount, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ref } from "vue";
 import Sidebar from "../partials/Sidebar.vue";
 import Header from "../partials/Header.vue";
 import { usetaskKJHStore } from "../stores/taksKJH";
 import { useDocumentStore } from "../stores/document";
+import { useAuthStore } from "../stores/auth";
 import Swal from "sweetalert2";
 
 const route = useRoute();
 const router = useRouter();
 const taskStore = usetaskKJHStore();
 const documentStore = useDocumentStore();
+const authStore = useAuthStore();
 
 const projectId = route.params.projectId;
 let subId = route.params.subProjectId;
@@ -308,7 +314,7 @@ let name = ref();
 let projectStartDate = ref();
 let projectendDate = ref();
 
-const handleCurrentChange = async val => {
+const handleCurrentChange = async (val) => {
   val = val == undefined ? 1 : val;
   nowPage.value = val;
 
@@ -338,7 +344,7 @@ const handleCurrentChange = async val => {
     Swal.close();
 
     pagingList.value = documentStore.pagingList;
-    pagingList.value.forEach(li => {
+    pagingList.value.forEach((li) => {
       li.typeName = li.typeName == null ? "전체" : li.typeName;
     });
 
@@ -361,7 +367,7 @@ const goResister = () => {
   });
 };
 
-const goDetail = tr => {
+const goDetail = (tr) => {
   router.push({
     name: "documentDetail",
     params: {
@@ -402,6 +408,9 @@ onBeforeMount(async () => {
     taskPjList.value = [projectInfo.projectName];
   }
 
+  let roleObj = { projectId: projectId, subProjectId: subId };
+  await taskStore.getProjectRole(roleObj);
+
   name.value = projectInfo.projectName;
   projectStartDate.value = projectInfo.startDate;
   projectendDate.value = projectInfo.endDate;
@@ -410,13 +419,27 @@ onBeforeMount(async () => {
 
   filterList.value = documentStore.filterList;
   pagingList.value = documentStore.filterList.documentList;
-  pagingList.value.forEach(li => {
+  pagingList.value.forEach((li) => {
     li.typeName = li.typeName == null ? "전체" : li.typeName;
   });
   listLength.value =
     filterList.value.documentList.length > 0
       ? filterList.value.documentList[0].taskCounts
       : 0;
+});
+
+// 권한 파악
+const isAssignee = computed(() => {
+  const currentUserId = authStore.user?.userId || authStore.user?.id;
+  if (!currentUserId) return false;
+
+  const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  const isManager = (taskStore.plPmList?.empList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  return isPmPl || isManager;
 });
 
 const resetForm = () => {

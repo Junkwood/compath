@@ -28,31 +28,7 @@
         <result property="projectName" column="PROJECT_NAME" />
         <result property="projectId" column="project_id" />
     </resultMap>
-    <sql id="task">
-        task_id,
-        parent_task_id,
-        project_id,
-        milestone_id,
-        task_type_id,
-        task_status_id,
-        title,
-        content,
-        assignee_user_id,
-        priority_code,
-        progress_rate,
-        start_date,
-        due_date,
-        estimated_hours,
-        actual_hours,
-        is_deleted,
-        created_by,
-        created_at,
-        updated_at,
-        est_start_date,
-        est_end_date,
-        attachment_group_id,
-        editor_user_id
-    </sql>
+
 
 <!--    업무목록-->
     <select id="getAllTasks" >
@@ -286,7 +262,7 @@
         WHERE task_id = #{id}
     </update>
     
-<!--   프로젝트의 담당자 추출-->
+<!--   프로젝트의 개발자 등등 추출-->
     <select id="getProjectDeveloper">
         SELECT DISTINCT
         u.user_id   AS user_id,
@@ -301,6 +277,16 @@
         WHERE u.is_active = 'O1'
         AND r.role_name NOT IN ('총괄PL', 'PM', 'PL')
     </select>
+
+<!--    프로젝트의 관리자들 추출-->
+    <select id="getProjectRole">
+        SELECT pm.user_id
+        FROM project_members pm
+        JOIN project_member_roles pmr ON pm.project_member_id = pmr.project_member_id
+        JOIN roles r ON pmr.role_id = r.role_id
+        WHERE project_id = #{projectId} AND r.role_id IN (17,18,19)
+    </select>
+
 
     <!--    업무 담당자 지정(미지정이었을경우)-->
     <update id="modifyTaskUser">

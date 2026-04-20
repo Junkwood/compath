@@ -256,14 +256,14 @@ const form = reactive({
 let isModified = ref(false); // 수정, 생성 구분
 
 // 긴급 체크시
-const checkedBox = event => {
+const checkedBox = (event) => {
   console.log("targetvalue", event.target.checked);
   form.isPinned = event.target.checked;
   console.log(form.isPinned);
 };
 
 // 공지사항 생성 버튼
-const submitForm = async formEl => {
+const submitForm = async (formEl) => {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
       console.log(form);
@@ -289,7 +289,7 @@ const submitForm = async formEl => {
 
         // 첨부파일 있을 경우 담기
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach(file => {
+          fileList.value.forEach((file) => {
             formData.append("files", file.raw);
           });
         }
@@ -331,7 +331,7 @@ const submitForm = async formEl => {
         );
 
         if (fileList.value && fileList.value.length > 0) {
-          fileList.value.forEach(file => {
+          fileList.value.forEach((file) => {
             if (file.isExisting == null) {
               console.log(file);
               formData.append("files", file.raw);
@@ -379,7 +379,7 @@ onBeforeMount(async () => {
     let attachment = noticeStore.noticeInfo.attachmentList;
 
     if (attachment != null) {
-      attachment.forEach(att => {
+      attachment.forEach((att) => {
         let obj = {
           name: att.fileName,
           uid: att.attachmentId,
@@ -456,7 +456,7 @@ const rules = reactive({
   ],
 });
 
-const resetForm = formEl => {
+const resetForm = (formEl) => {
   if (!formEl) return;
   formEl.resetFields();
 };
@@ -471,13 +471,13 @@ const handleChange = (uploadFile, uploadFiles) => {
 /// 첨부파일 삭제
 const removeFile = async (file, index) => {
   if (file.isExisting == null) {
-    fileList.splice(index, 1);
+    fileList.value.splice(index, 1);
   } else {
     let obj = { attachmentId: file.attId, attachmentGroupId: file.attGId };
     await attachmentStore.removeFile(obj);
 
     fileList.value = [];
-    attachmentStore.removeResult.forEach(att => {
+    attachmentStore.removeResult.forEach((att) => {
       let obj = {
         name: att.fileName,
         uid: att.attachmentId,
@@ -721,8 +721,12 @@ const removeFile = async (file, index) => {
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
+  width: 100%;
 }
+
 :deep(.el-form-item__content) {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  min-width: 100%;
 }
 </style>

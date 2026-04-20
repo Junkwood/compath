@@ -31,7 +31,7 @@
                 <option
                   v-for="item in subProjectList"
                   :key="item.projectId"
-                  :value="item.projectName"
+                  :value="item.projectId"
                 >
                   {{ item.displaySubProjectName }}
                 </option>
@@ -120,9 +120,9 @@
               우선순위 선택 시 마감기한이 자동 설정됩니다.
             </p>
           </div>
-          <div v-if="hasMilestone">
+          <div v-if="hasMilestone" class="block text-sm font-medium mb-1">
             <label class="field-label"
-              >마일스톤 <span class="required">*</span></label
+              >마일스톤 <span class="text-red-500">*</span></label
             >
             <select v-model="form.milestoneId" class="input w-full">
               <option value="">마일스톤 선택</option>
@@ -144,29 +144,37 @@
             @select="selectMilestone"
           />
         </div>
-        <div class="grid grid-cols-3 gap-6 mb-8">
+        <div class="form-section grid-3 no-border">
           <div>
-            <label class="block text-sm font-medium mb-1">예정 시작 일</label>
+            <label class="field-label"
+              >예정 시작일<span class="required">*</span></label
+            >
             <TaskDatePicker
               v-model="form.estStartDate"
               @change="calcEstTime(true)"
             />
           </div>
+
           <div>
-            <label class="block text-sm font-medium mb-1">예정 종료일</label>
+            <label class="field-label"
+              >예정 종료일<span class="required">*</span></label
+            >
             <TaskDatePicker
               v-model="form.estEndDate"
               @change="calcEstTime(true)"
             />
-            <p class="text-xs text-gray-400 mt-1">
-              우선순위 선택 시 마감기한이 자동 설정됩니다.
-            </p>
+            <p class="hint">우선순위 선택 시 마감기한이 자동 설정됩니다.</p>
           </div>
+
           <div>
-            <label class="block text-sm font-medium mb-1">추정 시간</label>
-            <div class="flex gap-2">
-              <input v-model="form.estTime" class="input flex-1" />
-            </div>
+            <label class="field-label">추정 시간</label>
+            <input
+              v-model="form.estTime"
+              readonly
+              class="input w-full"
+              placeholder="시작일/종료일 선택 시 자동 계산"
+            />
+            <p class="hint">* 워킹데이 기준 자동 계산</p>
           </div>
         </div>
         <div class="flex justify-between">
@@ -192,6 +200,7 @@ import ProjectSelectModal from "../components/SelectModal.vue";
 import { useTaskStore } from "../stores/useTaskStore";
 import { useMeetingStore } from "../stores/meeting";
 import TaskDatePicker from "../components/TaskDatePicker.vue";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   taskInfo: Array,
@@ -218,7 +227,7 @@ const {
 const { selectMilestone, onPriorityChange, calcEstTime, resetForm } = store;
 
 const visibleMilestoneList = computed(() =>
-  milestoneList.value.filter(m => m.statusCode !== "e3"),
+  milestoneList.value.filter((m) => m.statusCode !== "e3"),
 );
 
 onMounted(async () => {
@@ -229,8 +238,110 @@ onMounted(async () => {
 });
 
 const handleSubmit = async () => {
+  if (form.value.taskTypeId == "") {
+    const result = await Swal.fire({
+      title: "업무유형을 선택해주세요",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    return;
+  }
+
+  if (form.value.title == "") {
+    const result = await Swal.fire({
+      title: "제목을 입력해주세요",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    return;
+  }
+
+  if (form.value.content == "") {
+    const result = await Swal.fire({
+      title: "내용을 입력해주세요",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    return;
+  }
+
+  if (form.value.taskStatusId == "") {
+    const result = await Swal.fire({
+      title: "업무상태를 선택해주세요",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    return;
+  }
+
+  if (form.value.priorityCode == "") {
+    const result = await Swal.fire({
+      title: "우선순위를 선택해주세요",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    return;
+  }
+
+  if (hasMilestone && form.value.milestoneId == "") {
+    const result = await Swal.fire({
+      title: "마일스톤을 선택해주세요",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    return;
+  }
+
+  if (form.value.estEndDate == null) {
+    const result = await Swal.fire({
+      title: "예정종료일 선택해주세요",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    return;
+  }
+
+  if (form.value.estStartDate == "") {
+    const result = await Swal.fire({
+      title: "예정시작일 선택해주세요",
+      text: "",
+      icon: "warning",
+      confirmButtonText: "확인",
+      reverseButtons: true,
+    });
+
+    return;
+  }
+
   form.value.estimatedHours =
     parseInt(String(form.value.estTime).replace(/[^0-9]/g, "")) || 0;
+
+  form.value.projectId =
+    form.value.subProjectName > 0
+      ? form.value.subProjectName
+      : form.value.projectId;
+
   let obj = {
     ...form.value,
     createdBy: Number(authStore.user?.userId),
@@ -254,7 +365,7 @@ const closeModal = () => {
 
 watch(
   () => props.taskInfo,
-  newVal => {
+  (newVal) => {
     form.value.title = Object.keys(newVal)[0];
     form.value.content = Object.values(newVal)[0];
     form.value.meetingLogId = newVal.meetingLogId;
@@ -380,5 +491,49 @@ watch(
   background: #60aee2;
   box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
   transform: translateY(-1px);
+}
+
+.swal2-container {
+  z-index: 9999 !important;
+}
+
+.form-section {
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.form-section:last-of-type,
+.form-section.no-border {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 2px;
 }
 </style>
