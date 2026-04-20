@@ -47,6 +47,8 @@
                                       t.progress_rate,
                                       t.start_date,
                                       t.due_date,
+                                      t.est_start_date,
+                                      t.est_end_date,
                                       p.project_name,
                                       p.project_id,
                                       p.parent_project_id,

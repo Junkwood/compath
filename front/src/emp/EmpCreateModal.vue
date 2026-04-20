@@ -103,9 +103,6 @@ const plOptions = computed(() => groupStore.activeGroupList);
 const formRef = ref(null);
 const submitting = ref(false);
 
-// 💡 [추가] 모달이 열릴 때의 원본 상태를 저장할 스냅샷 변수
-let originalFormSnapshot = "";
-
 const defaultForm = () => ({
   userId: "",
   name: "",
@@ -163,12 +160,14 @@ const rules = reactive({
   ],
 });
 
+// 모달이 열릴 때의 원본 상태를 저장할 스냅샷 변수
+let originalFormSnapshot = "";
 watch(
   () => props.modelValue,
   async (isOpen) => {
     if (isOpen) {
       if (isEditMode.value) {
-        // ⭐ 수정 모드
+        //  수정 모드
         Object.assign(form, {
           userId: props.editData.userId,
           name: props.editData.name,
@@ -181,10 +180,10 @@ watch(
         rules.password[0].required = false;
         rules.passwordc[0].required = false;
 
-        // 💡 [추가] 데이터 세팅이 끝난 직후 원본 스냅샷 저장!
+        //  데이터 세팅이 끝난 직후 원본 스냅샷 저장!
         originalFormSnapshot = JSON.stringify(form);
       } else {
-        // ⭐ 생성 모드
+        //  생성 모드
         Object.assign(form, defaultForm());
         rules.password[0].required = true;
         rules.passwordc[0].required = true;
@@ -212,15 +211,20 @@ const handleClosed = () => {
 };
 
 const handleReset = () => {
-  Object.assign(form, defaultForm());
-  formRef.value?.clearValidate();
+  if (isEditMode.value) {
+    Object.assign(form, JSON.parse(originalFormSnapshot));
+    formRef.value?.clearValidate();
+  } else {
+    Object.assign(form, defaultForm());
+    formRef.value?.clearValidate();
+  }
 };
 
 const handleSubmit = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
   if (!valid) return;
 
-  // 💡 [추가] 변경 사항 체크 로직 (수정 모드일 때만 작동)
+  // 변경 사항 체크 로직 (수정 모드일 때만 작동)
   if (isEditMode.value && JSON.stringify(form) === originalFormSnapshot) {
     Swal.fire({
       icon: "info",
@@ -228,7 +232,7 @@ const handleSubmit = async () => {
       text: "수정된 내용이 없습니다.",
       confirmButtonColor: "#6b7280",
     });
-    return; // ❌ 여기서 함수 종료. API 호출 막음!
+    return;
   }
 
   submitting.value = true;

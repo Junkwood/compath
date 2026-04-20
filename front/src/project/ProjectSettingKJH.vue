@@ -117,7 +117,7 @@
                       tab.key === "ALL"
                         ? memberList.length
                         : memberList.filter(
-                            member => (member.roleName || "기타") === tab.key,
+                            (member) => (member.roleName || "기타") === tab.key,
                           ).length
                     }}</span>
                   </template>
@@ -143,7 +143,7 @@
                       />
                       <el-table-column
                         prop="roleName"
-                        label="사번"
+                        label="역할"
                         width="180"
                         align="center"
                         v-if="activeRoleTab === 'ALL'"
@@ -190,6 +190,7 @@
                         :page-size="pageSize"
                         :total="totalCount"
                         layout="prev, pager, next"
+                        hide-on-single-page="true"
                         background
                       />
                     </div>
@@ -256,7 +257,7 @@ const paginatedData = computed(() => {
 const filteredMemberList = computed(() => {
   if (activeRoleTab.value === "ALL") return paginatedData.value;
   return memberList.value.filter(
-    member => (member.roleName || "기타") === activeRoleTab.value,
+    (member) => (member.roleName || "기타") === activeRoleTab.value,
   );
 });
 
@@ -296,7 +297,7 @@ const roleTabs = computed(() => {
   const tabs = [{ key: "ALL", label: "전체" }];
   const roleMap = new Map();
 
-  memberList.value.forEach(member => {
+  memberList.value.forEach((member) => {
     const roleName = member.roleName || "기타";
     if (!roleMap.has(roleName)) {
       roleMap.set(roleName, {
@@ -354,7 +355,7 @@ const closeModifyMdoal = () => {
   ModifyProjectModalOpen.value = false;
 };
 
-const modifyProject = async form => {
+const modifyProject = async (form) => {
   const payload = {
     projectId: form.projectId,
     projectName: form.projectName,
@@ -381,9 +382,9 @@ const closeMemberMdoal = () => {
   MemberModalOpen.value = false;
 };
 
-const memberInsert = async value => {
+const memberInsert = async (value) => {
   const list = [];
-  value.forEach(val => {
+  value.forEach((val) => {
     list.push({
       userId: val.userId,
       projectId: id,
@@ -395,7 +396,7 @@ const memberInsert = async value => {
   closeMemberMdoal();
 };
 
-const handleDelete = async val => {
+const handleDelete = async (val) => {
   const result = await Swal.fire({
     title: "정말 구성원을 삭제하시겠습니까?",
     text: "삭제된 구성원은 목록에서 확인 불가능합니다.",
@@ -424,7 +425,7 @@ const handleBeforeLeave = () => {
   return true; // true를 반환해야 탭이 바뀝니다.
 };
 
-const handleClick = pane => {
+const handleClick = (pane) => {
   // 1. 현재 스크롤 위치 저장
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 

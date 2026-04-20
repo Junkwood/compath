@@ -11,7 +11,6 @@ const auth = axios.create({
 // 2. 요청(Request) 인터셉터 (옵션: JWT 토큰 등을 보낼 때 사용)
 auth.interceptors.request.use(
   (config) => {
-    // 토큰이 있다면 여기서 헤더에 쏙 넣어줄 수 있습니다.
     return config;
   },
   (error) => Promise.reject(error),
