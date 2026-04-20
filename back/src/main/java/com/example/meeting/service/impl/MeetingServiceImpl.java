@@ -166,14 +166,14 @@ public class MeetingServiceImpl implements MeetingService {
         int count = mapper.getConnectCount(meetingId);
         Integer taskId = dto.getTaskId();
 
+        if(taskId != null) {
+            taskMapperKJH.modifyTaskStatus(taskId);
+        }
+
         if (count == 0) {
             // 3. 개수가 0이면 확실하게 삭제
             mapper.removeNullMeeting(meetingId);
             return new ArrayList<>();
-        }
-
-        if(taskId != null) {
-            taskMapperKJH.modifyTaskStatus(taskId);
         }
 
         return mapper.getRecommandTask(meetingId);

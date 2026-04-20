@@ -31,7 +31,7 @@
             </div>
             <div class="flex gap-2 self-end">
               <button
-                v-if="taskInfo.taskStatusId == 4 && isAssignee"
+                v-if="taskInfo.taskStatusId == 13 && isAssignee"
                 @click="goCreateSubTask"
                 class="btn-action btn-sub"
               >
@@ -43,7 +43,7 @@
               <button
                 class="btn-lock"
                 @click="lockTask"
-                v-if="taskInfo.taskStatusId == 1 && isAssignee"
+                v-if="taskInfo.taskStatusId == 10 && isAssignee"
               >
                 삭제
               </button>
@@ -480,10 +480,10 @@ const isAssignee = computed(() => {
   const isDirectAssignee =
     Number(taskInfo.value?.assigneeUserId) === Number(currentUserId);
   const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   const isManager = (taskStore.plPmList?.empList || []).some(
-    item => Number(item.userId) === Number(currentUserId),
+    (item) => Number(item.userId) === Number(currentUserId),
   );
   return isDirectAssignee || isPmPl || isManager;
 });
@@ -513,11 +513,11 @@ const goModify = () => {
 };
 
 // 파일 다운로드
-const attachmentDownload = async file => {
+const attachmentDownload = async (file) => {
   await attachmentStore.downloadFile(file);
 };
 
-const changefileNameLength = fileName => {
+const changefileNameLength = (fileName) => {
   if (fileName.length > 20) {
     fileName = fileName.slice(0, 19) + ".....";
   }
@@ -551,7 +551,7 @@ const lockTask = async () => {
 };
 
 const timeEntriesList = ref([]);
-const submitted = async val => {
+const submitted = async (val) => {
   openTimeModal.value = false;
   let obj = {
     taskId: taskInfo.value.taskId,
@@ -577,7 +577,7 @@ const chageTaskDesc = async () => {
   activityLogs.value = taskStore.taskLog;
 
   activityList.value = taskStore.activityList;
-  activityList.value.forEach(el => {
+  activityList.value.forEach((el) => {
     if (el.targetType == "time_entries" && el.actionType == "J1") {
       if (el.beforeValue == null) el.beforeValue = 0;
       el.taskDesc = `소요시간을 ${el.beforeValue}시간에서 ${el.afterValue}시간으로 변경 했습니다.`;
@@ -613,7 +613,7 @@ const pagedTimeData = computed(() => {
 });
 
 // 날짜 없는 경우 형식 변경
-const changeInfoType = val => {
+const changeInfoType = (val) => {
   if (val.assigneeUserId == null) {
     val.assigneeUserName = "미지정";
   }
