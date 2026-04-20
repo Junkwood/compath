@@ -34,6 +34,7 @@ public class UserEntity {
     @Column(name = "user_type", nullable = false, length = 2)
     @ColumnTransformer(read = "role(user_type)")
     private String userType;
+
     @Column(name = "is_active", nullable = false, length = 2)
     private String isActive = "01";
     @CreationTimestamp
