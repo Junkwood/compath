@@ -1,72 +1,75 @@
 package com.example.attachment.service.impl;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.attachment.dto.AttachmentDTO;
 import com.example.attachment.mapper.AttachmentMapper;
 import com.example.attachment.service.AttachmentService;
-import com.example.common.util.FileUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class AttachmentServiceImpl implements AttachmentService {
 
     private final AttachmentMapper attachmentMapper;
+    private final AmazonS3 S3Config;
 
-    @Value("${file.upload-dir}") // application.yml의 C:/uploads/
-    private String baseDir;
+    @Value("${cloud.aws.s3.bucket}") // application.yml에 정의한 버킷명
+    private String bucket;
 
     @Override
     public int registerAttachments(List<MultipartFile> files, Integer id) throws IOException {
         int sharedGroupId = id;
 
-        Path path = Paths.get(baseDir).toAbsolutePath().normalize();
-        if (!Files.exists(path)) {
-            Files.createDirectories(path);
-        }
-
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
 
-            // 1. FileUtils를 사용하여 날짜 폴더 + UUID 파일명 계획 생성
-            FileUtils.FilePlan plan = FileUtils.dateFolderWithUuidName(baseDir, file.getOriginalFilename());
 
-            // 실제 저장될 파일의 절대 경로
-            Path targetPath = plan.getFullPath().toAbsolutePath().normalize();
 
-            // 2. 물리적 파일 저장 (fullPath 사용)
-            file.transferTo(targetPath.toFile());
+            String originalName = file.getOriginalFilename();
+            String extension = "";
+            if (originalName != null && originalName.contains(".")) {
+                extension = originalName.substring(originalName.lastIndexOf("."));
+            }
+
+            String uuidName = UUID.randomUUID().toString() + extension;
+            String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+
+            String cleanFileName = uuidName.replaceAll("\\s", "_");
+            String s3Key = datePath + "/" + cleanFileName;
+
+            log.info("제발 이번엔! s3Key: [{}]", s3Key);
+
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType(file.getContentType());
+            metadata.setContentLength(file.getSize());
+
+            try (InputStream inputStream = file.getInputStream()) {
+                S3Config.putObject(new PutObjectRequest(bucket, s3Key, inputStream, metadata));
+            }
 
             // 3. DB 저장을 위한 dto 세팅
             AttachmentDTO dto = new AttachmentDTO();
             dto.setFileName(file.getOriginalFilename()); // 원본파일명
-
-            // DB에는 baseDir을 제외한 상대 경로만 저장하는 것이 관리상 유리합니다.
-            // 예: 2026/04/10/uuid.png
-            String relativePath = path.relativize(targetPath).toString().replace("\\", "/");
-            dto.setFilePath(relativePath);
-
-            // 확장자 추출
-            String originalName = file.getOriginalFilename();
+            dto.setFilePath(S3Config.getUrl(bucket, s3Key).toString()); // S3 전체 URL 저장
             dto.setFileExt(originalName.substring(originalName.lastIndexOf(".") + 1));
-
-            // 그룹 ID 설정 (처음엔 0 전달 -> selectKey가 생성해줌)
             dto.setAttachmentGroupId(sharedGroupId);
 
-            // 4. Mapper 호출
             attachmentMapper.registerAttachments(dto);
 
             // 5. 첫 번째 파일 저장 후 생성된 그룹 ID를 변수에 담아 다음 파일들과 공유
@@ -84,6 +87,10 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public List<AttachmentDTO> removeAttachment(AttachmentDTO dto) {
+
+        String fileUrl = dto.getFilePath();
+        String s3Key = extractKeyFromUrl(fileUrl);
+
         // 첨부파일 삭제
         int id = dto.getAttachmentId();
         attachmentMapper.removeAttachment(id);
@@ -91,5 +98,9 @@ public class AttachmentServiceImpl implements AttachmentService {
         // 첨부파일 조회
         int gId = dto.getAttachmentGroupId();
         return attachmentMapper.getFileList(gId);
+    }
+
+    private String extractKeyFromUrl(String url) {
+        return url.substring(url.lastIndexOf(".com/") + 5);
     }
 }

@@ -313,9 +313,9 @@
                 <div class="memo-body" style="padding: 12px 16px">
                   <div
                     v-if="
-                      attachmentList != null &&
-                      attachmentList != undefined &&
-                      attachmentList.length > 0
+                      attachmentList.value
+                        ? attachmentList.value.length > 0
+                        : attachmentList.length > 0
                     "
                     class="flex flex-col gap-2"
                   >
@@ -433,7 +433,7 @@ onBeforeMount(async () => {
   projectEndDate.value = taskStore.projectName.endDate;
 
   taskInfo.value = { ...taskStore.taskDetail.taskInfo };
-  attachmentList.value = { ...taskStore.taskDetail.attachmentList };
+  attachmentList.value = [...taskStore.taskDetail.attachmentList];
   taskInfo.value.createdAt = changeDate(taskInfo.value.createdAt);
   taskInfo.value.actualHours =
     taskInfo.value.totalTimeEntries > 0
