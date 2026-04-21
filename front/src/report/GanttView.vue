@@ -72,7 +72,7 @@ import { Gantt } from "@bryntum/gantt/gantt.module.js";
 import "@bryntum/gantt/gantt.css";
 import { useGanttChartStore } from "../stores/GantChart";
 import { TaskModel } from "@bryntum/gantt/gantt.module.js";
-import TaskCreateModal from "../task/TaskCreateModal.vue";
+import TaskCreateModal from "../task/TaskCreatemodal.vue";
 
 const router = useRouter();
 const route = useRoute();
