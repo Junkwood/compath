@@ -15,6 +15,11 @@ public interface AttachmentMapper {
 //    첨부파일 조회
     public List<AttachmentDTO> getFileList(Integer id);
 
-//    첨부파일 삭제
+
+    //    첨부파일 조회
+    public AttachmentDTO getFile(Integer id);
+
+
+    //    첨부파일 삭제
     public int removeAttachment(Integer id);
 }

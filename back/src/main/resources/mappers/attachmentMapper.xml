@@ -29,7 +29,7 @@
         #{attachmentGroupId} )
     </insert>
 
-<!--    첨부파일 조회-->
+<!--    게시글별 첨부파일 조회-->
     <select id="getFileList">
         SELECT  attachment_id,
                 file_name,
@@ -38,6 +38,17 @@
                 attachment_group_id
         FROM attachments
         WHERE attachment_group_id = #{id}
+    </select>
+
+    <!--    첨부파일 조회-->
+    <select id="getFile">
+        SELECT  attachment_id,
+        file_name,
+        file_path,
+        file_ext,
+        attachment_group_id
+        FROM attachments
+        WHERE attachment_id = #{id}
     </select>
 
 <!--    첨부파일 삭제-->

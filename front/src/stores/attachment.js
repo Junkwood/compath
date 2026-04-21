@@ -10,10 +10,7 @@ export const useAttachmentStore = defineStore("attachment", {
     // 파일 다운로드
     async downloadFile(file) {
       await api
-        .get("attachment/download/resp", {
-          params: {
-            fullPath: file.filePath,
-          },
+        .get("attachment/download/resp/" + file.attachmentId, {
           responseType: "blob", // 반드시 blob으로 받아야 데이터가 안 깨집니다!
         })
         .then((res) => {

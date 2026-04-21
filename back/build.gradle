@@ -78,6 +78,9 @@ dependencies {
     // Gemini API
     implementation 'com.google.genai:google-genai:1.0.0'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // S3
+    implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.4.4'
 }
 
 
