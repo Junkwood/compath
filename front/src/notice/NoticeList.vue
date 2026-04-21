@@ -149,7 +149,7 @@
                   </td>
                 </tr>
 
-                <template v-else-if="!listLoading && listLength > 0">
+                <template v-else-if="listLength > 0">
                   <tr
                     v-for="notice in pagingList"
                     :key="notice.noticeId"
@@ -348,8 +348,16 @@ const handleCurrentChange = async (val) => {
       });
     }
 
-    listLength.value =
-      pagingList.value.length == 0 ? 0 : pagingList.value[0].taskCounts;
+    if (isAssignee.value) {
+      listLength.value =
+        pagingList.value.length == 0 ? 0 : pagingList.value[0].taskCounts;
+    } else {
+      pagingList.value.forEach((val) => {
+        if (val.isDeleted == "Q2") {
+          listLength.value += 1;
+        }
+      });
+    }
   } catch (err) {
     Swal.fire({
       icon: "error",
@@ -424,10 +432,19 @@ onBeforeMount(async () => {
       }
     });
   }
-  listLength.value =
-    filterList.value.noticeList.length > 0
-      ? filterList.value.noticeList[0].taskCounts
-      : 0;
+
+  if (isAssignee.value) {
+    listLength.value =
+      filterList.value.noticeList.length > 0
+        ? filterList.value.noticeList[0].taskCounts
+        : 0;
+  } else {
+    filterList.value.noticeList.forEach((val) => {
+      if (val.isDeleted == "Q2") {
+        listLength.value += 1;
+      }
+    });
+  }
 
   Swal.close();
 });

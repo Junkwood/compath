@@ -99,7 +99,7 @@
         ORDER BY
             CASE WHEN r.role_name = 'PM' THEN 1
                WHEN r.role_name = '총괄PL' THEN 2
-               WHEN r.role_name = 'PL' THEN 3
+               WHEN r.role_name = '하위PL' THEN 3
           ELSE 4
         END, r.role_name
     </select>
