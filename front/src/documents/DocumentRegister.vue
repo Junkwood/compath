@@ -452,6 +452,7 @@ const submitForm = async (formEl) => {
       });
     } else {
       // 안내 메세지 나옴
+      console.err("error submit!", fields);
     }
   });
 };
