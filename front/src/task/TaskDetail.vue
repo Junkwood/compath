@@ -320,7 +320,7 @@
                       :key="index"
                       class="memo-card"
                     >
-                      <div class="truncate text-gray-700">
+                      <div class="text-sm text-gray-700">
                         <el-tooltip
                           class="box-item"
                           effect="dark"

@@ -23,7 +23,7 @@
         />
       </el-form-item>
       <!-- 작업일자 작업자 -->
-      <div class="date-row">
+      <div class="date-row mb-6">
         <el-form-item label="작업일" class="date-item">
           <TaskDatePicker
             placeholder="시작일 선택"
@@ -32,7 +32,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="작업시간" class="date-item" prop="hours">
+        <el-form-item label="작업시간(시간)" class="date-item" prop="hours">
           <el-input
             class="w-full rounded-lg text-sm text-gray-700 bg-white rounded-[10px] outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_3px_rgba(148,163,184,0.15)] disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
             v-model="form.hours"
