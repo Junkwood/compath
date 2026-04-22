@@ -325,7 +325,6 @@ const goResister = () => {
 
 // 테이블 열 클릭시
 const goDetail = (tr) => {
-  console.log(tr);
   router.push({
     name: "meetingDetail",
     params: {
@@ -347,9 +346,9 @@ onBeforeMount(async () => {
       Swal.showLoading();
     },
   });
-  console.log(subId == "");
+
   let id = subId != "" ? subId : projectId;
-  console.log(id);
+
   await taskStore.getProjectName(id);
   const projectInfo = taskStore.projectName;
   if (projectInfo.parentProjectName != null) {

@@ -257,16 +257,13 @@ let isModified = ref(false); // 수정, 생성 구분
 
 // 긴급 체크시
 const checkedBox = (event) => {
-  console.log("targetvalue", event.target.checked);
   form.isPinned = event.target.checked;
-  console.log(form.isPinned);
 };
 
 // 공지사항 생성 버튼
 const submitForm = async (formEl) => {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      console.log(form);
       // 공지사항 등록
       if (!isModified.value) {
         let obj = {
@@ -329,9 +326,6 @@ const submitForm = async (formEl) => {
             fileList.value.length > 0 ? form.attachmentGroupId : null,
         };
 
-        console.log(obj);
-        console.log(fileList.value.length > 0);
-
         const formData = new FormData();
         formData.append(
           "obj",
@@ -343,7 +337,6 @@ const submitForm = async (formEl) => {
         if (fileList.value && fileList.value.length > 0) {
           fileList.value.forEach((file) => {
             if (file.isExisting == null) {
-              console.log(file);
               formData.append("files", file.raw);
             }
           });

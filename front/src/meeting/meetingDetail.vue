@@ -261,14 +261,12 @@ const openModal = () => {
 
 // 모달창 연결버튼
 const closeModal = (val) => {
-  console.log(val);
   openConnectModal.value = false;
   connectList.value = meetingStore.detailConnectList;
 };
 
 // 목록으로
 const goBack = () => {
-  console.log(projectId);
   router.push({
     name: "meetingList",
     params: { projectId: projectId, subProjectId: subId },
@@ -325,7 +323,6 @@ const gotaskDetail = (task) => {
 
 // 연결 업무 해제
 const delDtailConnect = async (task) => {
-  console.log(task);
   let obj = {
     meetingtaskId: task.meetingtaskId,
     meetingLogId: task.meetingLogId,
@@ -336,7 +333,6 @@ const delDtailConnect = async (task) => {
 
 // 파일 다운로드
 const attachmentDownload = async (file) => {
-  console.log(file);
   await attachmentStore.downloadFile(file);
 };
 

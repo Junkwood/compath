@@ -410,7 +410,7 @@ const handleDelete = async (val) => {
   if (!result.isConfirmed) return;
 
   await projectStore.removeMem(val);
-  console.log(paginatedData.value.length);
+
   memberList.value = projectStore.remainMem;
   if (paginatedData.value.length == 0) {
     currentPage.value = 1;

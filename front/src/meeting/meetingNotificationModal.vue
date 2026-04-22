@@ -181,7 +181,7 @@ const allUsers = ref([]); // 직군그룹
 // 검색 + 이미 오른쪽에 추가된 멤버는 왼쪽 리스트에서 제외
 const filteredUsers = computed(() => {
   const q = userSearchQuery.value.trim().toLowerCase();
-  return allUsers.value.filter(user => {
+  return allUsers.value.filter((user) => {
     // 검색 필터
     if (!q) {
       expandedGroups.value.length = 0;
@@ -196,19 +196,18 @@ const filteredUsers = computed(() => {
 
 watch(
   () => props.memberList,
-  newVal => {
+  (newVal) => {
     allUsers.value = newVal;
   },
 );
 
 watch(
   () => props.alarmList,
-  newVal => {
-    console.log("변화감지");
+  (newVal) => {
     allUsers.value = props.memberList;
 
     allUsers.value = allUsers.value.filter(
-      user => !newVal.some(alarm => alarm.userId === user.userId),
+      (user) => !newVal.some((alarm) => alarm.userId === user.userId),
     );
   },
   { deep: true },
@@ -218,14 +217,14 @@ watch(
 const groupedUsers = computed(() => {
   const groups = {};
 
-  filteredUsers.value.forEach(user => {
+  filteredUsers.value.forEach((user) => {
     if (!groups[user.roleName]) {
       groups[user.roleName] = [];
     }
     groups[user.roleName].push(user);
   });
   // 객체를 배열 형태로 변환 (템플릿에서 v-for 돌리기 쉽게)
-  return Object.keys(groups).map(key => ({
+  return Object.keys(groups).map((key) => ({
     roleName: key,
     users: groups[key],
   }));
@@ -234,27 +233,27 @@ const groupedUsers = computed(() => {
 // 2. 현재 펼쳐진 그룹 목록 관리
 const expandedGroups = ref([]); // 기본으로 열어둘 그룹 이름 지정 (빈 배열 [] 이면 모두 닫힘)
 
-const toggleGroup = groupName => {
+const toggleGroup = (groupName) => {
   if (expandedGroups.value.includes(groupName)) {
-    expandedGroups.value = expandedGroups.value.filter(g => g !== groupName);
+    expandedGroups.value = expandedGroups.value.filter((g) => g !== groupName);
   } else {
     expandedGroups.value.push(groupName);
   }
 };
 
 // 💡 꿀팁: 사용자가 검색어를 입력하면 숨겨진 그룹을 자동으로 다 펼쳐줍니다!
-watch(userSearchQuery, newVal => {
+watch(userSearchQuery, (newVal) => {
   if (newVal.trim() !== "") {
     // 검색어 입력 시 매칭된 모든 그룹 펼치기
-    expandedGroups.value = groupedUsers.value.map(g => g.roleName);
+    expandedGroups.value = groupedUsers.value.map((g) => g.roleName);
   }
 });
 
 // 3. 부모 체크박스 (전체 선택/해제) 로직
 // 해당 직군의 '모든' 유저가 선택되었는지 확인
-const isGroupChecked = group => {
+const isGroupChecked = (group) => {
   if (group.users.length === 0) return false;
-  return group.users.every(u => selectedLeftUsers.value.includes(u.userId));
+  return group.users.every((u) => selectedLeftUsers.value.includes(u.userId));
 };
 
 // 부모 체크박스를 눌렀을 때 실행
@@ -262,21 +261,21 @@ const toggleGroupSelection = (group, event) => {
   const isChecked = event.target.checked;
 
   if (isChecked) {
-    group.users.forEach(u => {
+    group.users.forEach((u) => {
       if (!selectedLeftUsers.value.includes(u.userId)) {
         selectedLeftUsers.value.push(u.userId); // ← userId만 push
       }
     });
   } else {
-    const groupUserIds = group.users.map(u => u.userId);
+    const groupUserIds = group.users.map((u) => u.userId);
     selectedLeftUsers.value = selectedLeftUsers.value.filter(
-      userId => !groupUserIds.includes(userId),
+      (userId) => !groupUserIds.includes(userId),
     );
   }
 };
 
 // ── 검색어 하이라이트 기능 ──
-const highlight = text => {
+const highlight = (text) => {
   const q = userSearchQuery.value.trim();
   if (!q || !text) return text; // 검색어가 없으면 그냥 원본 반환
 
@@ -291,8 +290,8 @@ const highlight = text => {
 // 추가버튼
 const insertAlarmMem = () => {
   let alarmMember = [];
-  props.memberList.filter(m => {
-    selectedLeftUsers.value.forEach(num => {
+  props.memberList.filter((m) => {
+    selectedLeftUsers.value.forEach((num) => {
       if (m.userId == num) {
         alarmMember.push(m);
       }

@@ -431,7 +431,6 @@ const submitForm = async (formEl) => {
         if (fileList.value && fileList.value.length > 0) {
           fileList.value.forEach((file) => {
             if (file.isExisting == null) {
-              console.log(file);
               formData.append("files", file.raw);
             }
           });

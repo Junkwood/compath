@@ -326,18 +326,15 @@ const lockNotice = async () => {
 
 // 파일 다운로드
 const attachmentDownload = async (file) => {
-  console.log(file);
   await attachmentStore.downloadFile(file);
 };
 
 onBeforeMount(async () => {
-  console.log(noticeId);
   // 공지사항 및 프로젝트 정보
   await noticeStore.getNoticeById(noticeId);
   noticeInfo.value = noticeStore.noticeInfo.noticeInfo;
   attachmentList.value = noticeStore.noticeInfo.attachmentList;
 
-  console.log(subProjectId.value);
   let id =
     subProjectId.value != null &&
     subProjectId.value != undefined &&

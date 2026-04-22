@@ -332,11 +332,9 @@ let nowGroup = computed(() => {
 // 검색 + 이미 오른쪽에 추가된 멤버는 왼쪽 리스트에서 제외
 const filteredUsers = computed(() => {
   const q = userSearchQuery.value.trim().toLowerCase();
-  return nowGroup.value.filter(user => {
+  return nowGroup.value.filter((user) => {
     // 이미 구성원에 포함되었는지 확인
-    const isAlreadyAdded = groupMembers.value.some(m => {
-      console.log(m);
-      console.log(user);
+    const isAlreadyAdded = groupMembers.value.some((m) => {
       if (m.userId === user.userId) {
         return true;
       }
@@ -369,18 +367,17 @@ watch(
 
 watch(
   () => [props.generalGroupList, props.projectGroupList, props.memberList],
-  newVal => {
-    console.log("새 그룹들: ", newVal);
+  (newVal) => {
     allUsers.value = newVal[0];
     allPjGroupMem.value = newVal[1];
 
-    props.memberList.forEach(mem => {
+    props.memberList.forEach((mem) => {
       // 이미 있는 구성원 제외
-      allUsers.value = allUsers.value.filter(user => {
+      allUsers.value = allUsers.value.filter((user) => {
         return user.userId != mem.userId;
       });
 
-      allPjGroupMem.value = allPjGroupMem.value.filter(user => {
+      allPjGroupMem.value = allPjGroupMem.value.filter((user) => {
         return !(user.userId == mem.userId && user.roleId == mem.roleId);
       });
     });
@@ -416,14 +413,14 @@ const moveUsersToRight = async () => {
     }
   }
 
-  let newMembers = selectedLeftUsers.value.map(userId => {
+  let newMembers = selectedLeftUsers.value.map((userId) => {
     let user = null;
     let roleObj = null;
 
-    user = nowGroup.value.find(u => u.userId === userId);
-    console.log(user);
+    user = nowGroup.value.find((u) => u.userId === userId);
+
     roleObj = roles.value.find(
-      r =>
+      (r) =>
         r.roleId ==
         (form.value.groupType == "C1" ? selectedRole.value : user.roleId),
     );
@@ -446,27 +443,27 @@ const moveUsersToRight = async () => {
 
   selectedLeftUsers.value = [];
   selectedRole.value = null;
-  newMembers = newMembers.filter(n => n !== null);
+  newMembers = newMembers.filter((n) => n !== null);
   newMembers.length > 0 ? groupMembers.value.push(...newMembers) : "";
 };
 
-const removeMember = userId => {
+const removeMember = (userId) => {
   // 오른쪽 리스트에서 삭제 (삭제되면 자동으로 왼쪽 리스트에 다시 나타남)
-  groupMembers.value = groupMembers.value.filter(m => m.userId !== userId);
+  groupMembers.value = groupMembers.value.filter((m) => m.userId !== userId);
 };
 
 // 1. 데이터를 직군(groupName)별로 묶어주는 Computed
 const groupedUsers = computed(() => {
   const groups = {};
 
-  filteredUsers.value.forEach(user => {
+  filteredUsers.value.forEach((user) => {
     if (!groups[user.groupName]) {
       groups[user.groupName] = [];
     }
     groups[user.groupName].push(user);
   });
   // 객체를 배열 형태로 변환 (템플릿에서 v-for 돌리기 쉽게)
-  return Object.keys(groups).map(key => ({
+  return Object.keys(groups).map((key) => ({
     groupName: key,
     users: groups[key],
   }));
@@ -475,50 +472,49 @@ const groupedUsers = computed(() => {
 // 2. 현재 펼쳐진 그룹 목록 관리
 const expandedGroups = ref([]); // 기본으로 열어둘 그룹 이름 지정 (빈 배열 [] 이면 모두 닫힘)
 
-const toggleGroup = groupName => {
+const toggleGroup = (groupName) => {
   if (expandedGroups.value.includes(groupName)) {
-    expandedGroups.value = expandedGroups.value.filter(g => g !== groupName);
+    expandedGroups.value = expandedGroups.value.filter((g) => g !== groupName);
   } else {
     expandedGroups.value.push(groupName);
   }
 };
 
 // 💡 꿀팁: 사용자가 검색어를 입력하면 숨겨진 그룹을 자동으로 다 펼쳐줍니다!
-watch(userSearchQuery, newVal => {
+watch(userSearchQuery, (newVal) => {
   if (newVal.trim() !== "") {
     // 검색어 입력 시 매칭된 모든 그룹 펼치기
-    expandedGroups.value = groupedUsers.value.map(g => g.groupName);
+    expandedGroups.value = groupedUsers.value.map((g) => g.groupName);
   }
 });
 
 // 3. 부모 체크박스 (전체 선택/해제) 로직
 // 해당 직군의 '모든' 유저가 선택되었는지 확인
-const isGroupChecked = group => {
+const isGroupChecked = (group) => {
   if (group.users.length === 0) return false;
-  return group.users.every(u => selectedLeftUsers.value.includes(u.userId));
+  return group.users.every((u) => selectedLeftUsers.value.includes(u.userId));
 };
 
 // 부모 체크박스를 눌렀을 때 실행
 const toggleGroupSelection = (group, event) => {
-  console.log(group);
   const isChecked = event.target.checked;
 
   if (isChecked) {
-    group.users.forEach(u => {
+    group.users.forEach((u) => {
       if (!selectedLeftUsers.value.includes(u.userId)) {
         selectedLeftUsers.value.push(u.userId); // ← userId만 push
       }
     });
   } else {
-    const groupUserIds = group.users.map(u => u.userId);
+    const groupUserIds = group.users.map((u) => u.userId);
     selectedLeftUsers.value = selectedLeftUsers.value.filter(
-      userId => !groupUserIds.includes(userId),
+      (userId) => !groupUserIds.includes(userId),
     );
   }
 };
 
 // ── 검색어 하이라이트 기능 ──
-const highlight = text => {
+const highlight = (text) => {
   const q = userSearchQuery.value.trim();
   if (!q || !text) return text; // 검색어가 없으면 그냥 원본 반환
 
@@ -532,7 +528,7 @@ const highlight = text => {
 
 // 초기화
 const reset = () => {
-  roles.value.forEach(ro => {
+  roles.value.forEach((ro) => {
     ro.checked = false;
   });
 

@@ -15,8 +15,6 @@ export const useAttachmentStore = defineStore("attachment", {
         })
         .then((res) => {
           const contentType = res.data.type;
-          console.log("파일 타입:", contentType);
-          console.log(res.data);
 
           // 2. Blob 객체 생성 시 타입을 명시해주면 더 정확합니다.
           const blob = new Blob([res.data], { type: contentType });

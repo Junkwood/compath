@@ -25,11 +25,8 @@ export const useProjectKJHStore = defineStore("projectKJH", {
 
     // 프로젝트 수정
     async modifyProject(payload) {
-      console.log(payload);
       try {
         let id = payload.projectId;
-
-        console.log("수정 프로젝트 번호", id);
 
         let result = await api //
           .put("/projects/info/" + id, payload);
@@ -67,10 +64,8 @@ export const useProjectKJHStore = defineStore("projectKJH", {
 
     // 프로젝트 구성원 등록
     async registerProjectMem(arr) {
-      console.log(arr);
       let result = await api.post("/projects/registerMember", arr);
 
-      console.log("구성원 등록 ", result.data);
       this.insertedList = result.data;
     },
 
@@ -91,7 +86,6 @@ export const useProjectKJHStore = defineStore("projectKJH", {
 
     // 구성원 삭제
     async removeMem(obj) {
-      console.log("구성원 삭제전", obj);
       let result = await api //
         .delete("/projects/delMembers", {
           data: {
@@ -106,7 +100,7 @@ export const useProjectKJHStore = defineStore("projectKJH", {
     // 프로젝트 그룹 및 멤버 조회
     async getProjectGroupMem() {
       let result = await api.get("/projectgroup/members");
-      console.log(result);
+
       this.projectGroupMem = result.data;
     },
 

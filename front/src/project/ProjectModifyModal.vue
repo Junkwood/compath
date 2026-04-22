@@ -131,12 +131,10 @@ const emit = defineEmits(["update:modelValue", "submitted"]);
 
 watch(
   () => props.originInfo,
-  newVal => {
-    console.log("변경전: ", newVal);
-
+  (newVal) => {
     const data = { ...newVal };
 
-    plOptions.value.forEach(pl => {
+    plOptions.value.forEach((pl) => {
       if (data.plUserId == pl.userName) {
         data.plUserId = pl.userId;
       }
@@ -159,7 +157,7 @@ const plOptions = ref([]);
 
 const fetchPlList = async () => {
   const res = await api.get("/ProjectPlList");
-  console.log(res.data);
+
   plOptions.value = res.data;
 };
 
@@ -202,7 +200,7 @@ const handleClose = () => {
 
 const visible = computed({
   get: () => props.modelValue,
-  set: v => emit("update:modelValue", v),
+  set: (v) => emit("update:modelValue", v),
 });
 
 onMounted(() => {
