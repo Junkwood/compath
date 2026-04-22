@@ -565,7 +565,6 @@ const removeComment = async (comment) => {
 };
 
 const attachmentDownload = async (file) => {
-  console.log(file);
   await attachmentStore.downloadFile(file);
 };
 

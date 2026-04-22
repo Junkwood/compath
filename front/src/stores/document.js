@@ -12,14 +12,12 @@ export const useDocumentStore = defineStore("document", {
   actions: {
     // 문서 등록
     async registerDocument(formData) {
-      console.log("등록전 데이터: ", formData);
       await api //
         .post("/documents/register", formData, {
           headers: {},
         })
         .then((res) => {
           this.registeredDocument = res.data;
-          console.log("문서 등록완료: ", this.registeredDocument);
         });
     },
 
@@ -29,14 +27,11 @@ export const useDocumentStore = defineStore("document", {
         .get("/documents/Detail/" + id)
         .then((res) => {
           this.documentDetail = res.data;
-          console.log("문서 단건 조회 완료: ", this.documentDetail);
         });
     },
 
     // 문서 수정
     async modifyDocument(formData) {
-      console.log("수정전 데이터: ", formData);
-
       await api //
         .put("/docuemnts/update", formData, {
           headers: {},
@@ -70,35 +65,27 @@ export const useDocumentStore = defineStore("document", {
 
     // 문서 댓글 등록
     async registerComment(obj) {
-      console.log("등록전 데이터: ", obj);
       await api //
         .post("/documents/comments/register", obj)
         .then((res) => {
           this.registeredComment = res.data;
-          console.log("댓글 등록완료: ", this.registeredComment);
         });
     },
 
     // 문서 댓글 수정
     async modifyComment(obj) {
-      console.log("수정전 데이터: ", obj);
-
       await api //
         .put("/docuemnts/comments/update", obj)
         .then((res) => {
           this.registeredComment = res.data;
-          console.log("수정완료", this.registeredComment);
         });
     },
 
     // 알림 등록
     async registerDocumentAlarm(arr) {
-      console.log("생성값", arr);
       await api //
         .post("/docuemnts/alarm/register", arr)
-        .then((res) => {
-          console.log("알림발송 및 등록 완료", res.data);
-        });
+        .then((res) => {});
     },
   },
 });
