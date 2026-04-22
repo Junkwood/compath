@@ -33,7 +33,7 @@ public class WebSecurityConfig {
         // 기존 WebConfig에서 설정했던 값들을 그대로 가져옵니다.
         configuration.addAllowedOrigin("http://compath.cloud"); // 실제 서비스 중인 도메인 (필수!)
         configuration.addAllowedOrigin("https://compath.cloud"); // 나중에 HTTPS 달 때를 대비해 미리 추가
-        configuration.addAllowedOrigin("http://13.209.66.174:5173"); // 기존 IP
+        configuration.addAllowedOrigin("http://13.209.66.174"); // 기존 IP
         configuration.addAllowedOrigin("http://localhost:5173"); // 로컬에서 개발할 때를 위해 추가
         configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
