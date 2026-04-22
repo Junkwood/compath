@@ -31,7 +31,7 @@ public class WebSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 기존 WebConfig에서 설정했던 값들을 그대로 가져옵니다.
-        configuration.addAllowedOrigin("http://localhost:5173"); // 프론트 주소
+        configuration.addAllowedOrigin("http://13.209.66.174:5173"); // 프론트 주소
         configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
         configuration.setAllowCredentials(true); // 쿠키/인증 정보 허용
