@@ -264,7 +264,6 @@ function onOpen() {
 
 const handleConnect = async () => {
   const ids = [...selectedIds];
-
   let arr = [];
   ids.forEach((id) => {
     arr.push({
