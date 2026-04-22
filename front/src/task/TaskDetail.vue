@@ -312,11 +312,7 @@
 
                 <div class="memo-body" style="padding: 12px 16px">
                   <div
-                    v-if="
-                      attachmentList.value
-                        ? attachmentList.value.length > 0
-                        : attachmentList.length > 0
-                    "
+                    v-if="attachmentList != null"
                     class="flex flex-col gap-2"
                   >
                     <div
