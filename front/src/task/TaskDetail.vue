@@ -432,8 +432,8 @@ onBeforeMount(async () => {
   projectStartDate.value = taskStore.projectName.startDate;
   projectEndDate.value = taskStore.projectName.endDate;
 
-  taskInfo.value = { ...taskStore.taskDetail.taskInfo };
-  attachmentList.value = [...taskStore.taskDetail.attachmentList];
+  taskInfo.value = taskStore.taskDetail.taskInfo;
+  attachmentList.value = taskStore.taskDetail.attachmentList;
   taskInfo.value.createdAt = changeDate(taskInfo.value.createdAt);
   taskInfo.value.actualHours =
     taskInfo.value.totalTimeEntries > 0
