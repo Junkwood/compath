@@ -264,7 +264,7 @@ function onOpen() {
 
 const handleConnect = async () => {
   const ids = [...selectedIds];
-  console.log(ids);
+
   let arr = [];
   ids.forEach((id) => {
     arr.push({
@@ -274,7 +274,6 @@ const handleConnect = async () => {
     });
   });
 
-  console.log(arr);
   await meetingStore.registerDetailConnect(arr);
   emit("closeModal", ids);
   await onOpen();
@@ -344,7 +343,6 @@ watch(
   () => props.projectInfo?.projectId,
   (newId) => {
     if (newId) {
-      console.log("프로젝트 ID 확인됨:", newId);
       handleCurrentChange(1);
       dialogVisible.value = true;
     }
@@ -361,7 +359,6 @@ watch(
         (task) => !newId.some((id) => id.taskId == task.taskId),
       );
 
-      console.log(taskStore.taskAllList.length);
       listLength.value =
         taskStore.taskAllList.length != 0
           ? taskStore.taskAllList[0].taskCounts - newId.length

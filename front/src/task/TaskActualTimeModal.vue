@@ -114,7 +114,6 @@ const submitForm = async (formEl) => {
       emit("submitted", obj);
     } else {
       // 안내 메세지 나옴
-      console.log("error submit!", fields);
     }
   });
 };

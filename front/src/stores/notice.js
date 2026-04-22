@@ -13,15 +13,12 @@ export const useNoticeStore = defineStore("notice", {
   actions: {
     // 공지사항 등록
     async registerNotice(formData) {
-      console.log("등록전 데이터: ", formData);
-
       await api //
         .post("/notice/register", formData, {
           headers: {},
         }) //
         .then((res) => {
           this.registeredNotice = res.data;
-          console.log("공지사항 등록완료", this.registeredNotice);
         });
     },
 
@@ -31,14 +28,11 @@ export const useNoticeStore = defineStore("notice", {
         .get("/notice/Detail/" + id) //
         .then((res) => {
           this.noticeInfo = res.data;
-          console.log("조회완료", this.noticeInfo);
         });
     },
 
     // 공지사항 수정
     async modifyNotice(formData) {
-      console.log("수정전 데이터: ", formData);
-
       await api //
         .put("/notice/update", formData, {
           headers: {},
@@ -76,7 +70,6 @@ export const useNoticeStore = defineStore("notice", {
         .put("/notice/updateLock/" + id + "/" + lock) //
         .then((res) => {
           this.registeredNotice = res.data;
-          console.log("수정완료", this.registeredNotice);
         });
     },
 

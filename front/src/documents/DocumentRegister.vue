@@ -318,13 +318,11 @@ const alarmList = ref([]); // 알림대상 추가된 회원 목록
 // 상단고정 체크시
 const checkedPin = (event) => {
   form.isPinned = event.target.checked;
-  console.log("상단고정", form.isPinned);
 };
 
 // 댓글잠금 체크시
 const checkedComment = (event) => {
   form.isComment = event.target.checked;
-  console.log("댓글잠금", form.isComment);
 };
 
 // 공지사항 생성 버튼
@@ -433,7 +431,6 @@ const submitForm = async (formEl) => {
         if (fileList.value && fileList.value.length > 0) {
           fileList.value.forEach((file) => {
             if (file.isExisting == null) {
-              console.log(file);
               formData.append("files", file.raw);
             }
           });
@@ -455,7 +452,6 @@ const submitForm = async (formEl) => {
       });
     } else {
       // 안내 메세지 나옴
-      console.log("error submit!", fields);
     }
   });
 };
@@ -553,7 +549,6 @@ const openModal = () => {
 
 // 목록으로 버튼
 const goBack = () => {
-  console.log(id);
   router.push({
     name: "documentList",
     params: { projectId: id, subProjectId: subId },

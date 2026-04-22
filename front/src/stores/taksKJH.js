@@ -22,14 +22,11 @@ export const usetaskKJHStore = defineStore("taskKJH", {
 
     // 프로젝트별 전체 업무 목록
     async getAllTask(obj) {
-      console.log(obj);
       this.taskAllList = (
         await api.get("/tasks", {
           params: obj,
         })
       ).data;
-
-      console.log("조회 성공: ", this.taskAllList);
     },
 
     // 필터링 조건들 호출(PL/SQL)
@@ -41,17 +38,14 @@ export const usetaskKJHStore = defineStore("taskKJH", {
     async getTaskById(id) {
       let result = await api.get("/tasks/detail/" + id);
       this.taskDetail = result.data;
-      console.log("업무상세정보: ", this.taskDetail);
     },
 
     // 소요시간 등록
     async registerTimeEntries(obj) {
-      console.log("전송데이터: ", obj);
       let result = await api //
         .post("/tasks/timelog", obj);
 
       this.timeEntriesList = result.data;
-      console.log("소요시간목록: ", this.timeEntriesList);
     },
 
     // 소요시간 등록 목록 조회
@@ -98,7 +92,7 @@ export const usetaskKJHStore = defineStore("taskKJH", {
         .get("/tasks/activityLogs/" + id)
         .then((res) => {
           let result = res.data;
-          console.log(result);
+
           result.forEach((task) => {
             if (task.actionType == "T0") {
               task.message = `${task.userName}님이 "${task.afterValue}"를 생성하셨습니다.`;

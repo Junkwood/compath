@@ -601,10 +601,7 @@ const goProjectDashboard = (row) => {
   });
 };
 
-onMounted(() => {
-  console.log("user:", user.value);
-  console.log("roleId:", user.value?.roleId);
-});
+onMounted(() => {});
 </script>
 
 <style scoped>

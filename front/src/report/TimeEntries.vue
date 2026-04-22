@@ -688,7 +688,6 @@ export default defineComponent({
     /* ─── lifecycle ─── */
     onMounted(async () => {
       await fetchData();
-      console.log("taskInfo", taskInfo.value);
 
       rebuildAllCharts();
     });

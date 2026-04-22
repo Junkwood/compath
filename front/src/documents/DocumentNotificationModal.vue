@@ -204,7 +204,6 @@ watch(
 watch(
   () => props.alarmList,
   (newVal) => {
-    console.log("변화감지");
     allUsers.value = props.memberList;
 
     allUsers.value = allUsers.value.filter(

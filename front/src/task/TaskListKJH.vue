@@ -479,8 +479,8 @@ const selectUser = async (val) => {
     (u) => u.name === selectedName || u.userName === selectedName,
   );
   if (found) {
-    console.log(found.name || found.userName);
-    console.log(found.value || found.userId);
+
+
     openModal.value = false;
 
     let obj = {
@@ -591,12 +591,12 @@ const changeDateType = (val) => {
 };
 
 const changeTitleLength = (title) => {
-  console.log(title, title.length);
+
   if (title.length > 20) {
-    console.log(title.slice(0, 19));
+    );
     title = title.slice(0, 19) + ".....";
   }
-  console.log(title);
+
   return title;
 };
 </script>

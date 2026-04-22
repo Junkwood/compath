@@ -508,14 +508,12 @@ const openConnectTaskModal = () => {
 
 // 모달창 연결버튼
 const closeModal = (val) => {
-  console.log(val);
   openConnectModal.value = false;
   connectTaskList.value = meetingStore.detailConnectList;
 };
 
 // 공지사항 생성 버튼
 const submitForm = async (formEl) => {
-  console.log(formEl.validate);
   await formEl.validate(async (valid, fields) => {
     if (valid) {
       if (!isModified.value) {
@@ -613,8 +611,6 @@ const submitForm = async (formEl) => {
           attachmentGroupId: form.attachmentGroupId,
         };
 
-        console.log(obj);
-
         const formData = new FormData();
         formData.append(
           "obj",
@@ -626,7 +622,6 @@ const submitForm = async (formEl) => {
         if (fileList.value && fileList.value.length > 0) {
           fileList.value.forEach((file) => {
             if (file.isExisting == null) {
-              console.log(file);
               formData.append("files", file.raw);
             }
           });
@@ -647,7 +642,6 @@ const submitForm = async (formEl) => {
       });
     } else {
       // 안내 메세지 나옴
-      console.log("error submit!", fields);
     }
   });
 };
@@ -666,7 +660,6 @@ const handleClose = (tag) => {
 const getContentByGemmini = async (val) => {
   const formData = new FormData();
   if (!isVoice.value) {
-    console.log(val);
     if (val.content == "" || val.content == " ") {
       const result = await Swal.fire({
         title: "내용을 작성해주세요",
@@ -706,9 +699,8 @@ const getContentByGemmini = async (val) => {
   // 2. 목록 추출 (match)
   const match = form.aiSummary.match(todoRegex);
   if (match) {
-    console.log(match);
     const jsonStr = match[0].replace(/'/g, '"');
-    console.log(jsonStr);
+
     geminiTaskList.value = JSON.parse(jsonStr);
     todoList.value = geminiTaskList.value;
   }
@@ -809,7 +801,6 @@ onBeforeMount(async () => {
 // 추천 업무 생성 버튼
 let selectedToDo = ref();
 const openCreateModal = (value, idx) => {
-  console.log(value);
   selectedToDo.value = idx;
   taskInfo.value = {
     ...value,
@@ -849,12 +840,9 @@ const registerTask = async () => {
 
 // 연결 업무 x 버튼
 const delTask = async (task) => {
-  console.log(task);
   let result = geminiTaskList.value.some(
     (li) => Object.keys(li)[0] == task.title,
   );
-
-  console.log(result);
 
   let obj = {
     meetingLogId: task.meetingLogId,
@@ -862,7 +850,6 @@ const delTask = async (task) => {
     taskId: result ? task.taskId : null,
   };
 
-  console.log(obj);
   await meetingStore.removeConnectTask(obj);
   connectTaskList.value = meetingStore.connectTaskList;
 
@@ -878,7 +865,6 @@ const openModal = () => {
 
 // 목록으로 버튼
 const goBack = () => {
-  console.log(id);
   router.push({
     name: "meetingList",
     params: { projectId: id, subProjectId: subId },
@@ -934,9 +920,7 @@ const resetForm = (formEl) => {
 // 첨부파일api(좌측)
 const fileList = ref([]);
 
-const handleChange = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles);
-};
+const handleChange = (uploadFile, uploadFiles) => {};
 
 // 음성 첨부파일api(우측)
 const voiceList = ref([]);

@@ -33,7 +33,6 @@ export const useMeetingStore = defineStore("meeting", {
         })
         .then((res) => {
           this.registeredMeeting = res.data;
-          console.log("회의록 조회완료", this.registeredMeeting);
         });
     },
 
@@ -50,12 +49,9 @@ export const useMeetingStore = defineStore("meeting", {
 
     // 알림 등록
     async registerMeetingAlarm(arr) {
-      console.log("생성값", arr);
       await api //
         .post("/meeting/alarm/register", arr)
-        .then((res) => {
-          console.log("알림발송 및 등록 완료", res.data);
-        });
+        .then((res) => {});
     },
 
     // 회의록 단건조회(상세페이지)
@@ -80,7 +76,6 @@ export const useMeetingStore = defineStore("meeting", {
 
     // 페이징목록 조회
     async getPagingList(obj) {
-      console.log(obj);
       await api //
         .get("/meeting/paging", {
           params: obj,
@@ -98,7 +93,6 @@ export const useMeetingStore = defineStore("meeting", {
         })
         .then((res) => {
           this.geminiContent = res.data;
-          console.log(this.geminiContent);
         });
     },
 

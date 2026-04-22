@@ -45,7 +45,7 @@ export const useTypeStore = defineStore("taskType", () => {
     try {
       // const payload = { userId: authStore.user.userId, ...form };
       form.userId = authStore.user.userId;
-      // console.log(payload, form);
+      //
       const res = await admin.put(`/task/type/modify/${form.taskTypeId}`, form);
       return res.data;
     } catch (err) {
@@ -57,7 +57,6 @@ export const useTypeStore = defineStore("taskType", () => {
   // ── 활성화 상태 토글 ──
   async function toggleActive(row) {
     try {
-      console.log(authStore.user.userId);
       const res = await admin.put(`/task/type/modify/isActive`, {
         taskTypeId: row.taskTypeId,
         isActive: row.isActive,
@@ -76,7 +75,6 @@ export const useTypeStore = defineStore("taskType", () => {
   // ── 활성화 상태 토글 ──
   async function changeFinal(row) {
     try {
-      console.log(authStore.user.userId);
       const res = await admin.put(`/task/type/modify/isFinal`, {
         taskTypeId: row.taskTypeId,
         isFinal: row.isFinal,
@@ -99,7 +97,6 @@ export const useTypeStore = defineStore("taskType", () => {
       const result = res.data;
       return result;
     } catch (e) {
-      console.log(`중복 확인 실패 : ${e}`);
       throw e;
     }
   }
