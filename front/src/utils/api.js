@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 
 // 1. 커스텀 Axios 인스턴스 생성
 const api = axios.create({
-  baseURL: "http://localhost:8080/api", // 백엔드 기본 URL
+  baseURL: "http://13.209.66.174:8080/api", // 백엔드 기본 URL
   withCredentials: true, // 세션 쿠키를 백엔드와 주고받으려면 무조건 true
 });
 let isTokenRefreshing = false; // 현재 토큰 갱신 중인지 여부

@@ -4,7 +4,7 @@ import { useAuthStore } from "../stores/auth.js";
 import Swal from "sweetalert2";
 // 1. 커스텀 Axios 인스턴스 생성
 const admin = axios.create({
-  baseURL: "http://localhost:8080/admin", // 백엔드 기본 URL (env 변수로 빼는 것 추천!)
+  baseURL: "http://13.209.66.174:8080/admin", // 백엔드 기본 URL (env 변수로 빼는 것 추천!)
   // timeout: 10000, // 10초 이상 응답 없으면 에러
   withCredentials: true, //  세션 쿠키를 백엔드와 주고받으려면 무조건 true
 });
