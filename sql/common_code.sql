@@ -7,6 +7,8 @@ WHERE group_value = '0G';
 SELECT * FROM common_code ORDER BY code_value;
 COMMIT;
 
+use compath;
+
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0A', 'ROOT', '권한 코드', 'O1');
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0B', 'ROOT', '공지사항 pin', 'O1');
 INSERT INTO common_code (code_value, group_value, code_name, is_active) VALUES ('0C', 'ROOT', '그룹 유형 코드', 'O1');
