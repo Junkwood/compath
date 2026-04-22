@@ -497,11 +497,12 @@ const isGroupChecked = (group) => {
 
 // 부모 체크박스를 눌렀을 때 실행
 const toggleGroupSelection = (group, event) => {
+  console.log(group);
   const isChecked = event.target.checked;
 
   if (isChecked) {
     group.users.forEach((u) => {
-      if (!selectedLeftUsers.value.includes(u.userId)) {
+      if (!selectedLeftUsers.value.includes(u)) {
         selectedLeftUsers.value.push(u.userId); // ← userId만 push
       }
     });
