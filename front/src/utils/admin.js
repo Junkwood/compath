@@ -67,7 +67,7 @@ admin.interceptors.response.use(
 
           try {
             const refreshRes = await axios.post(
-              "http://localhost:8080/auth/refresh",
+              "http://13.209.66.174:8080/auth/refresh",
               {
                 refreshToken: refreshToken,
               },
