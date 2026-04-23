@@ -312,11 +312,7 @@
 
                 <div class="memo-body" style="padding: 12px 16px">
                   <div
-                    v-if="
-                      attachmentList.value
-                        ? attachmentList.value.length > 0
-                        : attachmentList.length > 0
-                    "
+                    v-if="attachmentList != null"
                     class="flex flex-col gap-2"
                   >
                     <div
@@ -324,7 +320,7 @@
                       :key="index"
                       class="memo-card"
                     >
-                      <div class="truncate text-gray-700">
+                      <div class="text-sm text-gray-700">
                         <el-tooltip
                           class="box-item"
                           effect="dark"

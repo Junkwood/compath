@@ -41,7 +41,11 @@
               <span class="panel-title">기본 설정</span>
 
               <div class="panel-head-actions">
-                <button @click="openModfyModal" class="btn-primary">
+                <button
+                  v-if="isAssignee"
+                  @click="openModfyModal"
+                  class="btn-primary"
+                >
                   수정
                 </button>
                 <button @click="handleGoBack" class="btn-line">돌아가기</button>
@@ -98,7 +102,11 @@
                 <span class="count-badge">{{ memberList.length }}명</span>
               </div>
 
-              <button @click="openMemberModal" class="btn-member-add">
+              <button
+                v-if="isAssignee"
+                @click="openMemberModal"
+                class="btn-member-add"
+              >
                 구성원 추가
               </button>
             </div>
@@ -284,6 +292,7 @@ const projectInfo = ref({
 });
 
 const id = route.params.projectId;
+const subId = route.params.subProjectId;
 
 const ModifyProjectModalOpen = ref(false);
 const MemberModalOpen = ref(false);
@@ -345,6 +354,24 @@ onBeforeMount(async () => {
 
   await projectStore.getProjectGroupMem();
   projectGroupList.value = projectStore.projectGroupMem;
+
+  //권한 체크(관리자, pm, pl)
+  let obj = { projectId: id, subProjectId: subId };
+  await taskStore.getProjectRole(obj);
+});
+
+// 권한 파악
+const isAssignee = computed(() => {
+  const currentUserId = authStore.user?.userId || authStore.user?.id;
+  if (!currentUserId) return false;
+
+  const isPmPl = (taskStore.plPmList?.projectRoleList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  const isManager = (taskStore.plPmList?.empList || []).some(
+    (item) => Number(item.userId) === Number(currentUserId),
+  );
+  return isPmPl || isManager;
 });
 
 const openModfyModal = () => {

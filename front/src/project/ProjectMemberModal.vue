@@ -140,13 +140,13 @@
                 >
                   <label
                     v-for="user in group.users"
-                    :key="user.userId"
+                    :key="user"
                     class="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded cursor-pointer transition-colors"
                   >
                     <div class="flex items-center gap-3">
                       <input
                         type="checkbox"
-                        :value="user.userId"
+                        :value="user"
                         v-model="selectedLeftUsers"
                         class="form-checkbox text-indigo-500"
                       />
@@ -417,7 +417,7 @@ const moveUsersToRight = async () => {
     let user = null;
     let roleObj = null;
 
-    user = nowGroup.value.find((u) => u.userId === userId);
+    user = nowGroup.value.find((u) => u.userId === userId.userId);
 
     roleObj = roles.value.find(
       (r) =>
@@ -492,23 +492,26 @@ watch(userSearchQuery, (newVal) => {
 // 해당 직군의 '모든' 유저가 선택되었는지 확인
 const isGroupChecked = (group) => {
   if (group.users.length === 0) return false;
-  return group.users.every((u) => selectedLeftUsers.value.includes(u.userId));
+  return group.users.every((u) => selectedLeftUsers.value.includes(u));
 };
 
 // 부모 체크박스를 눌렀을 때 실행
 const toggleGroupSelection = (group, event) => {
+  console.log(group);
   const isChecked = event.target.checked;
 
   if (isChecked) {
     group.users.forEach((u) => {
-      if (!selectedLeftUsers.value.includes(u.userId)) {
-        selectedLeftUsers.value.push(u.userId); // ← userId만 push
+      if (!selectedLeftUsers.value.includes(u)) {
+        selectedLeftUsers.value.push(u);
       }
     });
   } else {
-    const groupUserIds = group.users.map((u) => u.userId);
     selectedLeftUsers.value = selectedLeftUsers.value.filter(
-      (userId) => !groupUserIds.includes(userId),
+      (user) =>
+        !group.users.some(
+          (ser) => ser.userId == user.userId && ser.groupName == user.groupName,
+        ),
     );
   }
 };
